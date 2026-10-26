@@ -5,6 +5,12 @@ interface CloneEngine {
     val availability: EngineAvailability
     fun listClones(): List<CloneRecord>
     fun create(source: InstalledSource, label: String): CloneRecord
+    /**
+     * Dispatch only this instance. IDs must remain stable for its lifetime and must not be recycled
+     * for another instance while metadata exists. On return, a scheduled start must already report
+     * running=true or unknown, so a serialized updater cannot mistake it for an idle instance.
+     * A return is not proof that the guest UI or login succeeded.
+     */
     fun launch(cloneId: String)
     fun delete(cloneId: String)
     /** Must keep account data and report the actual version after applying the source. */

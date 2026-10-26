@@ -16,6 +16,12 @@
         android:theme="@android:style/Theme.Material.Light.NoActionBar"
         android:usesCleartextTraffic="false">
         <activity
+            android:name=".shortcuts.CloneLaunchActivity"
+            android:exported="true"
+            android:excludeFromRecents="true"
+            android:noHistory="true"
+            android:taskAffinity="" />
+        <activity
             android:name=".MainActivity"
             android:exported="true">
             <intent-filter>

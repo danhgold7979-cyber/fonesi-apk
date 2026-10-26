@@ -3,9 +3,12 @@ package vn.fonesi.app.storage
 import android.content.Context
 import androidx.room.*
 import androidx.sqlite.db.SupportSQLiteDatabase
+import androidx.room.migration.Migration
 import kotlinx.coroutines.flow.Flow
+import java.util.UUID
 
-@Entity(tableName = "clone_metadata", primaryKeys = ["engineKey", "cloneId"])
+@Entity(tableName = "clone_metadata", primaryKeys = ["engineKey", "cloneId"],
+    indices = [Index(value = ["launchToken"], unique = true)])
 data class CloneMetadataRow(
     val engineKey: String,
     val cloneId: String,
@@ -14,6 +17,7 @@ data class CloneMetadataRow(
     val groupName: String?,
     val createdAt: Long,
     val changedAt: Long,
+    @ColumnInfo(defaultValue = "''") val launchToken: String = UUID.randomUUID().toString(),
 )
 
 @Entity(tableName = "update_tasks", indices = [
@@ -39,6 +43,8 @@ interface CloneMetadataDao {
     @Query("SELECT * FROM clone_metadata ORDER BY createdAt, cloneId") fun list(): List<CloneMetadataRow>
     @Query("SELECT * FROM clone_metadata WHERE engineKey = :engine AND cloneId = :id")
     fun find(engine: String, id: String): CloneMetadataRow?
+    @Query("SELECT * FROM clone_metadata WHERE launchToken = :token")
+    fun findByLaunchToken(token: String): CloneMetadataRow?
     @Insert fun insert(row: CloneMetadataRow)
     @Query("UPDATE clone_metadata SET label = :label, groupName = :groupName, changedAt = :now WHERE engineKey = :engine AND cloneId = :id")
     fun rename(engine: String, id: String, label: String, groupName: String?, now: Long): Int
@@ -59,16 +65,31 @@ interface UpdateTaskDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE) fun setControl(row: QueueControlRow)
 }
 
-@Database(entities = [CloneMetadataRow::class, UpdateTaskRow::class, QueueControlRow::class], version = 1, exportSchema = true)
+@Database(entities = [CloneMetadataRow::class, UpdateTaskRow::class, QueueControlRow::class], version = 2, exportSchema = true)
 abstract class FonesiDatabase : RoomDatabase() {
     abstract fun clones(): CloneMetadataDao
     abstract fun tasks(): UpdateTaskDao
 
     companion object {
+        val MIGRATION_1_2 = object : Migration(1, 2) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE clone_metadata ADD COLUMN launchToken TEXT NOT NULL DEFAULT ''")
+                val identities = db.query("SELECT engineKey, cloneId FROM clone_metadata").use { cursor ->
+                    buildList { while (cursor.moveToNext()) add(cursor.getString(0) to cursor.getString(1)) }
+                }
+                identities.forEach { (engine, id) ->
+                    db.execSQL("UPDATE clone_metadata SET launchToken = ? WHERE engineKey = ? AND cloneId = ?",
+                        arrayOf(UUID.randomUUID().toString(), engine, id))
+                }
+                db.execSQL("CREATE UNIQUE INDEX index_clone_metadata_launchToken ON clone_metadata (launchToken)")
+            }
+        }
+
         fun open(context: Context, name: String = "fonesi.db"): FonesiDatabase =
             Room.databaseBuilder(context.applicationContext, FonesiDatabase::class.java, name)
                 .openHelperFactory(PreservingOpenHelperFactory())
                 .setJournalMode(JournalMode.TRUNCATE)
+                .addMigrations(MIGRATION_1_2)
                 .addCallback(object : Callback() {
                     override fun onOpen(db: SupportSQLiteDatabase) {
                         db.execSQL("PRAGMA synchronous=FULL")

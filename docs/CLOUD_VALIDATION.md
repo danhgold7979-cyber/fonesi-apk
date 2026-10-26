@@ -1,5 +1,7 @@
 # Kết quả Phase 3–4 phần cloud
 
+Đây là mốc `0.2.0-cloud` với 70 test. Mốc shortcut/schema mới `0.3.0-cloud` được ghi riêng ở [PHASE3_VALIDATION.md](PHASE3_VALIDATION.md); không dùng checksum cũ cho APK mới.
+
 Ngày 26/10/2026. Kiểm thử điện thoại được hoãn theo yêu cầu người dùng. Các kết quả dưới đây không chứng minh clone ứng dụng hay tài khoản mạng xã hội đã hoạt động.
 
 ## Kiểm tra đã đạt

@@ -1,6 +1,6 @@
 # Trạng thái thực hiện
 
-**Đang triển khai trước Phase 3, bước 13–14 và Phase 4, bước 17–20 ở phần cloud.** Người dùng đã yêu cầu hoãn thử điện thoại và tiếp tục code. Runtime phase 1–2 vẫn chưa được nghiệm thu; việc này không chặn phần độc lập đã được cho phép.
+**Đang triển khai Phase 3, bước 15–16 ở phần cloud; đã có nền tảng Phase 4, bước 17–20.** Người dùng đã yêu cầu hoãn thử điện thoại và tiếp tục code. Runtime phase 1–2 vẫn chưa được nghiệm thu; việc này không chặn phần độc lập đã được cho phép.
 
 | Phase/bước | Trạng thái | Bằng chứng hoặc phần còn thiếu |
 | --- | --- | --- |
@@ -11,18 +11,20 @@
 | Phase 1, bước 8 | Đã code adapter và payload; runtime tạm hoãn | [Checklist điện thoại](PHASE1_PHONE_TEST.md) để dùng về sau; không yêu cầu người dùng thử ngay để tiếp tục việc cloud. |
 | Phase 2 | Chưa nghiệm thu | Chưa chạy tài khoản Facebook riêng trên điện thoại. |
 | Phase 3, bước 13–14 | Đã có phần lưu trữ/controller và UI quản lý metadata | Room/schema, namespace engine, readback trước khi lưu/xóa, đổi tên/nhóm. Test cloud có engine double, không thay cho chạy SDK thật. |
-| Phase 3, bước 15–16 | Chưa hoàn tất | Shortcut và đối chiếu vòng đời đầy đủ với engine còn thiếu; đóng/mở DB đã có test. |
+| Phase 3, bước 15–16 | Có controller mở, ghim shortcut, migration và phối hợp khóa | UUID theo lần tạo, đối chiếu namespace/package/journal, đồng bộ tên và vô hiệu hóa mục đã xóa; kiểm thử cloud không thay cho mở guest/launcher thật. Chi tiết [SHORTCUTS.md](SHORTCUTS.md). |
 | Phase 4, bước 17–18 | Đã có phần điều phối/lưu bền vững trong cloud | Snapshot base/split, chống trùng, OS lock, write-ahead marker, CAS/pause, readback và recovery. Chưa kiểm chứng engine import APK thật. |
 | Phase 4, bước 19–20 | Có UI quản lý queue và fault-injection test; chưa nối cập nhật thật | Chưa có scheduler/cập nhật SDK sản phẩm hoặc xác minh giữ phiên đăng nhập. |
 | Phase 5–7 | Chưa hoàn tất | Không suy ra tương thích/ổn định trên điện thoại từ unit test. |
 
 ## Bản đã tạo
 
-- App chính `vn.fonesi.app`, `0.2.0-cloud`: scanner, UI metadata/hàng đợi và lưu trữ; chưa tích hợp engine sản phẩm.
+- App chính `vn.fonesi.app`, `0.3.0-cloud`: scanner, UI metadata/hàng đợi, lưu trữ và luồng shortcut; chưa tích hợp engine sản phẩm.
 - `vn.fonesi.probe`: chỉ thử SDK ứng viên; mặc định chưa chủ động khởi tạo SDK, chỉ cho phép thao tác payload của dự án.
 - `vn.fonesi.payload`: ứng dụng dữ liệu mẫu, không có quyền; dùng để đọc/ghi ID và nhãn độc lập.
 
 Chi tiết phần mới ở [CLOUD_BACKEND.md](CLOUD_BACKEND.md) và kết quả [CLOUD_VALIDATION.md](CLOUD_VALIDATION.md). Kết quả probe ban đầu ở [PHASE1_VALIDATION.md](PHASE1_VALIDATION.md). Quy luật phát triển ở [CODE_TEST_RULES.md](CODE_TEST_RULES.md).
+
+Luồng shortcut/schema mới được ghi ở [SHORTCUTS.md](SHORTCUTS.md), với bằng chứng bản `0.3.0-cloud` tại [PHASE3_VALIDATION.md](PHASE3_VALIDATION.md).
 
 ## Việc cần làm tiếp
 

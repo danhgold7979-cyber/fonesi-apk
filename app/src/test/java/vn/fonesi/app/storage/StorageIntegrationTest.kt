@@ -33,6 +33,7 @@ class StorageIntegrationTest {
     private val io = Executors.newSingleThreadExecutor()
     private fun <T> background(task: () -> T): T = io.submit(Callable(task)).get(30, TimeUnit.SECONDS)
     private val source = InstalledSource("test.social", 2, setOf("signer"), listOf("/base.apk"))
+    private fun operationLock() = FileQueueLock(context.filesDir.toPath().resolve("test-mutations.lock"))
 
     @Before fun setup() {
         context = ApplicationProvider.getApplicationContext()
@@ -141,11 +142,11 @@ class StorageIntegrationTest {
     }
 
     @Test fun metadataIsSavedOnlyAfterReadbackAndDeletesOnlyAfterConfirmedAbsence() = background {
-        val unavailable = CloneMetadataRepository(db, "engine-a", UnavailableCloneEngine())
+        val unavailable = CloneMetadataRepository(db, "engine-a", UnavailableCloneEngine(), operationLock())
         assertThrows(IllegalArgumentException::class.java) { unavailable.create(source, "A") }
         assertTrue(db.clones().list().isEmpty())
         val engine = EngineDouble()
-        val repo = CloneMetadataRepository(db, "engine-a", engine)
+        val repo = CloneMetadataRepository(db, "engine-a", engine, operationLock())
         engine.publishCreates = false
         assertThrows(IllegalStateException::class.java) { repo.create(source, "A") }
         assertTrue(db.clones().list().isEmpty())
@@ -164,10 +165,10 @@ class StorageIntegrationTest {
     }
 
     @Test fun namespacesAndOfflineRenamePreserveOtherEnginesMetadata() = background {
-        val first = CloneMetadataRepository(db, "engine-a", EngineDouble()).create(source, "A")
-        CloneMetadataRepository(db, "engine-b", EngineDouble()).create(source, "B")
+        val first = CloneMetadataRepository(db, "engine-a", EngineDouble(), operationLock()).create(source, "A")
+        CloneMetadataRepository(db, "engine-b", EngineDouble(), operationLock()).create(source, "B")
         reopen()
-        val offline = CloneMetadataRepository(db, "engine-a", UnavailableCloneEngine())
+        val offline = CloneMetadataRepository(db, "engine-a", UnavailableCloneEngine(), operationLock())
         offline.rename(first.cloneId, "Nhãn mới", "Nhóm 🛒")
         assertEquals("Nhãn mới", db.clones().find("engine-a", first.cloneId)?.label)
         assertEquals("B", db.clones().find("engine-b", first.cloneId)?.label)
@@ -180,7 +181,7 @@ class StorageIntegrationTest {
         context.openOrCreateDatabase(name, Context.MODE_PRIVATE, null).use { raw ->
             raw.execSQL("CREATE TABLE retained(value TEXT NOT NULL)")
             raw.execSQL("INSERT INTO retained VALUES ('must survive')")
-            raw.version = 2
+            raw.version = 3
         }
         db = FonesiDatabase.open(context, name)
         assertThrows(IllegalStateException::class.java) { db.tasks().list() }

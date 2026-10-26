@@ -15,6 +15,9 @@ import kotlinx.coroutines.withContext
 import vn.fonesi.app.storage.CloneMetadataRow
 import vn.fonesi.app.storage.LocalServices
 import vn.fonesi.core.update.UpdateTask
+import vn.fonesi.app.shortcuts.LaunchResult
+import vn.fonesi.app.shortcuts.PinResult
+import vn.fonesi.app.shortcuts.message
 
 data class AppsState(
     val apps: List<DeviceApp> = emptyList(),
@@ -76,7 +79,34 @@ class AppsViewModel(application: Application) : AndroidViewModel(application) {
 
     fun renameClone(engineKey: String, id: String, label: String, group: String?) = mutate {
         services.metadata(engineKey).rename(id, label, group)
-        "Đã lưu tên và nhóm."
+        try {
+            services.shortcuts.synchronizePinned()
+            "Đã lưu tên và nhóm; đã gửi đồng bộ tên lối tắt."
+        } catch (_: Exception) { "Đã lưu tên và nhóm. Launcher chưa nhận được tên mới; hãy quét lại để đồng bộ." }
+    }
+
+    fun openClone(token: String) = mutate {
+        when (val result = services.launches.launch(token)) {
+            is LaunchResult.Accepted -> "Đã gửi yêu cầu mở ${result.clone.label}; chưa xác nhận màn hình ứng dụng."
+            is LaunchResult.Blocked -> result.reason.message()
+        }
+    }
+
+    fun pinClone(token: String) {
+        viewModelScope.launch {
+            val result = withContext(Dispatchers.IO) { services.launches.inspect(token) }
+            val feedback = when (result) {
+                is LaunchResult.Blocked -> result.reason.message()
+                is LaunchResult.Accepted -> try {
+                    when (services.shortcuts.requestPin(result.clone)) {
+                        PinResult.REQUEST_SENT -> "Đã gửi yêu cầu tạo lối tắt. Hãy xác nhận trên màn hình hệ thống; chưa xác nhận biểu tượng đã được thêm."
+                        PinResult.UNSUPPORTED -> "Launcher hiện tại không hỗ trợ yêu cầu ghim lối tắt."
+                        PinResult.REJECTED -> "Launcher chưa nhận yêu cầu tạo lối tắt. Hãy kiểm tra cài đặt màn hình chính."
+                    }
+                } catch (_: Exception) { "Chưa gửi được yêu cầu tạo lối tắt. Hãy thử lại khi Fonesi đang mở." }
+            }
+            mutableManagement.value = mutableManagement.value.copy(feedback = feedback)
+        }
     }
 
     private fun mutate(action: () -> String) {
@@ -99,6 +129,12 @@ class AppsViewModel(application: Application) : AndroidViewModel(application) {
             try {
                 val result = withContext(Dispatchers.IO) { catalog.scan() }
                 mutableState.value = AppsState(result.apps, false, true, result.unreadableCount)
+                try {
+                    withContext(Dispatchers.IO) { services.shortcuts.synchronizePinned() }
+                } catch (cancelled: CancellationException) { throw cancelled }
+                catch (_: Exception) {
+                    mutableManagement.value = mutableManagement.value.copy(feedback = "Danh sách ứng dụng đã được quét; chưa đồng bộ được lối tắt màn hình chính.")
+                }
             } catch (cancelled: CancellationException) {
                 throw cancelled
             } catch (_: Exception) {

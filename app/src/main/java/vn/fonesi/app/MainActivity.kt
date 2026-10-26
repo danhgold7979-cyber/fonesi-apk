@@ -141,7 +141,8 @@ private fun FonesiScreen(state: AppsState, management: ManagementState, model: A
                     else if (management.clones.isEmpty()) Text("Chưa có bản clone được xác nhận và lưu. App không tạo bản mẫu trong danh sách này.")
                 }
                 items(management.clones, key = { "clone:${it.engineKey.length}:${it.engineKey}:${it.cloneId}" }) { row ->
-                    SavedCloneCard(row, enabled = management.error == null) { label, group ->
+                    SavedCloneCard(row, enabled = management.error == null,
+                        open = { model.openClone(row.launchToken) }, pin = { model.pinClone(row.launchToken) }) { label, group ->
                         model.renameClone(row.engineKey, row.cloneId, label, group)
                     }
                 }

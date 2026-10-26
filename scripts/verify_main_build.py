@@ -35,8 +35,32 @@ def main():
     manifest, permissions, _ = inspect_apk(apk, "vn.fonesi.app")
     if permissions != {"vn.fonesi.app.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION"}:
         raise RuntimeError("Unexpected permissions in the main APK")
-    if manifest.find("application").get(A + "allowBackup") != "false":
+    application = manifest.find("application")
+    if application.get(A + "allowBackup") != "false":
         raise RuntimeError("Unexpected backup policy")
+    public_components = set()
+    route = None
+    for tag in ["activity", "activity-alias", "service", "receiver", "provider"]:
+        for component in application.findall(tag):
+            if component.get(A + "exported") != "true":
+                continue
+            name = component.get(A + "name")
+            if name.startswith("."):
+                name = manifest.get("package") + name
+            permission = component.get(A + "permission", application.get(A + "permission"))
+            if (tag, name, permission) == ("receiver", "androidx.profileinstaller.ProfileInstallReceiver", "android.permission.DUMP"):
+                continue
+            if permission:
+                raise RuntimeError(f"Unexpected exported component guard: {name}")
+            public_components.add((tag, name))
+            if name == "vn.fonesi.app.shortcuts.CloneLaunchActivity":
+                route = component
+    if public_components != {("activity", "vn.fonesi.app.MainActivity"), ("activity", "vn.fonesi.app.shortcuts.CloneLaunchActivity")}:
+        raise RuntimeError(f"Unexpected unguarded exported main-app components: {sorted(public_components)}")
+    if route is None or route.findall("intent-filter") or any(route.get(A + key) != value for key, value in {
+        "noHistory": "true", "excludeFromRecents": "true", "taskAffinity": "",
+    }.items()):
+        raise RuntimeError("Shortcut destination differs from the reviewed explicit-only routing policy")
     with zipfile.ZipFile(apk) as archive:
         if any("libfcore.so" in name for name in archive.namelist()):
             raise RuntimeError("Experimental SDK was unexpectedly bundled into the main app")
@@ -53,6 +77,7 @@ def main():
         "apk_sha256": hashlib.sha256(apk.read_bytes()).hexdigest(),
         "permissions": sorted(permissions),
         "signature_verified": True,
+        "unguarded_exported_components": sorted(public_components),
     }
     output = ROOT / "app/build/reports/cloud-verification.json"
     output.parent.mkdir(parents=True, exist_ok=True)

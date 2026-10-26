@@ -2,6 +2,8 @@ package vn.fonesi.app.storage
 
 import android.content.Context
 import vn.fonesi.app.AndroidSourceCatalog
+import vn.fonesi.app.shortcuts.CloneLaunchController
+import vn.fonesi.app.shortcuts.AndroidCloneShortcuts
 import vn.fonesi.core.UnavailableCloneEngine
 import vn.fonesi.core.update.*
 
@@ -11,14 +13,20 @@ class LocalServices private constructor(context: Context) {
     val database = FonesiDatabase.open(context)
     val tasks = RoomUpdateTaskStore(database)
     val queue = UpdateQueue(tasks)
+    val engineKey = "not-integrated"
+    val launches by lazy { CloneLaunchController(database, engineKey, engine, operationLock()) }
+    val shortcuts by lazy { AndroidCloneShortcuts(context.applicationContext, database) }
 
-    fun metadata(engineKey: String) = CloneMetadataRepository(database, engineKey, engine)
+    fun operationLock() = FileQueueLock(java.io.File(contextFiles, "updates/queue.lock").toPath())
+
+    fun metadata(engineKey: String) = CloneMetadataRepository(database, engineKey,
+        if (engineKey == this.engineKey) engine else UnavailableCloneEngine(), operationLock())
 
     fun runner(): UpdateRunner {
         val root = java.io.File(contextFiles, "updates").toPath()
         val catalog = AndroidSourceCatalog(packageManager)
-        return UpdateRunner("not-integrated", engine, tasks, catalog,
-            FileSourceSnapshotter(root.resolve("snapshots"), catalog), FileQueueLock(root.resolve("queue.lock")))
+        return UpdateRunner(engineKey, engine, tasks, catalog,
+            FileSourceSnapshotter(root.resolve("snapshots"), catalog), operationLock())
     }
 
     private val contextFiles = context.filesDir

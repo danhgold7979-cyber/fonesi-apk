@@ -9,7 +9,10 @@ import vn.fonesi.app.storage.CloneMetadataRow
 import vn.fonesi.core.update.*
 
 @Composable
-internal fun SavedCloneCard(row: CloneMetadataRow, enabled: Boolean, save: (String, String?) -> Unit) {
+internal fun SavedCloneCard(
+    row: CloneMetadataRow, enabled: Boolean, open: () -> Unit, pin: () -> Unit,
+    save: (String, String?) -> Unit,
+) {
     var editing by remember { mutableStateOf(false) }
     OutlinedCard(Modifier.fillMaxWidth()) {
         Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
@@ -17,6 +20,10 @@ internal fun SavedCloneCard(row: CloneMetadataRow, enabled: Boolean, save: (Stri
             Text(row.packageName, style = MaterialTheme.typography.bodySmall)
             row.groupName?.let { Text("Nhóm: $it") }
             Text("Chưa đối chiếu trạng thái chạy", style = MaterialTheme.typography.labelMedium)
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                OutlinedButton(onClick = open, enabled = enabled) { Text("Mở") }
+                OutlinedButton(onClick = pin, enabled = enabled) { Text("Đưa ra màn hình") }
+            }
             TextButton(onClick = { editing = true }, enabled = enabled) { Text("Đổi tên / nhóm") }
         }
     }

@@ -8,7 +8,7 @@ Lộ trình chi tiết: [8 phase, 32 bước và 4 mốc thử điện thoại](
 
 Theo dõi [phase hiện tại](docs/STATUS.md) và [quy luật code/test](docs/CODE_TEST_RULES.md).
 
-**Trạng thái app chính `0.2.0-cloud`:** có quét ứng dụng, quản lý metadata, UI hàng đợi và lưu trữ Room. App chính chưa tích hợp engine; APK này chưa tạo hoặc chạy được bản clone và chưa cập nhật được tài khoản nào. Không dùng APK này thay cho sản phẩm clone hoàn chỉnh. Theo yêu cầu mới, kiểm thử điện thoại được hoãn để tiếp tục code cloud.
+**Trạng thái app chính `0.3.0-cloud`:** có quét ứng dụng, quản lý metadata, UI hàng đợi, lưu trữ Room và luồng mở/ghim shortcut. App chính chưa tích hợp engine; APK này chưa tạo hoặc chạy được bản clone và chưa cập nhật được tài khoản nào. Không dùng APK này thay cho sản phẩm clone hoàn chỉnh. Theo yêu cầu mới, kiểm thử điện thoại được hoãn để tiếp tục code cloud.
 
 Không dùng lối tắt mở app gốc hoặc trang web để giả lập một bản clone có tài khoản độc lập.
 
@@ -18,10 +18,11 @@ Không dùng lối tắt mở app gốc hoặc trang web để giả lập một
 - Đọc phiên bản, chứng thư ký và các đường dẫn APK base/split để chuẩn bị nguồn cập nhật. Không xuất danh sách này lên máy chủ.
 - Planner/runner cập nhật: phân biệt phạm vi từng bản/dùng chung, sao chép nguồn base/split, chống trùng, OS lock, journal, pause và khôi phục không tự chạy lại kết quả chưa rõ.
 - Room lưu metadata theo engine/clone ID và lịch sử hàng đợi; có các tab Bản clone/Cập nhật, sửa tên/nhóm, pause, hủy yêu cầu chưa chạy. Không seed dữ liệu clone giả.
+- Mở/ghim shortcut qua UUID theo lần tạo; kiểm tra metadata/engine/cập nhật trước dispatch, đồng bộ tên và vô hiệu hóa mục đã xóa. Có migration Room 1 → 2 giữ dữ liệu. Xem [SHORTCUTS.md](docs/SHORTCUTS.md); chưa thử launcher hoặc guest thật.
 - Chặn thao tác clone khi engine chưa có; không tạo hồ sơ giả hoặc báo thành công giả.
 - Không khai báo quyền Internet, không có analytics/SDK quảng cáo. Tắt sao lưu tự động và khai báo loại trừ truyền dữ liệu cho Android mới.
 
-Runner/lưu bền vững đã có và được kiểm tra với engine double trong test; **chưa nối vào SDK sản phẩm hoặc scheduler**, nên chưa cập nhật ứng dụng thật. Chưa có ghim shortcut, sinh trắc học hoặc sao lưu thủ công. Chi tiết [CLOUD_BACKEND.md](docs/CLOUD_BACKEND.md).
+Runner/lưu bền vững đã có và được kiểm tra với engine double trong test; **chưa nối vào SDK sản phẩm hoặc scheduler**, nên chưa cập nhật ứng dụng thật. Sinh trắc học và sao lưu thủ công chưa có. Chi tiết [CLOUD_BACKEND.md](docs/CLOUD_BACKEND.md).
 
 ## Build trong môi trường cloud
 
@@ -47,7 +48,7 @@ Trên máy phát triển khác, cài JDK 21 và SDK 36, cấu hình `ANDROID_HOM
 
 ## Giới hạn kiểm chứng
 
-Unit test kiểm tra planner/runner/filesystem; Robolectric kiểm tra Room với SQLite native trên API 26/34. Không test nào chạy Facebook/Zalo/TikTok hoặc chứng minh cách ly tài khoản. Kiểm thử điện thoại được hoãn theo yêu cầu; vẫn cần thực hiện trước khi nghiệm thu runtime. Xem [kết quả cloud](docs/CLOUD_VALIDATION.md).
+Unit test kiểm tra planner/runner/filesystem; Robolectric kiểm tra Room với SQLite native và định tuyến/shortcut mô phỏng trên API 26/34. Không test nào chạy Facebook/Zalo/TikTok hoặc chứng minh cách ly tài khoản. Kiểm thử điện thoại được hoãn theo yêu cầu; vẫn cần thực hiện trước khi nghiệm thu runtime. Xem [mốc cloud ban đầu](docs/CLOUD_VALIDATION.md) và [mốc shortcut/schema mới](docs/PHASE3_VALIDATION.md).
 
 ## Phase 1: build bộ thử engine riêng
 
