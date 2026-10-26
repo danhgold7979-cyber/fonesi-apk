@@ -2,6 +2,8 @@ plugins {
     id("com.android.application")
     kotlin("android")
 }
+val payloadRevision = providers.gradleProperty("payloadTestRevision").orNull?.toInt() ?: 1
+require(payloadRevision > 0)
 android {
     namespace = "vn.fonesi.payload"
     compileSdk = 36
@@ -10,8 +12,8 @@ android {
         applicationId = "vn.fonesi.payload"
         minSdk = 26
         targetSdk = 36
-        versionCode = 1
-        versionName = "0.1.0-payload"
+        versionCode = payloadRevision
+        versionName = "0.1.0-payload-r$payloadRevision"
     }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_21

@@ -1,5 +1,7 @@
 # Phase 1 — Quyết định kỹ thuật và phạm vi kiểm chứng
 
+Đây là audit mốc probe ban đầu. Theo yêu cầu tiếp tục code trước thử máy, đã bổ sung build candidate tích hợp có init bật chủ động; phạm vi/quyền/giới hạn mới được ghi riêng tại [INTEGRATED_CANDIDATE.md](INTEGRATED_CANDIDATE.md). SDK vẫn chưa được nghiệm thu runtime và engine sản phẩm chưa chốt.
+
 ## Các ứng viên
 
 ### NewBlackbox — chưa tích hợp

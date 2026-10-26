@@ -40,11 +40,12 @@ class CloneMetadataRepository(
         }
     }
 
-    fun delete(id: String) {
+    fun delete(id: String, expectedToken: String? = null) {
         val saved = checkNotNull(db.clones().find(engineKey, id))
         mutateEngine(saved.packageName) {
             require(engine.availability is EngineAvailability.Ready) { "Engine chưa sẵn sàng" }
             check(db.clones().find(engineKey, id)?.launchToken == saved.launchToken) { "Clone metadata changed" }
+            check(expectedToken == null || saved.launchToken == expectedToken) { "Stale delete request" }
             val records = engine.listClones()
             check(records.map { it.id }.distinct().size == records.size) { "Ambiguous engine IDs" }
             val live = records.singleOrNull { it.id == id }
@@ -54,6 +55,24 @@ class CloneMetadataRepository(
             }
             check(engine.listClones().none { it.id == id }) { "Engine still reports the clone; metadata preserved" }
             db.clones().delete(engineKey, id)
+        }
+    }
+
+    /** Recover real SDK instances after an interrupted create/metadata write; never invent guests. */
+    fun importDiscovered(): Int {
+        val lease = checkNotNull(operationLock.acquire())
+        return lease.use {
+            require(engine.availability is EngineAvailability.Ready)
+            val live = engine.listClones()
+            check(live.map { it.id }.distinct().size == live.size)
+            var added = 0
+            for (clone in live) if (db.clones().find(engineKey, clone.id) == null) {
+                check(clone.signerDigests.isNotEmpty() && clone.versionCode >= 0)
+                val now = clock()
+                db.clones().insert(CloneMetadataRow(engineKey, clone.id, clone.packageName,
+                    "Bản khôi phục ${++added}", null, now, now))
+            }
+            added
         }
     }
 

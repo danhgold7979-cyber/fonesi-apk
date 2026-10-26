@@ -7,23 +7,34 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import vn.fonesi.app.storage.CloneMetadataRow
 import vn.fonesi.core.update.*
+import vn.fonesi.core.CloneRecord
 
 @Composable
 internal fun SavedCloneCard(
-    row: CloneMetadataRow, enabled: Boolean, open: () -> Unit, pin: () -> Unit,
+    row: CloneMetadataRow, enabled: Boolean, operational: Boolean, live: CloneRecord?, open: () -> Unit, pin: () -> Unit,
+    stop: () -> Unit, delete: () -> Unit, duplicate: (String) -> Unit, update: () -> Unit,
     save: (String, String?) -> Unit,
 ) {
     var editing by remember { mutableStateOf(false) }
+    var deleting by remember { mutableStateOf(false) }
+    var duplicating by remember { mutableStateOf(false) }
     OutlinedCard(Modifier.fillMaxWidth()) {
         Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
             Text(row.label, style = MaterialTheme.typography.titleMedium)
             Text(row.packageName, style = MaterialTheme.typography.bodySmall)
             row.groupName?.let { Text("Nhóm: $it") }
-            Text("Chưa đối chiếu trạng thái chạy", style = MaterialTheme.typography.labelMedium)
+            Text(when { live == null -> "Chưa đọc được bản cài từ engine"; live.running == true -> "Engine báo đang chạy · phiên bản ${live.versionCode}"
+                live.running == null -> "Chưa rõ kết quả mở; cần dừng/đối chiếu trước khi cập nhật"; else -> "Engine báo đang dừng · phiên bản ${live.versionCode}" }, style = MaterialTheme.typography.labelMedium)
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                OutlinedButton(onClick = open, enabled = enabled) { Text("Mở") }
-                OutlinedButton(onClick = pin, enabled = enabled) { Text("Đưa ra màn hình") }
+                OutlinedButton(onClick = open, enabled = enabled && operational) { Text("Mở") }
+                OutlinedButton(onClick = pin, enabled = enabled && operational) { Text("Đưa ra màn hình") }
             }
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                TextButton(onClick = stop, enabled = enabled && operational) { Text("Dừng") }
+                TextButton(onClick = update, enabled = enabled && operational) { Text("Cập nhật") }
+                TextButton(onClick = { deleting = true }, enabled = enabled && operational) { Text("Xóa") }
+            }
+            TextButton(onClick = { duplicating = true }, enabled = enabled && operational) { Text("Tạo thêm bản sạch") }
             TextButton(onClick = { editing = true }, enabled = enabled) { Text("Đổi tên / nhóm") }
         }
     }
@@ -44,6 +55,18 @@ internal fun SavedCloneCard(
             },
             dismissButton = { TextButton(onClick = { editing = false }) { Text("Hủy") } },
         )
+    }
+    if (deleting) AlertDialog(onDismissRequest = { deleting = false }, title = { Text("Xóa ${row.label}?") },
+        text = { Text("Yêu cầu engine xóa bản này và dữ liệu đăng nhập của nó. Thao tác không thể hoàn tác; cần dừng bản đang chạy trước.") },
+        confirmButton = { TextButton(onClick = { deleting = false; delete() }) { Text("Xóa bản này") } },
+        dismissButton = { TextButton(onClick = { deleting = false }) { Text("Hủy") } })
+    if (duplicating) {
+        var name by remember { mutableStateOf("${row.label.take(60)} mới") }
+        AlertDialog(onDismissRequest = { duplicating = false }, title = { Text("Thêm bản sạch") },
+            text = { Column { Text("Lấy bộ cài từ app gốc; không sao chép dữ liệu hay phiên đăng nhập.")
+                OutlinedTextField(name, { name = it }, label = { Text("Tên bản mới") }, singleLine = true) } },
+            confirmButton = { TextButton(onClick = { duplicating = false; duplicate(name) }, enabled = name.trim().length in 1..80) { Text("Tạo") } },
+            dismissButton = { TextButton(onClick = { duplicating = false }) { Text("Hủy") } })
     }
 }
 

@@ -1,8 +1,21 @@
+import java.security.MessageDigest
+
 plugins {
     id("com.android.application")
     kotlin("android")
     id("org.jetbrains.kotlin.plugin.compose")
     id("com.google.devtools.ksp")
+}
+val candidate = providers.gradleProperty("engineCandidate").orNull == "true"
+val sdkCommit = "3826a2fa1ac492fbbe7435ccb52074c1e2b702de"
+val toolsRoot = providers.environmentVariable("FONESI_TOOLS_DIR").orElse("/workspace/.fonesi-tools")
+val sdkFile = file("${toolsRoot.get()}/engine-sdk/spacecore/$sdkCommit/flib-release.aar")
+val verifyCandidateSdk by tasks.registering {
+    if (candidate) inputs.file(sdkFile)
+    doLast {
+        if (candidate) check(MessageDigest.getInstance("SHA-256").digest(sdkFile.readBytes()).joinToString("") { "%02x".format(it.toInt() and 255) } ==
+            "4e45a474a5ab5764ad80818c2855c4fbd8540f0a540f975cf85a6f0dd8809b1f") { "Unverified candidate SDK" }
+    }
 }
 android {
     namespace = "vn.fonesi.app"
@@ -12,11 +25,17 @@ android {
         applicationId = "vn.fonesi.app"
         minSdk = 26
         targetSdk = 36
-        versionCode = 3
-        versionName = "0.3.0-cloud"
+        versionCode = 4
+        versionName = if (candidate) "0.4.0-candidate" else "0.4.0-cloud"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
     buildFeatures { compose = true }
+    sourceSets.getByName("main").java.srcDir(if (candidate) "src/candidate/java" else "src/cloud/java")
+    if (candidate) {
+        sourceSets.getByName("debug").manifest.srcFile("src/candidate/AndroidManifest.xml")
+        defaultConfig.ndk { abiFilters += "arm64-v8a" }
+        packaging.jniLibs.useLegacyPackaging = true
+    }
     sourceSets.getByName("test").resources.srcDir("schemas")
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_21
@@ -41,8 +60,16 @@ android {
     }
 }
 kotlin { jvmToolchain(21) }
+tasks.named("preBuild") { dependsOn(verifyCandidateSdk) }
+androidComponents { beforeVariants(selector().withBuildType("release")) { if (candidate) it.enable = false } }
 ksp { arg("room.schemaLocation", "$projectDir/schemas") }
 dependencies {
+    if (candidate) {
+        implementation(files(sdkFile))
+        implementation("com.tencent:mmkv-static:1.2.10")
+        implementation("com.google.code.gson:gson:2.9.1")
+        implementation("com.google.android.material:material:1.12.0")
+    }
     implementation(project(":core"))
     implementation(platform("androidx.compose:compose-bom:2025.06.01"))
     implementation("androidx.activity:activity-compose:1.10.1")

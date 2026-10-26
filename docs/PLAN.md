@@ -69,7 +69,7 @@ Không chọn phiên bản Android tối thiểu, SDK mục tiêu hoặc quyền
 | [asLody/VirtualApp](https://github.com/asLody/VirtualApp), HEAD `d6b35d39c7166c7e5f2c3c93da03da17cd6a8892` | README ghi mã công khai ngừng cập nhật từ 2017; bản thương mại cập nhật riêng và cần giấy phép. | Chưa tích hợp, chưa có SDK/giấy phép bản hiện hành. |
 | [twoyi/twoyi](https://github.com/twoyi/twoyi), HEAD `dd052a07a812e742ec7583da393466ccc066a8b1` | Tài liệu mô tả container Android, hỗ trợ máy chủ Android 8.1–12, hệ điều hành khách Android 8.1. | Chưa chứng minh phù hợp các ứng dụng mục tiêu và Android hiện nay. |
 | [ALEX5402/NewBlackbox](https://github.com/ALEX5402/NewBlackbox), HEAD `89b59836c66f173756a4ae258cf379a957649820` | Có mã engine và khai báo Apache-2.0; README tuyên bố tương thích Android mới. Có chức năng gửi log qua dịch vụ bên ngoài trong `LogSender.java`, được gọi bởi chức năng gửi log khi có cấu hình đích. | Chưa tích hợp. Cần kiểm tra nguồn gốc/giấy phép các thành phần, kiểm soát việc xuất log/quyền, build, split APK, cách cập nhật và kiểm thử thiết bị. Không tải hoặc chạy APK của engine với tài khoản người dùng. Tuyên bố README không phải bằng chứng tương thích. |
-| [FSpaceCore/SpaceCore](https://github.com/FSpaceCore/SpaceCore), HEAD `3826a2fa1ac492fbbe7435ccb52074c1e2b702de` | SDK mã đóng, tác giả công bố cho phép dùng miễn phí/kể cả thương mại. Có API theo user; bản AAR pin có native 4 KB và tài liệu Android 6–14. | Chỉ tích hợp vào APK probe ngoại tuyến riêng, chưa đưa vào app chính. Build/static audit đạt; runtime/cách ly chưa chạy. Xem [audit phase 1](PHASE1_ENGINE_AUDIT.md). |
+| [FSpaceCore/SpaceCore](https://github.com/FSpaceCore/SpaceCore), HEAD `3826a2fa1ac492fbbe7435ccb52074c1e2b702de` | SDK mã đóng, tác giả công bố cho phép dùng miễn phí/kể cả thương mại. Có API theo user; AAR có native 4 KB, tài liệu Android 6–14, chưa có API nhập bộ split. | Giữ probe ngoại tuyến và thêm build candidate bật chủ động với UI chính. Build/static audit đạt, runtime/cách ly chưa chạy; chưa chốt engine sản phẩm. Xem [candidate](INTEGRATED_CANDIDATE.md). |
 
 Không tự động liên hệ nhà cung cấp, mua SDK, gửi thông tin hoặc tải APK không rõ nguồn gốc để thử tài khoản.
 
@@ -79,7 +79,7 @@ Lộ trình chuẩn nằm tại [ROADMAP.md](ROADMAP.md): **8 phase (0–7), 32 
 
 Thứ tự: nền tảng → chọn engine → PoC clone thật trên Samsung → quản lý vòng đời → thực thi cập nhật → nhiều ứng dụng → trải nghiệm/bảo vệ dữ liệu → ổn định/phát hành.
 
-Không chờ toàn bộ sản phẩm hoàn thiện mới thử điện thoại. Mốc điện thoại đầu tiên nằm ở phase 2; các mốc sau kiểm tra cập nhật, nhiều ứng dụng và nghiệm thu. Chưa vượt phase engine/PoC thì không coi giao diện hoặc bản build thành công là sản phẩm clone hoạt động.
+Theo yêu cầu cập nhật, tiến hành code/cloud test trước và gom các mốc điện thoại sang đợt thử sau. Mốc phase 2 vẫn xác minh engine trước tài khoản; các mốc sau kiểm tra cập nhật, nhiều ứng dụng và nghiệm thu trong đợt đó. Chưa vượt engine/PoC thì không coi giao diện hoặc bản build thành công là sản phẩm clone hoạt động. Lỗi runtime có thể cần sửa và thử lại.
 
 ## 6. Dữ liệu, cảnh báo và giới hạn
 
@@ -96,8 +96,8 @@ Không chờ toàn bộ sản phẩm hoàn thiện mới thử điện thoại. 
 
 - Yêu cầu và kế hoạch: đã ghi trong tài liệu này; đủ để bắt đầu triển khai từng mốc, chưa phải cam kết đã đáp ứng kỹ thuật.
 - GitHub read: đã xác minh.
-- Engine sản phẩm: chưa chốt. Đã tích hợp SDK ứng viên vào APK probe riêng; chưa kiểm chứng runtime hoặc đưa vào app chính.
-- Đã code scanner, đọc APK gốc, metadata Room/UI quản lý, planner và runner hàng đợi có journal/snapshot/recovery. App chính chưa có engine sản phẩm nên chưa thực thi cập nhật hoặc clone ứng dụng thật.
+- Engine sản phẩm: chưa chốt. SDK ứng viên có trong probe riêng và build candidate tích hợp UI; build cloud mặc định không chứa SDK. Chưa kiểm chứng runtime; split APK còn bị chặn.
+- Đã code scanner, metadata/registry Room, mở/ghim, tạo/thêm bản sạch/dừng/xóa và hàng đợi journal/snapshot/recovery; candidate đã nối các lệnh vào API SDK thật. Chưa thực thi được xác minh trên thiết bị hoặc tài khoản thật.
 - Toolchain cloud đã cài; đã chạy unit test và build APK nền tảng. Kết quả kiểm tra cuối cùng được ghi riêng trong `VALIDATION.md` sau khi hoàn tất.
 - Đã build/audit APK probe; test runtime engine, chạy ứng dụng clone thật, test trên Samsung/hãng khác: chưa chạy. Trạng thái cập nhật ở [STATUS.md](STATUS.md).
 - Máy thử đầu tiên người dùng cung cấp: Samsung SM-A525F. Phiên bản Android đang cài chưa được xác nhận; không suy ra từ model. Chưa có kết luận thiết bị/ứng dụng nào đã được hỗ trợ qua kiểm thử.

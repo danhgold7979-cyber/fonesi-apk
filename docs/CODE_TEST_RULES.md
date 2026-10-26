@@ -10,7 +10,7 @@
 6. **Kiểm tra lại phần bị ảnh hưởng:** khi đạt thì tiếp tục; không lặp mọi suite nếu không có thay đổi hoặc rủi ro mới. Với APK xuất cho người dùng, kiểm tra chữ ký và manifest/quyền thực tế.
 7. **Ghi bằng chứng:** lệnh, exit status, số test đạt/lỗi/bỏ qua, phiên bản APK/SDK và phạm vi chạy. Phân biệt build thành công, SDK khởi tạo, bản cài tồn tại và thực sự dùng được hai tài khoản riêng.
 8. **Cổng nghiệm thu phase:** chỉ đóng phase khi điều kiện của nó đạt. Người dùng đã cho phép hoãn thử điện thoại và code tiếp: có thể phát triển phần độc lập của phase sau, nhưng không đóng cổng runtime hoặc gọi engine đã đạt. Các APK/checklist điện thoại vẫn là bước kiểm chứng về sau, không phải điều kiện để tiếp tục mọi việc cloud.
-9. **Không phát tán dữ liệu:** dùng dữ liệu mẫu trước tài khoản thật; không đưa mật khẩu/token/tin nhắn vào log. Gói SDK thử nghiệm được pin nguồn/checksum và tách khỏi app chính.
+9. **Không phát tán dữ liệu:** dùng dữ liệu mẫu trước tài khoản thật; không đưa mật khẩu/token/tin nhắn vào log. Gói SDK thử nghiệm pin nguồn/checksum, tách khỏi build cloud mặc định; build candidate tích hợp phải có opt-in, allowlist quyền và audit APK riêng, không được gọi là đã chạy thành công chỉ từ compile.
 10. **Báo trạng thái rõ:** `đang làm`, `đạt trong cloud`, `chờ thiết bị`, `thất bại` hoặc `bị chặn`. Không gọi `chưa chạy` là `đạt`.
 
 Mỗi cập nhật làm việc sẽ có dạng: **Phase N — bước X: việc đang làm → kiểm tra vừa chạy → kết quả → phần còn lại.** Không yêu cầu người dùng duyệt lại từng bước đã giao; chỉ cần quyết định mới khi giấy phép, chi phí, phạm vi hoặc dữ liệu vượt yêu cầu hiện có.

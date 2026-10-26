@@ -65,12 +65,20 @@ interface UpdateTaskDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE) fun setControl(row: QueueControlRow)
 }
 
-@Database(entities = [CloneMetadataRow::class, UpdateTaskRow::class, QueueControlRow::class], version = 2, exportSchema = true)
+@Database(entities = [CloneMetadataRow::class, UpdateTaskRow::class, QueueControlRow::class, EngineInstanceRow::class], version = 3, exportSchema = true)
 abstract class FonesiDatabase : RoomDatabase() {
     abstract fun clones(): CloneMetadataDao
     abstract fun tasks(): UpdateTaskDao
+    abstract fun instances(): EngineInstanceDao
 
     companion object {
+        val MIGRATION_2_3 = object : Migration(2, 3) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("CREATE TABLE IF NOT EXISTS engine_instances (sequence INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, cloneId TEXT NOT NULL, engineKey TEXT NOT NULL, packageName TEXT NOT NULL, state TEXT NOT NULL, launchPending INTEGER NOT NULL)")
+                db.execSQL("CREATE UNIQUE INDEX index_engine_instances_cloneId ON engine_instances (cloneId)")
+                db.execSQL("CREATE INDEX index_engine_instances_engineKey ON engine_instances (engineKey)")
+            }
+        }
         val MIGRATION_1_2 = object : Migration(1, 2) {
             override fun migrate(db: SupportSQLiteDatabase) {
                 db.execSQL("ALTER TABLE clone_metadata ADD COLUMN launchToken TEXT NOT NULL DEFAULT ''")
@@ -89,7 +97,7 @@ abstract class FonesiDatabase : RoomDatabase() {
             Room.databaseBuilder(context.applicationContext, FonesiDatabase::class.java, name)
                 .openHelperFactory(PreservingOpenHelperFactory())
                 .setJournalMode(JournalMode.TRUNCATE)
-                .addMigrations(MIGRATION_1_2)
+                .addMigrations(MIGRATION_1_2, MIGRATION_2_3)
                 .addCallback(object : Callback() {
                     override fun onOpen(db: SupportSQLiteDatabase) {
                         db.execSQL("PRAGMA synchronous=FULL")

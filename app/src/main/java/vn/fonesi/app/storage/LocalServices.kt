@@ -5,15 +5,16 @@ import vn.fonesi.app.AndroidSourceCatalog
 import vn.fonesi.app.shortcuts.CloneLaunchController
 import vn.fonesi.app.shortcuts.AndroidCloneShortcuts
 import vn.fonesi.core.UnavailableCloneEngine
+import vn.fonesi.app.runtime.RuntimeBindings
 import vn.fonesi.core.update.*
 
 /** Real persistence/orchestration; no production virtualization provider is enabled yet. */
 class LocalServices private constructor(context: Context) {
-    val engine = UnavailableCloneEngine()
     val database = FonesiDatabase.open(context)
+    val engine = RuntimeBindings.engine(context.applicationContext, database)
     val tasks = RoomUpdateTaskStore(database)
     val queue = UpdateQueue(tasks)
-    val engineKey = "not-integrated"
+    val engineKey = RuntimeBindings.key(context)
     val launches by lazy { CloneLaunchController(database, engineKey, engine, operationLock()) }
     val shortcuts by lazy { AndroidCloneShortcuts(context.applicationContext, database) }
 

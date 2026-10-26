@@ -6,11 +6,11 @@ Yêu cầu sản phẩm đủ để bắt đầu. Khả năng engine đáp ứng
 
 Triển khai theo các phase bên dưới, tiếp tục những việc đã được giao mà không yêu cầu duyệt lại từng bước. Mỗi phase có đầu ra và điều kiện chuyển bước. Khi một phần chưa đạt, sửa hoặc đánh giá phương án khác; không tự đánh dấu hoàn tất để chuyển sang phần giao diện.
 
-Không chờ viết xong toàn bộ mới đưa lên điện thoại. Các phần quét, Kotlin/domain logic, lưu trạng thái, giao diện và đóng gói có thể phát triển/kiểm tra trong cloud. Đăng nhập, cách ly dữ liệu thực tế, thông báo và ổn định trên Samsung cần thử trên thiết bị thật. Emulator là bước kiểm tra bổ sung khi có môi trường và ABI phù hợp, không thay thế bằng chứng trên Samsung.
+Theo yêu cầu mới, tiếp tục code và kiểm tra cloud trước, gom thử điện thoại về đợt nghiệm thu sau. Các phần quét, Kotlin/domain logic, lưu trạng thái, giao diện và đóng gói có thể phát triển/kiểm tra trong cloud. Đăng nhập, cách ly dữ liệu thực tế, thông báo và ổn định trên Samsung vẫn cần thiết bị thật. Đợt nghiệm thu đó có thể phát hiện lỗi phải code/sửa/test tiếp; không hứa chỉ thử một lần là xong. Emulator không thay thế bằng chứng trên Samsung.
 
 Hiện cloud chưa có thiết bị kết nối. Người dùng sẽ tự cài APK và tự đăng nhập tài khoản thử nghiệm trên điện thoại; không cần root. Không yêu cầu mật khẩu, mã OTP hoặc token trong chat. Máy thử đầu tiên là Samsung SM-A525F; phiên bản Android đang cài cần ghi nhận trước mốc thử thiết bị đầu tiên. Thông tin còn thiếu này không chặn khảo sát engine trong cloud.
 
-**Điều chỉnh theo yêu cầu mới:** người dùng đã yêu cầu tạm hoãn thử điện thoại và tiếp tục code. Được phát triển trước những phần độc lập của phase 3–4 và các phần cloud khác có thể kiểm tra, dù cổng runtime phase 1–2 chưa đạt. Điều này thay đổi thứ tự phát triển, không biến kiểm tra chưa chạy thành đạt và không chốt engine sản phẩm. Chỉ nghiệm thu clone/tài khoản/thiết bị sau khi thực sự thử.
+**Điều chỉnh theo yêu cầu mới:** được triển khai trước toàn bộ phần có thể code/kiểm tra trên cloud, kể cả adapter SDK ứng viên trong bản tích hợp có bật chủ động, dù cổng runtime phase 1–2 chưa đạt. Không buộc người dùng cài thử giữa mỗi phase. Điều này thay đổi thứ tự phát triển, không biến kiểm tra chưa chạy thành đạt và không chốt engine sản phẩm. Chỉ nghiệm thu clone/tài khoản/thiết bị sau khi thực sự thử; các giới hạn engine chưa đáp ứng vẫn là yêu cầu chưa hoàn thành.
 
 Mục tiêu là một APK dùng trên nhiều thiết bị, không khóa theo SM-A525F. Chọn máy thử đầu tiên để có kết quả cụ thể, rồi mở rộng kiểm tra theo [DEVICE_MATRIX.md](DEVICE_MATRIX.md); chưa thử một model không đồng nghĩa model đó không hỗ trợ.
 

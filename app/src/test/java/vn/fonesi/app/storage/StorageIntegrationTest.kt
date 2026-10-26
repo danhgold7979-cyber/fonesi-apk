@@ -181,7 +181,7 @@ class StorageIntegrationTest {
         context.openOrCreateDatabase(name, Context.MODE_PRIVATE, null).use { raw ->
             raw.execSQL("CREATE TABLE retained(value TEXT NOT NULL)")
             raw.execSQL("INSERT INTO retained VALUES ('must survive')")
-            raw.version = 3
+            raw.version = 4
         }
         db = FonesiDatabase.open(context, name)
         assertThrows(IllegalStateException::class.java) { db.tasks().list() }

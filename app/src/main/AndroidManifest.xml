@@ -7,6 +7,7 @@
         </intent>
     </queries>
     <application
+        android:name=".FonesiApplication"
         android:allowBackup="false"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="false"

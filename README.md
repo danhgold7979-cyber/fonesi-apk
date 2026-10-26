@@ -8,7 +8,7 @@ Lộ trình chi tiết: [8 phase, 32 bước và 4 mốc thử điện thoại](
 
 Theo dõi [phase hiện tại](docs/STATUS.md) và [quy luật code/test](docs/CODE_TEST_RULES.md).
 
-**Trạng thái app chính `0.3.0-cloud`:** có quét ứng dụng, quản lý metadata, UI hàng đợi, lưu trữ Room và luồng mở/ghim shortcut. App chính chưa tích hợp engine; APK này chưa tạo hoặc chạy được bản clone và chưa cập nhật được tài khoản nào. Không dùng APK này thay cho sản phẩm clone hoàn chỉnh. Theo yêu cầu mới, kiểm thử điện thoại được hoãn để tiếp tục code cloud.
+**Trạng thái `0.4.0`:** build mặc định `cloud` không chứa SDK; build `candidate` đã nối SDK thật cho tạo/mở/dừng/xóa và cập nhật trong cùng giao diện. Candidate chỉ nhận một APK đầy đủ, ARM64/API 26–34/trang 4 KB và phải bật chủ động. Chưa có runtime/đăng nhập/cách ly trên điện thoại; chưa hoàn thiện đa app split, sinh trắc học, sao lưu hay phát hành. Kiểm thử điện thoại được gom về đợt sau theo yêu cầu. Chi tiết [INTEGRATED_CANDIDATE.md](docs/INTEGRATED_CANDIDATE.md).
 
 Không dùng lối tắt mở app gốc hoặc trang web để giả lập một bản clone có tài khoản độc lập.
 
@@ -19,10 +19,20 @@ Không dùng lối tắt mở app gốc hoặc trang web để giả lập một
 - Planner/runner cập nhật: phân biệt phạm vi từng bản/dùng chung, sao chép nguồn base/split, chống trùng, OS lock, journal, pause và khôi phục không tự chạy lại kết quả chưa rõ.
 - Room lưu metadata theo engine/clone ID và lịch sử hàng đợi; có các tab Bản clone/Cập nhật, sửa tên/nhóm, pause, hủy yêu cầu chưa chạy. Không seed dữ liệu clone giả.
 - Mở/ghim shortcut qua UUID theo lần tạo; kiểm tra metadata/engine/cập nhật trước dispatch, đồng bộ tên và vô hiệu hóa mục đã xóa. Có migration Room 1 → 2 giữ dữ liệu. Xem [SHORTCUTS.md](docs/SHORTCUTS.md); chưa thử launcher hoặc guest thật.
+- Candidate: registry Room schema 3, snapshot trước tạo, mã user không tái sử dụng, launch-pending bền vững, đối chiếu guest, tạo thêm bản sạch, dừng/xóa có xác nhận và nút chạy hàng đợi từng nhóm. Kiểm tra archive/chữ ký và bản APK thuộc kho riêng; không dùng dữ liệu app gốc làm readback giả.
 - Chặn thao tác clone khi engine chưa có; không tạo hồ sơ giả hoặc báo thành công giả.
-- Không khai báo quyền Internet, không có analytics/SDK quảng cáo. Tắt sao lưu tự động và khai báo loại trừ truyền dữ liệu cho Android mới.
+- Build cloud không có Internet/SDK quảng cáo. Candidate có Internet, camera/mic và quyền thông báo/foreground để thử app khách; SDK mã đóng chưa được audit toàn bộ. Tắt sao lưu tự động/truyền dữ liệu hệ thống.
 
-Runner/lưu bền vững đã có và được kiểm tra với engine double trong test; **chưa nối vào SDK sản phẩm hoặc scheduler**, nên chưa cập nhật ứng dụng thật. Sinh trắc học và sao lưu thủ công chưa có. Chi tiết [CLOUD_BACKEND.md](docs/CLOUD_BACKEND.md).
+Runner đã nối vào adapter candidate, còn scheduler tự chạy nền chưa có: người dùng bấm chạy và giữ Fonesi mở. Chưa chứng minh SDK cập nhật giữ dữ liệu trên thiết bị. Sinh trắc học và sao lưu thủ công chưa có. [CLOUD_BACKEND.md](docs/CLOUD_BACKEND.md) mô tả hợp đồng nền; [INTEGRATED_CANDIDATE.md](docs/INTEGRATED_CANDIDATE.md) mô tả tích hợp hiện tại.
+
+Build candidate và chuẩn bị gói thử cho đợt sau:
+
+```bash
+./scripts/check.sh --with-engine-candidate
+python3 scripts/build_phone_bundle.py
+```
+
+APK có SDK: `app/build/outputs/candidate/fonesi-0.4.0-candidate.apk`. Gói payload 1/2 và hướng dẫn: `app/build/outputs/fonesi-0.4.0-phone-test.zip`. [123 test và audit hai bản](docs/RUNTIME_INTEGRATION_VALIDATION.md) đã đạt trong cloud; runtime chưa xác minh.
 
 ## Build trong môi trường cloud
 
@@ -48,7 +58,7 @@ Trên máy phát triển khác, cài JDK 21 và SDK 36, cấu hình `ANDROID_HOM
 
 ## Giới hạn kiểm chứng
 
-Unit test kiểm tra planner/runner/filesystem; Robolectric kiểm tra Room với SQLite native và định tuyến/shortcut mô phỏng trên API 26/34. Không test nào chạy Facebook/Zalo/TikTok hoặc chứng minh cách ly tài khoản. Kiểm thử điện thoại được hoãn theo yêu cầu; vẫn cần thực hiện trước khi nghiệm thu runtime. Xem [mốc cloud ban đầu](docs/CLOUD_VALIDATION.md) và [mốc shortcut/schema mới](docs/PHASE3_VALIDATION.md).
+Unit test kiểm tra planner/runner/filesystem và protocol adapter; Robolectric kiểm tra Room/registry với SQLite native và định tuyến/shortcut mô phỏng trên API 26/34. Không test nào chạy SDK ARM/Facebook/Zalo/TikTok hoặc chứng minh cách ly tài khoản. Kiểm thử điện thoại được hoãn theo yêu cầu; vẫn cần thực hiện trước nghiệm thu runtime. Xem [mốc cloud ban đầu](docs/CLOUD_VALIDATION.md), [mốc shortcut](docs/PHASE3_VALIDATION.md) và [mốc tích hợp 0.4.0](docs/RUNTIME_INTEGRATION_VALIDATION.md).
 
 ## Phase 1: build bộ thử engine riêng
 

@@ -18,6 +18,11 @@ import vn.fonesi.core.update.UpdateTask
 import vn.fonesi.app.shortcuts.LaunchResult
 import vn.fonesi.app.shortcuts.PinResult
 import vn.fonesi.app.shortcuts.message
+import vn.fonesi.app.runtime.RuntimeBindings
+import vn.fonesi.core.*
+import vn.fonesi.core.update.*
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.ensureActive
 
 data class AppsState(
     val apps: List<DeviceApp> = emptyList(),
@@ -34,17 +39,24 @@ data class ManagementState(
     val loaded: Boolean = false,
     val error: String? = null,
     val feedback: String? = null,
+    val busy: Boolean = false,
 )
+
+data class RuntimeState(val ready: Boolean = false, val description: String = RuntimeBindings.status(),
+    val clones: Map<String, CloneRecord> = emptyMap())
 
 class AppsViewModel(application: Application) : AndroidViewModel(application) {
     private val catalog = InstalledApps(application)
     private val services = LocalServices.get(application)
     val engine = services.engine
+    val engineKey get() = services.engineKey
     private val mutableState = MutableStateFlow(AppsState())
     val state = mutableState.asStateFlow()
     private var scanJob: Job? = null
     private val mutableManagement = MutableStateFlow(ManagementState())
     val management = mutableManagement.asStateFlow()
+    private val mutableRuntime = MutableStateFlow(RuntimeState())
+    val runtime = mutableRuntime.asStateFlow()
 
     init {
         viewModelScope.launch {
@@ -52,7 +64,7 @@ class AppsViewModel(application: Application) : AndroidViewModel(application) {
                 combine(services.database.clones().observe(), services.tasks.observe(), services.tasks.observePaused()) { clones, jobs, paused ->
                     ManagementState(clones, jobs, paused, loaded = true)
                 }.collect { updated ->
-                    mutableManagement.value = updated.copy(feedback = mutableManagement.value.feedback)
+                    mutableManagement.value = updated.copy(feedback = mutableManagement.value.feedback, busy = mutableManagement.value.busy)
                 }
             } catch (cancelled: CancellationException) {
                 throw cancelled
@@ -62,9 +74,15 @@ class AppsViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
-    fun setQueuePaused(paused: Boolean) = mutate {
-        services.tasks.setPaused(paused)
-        if (paused) "Đã lưu trạng thái tạm dừng." else "Đã cho phép hàng đợi. Chưa có engine nên chưa chạy cập nhật."
+    fun setQueuePaused(paused: Boolean) {
+        viewModelScope.launch {
+            try {
+                withContext(Dispatchers.IO) { services.tasks.setPaused(paused) }
+                mutableManagement.value = mutableManagement.value.copy(feedback = if (paused)
+                    "Đã tạm dừng ở ranh giới an toàn; thao tác đang áp dụng vẫn cần xác minh." else "Đã cho phép hàng đợi.")
+            } catch (cancelled: CancellationException) { throw cancelled }
+            catch (_: Exception) { mutableManagement.value = mutableManagement.value.copy(feedback = "Chưa lưu được lựa chọn tạm dừng.") }
+        }
     }
 
     fun cancelTask(id: String) = mutate {
@@ -109,20 +127,126 @@ class AppsViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
+    fun configureEngine(enabled: Boolean): Boolean = try {
+        RuntimeBindings.enable(getApplication(), enabled)
+        true
+    } catch (_: Exception) {
+        mutableManagement.value = mutableManagement.value.copy(feedback = "Chưa lưu được lựa chọn engine; Fonesi vẫn mở.")
+        false
+    }
+
+    fun createClone(packageName: String, label: String, group: String? = null) = mutate {
+        check(packageName != getApplication<Application>().packageName)
+        val source = checkNotNull(AndroidSourceCatalog(getApplication<Application>().packageManager).current(packageName))
+        services.metadata(services.engineKey).create(source, label, group)
+        "Đã đọc lại bản cài từ engine và lưu tên. Cần mở để kiểm tra dữ liệu/tài khoản."
+    }
+
+    fun duplicateClone(token: String, label: String) = mutate {
+        val row = currentClone(token)
+        val source = checkNotNull(AndroidSourceCatalog(getApplication<Application>().packageManager).current(row.packageName))
+        services.metadata(services.engineKey).create(source, label, row.groupName)
+        "Đã tạo bản sạch từ ứng dụng gốc; bạn tự đăng nhập tài khoản mới."
+    }
+
+    fun deleteClone(token: String) = mutate {
+        val row = currentClone(token)
+        services.metadata(services.engineKey).delete(row.cloneId, token)
+        try { services.shortcuts.synchronizePinned() } catch (_: Exception) { /* Old URI already fails closed. */ }
+        "Engine đã xác nhận không còn bản cài; đã xóa mục quản lý."
+    }
+
+    fun stopClone(token: String) = mutate {
+        val row = currentClone(token)
+        services.operationLock().acquire().let { checkNotNull(it) }.use {
+            check(services.database.clones().findByLaunchToken(token)?.cloneId == row.cloneId)
+            check(services.tasks.list().none { it.packageName == row.packageName && it.state in setOf(
+                TaskState.PREPARING, TaskState.APPLYING, TaskState.VERIFYING, TaskState.REVIEW_REQUIRED) })
+            (engine as? StoppableCloneEngine ?: error("Stop unavailable")).stop(row.cloneId)
+        }
+        "Engine đã xác nhận dừng; dữ liệu không được yêu cầu xóa."
+    }
+
+    fun reconcileClones() = mutate {
+        services.runner().recover()
+        val count = services.metadata(services.engineKey).importDiscovered()
+        "Đã đối chiếu engine; bổ sung $count mục có bản cài thật nhưng thiếu metadata."
+    }
+
+    private fun currentClone(token: String): CloneMetadataRow = checkNotNull(services.database.clones().findByLaunchToken(token)).also {
+        check(it.engineKey == services.engineKey)
+    }
+
+    fun updateClones(tokens: List<String>) = mutate {
+        val plan = services.operationLock().acquire().let { checkNotNull(it) }.use {
+            val rows = tokens.distinct().map(::currentClone)
+            val catalog = AndroidSourceCatalog(getApplication<Application>().packageManager)
+            val sources = rows.map { it.packageName }.distinct().mapNotNull { catalog.current(it)?.let { source -> it to source } }.toMap()
+            if (RuntimeBindings.candidate && sources.values.any { it.apkPaths.size != 1 }) throw UnsupportedSourceException()
+            val availability = engine.availability as? EngineAvailability.Ready ?: error("Engine unavailable")
+            val planned = UpdatePlanner.plan(rows.map { it.cloneId }, engine.listClones(), sources, availability)
+            services.queue.enqueue(services.engineKey, planned.targets, availability.updateScope)
+            planned
+        }
+        "Đã xếp ${plan.targets.size} nhóm; ${plan.alreadyCurrent.size} bản đã đúng phiên bản, ${plan.blocked.size} yêu cầu bị chặn. Chọn Chạy hàng đợi để áp dụng tuần tự."
+    }
+
+    fun runQueue() {
+        if (mutableManagement.value.busy) return
+        mutableManagement.value = mutableManagement.value.copy(busy = true)
+        viewModelScope.launch {
+            try {
+                val count = withContext(Dispatchers.IO) {
+                    var processed = 0
+                    while (true) {
+                        currentCoroutineContext().ensureActive()
+                        when (services.runner().runNext()) {
+                            is RunResult.Processed -> processed++
+                            else -> break
+                        }
+                    }
+                    processed
+                }
+                mutableManagement.value = mutableManagement.value.copy(feedback = "Đã xử lý $count tác vụ. Xem kết quả từng tác vụ; số đã xử lý không đồng nghĩa tất cả thành công.")
+            } catch (cancelled: CancellationException) { throw cancelled }
+            catch (_: Exception) { mutableManagement.value = mutableManagement.value.copy(feedback = "Hàng đợi dừng do lỗi. Giữ nguyên journal để đối chiếu khi mở lại.") }
+            finally { mutableManagement.value = mutableManagement.value.copy(busy = false); refreshRuntime() }
+        }
+    }
+
+    private fun refreshRuntime() {
+        viewModelScope.launch {
+            mutableRuntime.value = withContext(Dispatchers.IO) {
+                try {
+                    val lease = services.operationLock().acquire() ?: return@withContext mutableRuntime.value
+                    lease.use {
+                    if (engine.availability is EngineAvailability.Ready) RuntimeState(true, RuntimeBindings.status(), engine.listClones().associateBy { it.id })
+                    else RuntimeState(false, RuntimeBindings.status())
+                    }
+                } catch (_: Exception) { RuntimeState(false, "Chưa đọc được trạng thái engine. Dữ liệu quản lý vẫn được giữ.") }
+            }
+        }
+    }
+
     private fun mutate(action: () -> String) {
+        if (mutableManagement.value.busy) return
+        mutableManagement.value = mutableManagement.value.copy(busy = true)
         viewModelScope.launch {
             try {
                 val feedback = withContext(Dispatchers.IO) { action() }
                 mutableManagement.value = mutableManagement.value.copy(feedback = feedback)
             } catch (cancelled: CancellationException) {
                 throw cancelled
+            } catch (_: UnsupportedSourceException) {
+                mutableManagement.value = mutableManagement.value.copy(feedback = "Engine ứng viên chưa nhập được bộ split APK. Cần engine hỗ trợ đầy đủ; không bỏ split để tạo bản lỗi.")
             } catch (_: Exception) {
                 mutableManagement.value = mutableManagement.value.copy(feedback = "Thao tác chưa được xác nhận. Không xóa hoặc tạo lại dữ liệu để xử lý lỗi.")
-            }
+            } finally { mutableManagement.value = mutableManagement.value.copy(busy = false); refreshRuntime() }
         }
     }
 
     fun refresh() {
+        refreshRuntime()
         scanJob?.cancel()
         scanJob = viewModelScope.launch {
             mutableState.value = mutableState.value.copy(loading = true, error = null)
