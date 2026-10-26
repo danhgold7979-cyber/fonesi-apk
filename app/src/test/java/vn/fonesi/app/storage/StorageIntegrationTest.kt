@@ -1,0 +1,263 @@
+package vn.fonesi.app.storage
+
+import android.content.Context
+import androidx.test.core.app.ApplicationProvider
+import org.junit.After
+import org.junit.Assert.*
+import org.junit.Before
+import org.junit.Test
+import org.junit.runner.RunWith
+import org.robolectric.RobolectricTestRunner
+import org.robolectric.annotation.Config
+import org.robolectric.annotation.SQLiteMode
+import vn.fonesi.core.*
+import vn.fonesi.core.update.*
+import java.nio.file.Files
+import java.util.UUID
+import java.util.concurrent.Callable
+import java.util.concurrent.Executors
+import java.util.concurrent.TimeUnit
+import kotlinx.coroutines.*
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.distinctUntilChanged
+
+/** Native SQLite under Robolectric; does not run a virtualization SDK or social application. */
+@RunWith(RobolectricTestRunner::class)
+@Config(sdk = [26, 34], manifest = Config.NONE)
+@SQLiteMode(SQLiteMode.Mode.NATIVE)
+class StorageIntegrationTest {
+    private lateinit var context: Context
+    private lateinit var db: FonesiDatabase
+    private lateinit var name: String
+    private val io = Executors.newSingleThreadExecutor()
+    private fun <T> background(task: () -> T): T = io.submit(Callable(task)).get(30, TimeUnit.SECONDS)
+    private val source = InstalledSource("test.social", 2, setOf("signer"), listOf("/base.apk"))
+
+    @Before fun setup() {
+        context = ApplicationProvider.getApplicationContext()
+        name = "test-${UUID.randomUUID()}.db"
+        db = FonesiDatabase.open(context, name)
+    }
+
+    @After fun teardown() {
+        background { db.close() }
+        context.deleteDatabase(name)
+        io.shutdownNow()
+    }
+
+    private fun reopen() {
+        db.close()
+        db = FonesiDatabase.open(context, name)
+    }
+
+    @Test fun queueAndPauseSurviveDatabaseCloseWithoutLosingUnicodeOrLongVersion() = background {
+        val store = RoomUpdateTaskStore(db)
+        val unusual = source.copy(versionCode = Long.MAX_VALUE, signerDigests = setOf("ký-tự", "quote\"|signer"))
+        val job = UpdateQueue(store).enqueue("engine-a", listOf(UpdateTarget(unusual, listOf("a|b", "a", "Tài khoản 🛒"))), UpdateScope.SHARED_PACKAGE).single()
+        store.setPaused(true)
+        reopen()
+        val restored = RoomUpdateTaskStore(db)
+        assertEquals(job, restored.list().single())
+        assertTrue(restored.isPaused())
+        assertEquals(2, db.openHelper.writableDatabase.query("PRAGMA synchronous").use { it.moveToFirst(); it.getInt(0) })
+    }
+
+    @Test fun compareAndSetAndPauseAreCheckedInSameTransaction() = background {
+        val store = RoomUpdateTaskStore(db)
+        val job = UpdateQueue(store).enqueue("engine-a", listOf(UpdateTarget(source, listOf("a"))), UpdateScope.PER_CLONE).single()
+        val preparing = job.move(TaskState.PREPARING, 10)
+        assertTrue(store.replace(job, preparing))
+        assertFalse(store.replace(job, job.move(TaskState.CANCELLED, 11)))
+        val applying = preparing.move(TaskState.APPLYING, 12, affectedIds = listOf("a"), fingerprint = "f".repeat(64))
+        store.setPaused(true)
+        assertFalse(store.replace(preparing, applying, requireUnpaused = true))
+        assertEquals(TaskState.PREPARING, store.list().single().state)
+        store.setPaused(false)
+        assertTrue(store.replace(preparing, applying, requireUnpaused = true))
+        assertThrows(IllegalArgumentException::class.java) {
+            store.replace(applying, applying.copy(revision = applying.revision + 1, state = TaskState.VERIFYING, packageName = "another.account"))
+        }
+        assertEquals("test.social", store.list().single().packageName)
+    }
+
+    @Test fun concurrentDuplicateEnqueueCreatesOnlyOneDurableTask() {
+        background { db.tasks().list() } // Open/configure once before concurrent writers.
+        val pool = Executors.newFixedThreadPool(4)
+        try {
+            val store = RoomUpdateTaskStore(db)
+            val results = pool.invokeAll((0 until 8).map {
+                Callable { UpdateQueue(store).enqueue("engine-a", listOf(UpdateTarget(source, listOf("a"))), UpdateScope.PER_CLONE).single().id }
+            }).map { it.get(30, TimeUnit.SECONDS) }
+            assertEquals(1, results.distinct().size)
+            assertEquals(1, background { store.list().size })
+        } finally { pool.shutdownNow() }
+    }
+
+    @Test fun queueOrderUsesInsertionInsteadOfWallClockOrRandomUuid() = background {
+        val store = RoomUpdateTaskStore(db)
+        var time = 100L
+        val queue = UpdateQueue(store) { --time }
+        for (version in listOf(2L, 3L, 4L)) {
+            queue.enqueue("engine-a", listOf(UpdateTarget(source.copy(versionCode = version), listOf("a"))), UpdateScope.PER_CLONE)
+        }
+        reopen()
+        assertEquals(listOf(2L, 3L, 4L), RoomUpdateTaskStore(db).list().map { it.versionCode })
+    }
+
+    @Test fun interruptedApplyIsReadBackAfterReopenWithoutCallingUpdateAgain() = background {
+        val store = RoomUpdateTaskStore(db)
+        val queued = UpdateQueue(store).enqueue("engine-a", listOf(UpdateTarget(source, listOf("a"))), UpdateScope.PER_CLONE).single()
+        val preparing = queued.move(TaskState.PREPARING, 1)
+        store.replace(queued, preparing)
+        store.replace(preparing, preparing.move(TaskState.APPLYING, 2, affectedIds = listOf("a"), fingerprint = "f".repeat(64)))
+        reopen()
+        val engine = EngineDouble().apply { records += CloneRecord("a", source.packageName, 2, source.signerDigests, false) }
+        val restored = RoomUpdateTaskStore(db)
+        val root = Files.createTempDirectory("room-queue-")
+        val catalog = SourceCatalog { source }
+        val runner = UpdateRunner("engine-a", engine, restored, catalog,
+            FileSourceSnapshotter(root.resolve("spool"), catalog), FileQueueLock(root.resolve("queue.lock")))
+        assertTrue(runner.recover())
+        assertEquals(CompletionKind.RECOVERED_VERSION_VERIFIED, restored.list().single().completion)
+        assertEquals(RunResult.Idle, runner.runNext())
+        assertEquals(0, engine.updates)
+    }
+
+    @Test fun realDatabaseAndFileSnapshotCompleteOneQueuedImport() = background {
+        val root = Files.createTempDirectory("room-queue-")
+        val apk = root.resolve("base.apk").also { Files.write(it, "synthetic bytes, not a real APK".toByteArray()) }
+        val available = source.copy(apkPaths = listOf(apk.toString()))
+        val engine = EngineDouble().apply { records += CloneRecord("a", source.packageName, 1, source.signerDigests, false) }
+        val store = RoomUpdateTaskStore(db)
+        UpdateQueue(store).enqueue("engine-a", listOf(UpdateTarget(available, listOf("a"))), UpdateScope.PER_CLONE)
+        val catalog = SourceCatalog { available }
+        val runner = UpdateRunner("engine-a", engine, store, catalog,
+            FileSourceSnapshotter(root.resolve("spool"), catalog), FileQueueLock(root.resolve("queue.lock")))
+        assertEquals(TaskState.SUCCEEDED, (runner.runNext() as RunResult.Processed).task.state)
+        reopen()
+        assertEquals(CompletionKind.APPLIED_AND_VERIFIED, RoomUpdateTaskStore(db).list().single().completion)
+        assertEquals(1, engine.updates)
+    }
+
+    @Test fun metadataIsSavedOnlyAfterReadbackAndDeletesOnlyAfterConfirmedAbsence() = background {
+        val unavailable = CloneMetadataRepository(db, "engine-a", UnavailableCloneEngine())
+        assertThrows(IllegalArgumentException::class.java) { unavailable.create(source, "A") }
+        assertTrue(db.clones().list().isEmpty())
+        val engine = EngineDouble()
+        val repo = CloneMetadataRepository(db, "engine-a", engine)
+        engine.publishCreates = false
+        assertThrows(IllegalStateException::class.java) { repo.create(source, "A") }
+        assertTrue(db.clones().list().isEmpty())
+        engine.publishCreates = true
+        val a = repo.create(source, "  Tài khoản 🛒  ", " Cửa hàng ")
+        val b = repo.create(source, "B")
+        assertEquals("Tài khoản 🛒", a.label)
+        engine.leaveOnDelete = true
+        assertThrows(IllegalStateException::class.java) { repo.delete(a.cloneId) }
+        assertNotNull(db.clones().find("engine-a", a.cloneId))
+        engine.leaveOnDelete = false
+        repo.delete(a.cloneId)
+        assertNull(db.clones().find("engine-a", a.cloneId))
+        assertNotNull(db.clones().find("engine-a", b.cloneId))
+        assertTrue(engine.records.any { it.id == b.cloneId })
+    }
+
+    @Test fun namespacesAndOfflineRenamePreserveOtherEnginesMetadata() = background {
+        val first = CloneMetadataRepository(db, "engine-a", EngineDouble()).create(source, "A")
+        CloneMetadataRepository(db, "engine-b", EngineDouble()).create(source, "B")
+        reopen()
+        val offline = CloneMetadataRepository(db, "engine-a", UnavailableCloneEngine())
+        offline.rename(first.cloneId, "Nhãn mới", "Nhóm 🛒")
+        assertEquals("Nhãn mới", db.clones().find("engine-a", first.cloneId)?.label)
+        assertEquals("B", db.clones().find("engine-b", first.cloneId)?.label)
+        assertThrows(IllegalArgumentException::class.java) { offline.rename(first.cloneId, "   ", null) }
+        assertEquals("Nhãn mới", db.clones().find("engine-a", first.cloneId)?.label)
+    }
+
+    @Test fun unknownSchemaDoesNotDestructivelyRecreateTheDatabase() = background {
+        db.close()
+        context.openOrCreateDatabase(name, Context.MODE_PRIVATE, null).use { raw ->
+            raw.execSQL("CREATE TABLE retained(value TEXT NOT NULL)")
+            raw.execSQL("INSERT INTO retained VALUES ('must survive')")
+            raw.version = 2
+        }
+        db = FonesiDatabase.open(context, name)
+        assertThrows(IllegalStateException::class.java) { db.tasks().list() }
+        db.close()
+        context.openOrCreateDatabase(name, Context.MODE_PRIVATE, null).use { raw ->
+            raw.rawQuery("SELECT value FROM retained", null).use { cursor ->
+                assertTrue(cursor.moveToFirst()); assertEquals("must survive", cursor.getString(0))
+            }
+        }
+    }
+
+    @Test fun unknownTaskEncodingFailsWithoutDeletingStoredRows() = background {
+        val task = UpdateTask.create("engine-a", UpdateTarget(source, listOf("a")), UpdateScope.PER_CLONE, 1)
+        val row = TaskCodec.row(task)
+        db.tasks().insert(row.copy(payload = row.payload.replace("\"format\":1", "\"format\":2")))
+        assertThrows(IllegalArgumentException::class.java) { RoomUpdateTaskStore(db).list() }
+        assertEquals(1, db.tasks().list().size)
+        reopen()
+        assertEquals(1, db.tasks().list().size)
+    }
+
+    @Test fun corruptDatabaseIsNotDeletedOrReplacedWithAnEmptyOne() = background {
+        db.close()
+        val file = context.getDatabasePath(name)
+        check(file.parentFile!!.mkdirs() || file.parentFile!!.isDirectory)
+        val original = ByteArray(4096) { 66 }
+        file.writeBytes(original)
+        db = FonesiDatabase.open(context, name)
+        assertThrows(android.database.sqlite.SQLiteException::class.java) { db.tasks().list() }
+        db.close()
+        assertTrue(file.exists())
+        assertArrayEquals(original, file.readBytes())
+    }
+
+    @Test fun observersPublishQueueAndPauseChangesWithoutPolling() = background {
+        runBlocking {
+            val store = RoomUpdateTaskStore(db)
+            val states = Channel<Boolean>(Channel.UNLIMITED)
+            val jobs = Channel<List<UpdateTask>>(Channel.UNLIMITED)
+            val stateObserver = launch { store.observePaused().distinctUntilChanged().collect { states.send(it) } }
+            val taskObserver = launch { store.observe().distinctUntilChanged().collect { jobs.send(it) } }
+            try {
+                assertFalse(withTimeout(5000) { states.receive() })
+                assertTrue(withTimeout(5000) { jobs.receive() }.isEmpty())
+                val queued = UpdateQueue(store).enqueue("engine-a", listOf(UpdateTarget(source, listOf("a"))), UpdateScope.PER_CLONE).single()
+                assertEquals(queued.id, withTimeout(5000) { jobs.receive() }.single().id)
+                store.setPaused(true)
+                assertTrue(withTimeout(5000) { states.receive() })
+            } finally {
+                stateObserver.cancelAndJoin(); taskObserver.cancelAndJoin()
+                states.close(); jobs.close()
+            }
+        }
+    }
+}
+
+/** Test-only engine protocol implementation, never included in an APK. */
+private class EngineDouble : CloneEngine {
+    override val availability = EngineAvailability.Ready(UpdateScope.PER_CLONE)
+    val records = mutableListOf<CloneRecord>()
+    var publishCreates = true
+    var leaveOnDelete = false
+    var updates = 0
+    private var sequence = 0
+    override fun listClones() = records.toList()
+    override fun create(source: InstalledSource, label: String): CloneRecord {
+        val record = CloneRecord("id-${++sequence}", source.packageName, source.versionCode, source.signerDigests, false)
+        if (publishCreates) records += record
+        return record
+    }
+    override fun launch(cloneId: String) = Unit
+    override fun delete(cloneId: String) { if (!leaveOnDelete) records.removeAll { it.id == cloneId } }
+    override fun update(target: UpdateTarget): List<CloneRecord> {
+        updates++
+        for (i in records.indices) if (records[i].id in target.affectedCloneIds) {
+            records[i] = records[i].copy(versionCode = target.source.versionCode, signerDigests = target.source.signerDigests)
+        }
+        return listClones()
+    }
+}

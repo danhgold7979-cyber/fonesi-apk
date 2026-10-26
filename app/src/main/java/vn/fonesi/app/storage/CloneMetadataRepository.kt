@@ -1,0 +1,60 @@
+package vn.fonesi.app.storage
+
+import vn.fonesi.core.CloneEngine
+import vn.fonesi.core.EngineAvailability
+import vn.fonesi.core.InstalledSource
+
+/** Metadata only. Never invents clones when an engine is unavailable. Call on an IO dispatcher. */
+class CloneMetadataRepository(
+    private val db: FonesiDatabase,
+    private val engineKey: String,
+    private val engine: CloneEngine,
+    private val clock: () -> Long = System::currentTimeMillis,
+) {
+    fun observe() = db.clones().observe()
+
+    fun create(source: InstalledSource, label: String, group: String? = null): CloneMetadataRow {
+        require(engine.availability is EngineAvailability.Ready) { "Engine chưa sẵn sàng" }
+        val normalized = normalize(label, group)
+        val before = engine.listClones().map { it.id }.toSet()
+        val created = engine.create(source, normalized.first)
+        check(created.id !in before) { "Engine reused an existing clone ID" }
+        val observed = engine.listClones().singleOrNull { it.id == created.id }
+        check(observed != null && observed.packageName == source.packageName &&
+            observed.versionCode == source.versionCode && observed.signerDigests == source.signerDigests) {
+            "Created clone has not been verified by readback"
+        }
+        val now = clock()
+        val row = CloneMetadataRow(engineKey, created.id, source.packageName, normalized.first, normalized.second, now, now)
+        db.clones().insert(row)
+        return row
+    }
+
+    fun rename(id: String, label: String, group: String?) {
+        val normalized = normalize(label, group)
+        check(db.clones().rename(engineKey, id, normalized.first, normalized.second, clock()) == 1) {
+            "Saved clone metadata does not exist"
+        }
+    }
+
+    fun delete(id: String) {
+        require(engine.availability is EngineAvailability.Ready) { "Engine chưa sẵn sàng" }
+        val saved = checkNotNull(db.clones().find(engineKey, id))
+        val records = engine.listClones()
+        check(records.map { it.id }.distinct().size == records.size) { "Ambiguous engine IDs" }
+        val live = records.singleOrNull { it.id == id }
+        if (live != null) {
+            check(live.packageName == saved.packageName && live.running == false) { "Clone is busy, unknown or has changed identity" }
+            engine.delete(id)
+        }
+        check(engine.listClones().none { it.id == id }) { "Engine still reports the clone; metadata preserved" }
+        db.clones().delete(engineKey, id)
+    }
+
+    private fun normalize(label: String, group: String?): Pair<String, String?> {
+        val name = label.trim()
+        val grouping = group?.trim()?.takeIf { it.isNotEmpty() }
+        require(name.length in 1..80 && (grouping == null || grouping.length <= 40))
+        return name to grouping
+    }
+}

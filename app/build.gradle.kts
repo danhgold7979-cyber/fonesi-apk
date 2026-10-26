@@ -1,0 +1,60 @@
+plugins {
+    id("com.android.application")
+    kotlin("android")
+    id("org.jetbrains.kotlin.plugin.compose")
+    id("com.google.devtools.ksp")
+}
+android {
+    namespace = "vn.fonesi.app"
+    compileSdk = 36
+    buildToolsVersion = "36.0.0"
+    defaultConfig {
+        applicationId = "vn.fonesi.app"
+        minSdk = 26
+        targetSdk = 36
+        versionCode = 2
+        versionName = "0.2.0-cloud"
+        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+    }
+    buildFeatures { compose = true }
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_21
+        targetCompatibility = JavaVersion.VERSION_21
+    }
+    testOptions {
+        unitTests.isIncludeAndroidResources = true
+        unitTests.all {
+            it.maxHeapSize = "2g"
+            // Scope Robolectric's lock/cache to this test JVM; do not change the host HOME.
+            val testUserDirectory = layout.buildDirectory.dir("robolectric-user").get().asFile
+            it.doFirst { check(testUserDirectory.mkdirs() || testUserDirectory.isDirectory) }
+            it.systemProperty("user.home", testUserDirectory.absolutePath)
+            val tools = providers.environmentVariable("FONESI_TOOLS_DIR").orElse("/workspace/.fonesi-tools").get()
+            it.systemProperty("maven.repo.local", "$tools/robolectric-m2")
+            it.systemProperty("robolectric.dependency.repo.url", "https://repo.maven.apache.org/maven2")
+            listOf("https.proxyHost", "https.proxyPort", "http.proxyHost", "http.proxyPort",
+                "http.nonProxyHosts", "javax.net.ssl.trustStore").forEach { key ->
+                System.getProperty(key)?.let { value -> it.systemProperty(key, value) }
+            }
+        }
+    }
+}
+kotlin { jvmToolchain(21) }
+ksp { arg("room.schemaLocation", "$projectDir/schemas") }
+dependencies {
+    implementation(project(":core"))
+    implementation(platform("androidx.compose:compose-bom:2025.06.01"))
+    implementation("androidx.activity:activity-compose:1.10.1")
+    implementation("androidx.compose.material3:material3")
+    implementation("androidx.compose.ui:ui")
+    implementation("androidx.compose.foundation:foundation")
+    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.9.1")
+    implementation("androidx.lifecycle:lifecycle-runtime-compose:2.9.1")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.10.2")
+    implementation("androidx.room:room-runtime:2.7.2")
+    implementation("androidx.room:room-ktx:2.7.2")
+    ksp("androidx.room:room-compiler:2.7.2")
+    testImplementation("junit:junit:4.13.2")
+    testImplementation("org.robolectric:robolectric:4.15.1")
+    testImplementation("androidx.test:core:1.6.1")
+}

@@ -1,0 +1,230 @@
+package vn.fonesi.core.update
+
+import org.junit.Assert.*
+import org.junit.Rule
+import org.junit.Test
+import org.junit.rules.TemporaryFolder
+import vn.fonesi.core.*
+import java.nio.file.Files
+import java.util.ConcurrentModificationException
+import java.util.concurrent.CountDownLatch
+import java.util.concurrent.Executors
+import java.util.concurrent.TimeUnit
+
+class UpdateRunnerTest {
+    @get:Rule val temporary = TemporaryFolder()
+    private fun fixture() = QueueFixture(temporary.newFolder().toPath())
+    private fun RunResult.task() = (this as RunResult.Processed).task
+
+    @Test fun `applies prepared files and verifies readback rather than trusting a receipt`() {
+        val f = fixture(); val job = f.enqueue()
+        f.engine.beforeApply = {
+            assertEquals(TaskState.APPLYING, f.store.list().single().state)
+            assertTrue(Files.exists(f.root.resolve("snapshots").resolve(job.id).resolve("base.apk")))
+        }
+        val result = f.runner().runNext().task()
+        assertEquals(TaskState.SUCCEEDED, result.state)
+        assertEquals(CompletionKind.APPLIED_AND_VERIFIED, result.completion)
+        assertEquals(1, f.engine.calls)
+        assertEquals(2L, f.engine.clones.single().versionCode)
+        assertFalse(Files.exists(f.root.resolve("snapshots").resolve(job.id)))
+        assertEquals(RunResult.Idle, f.runner().runNext())
+    }
+
+    @Test fun `a success-shaped engine receipt without installed version is not success`() {
+        val f = fixture(); f.enqueue(); f.engine.applyVersion = false
+        val result = f.runner().runNext().task()
+        assertEquals(TaskState.REVIEW_REQUIRED, result.state)
+        assertEquals(TaskIssue.VERSION_NOT_VERIFIED, result.issue)
+        assertEquals(1, f.engine.calls)
+        assertEquals(RunResult.Idle, f.runner().runNext())
+        assertEquals(1, f.engine.calls)
+    }
+
+    @Test fun `duplicate requests coalesce and terminal records do not erase history`() {
+        val f = fixture(); val a = f.enqueue(); val duplicate = f.enqueue()
+        assertEquals(a.id, duplicate.id)
+        assertEquals(1, f.store.list().size)
+        f.runner().runNext()
+        val again = f.enqueue()
+        assertNotEquals(a.id, again.id)
+        assertEquals(CompletionKind.ALREADY_CURRENT, f.runner().runNext().task().completion)
+        assertEquals(1, f.engine.calls)
+    }
+
+    @Test fun `paused queue persists work without calling engine`() {
+        val f = fixture(); f.queue.pause(); f.enqueue()
+        assertEquals(RunResult.Paused, f.runner().runNext())
+        assertEquals(TaskState.QUEUED, f.store.list().single().state)
+        assertEquals(0, f.engine.calls)
+        f.queue.resume()
+        assertEquals(TaskState.SUCCEEDED, f.runner().runNext().task().state)
+    }
+
+    @Test fun `pause during copying is checked atomically before the apply marker`() {
+        val f = fixture(); val job = f.enqueue()
+        f.afterPrepare = { f.queue.pause() }
+        assertEquals(TaskIssue.PAUSED, f.runner().runNext().task().issue)
+        assertEquals(0, f.engine.calls)
+        f.afterPrepare = null; f.queue.resume()
+        assertTrue(f.queue.retryDeferred(job.id))
+        assertEquals(TaskState.SUCCEEDED, f.runner().runNext().task().state)
+    }
+
+    @Test fun `cancel is allowed before execution but not while preparing or applying`() {
+        val f = fixture(); val cancelled = f.enqueue()
+        assertTrue(f.queue.cancel(cancelled.id))
+        assertEquals(RunResult.Idle, f.runner().runNext())
+        val active = f.enqueue()
+        f.afterPrepare = { assertFalse(f.queue.cancel(active.id)) }
+        f.engine.beforeApply = { assertFalse(f.queue.cancel(active.id)) }
+        assertEquals(TaskState.SUCCEEDED, f.runner().runNext().task().state)
+    }
+
+    @Test fun `unavailable engine leaves queued work pending`() {
+        val f = fixture(); f.enqueue()
+        f.engine.availability = EngineAvailability.Unavailable("not integrated")
+        assertEquals(RunResult.EngineUnavailable, f.runner().runNext())
+        assertEquals(TaskState.QUEUED, f.store.list().single().state)
+        assertEquals(0, f.engine.calls)
+    }
+
+    @Test fun `engine change cannot reuse another engine's account IDs`() {
+        val f = fixture(); val target = UpdateTarget(checkNotNull(f.source), listOf("a"))
+        f.queue.enqueue("different-engine", listOf(target), UpdateScope.PER_CLONE)
+        assertEquals(TaskIssue.ENGINE_CHANGED, f.runner().runNext().task().issue)
+        assertEquals(0, f.engine.calls)
+    }
+
+    @Test fun `scope change is rejected before import`() {
+        val f = fixture(); f.enqueue()
+        f.engine.availability = EngineAvailability.Ready(UpdateScope.SHARED_PACKAGE)
+        assertEquals(TaskIssue.SCOPE_CHANGED, f.runner().runNext().task().issue)
+        assertEquals(0, f.engine.calls)
+    }
+
+    @Test fun `scope changed during preparation is rechecked before the external write`() {
+        val f = fixture(); f.enqueue()
+        f.afterPrepare = { f.engine.availability = EngineAvailability.Ready(UpdateScope.SHARED_PACKAGE) }
+        assertEquals(TaskIssue.SCOPE_CHANGED, f.runner().runNext().task().issue)
+        assertEquals(0, f.engine.calls)
+    }
+
+    @Test fun `removal or newer original after enqueue cannot apply stale files`() {
+        for (missing in listOf(true, false)) {
+            val f = fixture(); f.enqueue()
+            f.source = if (missing) null else f.source!!.copy(versionCode = 3)
+            assertEquals(if (missing) TaskIssue.SOURCE_MISSING else TaskIssue.SOURCE_CHANGED,
+                f.runner().runNext().task().issue)
+            assertEquals(0, f.engine.calls)
+        }
+    }
+
+    @Test fun `opening an account during source preparation defers the update`() {
+        val f = fixture(); f.enqueue()
+        f.afterPrepare = { f.engine.clones[0] = f.engine.clones[0].copy(running = true) }
+        assertEquals(TaskIssue.CLONE_BUSY, f.runner().runNext().task().issue)
+        assertEquals(0, f.engine.calls)
+    }
+
+    @Test fun `source changes after preparation prevent apply`() {
+        val f = fixture(); f.enqueue()
+        f.afterPrepare = { f.source = f.source!!.copy(versionCode = 3) }
+        assertEquals(TaskIssue.SOURCE_CHANGED, f.runner().runNext().task().issue)
+        assertEquals(0, f.engine.calls)
+    }
+
+    @Test fun `process death after apply is reconciled without repeating external operation`() {
+        val f = fixture(); val job = f.enqueue()
+        f.engine.afterApply = { throw SimulatedProcessDeath() }
+        assertThrows(SimulatedProcessDeath::class.java) { f.runner().runNext() }
+        assertEquals(TaskState.APPLYING, f.store.list().single().state)
+        assertTrue(Files.exists(f.root.resolve("snapshots").resolve(job.id)))
+        f.engine.afterApply = null
+        assertTrue(f.runner().recover())
+        assertEquals(CompletionKind.RECOVERED_VERSION_VERIFIED, f.store.list().single().completion)
+        assertEquals(RunResult.Idle, f.runner().runNext())
+        assertEquals(1, f.engine.calls)
+    }
+
+    @Test fun `unknown interrupted outcome is held for review rather than retried`() {
+        val f = fixture(); val job = f.enqueue()
+        f.engine.beforeApply = { throw SimulatedProcessDeath() }
+        assertThrows(SimulatedProcessDeath::class.java) { f.runner().runNext() }
+        f.engine.beforeApply = null; f.runner().recover()
+        assertEquals(TaskState.REVIEW_REQUIRED, f.store.list().single().state)
+        assertFalse(f.queue.cancel(job.id))
+        assertFalse(f.queue.retryDeferred(job.id))
+        assertEquals(RunResult.Idle, f.runner().runNext())
+        assertEquals(1, f.engine.calls)
+    }
+
+    @Test fun `engine exception retains snapshot and does not automatically retry`() {
+        val f = fixture(); val job = f.enqueue()
+        f.engine.beforeApply = { throw IllegalStateException("test failure") }
+        assertEquals(TaskIssue.ENGINE_OUTCOME_UNKNOWN, f.runner().runNext().task().issue)
+        assertTrue(Files.exists(f.root.resolve("snapshots").resolve(job.id)))
+        assertEquals(RunResult.Idle, f.runner().runNext())
+        assertEquals(1, f.engine.calls)
+    }
+
+    @Test fun `source exception from inside the external call is still an uncertain outcome`() {
+        val f = fixture(); f.enqueue()
+        f.engine.beforeApply = { throw SourceChangedException() }
+        assertEquals(TaskState.REVIEW_REQUIRED, f.runner().runNext().task().state)
+        assertEquals(RunResult.Idle, f.runner().runNext())
+        assertEquals(1, f.engine.calls)
+    }
+
+    @Test fun `preparing interruption may safely prepare again because apply marker was never written`() {
+        val f = fixture(); val job = f.enqueue()
+        assertTrue(f.store.replace(job, job.move(TaskState.PREPARING, 100)))
+        f.files.prepare(job.id, f.source!!)
+        assertTrue(f.runner().recover())
+        assertEquals(TaskState.QUEUED, f.store.list().single().state)
+        assertFalse(Files.exists(f.root.resolve("snapshots").resolve(job.id)))
+        assertEquals(TaskState.SUCCEEDED, f.runner().runNext().task().state)
+        assertEquals(1, f.engine.calls)
+    }
+
+    @Test fun `failed journal write before apply cannot call the engine`() {
+        val f = fixture(); f.enqueue()
+        f.store.beforeReplace = { if (it.state == TaskState.APPLYING) throw java.io.IOException("test disk failure") }
+        assertEquals(TaskState.FAILED, f.runner().runNext().task().state)
+        assertEquals(0, f.engine.calls)
+    }
+
+    @Test fun `failure to persist verify after an external write still cannot duplicate it`() {
+        val f = fixture(); f.enqueue()
+        f.store.beforeReplace = { if (it.state == TaskState.VERIFYING) throw SimulatedProcessDeath() }
+        assertThrows(SimulatedProcessDeath::class.java) { f.runner().runNext() }
+        f.store.beforeReplace = null
+        f.runner().recover()
+        assertEquals(TaskState.SUCCEEDED, f.store.list().single().state)
+        assertEquals(1, f.engine.calls)
+    }
+
+    @Test fun `OS lock prevents two runner instances from applying concurrently`() {
+        val f = fixture(); f.enqueue()
+        val entered = CountDownLatch(1); val release = CountDownLatch(1)
+        f.engine.beforeApply = { entered.countDown(); check(release.await(5, TimeUnit.SECONDS)) }
+        val executor = Executors.newSingleThreadExecutor()
+        try {
+            val first = executor.submit<RunResult> { f.runner().runNext() }
+            assertTrue(entered.await(5, TimeUnit.SECONDS))
+            assertEquals(RunResult.Busy, f.runner().runNext())
+            release.countDown()
+            assertEquals(TaskState.SUCCEEDED, first.get(5, TimeUnit.SECONDS).task().state)
+            assertEquals(1, f.engine.calls)
+        } finally { release.countDown(); executor.shutdownNow() }
+    }
+
+    @Test fun `shared update accounts for an unselected active sibling`() {
+        val f = fixture()
+        f.engine.availability = EngineAvailability.Ready(UpdateScope.SHARED_PACKAGE)
+        f.engine.clones += CloneRecord("b", "test.social", 1, setOf("signer"), true)
+        f.enqueue(listOf("a"), UpdateScope.SHARED_PACKAGE)
+        assertEquals(TaskIssue.CLONE_BUSY, f.runner().runNext().task().issue)
+        assertEquals(0, f.engine.calls)
+    }
+}
