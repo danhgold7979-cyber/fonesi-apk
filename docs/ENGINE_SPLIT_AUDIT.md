@@ -42,3 +42,17 @@ Tag `2.0-r1beta`, commit `25f73f8b41551c65dca21cdddfe216f38c49012d`, cũng đã 
 4. Bộ split do dự án kiểm soát để kiểm tra package/version/signers/paths/update giữ data; sau đó chạy payload trên thiết bị trước tài khoản. File-copy tests không chứng minh Android đã thực thi guest.
 
 Các mục này vẫn là công việc kỹ thuật chưa hoàn thành, không chỉ là “chờ test điện thoại”. Đợt kiểm tra thiết bị có thể hoãn, nhưng không thể tuyên bố toàn bộ code sản phẩm xong khi split/Android mới còn chưa giải quyết.
+
+## E3 — mở rộng khảo sát ngày 27/10/2026
+
+Plan tiếp tục ở đầu [EXECUTION_PLAN.md](EXECUTION_PLAN.md). GitHub API search bị proxy từ chối; tìm kiếm web công khai và Git clone đọc source vẫn dùng được. Không chạy script/build của các ứng viên dưới đây và không nhập mã engine của họ vào sản phẩm.
+
+| Nguồn pin | Phát hiện trong source | Kết quả |
+| --- | --- | --- |
+| [Black00Z/Blacks-BlackBox](https://github.com/Black00Z/Blacks-BlackBox/tree/40282a7bf4500948cfd598fc67e6e63114b26dd9) | `BPackageManagerService.java:689–815,919–1030` có .apks nhưng chọn base theo tên/kích thước, lấy tối đa một ABI/density/language từ tên file; parse base rồi gắn splitNames từ tên. `CopyExecutor.java` bỏ qua split/lib lỗi, `PackageManagerCompat.java:350–369` có fallback path từ app host. Giữ crash/log/spoof và native Dobby prebuilt từ nhánh trước. | Có thêm copy/load split nhưng không đạt kiểm tra cluster/version/signers/dependencies và private readback. Không nối vào sản phẩm như engine đã đạt. |
+| [josskixg/renjana](https://github.com/josskixg/renjana/tree/14302a57cd66114c6979acf7ca56c97f845a6841) | `InstanceLauncher.kt:250–275` có `tryDirectLaunch` fallback mở app gốc và trả true; `VirtualContext.kt:35` ghi rõ không chặn native syscall. Có code fingerprint/signature/Play Integrity bypass ngoài phạm vi Fonesi. | Tuyên bố split classloader không chứng minh cách ly account/native; không tích hợp fallback app gốc như clone. |
+| [ServenScorpion/VirtualApp](https://github.com/ServenScorpion/VirtualApp/tree/23aa5ec82a62c5128006e5c1eaa9ca7fe15b96d8) | `lib/…/parser/PackageParserEx.java:344–348` lấy split từ outside/host; chưa tìm được baseline cluster riêng đầy đủ với nguồn/license tương ứng. | Không có bằng chứng đủ để thay provider; chưa build hoặc thử runtime. |
+
+ADB trong môi trường hiện tại không có thiết bị kết nối, `/dev/kvm` không tồn tại. Không có runtime ARM/Samsung được chạy trong đợt này. Không ghi SDK đóng không bao giờ hỗ trợ split; chỉ ghi đường API/binary pin và các source đã khảo sát chưa đạt.
+
+E4 triển khai verifier package/version64/signature/dependency của bộ APK độc lập với engine. Đây là phần kiểm tra đầu vào có thể kiểm thử bằng APK ký thật, không thay kết luận E1/E2/E3 hoặc bật `importsSplitApks` cho SpaceCore.

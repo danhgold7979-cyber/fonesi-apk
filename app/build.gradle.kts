@@ -17,6 +17,13 @@ val verifyCandidateSdk by tasks.registering {
             "4e45a474a5ab5764ad80818c2855c4fbd8540f0a540f975cf85a6f0dd8809b1f") { "Unverified candidate SDK" }
     }
 }
+val apkFixtures = layout.buildDirectory.dir("apk-audit-fixtures")
+val generateApkFixtures by tasks.registering(Exec::class) {
+    inputs.file(rootProject.file("scripts/build_apk_audit_fixtures.py"))
+    outputs.dir(apkFixtures)
+    commandLine("python3", rootProject.file("scripts/build_apk_audit_fixtures.py"), "--output", apkFixtures.get().asFile,
+        "--sdk", androidComponents.sdkComponents.sdkDirectory.get().asFile, "--java-home", System.getProperty("java.home"))
+}
 android {
     namespace = "vn.fonesi.app"
     compileSdk = 36
@@ -44,6 +51,9 @@ android {
     testOptions {
         unitTests.isIncludeAndroidResources = true
         unitTests.all {
+            it.dependsOn(generateApkFixtures)
+            it.inputs.files(fileTree(apkFixtures) { include("*.apk") }).withPropertyName("apkIntegrityFixtures")
+            it.systemProperty("fonesi.apkFixtures", apkFixtures.get().asFile.absolutePath)
             it.maxHeapSize = "2g"
             // Scope Robolectric's lock/cache to this test JVM; do not change the host HOME.
             val testUserDirectory = layout.buildDirectory.dir("robolectric-user").get().asFile
@@ -64,6 +74,7 @@ tasks.named("preBuild") { dependsOn(verifyCandidateSdk) }
 androidComponents { beforeVariants(selector().withBuildType("release")) { if (candidate) it.enable = false } }
 ksp { arg("room.schemaLocation", "$projectDir/schemas") }
 dependencies {
+    implementation("com.android.tools.build:apksig:8.11.1")
     implementation("androidx.biometric:biometric:1.1.0")
     implementation("androidx.fragment:fragment-ktx:1.8.8")
     if (candidate) {

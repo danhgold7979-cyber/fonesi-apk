@@ -139,6 +139,19 @@ class ManagedGuestEngineTest {
         assertTrue(registry.list().isEmpty()); assertTrue(backend.users().isEmpty())
         assertTrue(backend.installs.isEmpty()); assertEquals(1, snapshots.discards)
     }
+    @Test fun rejectedSourcePreflightNeverReservesUserOrLeavesUncertainNativeState() {
+        backend.preflight = { error("Invalid signature or unsupported ABI") }
+        assertThrows(IllegalStateException::class.java) { engine().create(source, "A") }
+        assertTrue(registry.list().isEmpty()); assertTrue(backend.users().isEmpty())
+        assertTrue(backend.installs.isEmpty()); assertEquals(1, snapshots.discards)
+    }
+    @Test fun foregroundLostDuringReadOnlyPreflightNeverEntersSdk() {
+        var authorized = true
+        backend.preflight = { frozen -> assertEquals("/frozen/base.apk", frozen.apkPaths.single()); authorized = false }
+        val guarded = ManagedGuestEngine(backend, registry, snapshots) { authorized }
+        assertThrows(IllegalStateException::class.java) { guarded.create(source, "A") }
+        assertTrue(registry.list().isEmpty()); assertTrue(backend.users().isEmpty()); assertEquals(1, snapshots.discards)
+    }
     @Test fun peerBecomingBusyDuringPreparationBlocksSharedCreate() {
         engine().create(source, "A")
         val peer = registry.list().single()
@@ -203,6 +216,8 @@ private class BackendDouble : GuestBackend {
     var failLaunch = false; var failAfterInstall = false; var failStop = false; var shareCode = true; var launchAttempts = 0
     var stopAttempts = 0
     var afterCreateUser: () -> Unit = {}
+    var preflight: (InstalledSource) -> Unit = {}
+    override fun validateSource(source: InstalledSource) { preflight(source) }
     override fun users() = userIds.toSet()
     override fun createUser(userId: Int) { userIds += userId; afterCreateUser() }
     override fun inspect(userId: Int, packageName: String) = packages[userId to packageName]

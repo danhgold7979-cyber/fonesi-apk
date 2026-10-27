@@ -2,6 +2,8 @@
 
 Gói này là bản thử chưa nghiệm thu, không phải sản phẩm hoàn thiện. Chưa yêu cầu cài ngay; dùng khi đến đợt thử thiết bị đã thống nhất. Giữ nguyên các yêu cầu đa app/split còn mở trong STATUS.md.
 
+Bản build E4 ngày 27/10/2026 thêm kiểm tra mật mã chữ ký/manifest trước import và notice apksig. ZIP có đúng 7 entry theo allowlist; các APK/khóa fixture của cloud test không nằm trong gói. VersionName vẫn 0.5.0; dùng checksums.json đi cùng gói này, không dùng hash báo cáo 26/10. Verifier hiểu split không có nghĩa engine đã nạp được split.
+
 ## Trước khi thử
 
 Ghi model, Android/API, ABI, page size, launcher và phiên bản ứng dụng. Candidate cho phép thử ARM64/API 26–34/trang 4 KB; không khóa theo model Samsung nhưng chưa chứng nhận các máy trong khoảng đó. Android mới hơn/16 KB hoặc app split vẫn bị chặn. Không hạ Android/target hay bỏ split để báo đạt.

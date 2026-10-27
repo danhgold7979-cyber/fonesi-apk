@@ -5,6 +5,7 @@ import android.content.pm.PackageInfo
 import android.content.pm.PackageManager
 import android.os.Build
 import com.fvbox.lib.FCore
+import vn.fonesi.app.apk.ApkSetAuditor
 import vn.fonesi.core.GuestBackend
 import vn.fonesi.core.GuestPackage
 import vn.fonesi.core.InstalledSource
@@ -31,18 +32,25 @@ class SpaceCoreBackend(private val context: Context, private val isReady: () -> 
         }
         return GuestPackage(info.packageName, version(info), signers(info), core.isRunning(packageName, userId))
     }
+    override fun validateSource(source: InstalledSource) { checkedInput(source) }
     @Suppress("DEPRECATION")
-    override fun install(userId: Int, source: InstalledSource) {
+    private fun checkedInput(source: InstalledSource): Pair<File, String> {
         check(source.apkPaths.size == 1)
         val input = File(source.apkPaths.single()).canonicalFile
         check(input.isFile && input.length() > 0)
         val archive = checkNotNull(context.packageManager.getPackageArchiveInfo(input.path, flags))
         check(archive.packageName == source.packageName && version(archive) == source.versionCode && signers(archive) == source.signerDigests)
+        val audited = ApkSetAuditor.verify(source, Build.VERSION.SDK_INT)
         ZipFile(input).use { zip ->
             val nativeAbis = zip.entries().asSequence().filter { it.name.startsWith("lib/") && it.name.endsWith(".so") }.map { it.name.split('/')[1] }.toSet()
             check(nativeAbis.isEmpty() || "arm64-v8a" in nativeAbis) { "Candidate requires ARM64 guest libraries" }
         }
-        val expectedHash = hash(input)
+        val expectedHash = audited.base.sha256
+        check(hash(input) == expectedHash) { "APK changed after audit" }
+        return input to expectedHash
+    }
+    override fun install(userId: Int, source: InstalledSource) {
+        val (input, expectedHash) = checkedInput(source)
         val result = core.installPackageAsUser(input, userId)
         check(result.success && result.packageName == source.packageName) { "Native import not confirmed" }
         val info = checkNotNull(core.getPackageInfo(source.packageName, flags, userId))

@@ -2,7 +2,9 @@
 
 **Đã hoàn thành thêm phần cloud của S1/S2/U1/Q1; sản phẩm clone đa ứng dụng chưa đạt 100%.** Các phần khóa, cấu hình, chọn nhiều, preview và tự động khi đang mở đã có code và kiểm tra. SDK candidate vẫn chỉ nhập một APK, giới hạn ARM64/API 26–34/trang 4 KB; chưa thực thi được xác minh trên điện thoại. Thử thiết bị được gom về đợt sau theo yêu cầu, không chặn phát triển phần độc lập và không biến runtime chưa chạy thành đạt.
 
-Plan trước từng phần và điều chỉnh: [EXECUTION_PLAN.md](EXECUTION_PLAN.md). Bằng chứng bản hiện tại: [PHASE6_VALIDATION.md](PHASE6_VALIDATION.md). Giữ nguyên lộ trình [8 phase/32 bước](ROADMAP.md).
+Plan trước từng phần và điều chỉnh: [EXECUTION_PLAN.md](EXECUTION_PLAN.md). Bằng chứng bản hiện tại: [APK_SET_VALIDATION.md](APK_SET_VALIDATION.md). Giữ nguyên lộ trình [8 phase/32 bước](ROADMAP.md).
+
+**Cập nhật E3/E4 ngày 27/10/2026:** đã khảo sát thêm ba source engine, chưa có ứng viên đạt cổng split/runtime. Đã bổ sung kiểm tra mật mã chữ ký và binary manifest của toàn bộ bộ APK, gồm version 64-bit, base/feature/config, dependency/cycle và required split types, bằng apksig pin. Candidate có preflight chỉ đọc trước tạo user và audit lại trước import một APK, ràng buộc private copy bằng hash đã kiểm. Verifier hiểu cluster không có nghĩa SpaceCore nạp được split; capability vẫn false. Kết quả mới trong [APK_SET_VALIDATION.md](APK_SET_VALIDATION.md); mốc PHASE6_VALIDATION là lịch sử nguồn a1d70d2.
 
 | Phase/bước | Trạng thái | Bằng chứng/phần còn thiếu |
 | --- | --- | --- |

@@ -34,7 +34,8 @@ def main():
         print(f"Verified payload revision {revision}; no native engine or phone was executed.")
     shutil.copyfile(ROOT / "docs/PHONE_TEST_GUIDE.md", folder / "HUONG_DAN_THU.md")
     shutil.copyfile(ROOT / "third_party/spacecore/NOTICE.md", folder / "SDK_NOTICE.md")
-    files = [folder / name for name in [candidate.name, "fonesi-payload-r1.apk", "fonesi-payload-r2.apk", "HUONG_DAN_THU.md", "SDK_NOTICE.md"]]
+    shutil.copyfile(ROOT / "third_party/apksig/NOTICE.md", folder / "APKSIG_NOTICE.md")
+    files = [folder / name for name in [candidate.name, "fonesi-payload-r1.apk", "fonesi-payload-r2.apk", "HUONG_DAN_THU.md", "SDK_NOTICE.md", "APKSIG_NOTICE.md"]]
     (folder / "checksums.json").write_text(json.dumps({p.name: digest(p) for p in sorted(files)}, indent=2) + "\n")
     output = folder.parent / "fonesi-0.5.0-phone-test.zip"
     with zipfile.ZipFile(output, "w", compression=zipfile.ZIP_DEFLATED) as archive:

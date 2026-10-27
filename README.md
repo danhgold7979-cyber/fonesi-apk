@@ -8,6 +8,8 @@ Lộ trình chi tiết: [8 phase, 32 bước và 4 mốc thử điện thoại](
 
 Theo dõi [phase hiện tại](docs/STATUS.md) và [quy luật code/test](docs/CODE_TEST_RULES.md).
 
+Ngày 27/10/2026, bước E4 bổ sung kiểm tra chữ ký mật mã/binary manifest của APK và tính nhất quán bộ split trước import: [bằng chứng](docs/APK_SET_VALIDATION.md). Đây là kiểm tra đầu vào; engine candidate vẫn chưa nhập được split. Plan và kết quả khảo sát thêm engine được lưu cùng source.
+
 **Trạng thái `0.5.0`:** đã bổ sung khóa quản lý/shortcut bằng xác thực hệ thống, xuất/nhập tên và nhóm, tìm/lọc/chọn nhiều bản, preview phạm vi cập nhật và tự kiểm tra/cập nhật tuần tự khi Fonesi đang mở và đã mở khóa. Build mặc định `cloud` không chứa SDK; build `candidate` nối SDK thật nhưng chỉ nhận một APK đầy đủ, ARM64/API 26–34/trang 4 KB và phải bật chủ động. Split APK, Android mới và khả năng chạy/cách ly tài khoản thật vẫn chưa đạt nghiệm thu. Không gọi đây là sản phẩm đã hoàn thiện 100%. Thử điện thoại được gom về đợt sau theo yêu cầu; theo dõi [STATUS.md](docs/STATUS.md).
 
 Không dùng lối tắt mở app gốc hoặc trang web để giả lập một bản clone có tài khoản độc lập.
@@ -37,7 +39,7 @@ Build candidate và chuẩn bị gói thử cho đợt sau:
 python3 scripts/build_phone_bundle.py
 ```
 
-APK có SDK: `app/build/outputs/candidate/fonesi-0.5.0-candidate.apk`. Gói payload 1/2 và hướng dẫn: `app/build/outputs/fonesi-0.5.0-phone-test.zip`. [Báo cáo 0.5.0](docs/PHASE6_VALIDATION.md) ghi test/build/lint/audit hai cấu hình; runtime chưa xác minh.
+APK có SDK: `app/build/outputs/candidate/fonesi-0.5.0-candidate.apk`. Gói payload 1/2 và hướng dẫn: `app/build/outputs/fonesi-0.5.0-phone-test.zip`. [Báo cáo E4 hiện tại](docs/APK_SET_VALIDATION.md) ghi test/build/lint/audit hai cấu hình; runtime chưa xác minh. Báo cáo PHASE6_VALIDATION là mốc 26/10 trước E4.
 
 ## Build trong môi trường cloud
 

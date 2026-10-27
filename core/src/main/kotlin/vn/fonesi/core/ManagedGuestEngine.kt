@@ -18,6 +18,8 @@ interface InstanceRegistry {
 /** Actual platform adapter must read from the guest package manager, not original app metadata. */
 interface GuestBackend {
     val ready: Boolean
+    /** Read-only preflight on a frozen source; reject before creating any native user. */
+    fun validateSource(source: InstalledSource) {}
     fun users(): Set<Int>
     fun createUser(userId: Int)
     fun inspect(userId: Int, packageName: String): GuestPackage?
@@ -75,6 +77,7 @@ class ManagedGuestEngine(
         try {
             check(snapshots.verify(snapshot) && snapshot.source.packageName == source.packageName &&
                 snapshot.source.versionCode == source.versionCode && snapshot.source.signerDigests == source.signerDigests)
+            backend.validateSource(snapshot.source)
             mutationAllowed()
             checkCreatePeers(source)
             var row = registry.reserve(source.packageName)

@@ -1,5 +1,7 @@
 # Bằng chứng cloud 0.5.0 — S1/S2/U1/Q1 và rà cuối R1
 
+**Mốc lịch sử nguồn a1d70d2, ngày 26/10/2026.** APK/bundle E4 tạo sau có cùng versionName 0.5.0 nhưng hash khác; xem [APK_SET_VALIDATION.md](APK_SET_VALIDATION.md) cho kết quả hiện tại, không dùng checksum mốc này để xác minh gói E4.
+
 Kiểm tra ngày 26/10/2026. Plan tổng thể/chi tiết và các điều chỉnh được ghi trước code trong [EXECUTION_PLAN.md](EXECUTION_PLAN.md). Báo cáo này thay mốc 0.4 làm bằng chứng bản hiện tại; các báo cáo trước được giữ nguyên là lịch sử.
 
 ## Lệnh và kết quả

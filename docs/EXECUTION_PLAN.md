@@ -1,5 +1,47 @@
 # Kế hoạch thực thi và đối chiếu yêu cầu
 
+## E3 — plan tiếp tục engine trước triển khai (27/10/2026)
+
+Đối chiếu tổng thể: source 0.5.0 đã push, 246 test và gói debug đã kiểm tra; S1/S2/U1/Q1 không cần chạy lại khi chưa đổi. Điểm chính còn thiếu là engine có source/import split đầy đủ và runtime. Tiếp tục phase 1/4/5, không đổi yêu cầu sang profile giới hạn/root/web hoặc bỏ ứng dụng bắt buộc.
+
+1. Khảo sát baseline khác/nhánh source sạch bằng Git/API công khai; pin commit, đọc license/build/native/init/log. Các fork cũ đã bị loại không tự trở thành đạt do đổi tên. Chưa chạy script/build bên thứ ba trước khi đọc.
+2. Ưu tiên baseline đã có model/parser/store split. Nếu có, xác minh đường end-to-end: signatures/dependency, settings/Parcel, private APK cluster, ApplicationInfo/resource/classloader/native libs và update; nguồn gốc thư viện native phải được ghi.
+3. Chỉ sau audit đầu vào mới ghi plan adapter/build opt-in/namespace mới, test bằng bộ APK split do dự án tự tạo và build thư viện thực. Nếu phải sửa engine, liệt kê file và ranh giới transaction trước patch; không dùng một test copy file để nhận hỗ trợ clone.
+4. Kiểm tra độc lập khả năng chạy cloud (ADB/emulator/ABI), không suy ra Samsung từ emulator. Điện thoại thật vẫn hoãn theo yêu cầu và chưa được ghi đạt; không bắt người dùng đăng nhập trước payload/cách ly.
+5. Với blocker không giải quyết được trong phạm vi nguồn/SDK hiện có, lưu bằng chứng cụ thể và phần code đã thực sự hoàn thành; không chỉ tăng số test hoặc thêm UI rồi gọi sản phẩm 100%.
+
+### E3 — kết quả và hướng xử lý trước code
+
+- Blacks-BlackBox `40282a7…` có đường `.apks`, nhưng chọn base theo tên/kích thước và chọn tối đa một ABI/density/language bằng heuristic tên; không parse/verify mọi split như một cluster. Copy split/lib bỏ qua lỗi, parser vẫn parse base và còn hydrate split từ app host. Giữ các crash handler/log/spoof của fork trước. Chưa thể dùng làm engine đạt yêu cầu.
+- Renjana `14302a5…` có split classloader nhưng fallback `tryDirectLaunch` mở app gốc không cách ly; VirtualContext ghi rõ không chặn syscall native. Không tích hợp như clone thật. ServenScorpion `23aa5ec…` còn dùng split app host và chưa tìm được baseline đầy đủ có provenance/license tương ứng. Chưa chạy build của ba repo.
+- ADB hiện không có thiết bị; không có `/dev/kvm`. Không suy ra runtime từ build hoặc cố khởi emulator ARM trong cloud rồi gọi là Samsung.
+
+## E4 — plan chi tiết kiểm tra tính hợp lệ bộ APK trước import
+
+Đối chiếu bước 17 của phase 4 và phát hiện E3: cần kiểm tra manifest/chữ ký thật của **mọi APK**, không dựa tên `base.apk` hoặc metadata app gốc. Đây là prerequisite cho engine split; không thay capability engine hiện tại thành true.
+
+1. Thêm auditor đọc binary manifest và kiểm tra chữ ký mật mã bằng Android apksig được pin cùng AGP 8.11.1 (Apache-2.0), không tự viết parser/signature verifier. Giới hạn manifest input; không trích ZIP ra kho user. Đọc package/version64/split name/feature/config/dependency từ manifest, bỏ qua tên file khi phân loại base/split.
+2. Audit cả tập: đúng một base, ID split duy nhất, package/version/signers khớp nguồn và nhau; dependency feature/config có thật và không cycle. Canonical path phải duy nhất/tệp thường không symlink. Từ chối APK hỏng/unsigned/tampered/mixed signer/version/pkg/missing dependency; trả về danh tính+hash của mọi member để đối chiếu, không import hoặc sửa tệp.
+3. Nối auditor ở adapter candidate trước import single APK và khi đọc lại bản APK riêng. Vẫn từ chối split trong SpaceCore; không dùng auditor làm bằng chứng SDK nạp split. Tái sử dụng kiểm tra cũ về private copy/ARM64/hash/SDK readback.
+4. Tạo fixture APK thật bằng aapt2/keytool/apksigner trong build output, dùng khóa test sinh riêng không đưa vào Git. Test binary manifest/signature thật (base có tên bất kỳ, split feature/config, source sai, partial/mixed/tampered/duplicate paths/cycle), không chỉ mock certificates. Fixture generation chỉ thuộc test, không chạy native engine hoặc dùng tài khoản.
+5. Chạy test liên quan rồi kiểm tra hai cấu hình/lint/audit; báo thay đổi số test và hash artifact. Lưu license/dependency/ràng buộc, cập nhật báo cáo/STATUS và push source. E4 chỉ đóng verifier khi có bằng chứng; E3/runtime và 100% toàn sản phẩm vẫn cần giải quyết riêng.
+
+Rà E4 trước chỉnh thứ tự đọc: kiểm tra kích thước/đọc manifest bounded trước khi gọi apksig, vì thư viện có thể tự đọc manifest trong verify. Manifest chỉ được tin sau crypto verify; parse trước giới hạn không đồng nghĩa chấp nhận chữ ký. Bổ sung fixture manifest XML text đã ký để chứng minh parser từ chối dữ liệu không phải binary, và fixture ZIP manifest quá budget đã ký để kiểm tra chốt tài nguyên trước verifier.
+
+Rà E4 chi phí readback trước chỉnh adapter: không verify/hash lại toàn APK cho mỗi lần inspect từng clone (nhóm shared lớn sẽ đọc cùng file lặp). Verify nguồn một lần trước mỗi import; private copy phải có hash bằng chính file vừa verify theo guard hiện có, nên cũng được ràng buộc với chữ ký đã kiểm. Các inspect định kỳ vẫn dùng archive/SDK identity như trước; không tuyên bố đã crypto-audit mọi file mỗi lần quét hoặc cache chữ ký theo size/mtime thiếu an toàn.
+
+Đối chiếu AOSP ApkLiteParseUtils/SplitDependencyLoader trước bổ sung E4: kiểm tra cả isSplitRequired/requiredSplitTypes/splitTypes để base bị tách không được chấp nhận như standalone nếu thiếu config bắt buộc. Bổ sung APK fixture thật khai báo required type, trường hợp thiếu type và đủ type. Giới hạn uses-split một dependency như framework, không tự gộp nhiều tag mà Android chỉ nhận tag đầu. Rà build: khai báo APK fixture là input của test task để script/fixture đổi phải test lại; truyền SDK/JDK qua tham số từ Gradle, hỗ trợ cả local.properties khi ANDROID_HOME không có. Đóng ZipFile của fixture đúng vòng đời; không thay đổi thư mục HOME/khóa ký app.
+
+Plan đóng gói E4 trước sửa script: giữ candidate/payload/guide/SDK notice/checksums, thêm APKSIG_NOTICE.md cho dependency mới; allowlist ZIP thành đúng 7 entry. Fixture APK/khóa test không thuộc gói điện thoại. Báo cáo 26/10 giữ là lịch sử, báo cáo E4 ghi hash/suite của build mới và không đánh dấu engine split đã hoạt động.
+
+Kết quả E4 cloud: 16 test verifier với APK ký thật đạt, full check hai cấu hình exit 0; 262 test (90 core + 172 app), không lỗi/bỏ qua. Build/lint/manifest/signature audit đạt, cảnh báo vẫn 5 cloud/15 candidate; guard split của SDK giữ nguyên. Báo cáo/hash ở [APK_SET_VALIDATION.md](APK_SET_VALIDATION.md). Chưa đóng engine/runtime hoặc 100% toàn sản phẩm.
+
+Rà ranh giới create trước sửa cuối E4: backend.install trước đây kiểm tra archive/ABI sau createUser, nên nguồn lỗi có thể để lại native user/reservation rỗng. Plan thêm GuestBackend.validateSource chỉ đọc, gọi trên snapshot đã hash-verify trước reserve/createUser; SpaceCore dùng cùng helper archive/crypto/ABI cho preflight và kiểm tra lại trước install. Không sửa/xóa native user để rollback. Test source bị preflight từ chối và mất foreground trong preflight phải không reserve hoặc vào SDK, đồng thời dọn snapshot chưa dùng. Chạy lại kiểm tra hai cấu hình sau thay đổi này; gói 262 test là mốc trước sửa, không dùng làm artifact cuối.
+
+Kết quả cuối E4 sau preflight: full check exit 0 ở cả cloud/candidate, **264 test (92 core + 172 app)**, không failure/error/skipped; APK build/lint/manifest/signature audit đạt. Giữ 5/15 cảnh báo như trước, không mở capability split hoặc đổi SDK/target/chữ ký. Nguồn sai bị chặn trước SDK user; phần source-engine/runtime còn mở trong E3. Gói cuối phải khớp hash mới trong APK_SET_VALIDATION, không dùng gói mốc 262.
+
+Đóng E4 phần cloud: bundle mới exit 0, đúng 7 entry, CRC/SHA-256 khớp, candidate/guide/notices khớp source và báo cáo cuối. Không có binary/khóa fixture trong gói điện thoại hoặc source. Đã kiểm tra source secrets, cú pháp script, link tài liệu và whitespace. Giữ E3/runtime/engine split mở; không gọi toàn sản phẩm 100%.
+
 Đối chiếu [ROADMAP.md](ROADMAP.md), [PLAN.md](PLAN.md), [STATUS.md](STATUS.md) và kết quả `0.4.0`. Yêu cầu hiện tại: tiếp tục hoàn thiện, lập plan trước từng phần việc, code/test tỉ mỉ; thử điện thoại gom về đợt sau. Không gọi 100% khi còn yêu cầu bắt buộc chưa đạt.
 
 ## Đối chiếu tổng thể trước lượt triển khai
