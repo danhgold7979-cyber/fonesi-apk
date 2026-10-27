@@ -1,5 +1,20 @@
 # Kế hoạch thực thi và đối chiếu yêu cầu
 
+## E9 — plan nạp code/resources private, trước code
+
+Đối chiếu tổng thể: E7/E8 đã push d5a6ff7, 301 test và các artifact có báo cáo; E6 chưa chạy Android. Vẫn thiếu classloader/resources/lifecycle/Binder trước khi có provider hoàn chỉnh. Bước này chỉ làm code image loader, không gọi Application.onCreate/Activity hoặc đưa SDK SpaceCore thành hỗ trợ split.
+
+1. Thêm cờ isolatedSplits từ manifest đã ký vào verifier chung. Giữ chữ ký/root/dependency checks; test bằng APK binary thật. Loader phẳng phải từ chối isolatedSplits cho tới khi có graph classloader/resources đúng, không âm thầm flatten.
+2. Layout lấy cluster bằng PrivateApkStore.open, xác minh mọi APK nằm trong private data root host, từ chối package host/framework và bảo toàn toàn base/split. Sắp splitNames/sourceDirs cùng thứ tự tên như Android; không lấy ApplicationInfo/codePath từ app gốc đang cài.
+3. Android loader chỉ ở dedicated guest process, sau native ENABLED và trên thread IO. Chỉ một lần thử trong process; lỗi không cho hot-swap/retry account. Dùng DexClassLoader với parent framework của host (không parent chứa các thư viện app host), native search path chỉ từ preparer, cache private. Không load/init class guest trước readback.
+4. Resources được đọc bằng PackageManager.getResourcesForApplication(ApplicationInfo) trỏ hoàn toàn vào code private và UID host, không createPackageContext/fallback app gốc. Base ApplicationInfo chỉ phục vụ resource paths; chưa là PackageInfo/components đầy đủ của feature. Public API chưa gắn custom resource classloader/Context; không nhận là full resource/lifecycle support.
+5. Đọc lại cluster/native image sau tạo code/resources; lỗi chấm dứt attempt và để controller sau xử lý process thất bại. Loader không tự bật provider hoặc xử lý intent, không khởi guest Application/Activity. Chưa có context/Binder mediation nên chưa cho tài khoản vào.
+6. Kiểm tra layout bằng signed fixtures thật cho đủ/thứ tự/private paths/isolation/host collision/corrupt input, không mock để báo ART chạy. Compile/lint/audit source component, app hai cấu hình và bundle vì verifier public model đổi. E6 không boot lại; DEX/Resources thực thi Android vẫn NOT VERIFIED khi chưa có kết quả thật.
+
+E9 compile đầu phát hiện splitSourceDirs của ApplicationInfo là nullable. Giữ một snapshot local splitPaths rồi gán/copy riêng hai field; không dùng non-null assertion trên field framework. Tiếp tục test/build sau sửa, chưa có code image load Android thành công. Public SDK 36 chỉ có Resources constructor ba tham số, nên chưa tự nhận có resource classloader binding qua API công khai.
+
+E9 sau sửa: 309 test đạt, app hai cấu hình/source/probe build/lint/audit đạt; bundle E9 đã kiểm exact 7 entry/checksums. Code source chỉ có trong probe, không trong cloud/candidate. [GUEST_CODE_VALIDATION.md](GUEST_CODE_VALIDATION.md) ghi hash/scope thật; E6 không boot lại, ART/Resources/Application/Binder chưa thực thi. Kế tiếp là framework/context/controller và các giao thức durable của provider, không bật capability từ code image loader component.
+
 ## E5 — plan dựng engine từ source, trước code (27/10/2026)
 
 Đối chiếu tổng thể: E4 đã push f89ce14, 264 test đạt; không chạy lại suite cũ khi chưa đổi app. SDK SpaceCore không có source native để sửa split/16 KB. Tiếp tục phase 1/4/5 bằng runtime source riêng, không thay provider của dữ liệu đang có.

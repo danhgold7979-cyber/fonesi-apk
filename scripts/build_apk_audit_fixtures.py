@@ -33,7 +33,7 @@ def main():
                  "-validity", "3", "-dname", f"CN=Fonesi disposable {name} test key"])
 
     def apk(name, split=None, feature=False, config=None, uses=None, version=1,
-            major=0, package="vn.fonesi.fixture", signer="primary", split_required=False, required_types=None, provided_types=None):
+            major=0, package="vn.fonesi.fixture", signer="primary", split_required=False, required_types=None, provided_types=None, isolated=False):
         staging = output / name
         staging.mkdir(exist_ok=True)
         attributes = [f'package="{package}"', 'xmlns:android="http://schemas.android.com/apk/res/android"',
@@ -46,6 +46,8 @@ def main():
             attributes.append(f'configForSplit="{config}"')
         if split_required:
             attributes.append('android:isSplitRequired="true"')
+        if isolated:
+            attributes.append('android:isolatedSplits="true"')
         if required_types:
             attributes.append(f'android:requiredSplitTypes="{required_types}"')
         if provided_types:
@@ -68,6 +70,7 @@ def main():
     apk("base", split="feature.chat", feature=True)  # Deliberately misleading file name.
     apk("chat-config", split="feature.chat.en", config="feature.chat")
     apk("base-config", split="config.en")
+    apk("isolated-base", isolated=True)
     apk("new-version", version=2)
     apk("new-version-config", split="config.en", version=2)
     apk("version-major", version=7, major=1)

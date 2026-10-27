@@ -2,7 +2,9 @@
 
 **Đã hoàn thành thêm phần cloud của S1/S2/U1/Q1; sản phẩm clone đa ứng dụng chưa đạt 100%.** Các phần khóa, cấu hình, chọn nhiều, preview và tự động khi đang mở đã có code và kiểm tra. SDK candidate vẫn chỉ nhập một APK, giới hạn ARM64/API 26–34/trang 4 KB; chưa thực thi được xác minh trên điện thoại. Thử thiết bị được gom về đợt sau theo yêu cầu, không chặn phát triển phần độc lập và không biến runtime chưa chạy thành đạt.
 
-Plan trước từng phần và điều chỉnh: [EXECUTION_PLAN.md](EXECUTION_PLAN.md). Bằng chứng hiện tại: [SOURCE_ENGINE_VALIDATION.md](SOURCE_ENGINE_VALIDATION.md); báo cáo [E4](APK_SET_VALIDATION.md) là mốc lịch sử. Giữ nguyên lộ trình [8 phase/32 bước](ROADMAP.md).
+Plan trước từng phần và điều chỉnh: [EXECUTION_PLAN.md](EXECUTION_PLAN.md). Bằng chứng hiện tại: [GUEST_CODE_VALIDATION.md](GUEST_CODE_VALIDATION.md); báo cáo [E4](APK_SET_VALIDATION.md)/[E6–E8](SOURCE_ENGINE_VALIDATION.md) là mốc lịch sử. Giữ nguyên lộ trình [8 phase/32 bước](ROADMAP.md).
+
+**E9:** code image loader dùng private DEX/native/resource paths đã compile/lint; 309 test đạt (284 app/shared + 25 source JVM), không lỗi/bỏ qua. Có guard dedicated process/native ENABLED/thread IO/một attempt, chặn isolatedSplits chưa hỗ trợ, readback trước trả handle. Chưa có guest Context/Application/Activity/Binder, custom resource classloader hoặc provider đầy đủ. ART/resources thực thi Android chưa chạy, không có clone/tài khoản được chứng minh. Candidate vẫn SpaceCore/single APK; gói debug hiện tại có checksum E9.
 
 **E6/E7/E8:** 283 test cho app/shared code + 18 test ELF/native extraction = 301 test đạt, không lỗi/bỏ qua. Verifier đã chuyển sang apk-runtime dùng chung; kho code private publish/readback toàn base/split và native preparer đã có thực thi filesystem/JVM. Native ARM64/x86_64 build/static audit 16 KB đạt. Đây chưa phải classloader/resources/Binder/lifecycle Android hoặc adapter source hoàn chỉnh. E6 boot Google/AOSP và reuse đều chưa chạy probe; framework AOSP có DeadSystemException. Đã xác nhận dừng máy ảo sở hữu sau khi dừng mềm không thoát. Không dùng lỗi hạ tầng để kết luận tương thích social app. SDK SpaceCore vẫn giữ capability split false.
 

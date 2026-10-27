@@ -43,6 +43,10 @@ class ApkSetAuditorTest {
         assertEquals(source.versionCode, ApkSetAuditor.verify(source, 34).base.version)
         reject(source.copy(versionCode = 7))
     }
+    @Test fun isolatedSplitLoadingFlagIsReadFromSignedManifest() {
+        assertTrue(ApkSetAuditor.verify(source("isolated-base", "base-config"), 34).base.isolatedSplits)
+        assertFalse(ApkSetAuditor.verify(source("main-disguised", "base-config"), 34).base.isolatedSplits)
+    }
     @Test fun unsignedAndTamperedArchivesNeverPassUsingClaimedSourceCertificates() {
         reject(source("unsigned")); reject(source("tampered"))
     }

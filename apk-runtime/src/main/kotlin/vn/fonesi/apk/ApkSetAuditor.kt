@@ -13,7 +13,8 @@ import java.util.zip.ZipFile
 
 data class AuditedApk(val file: File, val packageName: String, val version: Long, val splitName: String?,
     val feature: Boolean, val configFor: String?, val dependencies: Set<String>, val splitRequired: Boolean,
-    val requiredTypes: Set<String>, val providedTypes: Set<String>, val signers: Set<String>, val sha256: String)
+    val requiredTypes: Set<String>, val providedTypes: Set<String>, val signers: Set<String>, val sha256: String,
+    val isolatedSplits: Boolean = false)
 data class AuditedApkSet(val base: AuditedApk, val splits: List<AuditedApk>)
 
 /** Integrity only: does not install, execute, or assert an engine can load this APK cluster. */
@@ -90,7 +91,7 @@ object ApkSetAuditor {
         require(signers.isNotEmpty())
         val parser = AndroidBinXmlParser(ByteBuffer.wrap(bytes))
         var rootSeen = false; var packageName: String? = null; var version: Long? = null; var split: String? = null
-        var feature = false; var config: String? = null
+        var feature = false; var config: String? = null; var isolated = false
         var splitRequired = false; var requiredTypes = emptySet<String>(); var providedTypes = emptySet<String>()
         val uses = mutableSetOf<String>()
         while (parser.next() != AndroidBinXmlParser.EVENT_END_DOCUMENT) {
@@ -124,6 +125,7 @@ object ApkSetAuditor {
                 config = string("", "configForSplit") ?: string(ANDROID, "configForSplit")
                 config?.let { require(it.isEmpty() || splitPattern.matches(it)) }
                 feature = bool("isFeatureSplit"); splitRequired = bool("isSplitRequired")
+                isolated = bool("isolatedSplits")
                 requiredTypes = types("requiredSplitTypes"); providedTypes = types("splitTypes")
             } else if (parser.depth == 2 && parser.name == "uses-split" && parser.namespace.orEmpty().isEmpty()) {
                 val name = checkNotNull(string(ANDROID, "name")); require(uses.isEmpty() && splitPattern.matches(name) && uses.add(name))
@@ -131,7 +133,7 @@ object ApkSetAuditor {
         }
         require(rootSeen && hash(file) == before) { "APK changed while auditing" }
         return AuditedApk(file, checkNotNull(packageName), checkNotNull(version), split, feature, config, uses.toSet(),
-            splitRequired, requiredTypes, providedTypes, signers, before)
+            splitRequired, requiredTypes, providedTypes, signers, before, isolated)
     }
 
     private fun hash(file: File): String {

@@ -36,8 +36,13 @@ def main():
     run([ROOT / "scripts/gradle.sh", "-PincludeSourceEngine=true", ":engine-source:assembleDebug", ":engine-source:lintDebug", "--console=plain"], reports / "android-build.log")
     run([ROOT / "scripts/gradle.sh", "-PincludeSourceEngine=true", ":engine-source:testDebugUnitTest", "--console=plain"], reports / "native-libraries-test.log")
     tests = [ET.parse(path).getroot() for path in (output / "test-results/testDebugUnitTest").glob("TEST-*.xml")]
-    native_tests = {key: sum(int(result.get(key, "0")) for result in tests) for key in ("tests", "failures", "errors", "skipped")}
-    assert tests and native_tests["tests"] > 0 and not any(native_tests[key] for key in ("failures", "errors", "skipped")), native_tests
+    def totals(results):
+        return {key: sum(int(result.get(key, "0")) for result in results) for key in ("tests", "failures", "errors", "skipped")}
+    component_tests = totals(tests)
+    native_tests = totals([result for result in tests if result.get("name", "").endswith("NativeLibraryPreparerTest")])
+    layout_tests = totals([result for result in tests if result.get("name", "").endswith("GuestCodeLayoutTest")])
+    assert tests and component_tests["tests"] > 0 and not any(component_tests[key] for key in ("failures", "errors", "skipped")), component_tests
+    assert native_tests["tests"] > 0 and layout_tests["tests"] > 0
     archive = output / "outputs/aar/engine-source-debug.aar"
     # The following x86_64 probe build may replace the conventional output filename.
     verified_archive = reports / "engine-source-arm64-verified.aar"
@@ -79,6 +84,7 @@ def main():
               "ndk": NDK, "cmake": CMAKE, "host_native_integration_passed": True, "android_aar_built": True,
               "android_native_execution_verified": False, "app_provider_integrated": False,
               "native_library_host_tests": native_tests, "verified_aar": str(verified_archive.relative_to(ROOT)),
+              "source_component_jvm_tests": component_tests, "code_layout_jvm_tests": layout_tests,
               "aar_sha256": hashlib.sha256(archive.read_bytes()).hexdigest(), "aar_bytes": archive.stat().st_size,
               "elf_sha256": hashlib.sha256(blob).hexdigest(), "elf_bytes": len(blob), "load_alignments": [p[7] for p in loads],
               "dependencies": dependencies, "jni_exports": sorted(exported), "lint_warnings": sum(i.get("severity") == "Warning" for i in lint)}

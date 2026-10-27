@@ -14,6 +14,8 @@ E5 đã build [native runtime riêng từ source](docs/SOURCE_NATIVE_VALIDATION.
 
 E7/E8 đã bổ sung kho private giữ đủ base/split và bộ chuẩn bị thư viện native theo ABI/4 KB/16 KB; **301 test** đạt ở các tầng cloud/JVM, build/lint/audit hai bản app và component riêng đạt. [Báo cáo hiện tại](docs/SOURCE_ENGINE_VALIDATION.md) có hash APK/bundle và kết quả E6: máy ảo Android chưa chạy được probe, engine Java/Binder/classloader/lifecycle còn thiếu. Các component mới chưa thay SpaceCore hoặc mở capability split trong app.
 
+E9 tiếp tục thêm code image loader DEX/tài nguyên private và guard isolatedSplits. **309 test** và build/lint/audit đạt; [báo cáo E9](docs/GUEST_CODE_VALIDATION.md) là mốc artifact hiện tại. Code loader chưa thực thi trên Android, chưa có guest Context/Application/Activity/Binder hoặc provider đầy đủ. Không nhận là đã chạy được app clone hoặc chỉ còn thử điện thoại.
+
 **Trạng thái `0.5.0`:** đã bổ sung khóa quản lý/shortcut bằng xác thực hệ thống, xuất/nhập tên và nhóm, tìm/lọc/chọn nhiều bản, preview phạm vi cập nhật và tự kiểm tra/cập nhật tuần tự khi Fonesi đang mở và đã mở khóa. Build mặc định `cloud` không chứa SDK; build `candidate` nối SDK thật nhưng chỉ nhận một APK đầy đủ, ARM64/API 26–34/trang 4 KB và phải bật chủ động. Split APK, Android mới và khả năng chạy/cách ly tài khoản thật vẫn chưa đạt nghiệm thu. Không gọi đây là sản phẩm đã hoàn thiện 100%. Thử điện thoại được gom về đợt sau theo yêu cầu; theo dõi [STATUS.md](docs/STATUS.md).
 
 Không dùng lối tắt mở app gốc hoặc trang web để giả lập một bản clone có tài khoản độc lập.

@@ -1,5 +1,7 @@
 # E6/E7/E8 — kho code và native component, 27/10/2026
 
+Đây là báo cáo lịch sử commit d5a6ff7. Từ E9 verifier model/code loader thay đổi; xem [kết quả E9](GUEST_CODE_VALIDATION.md) để lấy artifact/hash hiện tại, không so output mới với bảng E8 bên dưới.
+
 Mốc này bổ sung code thật và kiểm tra trên cloud; **sản phẩm clone đa ứng dụng chưa hoàn thiện**. Candidate vẫn dùng SpaceCore với guard một APK/ARM64/API 26–34/4 KB. Module source mới chưa là provider chạy app, chưa bật importsSplitApks, chưa chuyển dữ liệu guest hiện có. Plan trước code và các lỗi/sửa có trong [EXECUTION_PLAN.md](EXECUTION_PLAN.md).
 
 ## Phần đã triển khai

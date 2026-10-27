@@ -41,7 +41,7 @@ public final class NativeRuntime {
     private static void load() {
         if (!loaded) { System.loadLibrary("fonesi_runtime"); loaded = true; }
     }
-    private static void requireGuestProcess(Context context) {
+    static void requireGuestProcess(Context context) {
         String name = null;
         if (Build.VERSION.SDK_INT >= 28) name = Application.getProcessName();
         else {
