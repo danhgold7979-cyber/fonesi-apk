@@ -53,9 +53,10 @@ def main():
     lint = ET.parse(ROOT / "app/build/reports/lint-results-debug.xml").getroot().findall("issue")
     if any(i.get("severity") in ["Error", "Fatal"] for i in lint): raise RuntimeError("Candidate lint errors remain")
     core = suite(ROOT / "core/build/test-results/test")
+    apk_runtime = suite(ROOT / "apk-runtime/build/test-results/test")
     simulated = suite(ROOT / "app/build/test-results/testDebugUnitTest")
     report = {"version": manifest.get(A + "versionName"), "engine_runtime_verified": False,
-        "core": core, "android_simulated": simulated, "permissions": sorted(permissions),
+        "core": core, "apk_runtime": apk_runtime, "android_simulated": simulated, "permissions": sorted(permissions),
         "public_components": sorted(public), "guarded_exported_components": guarded,
         "lint_warnings": sum(i.get("severity") == "Warning" for i in lint),
         "apk_bytes": apk.stat().st_size, "sha256": hashlib.sha256(apk.read_bytes()).hexdigest(), "signer_sha256": signer}

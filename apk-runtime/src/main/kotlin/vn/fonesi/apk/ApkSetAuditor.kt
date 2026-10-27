@@ -1,4 +1,4 @@
-package vn.fonesi.app.apk
+package vn.fonesi.apk
 
 import com.android.apksig.ApkVerifier
 import com.android.apksig.internal.apk.AndroidBinXmlParser

@@ -2,7 +2,9 @@
 
 **Đã hoàn thành thêm phần cloud của S1/S2/U1/Q1; sản phẩm clone đa ứng dụng chưa đạt 100%.** Các phần khóa, cấu hình, chọn nhiều, preview và tự động khi đang mở đã có code và kiểm tra. SDK candidate vẫn chỉ nhập một APK, giới hạn ARM64/API 26–34/trang 4 KB; chưa thực thi được xác minh trên điện thoại. Thử thiết bị được gom về đợt sau theo yêu cầu, không chặn phát triển phần độc lập và không biến runtime chưa chạy thành đạt.
 
-Plan trước từng phần và điều chỉnh: [EXECUTION_PLAN.md](EXECUTION_PLAN.md). Bằng chứng bản hiện tại: [APK_SET_VALIDATION.md](APK_SET_VALIDATION.md). Giữ nguyên lộ trình [8 phase/32 bước](ROADMAP.md).
+Plan trước từng phần và điều chỉnh: [EXECUTION_PLAN.md](EXECUTION_PLAN.md). Bằng chứng hiện tại: [SOURCE_ENGINE_VALIDATION.md](SOURCE_ENGINE_VALIDATION.md); báo cáo [E4](APK_SET_VALIDATION.md) là mốc lịch sử. Giữ nguyên lộ trình [8 phase/32 bước](ROADMAP.md).
+
+**E6/E7/E8:** 283 test cho app/shared code + 18 test ELF/native extraction = 301 test đạt, không lỗi/bỏ qua. Verifier đã chuyển sang apk-runtime dùng chung; kho code private publish/readback toàn base/split và native preparer đã có thực thi filesystem/JVM. Native ARM64/x86_64 build/static audit 16 KB đạt. Đây chưa phải classloader/resources/Binder/lifecycle Android hoặc adapter source hoàn chỉnh. E6 boot Google/AOSP và reuse đều chưa chạy probe; framework AOSP có DeadSystemException. Đã xác nhận dừng máy ảo sở hữu sau khi dừng mềm không thoát. Không dùng lỗi hạ tầng để kết luận tương thích social app. SDK SpaceCore vẫn giữ capability split false.
 
 **E5:** module native source riêng đã build ARM64/ELF 16 KB, không quyền/component, có kiểm tra thực thi libc routing trong hai subprocess Linux và giữ marker/output riêng. Không nối vào APK chính, không phải Android guest runtime. [Báo cáo E5](SOURCE_NATIVE_VALIDATION.md) ghi input/patch/license/hash và phần còn thiếu. SDK SpaceCore, dữ liệu guest và capability split của bản app hiện tại chưa thay đổi.
 
@@ -26,6 +28,7 @@ Plan trước từng phần và điều chỉnh: [EXECUTION_PLAN.md](EXECUTION_P
 - Cùng ID `0.5.0-candidate`: SDK thật, khởi tạo bật chủ động; bản debug chưa nghiệm thu. Không cài song song với cloud. Không đưa debug signer thành khóa phát hành.
 - `vn.fonesi.probe`: probe riêng chỉ dùng payload do dự án kiểm soát; mặc định chưa chủ động init SDK.
 - `vn.fonesi.payload` r1/r2: không quyền, dữ liệu mẫu riêng để thử cách ly và cập nhật giữ ID/nhãn trong đợt sau.
+- `vn.fonesi.nativeprobe`: APK riêng 0 quyền/Internet, hai service nội bộ ở process khác nhau để thử JNI/file/SQLite mẫu. Build/static audit đạt; chưa có kết quả Android execution. Không nằm trong bundle điện thoại.
 
 Gói hiện tại: `app/build/outputs/fonesi-0.5.0-phone-test.zip`; quy trình [PHONE_TEST_GUIDE.md](PHONE_TEST_GUIDE.md). Chưa yêu cầu cài ngay. Gỡ Fonesi có thể mất toàn bộ vùng clone; backup tên/nhóm không chứa dữ liệu đăng nhập.
 

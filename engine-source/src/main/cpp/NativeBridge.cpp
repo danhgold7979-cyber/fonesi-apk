@@ -44,7 +44,11 @@ Java_vn_fonesi_engine_NativeRuntime_configureNative(JNIEnv* env, jclass, jstring
 
 extern "C" JNIEXPORT jboolean JNICALL
 Java_vn_fonesi_engine_NativeRuntime_enableNative(JNIEnv* env, jclass) {
-    try { return fonesi::enableHooks() ? JNI_TRUE : JNI_FALSE; }
+    try {
+        if (fonesi::enableHooks()) return JNI_TRUE;
+        auto reason = fonesi::runtimeFailure();
+        fail(env, "java/lang/IllegalStateException", reason.c_str()); return JNI_FALSE;
+    }
     catch (const std::exception&) { fail(env, "java/lang/IllegalStateException", "Native hooks could not be installed"); return JNI_FALSE; }
 }
 

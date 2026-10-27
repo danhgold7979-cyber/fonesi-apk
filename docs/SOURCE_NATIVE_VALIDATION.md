@@ -1,5 +1,7 @@
 # E5 — native runtime từ source, 27/10/2026
 
+Hash/size dưới đây là mốc E5 lịch sử (commit 21e883c). E6/E8 có chẩn đoán JNI và native preparer mới; xem [báo cáo hiện tại](SOURCE_ENGINE_VALIDATION.md). Không đối chiếu output AAR hiện tại với hash E5.
+
 Đã dựng module `engine-source` độc lập. Đây là native file-routing component do Fonesi viết, dùng Dobby build từ source; chưa phải engine chạy ứng dụng Android hoàn chỉnh và chưa nối vào APK app chính. Plan và các lỗi/sửa trước build được ghi trong [EXECUTION_PLAN.md](EXECUTION_PLAN.md).
 
 ## Code và input

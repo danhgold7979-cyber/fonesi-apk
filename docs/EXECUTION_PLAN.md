@@ -36,6 +36,61 @@ Kết quả E5 phần native: source check exit 0, host libc routing thực thi 
 4. Build/lint/audit chữ ký/permissions/components/ABI của probe, rồi cài/chạy chỉ trên serial emulator sở hữu riêng. Không thao tác ADB không có -s hoặc tác động điện thoại nối về sau. Giữ log/báo cáo private synthetic, không mật khẩu/OTP.
 5. Nếu software emulator không chạy được, ghi đúng lỗi, giữ runtime chưa đạt; không chuyển x86_64 thành chứng nhận ARM64/Samsung. Phần Java loader/Binder/component/cluster vẫn phải triển khai và kiểm tra riêng sau bước này, không bật provider từ probe component.
 
+Chi tiết E6 trước chỉnh runner/lifecycle: mỗi lần chạy có run_id UUID từ runner và report phải khớp đúng ID để không đọc nhầm PASS cũ sau cài đè/khởi động. Rotation lưu scope đã dispatch và tiếp tục poll, không tạo lại/hot-swap native services. Host vẫn phải đối chiếu cả original/A/B sau khi nhận hai kết quả thật; không dùng riêng native state làm nghiệm thu.
+
+E6 boot lần đầu timeout 480 giây: log Android 34 cho thấy PackageManager scan 258 app, giải nén Chrome/WebView/Trichrome rồi first-boot dexopt; chưa publish đầy đủ framework để chạy probe, chưa có kết quả app. Đã dừng đúng PID/AVD của dự án và giữ logs. Plan thử đúng một warm restart cùng AVD (không wipe/root/hạ target), tiếp tục budget 480 giây dựa trên dữ liệu init đã có. Runner ghi status failure/readiness riêng, không biến boot timeout thành native pass hoặc đụng thiết bị khác.
+
+Rà guard restart: PID máy ảo đã dừng còn entry zombie Z trong /proc nên kiểm tra tồn tại đơn thuần báo nhầm còn chạy. Sửa phân biệt zombie và tiến trình sống; không bỏ ownership/prefix/serial checks hoặc cho kill PID không rõ. Warm restart thực tế chưa chạy trước khi sửa guard này.
+
+Chuẩn bị chẩn đoán E6 trước native run: native failure cần trả lý do tĩnh (symbol nào thiếu/hook nào lỗi và rollback) qua JNI exception, thay vì một boolean không giải thích được. Không log path/account/address hoặc thêm public JNI export. Runner ghi attempt/running status ngay từ đầu, vẫn chỉ công nhận report khớp run_id và actual passed. Sửa chẩn đoán không đổi routing/guard; kiểm tra lại native host và build các ABI trước probe.
+
+### E6 — điều chỉnh môi trường sau hai boot timeout, trước sửa script
+
+Warm restart Google APIs 34 cũng hết 480 giây, ADB offline trước lúc cài probe. Chưa có kết quả JNI Android. Không tăng thời hạn vô hạn hoặc coi compile là runtime. Metadata SDK công khai có ảnh `system-images;android-34;default;x86_64` AOSP không kèm bộ Chrome/Google apps của ảnh trước.
+
+1. Dừng đúng PID có cmdline/AVD khớp ownership; giữ kết quả/log cả hai lượt. Cho prepare/runner chọn ảnh bằng allowlist `aosp34`/`google34`, ghi ảnh trong ownership và kết quả. Không đổi API/target/minSdk của APK.
+2. Tạo AVD riêng với AOSP 34 và màn hình 480×800, software emulation; thử một lượt có thời hạn 480 giây. Không root, wipe AVD cũ, đọc tài khoản hoặc dùng điện thoại. Reuse/restart phải xác minh đúng ảnh/AVD đã sở hữu.
+3. Nếu boot đạt, chạy probe đã build có nonce và chẩn đoán mới. Nếu JNI/file/SQLite lỗi thì dùng lỗi thực tế để lập plan sửa native, không nới assertion hoặc bỏ SQLite. Nếu tiếp tục không boot, lưu E6 chưa chạy và tiếp tục phần code-store/loader độc lập với plan riêng; không biến lỗi hạ tầng thành tương thích hoặc không tương thích ứng dụng.
+
+Rà E6 artifact trước các build sau: runner phải đóng băng một bản APK riêng theo attempt trước static audit/install, lưu hash của đúng bản đã cài. Không đọc lại đường output Gradle sau test để gắn hash vì build tiếp có thể thay artifact trong lúc máy ảo boot. Mỗi attempt giữ input riêng trong ignored reports; nonce kết quả vẫn bắt buộc.
+
+## E7 — plan kho APK đầy đủ cho engine source, trước code
+
+Đối chiếu tổng thể phase 1/4/5: native component E5/E6 chưa có parser/store Java để nạp bộ split. Trong lúc kiểm tra runtime, có thể triển khai kho code độc lập; không khai báo provider/split capability hoặc di chuyển guest SpaceCore từ bước này.
+
+1. Tách verifier Kotlin thuần cùng 16 test chữ ký thật sang module JVM `apk-runtime` để app và engine source cùng dùng, không dependency ngược từ engine vào app. Giữ nguyên crypto/manifest assertions; cập nhật build/check/audit để tổng test có cả module mới, không đếm báo cáo cũ.
+2. Kho riêng chỉ lưu code, không chứa phiên đăng nhập: mỗi cluster có UUID bất biến, toàn bộ base/split giữ nguyên bytes/chữ ký. Tên file nội bộ theo identity đã audit, không theo tên đường nguồn. Không merge/re-sign, không lấy split từ APK gốc lúc mở guest.
+3. Giai đoạn publish: audit nguồn → tạo staging riêng → copy/hash/fsync từng APK → read-only → audit lại toàn bộ bản private → ghi index có giới hạn/type/count rõ → fsync → atomic rename → fsync root → mở lại/đối chiếu. Lỗi trước publish chỉ dọn staging của chính lần đó; không xóa phiên bản đã publish hoặc đổi active version.
+4. Readback sau process restart dùng UUID/index chặt chẽ, exact file set, path canonical/no symlink, so hash/metadata và xác minh chữ ký lại. Index không tự biến dữ liệu hỏng thành phiên bản hợp lệ. Không có fallback lấy base/split đang cài trong hệ thống.
+5. Test bằng signed binary APK fixtures: cluster với tên đánh lừa/dependency/config đầy đủ, bản v1/v2 cùng tồn tại, restart readback, nguồn sai/thiếu/giả chữ ký, sửa/xóa/thêm private files/index, path traversal/symlink và hai lần publish đồng thời. Không đánh dấu nạp resources/classloader/native libs/Binder/update/account là đạt từ file store.
+6. Khi source app/shared module đổi, chạy lại suite/build/lint/audit cả cloud/candidate một lượt; ghi số test thực tế và đóng gói lại APK nếu byte thay đổi. E6 báo cáo độc lập; native probe không có trong gói điện thoại.
+
+**Còn sau E7:** chọn/extract native ABI an toàn, metadata ApplicationInfo/PackageInfo, resources/classloader toàn bộ split, lifecycle/Binder/component, process allocation, giao thức active-version/update giữ dữ liệu và adapter riêng. Chỉ nối vào app khi các phần thực thi tương ứng có bằng chứng.
+
+Rà E7 trước lượt test cuối: canonical root phải kiểm tra cả trước createDirectories để không tạo thư mục qua symlink; đóng băng list paths/signers đầu vào trước audit/copy/index để thay đổi collection của caller không đổi metadata giữa transaction. Không coi read-only flag hay checksum là sandbox chống mã cùng UID; engine còn phải có process/binding và permission mediation.
+
+**Kết quả E7:** `scripts/check.sh --with-engine-candidate` exit 0, 283 test (92 core, 35 APK JVM gồm 19 store mới, 156 Android mô phỏng), cloud/candidate build/lint/audit đạt. Không chạy ứng dụng guest hoặc nhập split vào SpaceCore. E6 AOSP đã có log SystemServer/PackageManager nhưng chưa boot_completed trong 480 giây. Giữ đúng AVD đó chạy trong lúc hoàn tất việc độc lập, tối đa 15 phút tính từ launch; chỉ thử lại probe bằng reuse nếu đã thật sự ready, không tạo/wipe/thử ảnh mới.
+
+E6 ở phút 12–14: ADB trả `Service package: found` và `Service activity: found`, khác hai lượt trước. Thử đúng một native attempt bounded bằng reuse trên AVD đó, không boot lại. Với reuse, yêu cầu cả hai service hiện diện trước install; sys.boot_completed được ghi riêng và không suy ra từ native result (native sample có thể chạy trước launcher hoàn tất). Nếu install/launch/report fail thì giữ FAIL/NOT RUN và dừng AVD; không bỏ file/SQLite assertion. Thời hạn install/launch/report lần lượt 90/90/180 giây, không tiếp tục chờ boot vô hạn.
+
+## E8 — plan native library từ cả base/split, trước code
+
+Đối chiếu phase 1/5: kho E7 chưa chuẩn bị native search path, nên chưa đủ để gọi DexClassLoader/guest. E8 chỉ thêm component source opt-in, không sửa app/core/verifier đã đạt E7 hoặc bật engine provider.
+
+1. Thêm Kotlin cho engine-source, dùng chung apk-runtime/core. Preparer nhận ID kho private và ABI/page size rõ; mở lại code qua kho E7 để crypto/readback, không dùng APK đang cài làm fallback. Chỉ hỗ trợ ABI đã build engine (ARM64/x86_64), ghi rõ chưa hỗ trợ ARM32.
+2. Duyệt toàn bộ base/split và đúng lib/<abi>/<name>.so. Chặn path traversal, entry không hợp lệ, thiếu ABI, metadata size vượt ngân sách. Trùng SONAME trong namespace phẳng chỉ chấp nhận bytes giống nhau; khác nhau phải báo chưa hỗ trợ, không chọn bản đầu/cuối tùy ý. Không giả lập linker dependency resolution.
+3. Stream giải nén vào staging riêng có hash/fsync, xác minh ELF64 little-endian/DYN/machine/program headers và PT_LOAD phù hợp 4 KB/16 KB, không W+X/exec stack. Không đọc toàn .so vào RAM. Artifact immutable/UUID/atomic publish/readback; không ghi APK gốc, active-version hoặc vùng tài khoản. Receipt chỉ là code/native image, giao thức registry/activation vẫn còn mở.
+4. Tạo fixture bằng NDK clang thật và ký lại APK test bằng khóa disposable, gồm base/feature/config, ARM64/x86_64, ELF 4 KB/16 KB, sai machine/ELF và collision. Fixture/keys/binaries chỉ trong build output. Test real extraction, hash/readback/corruption/ABI/alignment/source integrity; không dùng header giả để nhận đã nạp native trên Android.
+5. Build/test/lint/audit engine-source và build lại probe có đúng dependency/notice; kiểm tra bốn export JNI/ELF engine vẫn giữ. App E7 không dependency engine-source nên không chạy lại 283 test app chỉ vì component opt-in đổi. Native .so guest chưa dlopen trong E8; classloader/resources/Binder/lifecycle vẫn chưa làm.
+
+E8 compile test đầu phát hiện Files.writeString không có trong Android SDK API surface. Thay thao tác ghi test bằng Files.write(byte[]) có trên Android, không thêm shim hoặc suppress API. Mã production đã compile, test chưa chạy trước chỉnh này; chạy lại đúng test/build/lint component.
+
+E8 đạt 16 test ELF/extraction JVM, build/lint 0 lỗi. Chạy source checker để giữ lại AAR ARM64 đã audit trước khi build probe x86_64. Thêm chế độ audit-only cho runner: kiểm tra APK thật/ELF x86_64/16 KB/manifest/license và ghi hash, không boot máy ảo. E6 reuse vừa đọc thấy framework không ready; crash buffer có DeadSystemException, chưa cài/chạy probe. Đã dừng đúng AVD/PID. Không thêm lượt boot; giữ Android JNI/SQLite NOT RUN, không quy lỗi này cho tương thích social app.
+
+Rà build E7 trước checkpoint: SDK của fixture JVM phải được resolve khi task chạy, hỗ trợ ANDROID_HOME/ANDROID_SDK_ROOT/local.properties như Android build. Tránh sdk.get() eager làm cả :core:test đòi SDK khi chưa chạy fixture. Chỉ sửa task configuration/lazy resolution, không đổi verifier/fixture bytes/assertions. Kiểm tra task graph không có engine-source ở build thường và dry-run core khi bỏ biến SDK; không lặp các suite đã đạt từ đổi cấu hình này.
+
+Rà cấu trúc ELF E8 phát hiện cần kiểm tra congruence theo chính p_align, ngoài page size, và overflow vaddr+memsz. Bổ sung hai fixture âm từ ELF NDK thật rồi sửa program header, ký APK test; yêu cầu parser từ chối với trang 4 KB dù offset/vaddr vẫn congruent modulo 4 KB nhưng sai modulo 16 KB. Đây là sửa validation component, chạy lại native tests/build/audit; app E7 không đổi. Notice source cũng đã bổ sung dependency apksig nên AAR/probe phải build/audit lại để hash khớp assets cuối.
+
 ## E3 — plan tiếp tục engine trước triển khai (27/10/2026)
 
 Đối chiếu tổng thể: source 0.5.0 đã push, 246 test và gói debug đã kiểm tra; S1/S2/U1/Q1 không cần chạy lại khi chưa đổi. Điểm chính còn thiếu là engine có source/import split đầy đủ và runtime. Tiếp tục phase 1/4/5, không đổi yêu cầu sang profile giới hạn/root/web hoặc bỏ ứng dụng bắt buộc.

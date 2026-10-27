@@ -26,6 +26,7 @@ def suite(folder):
 
 def main():
     core = suite(ROOT / "core/build/test-results/test")
+    apk_runtime = suite(ROOT / "apk-runtime/build/test-results/test")
     android = suite(ROOT / "app/build/test-results/testDebugUnitTest")
     lint = ET.parse(ROOT / "app/build/reports/lint-results-debug.xml").getroot()
     issues = lint.findall("issue")
@@ -68,7 +69,7 @@ def main():
         "checked_at_utc": datetime.now(timezone.utc).isoformat(),
         "scope": "Cloud logic, filesystem, native SQLite under Robolectric, build/lint and static APK verification only",
         "engine_runtime_verified": False,
-        "core": core, "android_simulated": android,
+        "core": core, "apk_runtime": apk_runtime, "android_simulated": android,
         "lint_warnings": sum(i.get("severity") == "Warning" for i in issues),
         "package": manifest.get("package"),
         "version_name": manifest.get(A + "versionName"),
@@ -82,7 +83,7 @@ def main():
     output = ROOT / "app/build/reports/cloud-verification.json"
     output.parent.mkdir(parents=True, exist_ok=True)
     output.write_text(json.dumps(report, ensure_ascii=False, indent=2) + "\n")
-    passed = sum(group["tests"] - group["skipped"] for group in [core, android])
+    passed = sum(group["tests"] - group["skipped"] for group in [core, apk_runtime, android])
     print(f"PASS: {passed} tests; build artifacts, lint and APK signature/permissions verified.")
     print("NOT VERIFIED: social apps, account isolation, real updates or phone behavior.")
 

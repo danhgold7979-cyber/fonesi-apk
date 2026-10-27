@@ -4,6 +4,7 @@ import hashlib
 import json
 from pathlib import Path
 import re
+import shutil
 import struct
 import subprocess
 import sys
@@ -33,7 +34,14 @@ def main():
     run([output / "host/fonesi_native_test"], reports / "host-test.log", timeout=30)
     print("PASS: actual host libc routing in two isolated test processes; original markers preserved.", flush=True)
     run([ROOT / "scripts/gradle.sh", "-PincludeSourceEngine=true", ":engine-source:assembleDebug", ":engine-source:lintDebug", "--console=plain"], reports / "android-build.log")
+    run([ROOT / "scripts/gradle.sh", "-PincludeSourceEngine=true", ":engine-source:testDebugUnitTest", "--console=plain"], reports / "native-libraries-test.log")
+    tests = [ET.parse(path).getroot() for path in (output / "test-results/testDebugUnitTest").glob("TEST-*.xml")]
+    native_tests = {key: sum(int(result.get(key, "0")) for result in tests) for key in ("tests", "failures", "errors", "skipped")}
+    assert tests and native_tests["tests"] > 0 and not any(native_tests[key] for key in ("failures", "errors", "skipped")), native_tests
     archive = output / "outputs/aar/engine-source-debug.aar"
+    # The following x86_64 probe build may replace the conventional output filename.
+    verified_archive = reports / "engine-source-arm64-verified.aar"
+    shutil.copyfile(archive, verified_archive)
     with zipfile.ZipFile(archive) as z:
         native = [entry.filename for entry in z.infolist() if entry.filename.startswith("jni/") and not entry.is_dir()]
         assert native == ["jni/arm64-v8a/libfonesi_runtime.so"], native
@@ -42,7 +50,7 @@ def main():
         assert not manifest.findall("uses-permission")
         app = manifest.find("application")
         assert app is None or not list(app)
-        for name in ("Dobby.txt", "TINYSTL.txt", "Fonesi-source-runtime.md"):
+        for name in ("Dobby.txt", "TINYSTL.txt", "Fonesi-source-runtime.md", "apksig.md"):
             assert len(z.read("assets/licenses/" + name)) > 100
         assert not any(name.endswith((".a", ".apk", ".keystore", ".p12")) for name in z.namelist())
     assert blob[:6] == b"\x7fELF\x02\x01"
@@ -70,6 +78,7 @@ def main():
     report = {"source": DOBBY_COMMIT, "patch_sha256": hashlib.sha256((ROOT / "engine-source/patches/dobby-compat.patch").read_bytes()).hexdigest(),
               "ndk": NDK, "cmake": CMAKE, "host_native_integration_passed": True, "android_aar_built": True,
               "android_native_execution_verified": False, "app_provider_integrated": False,
+              "native_library_host_tests": native_tests, "verified_aar": str(verified_archive.relative_to(ROOT)),
               "aar_sha256": hashlib.sha256(archive.read_bytes()).hexdigest(), "aar_bytes": archive.stat().st_size,
               "elf_sha256": hashlib.sha256(blob).hexdigest(), "elf_bytes": len(blob), "load_alignments": [p[7] for p in loads],
               "dependencies": dependencies, "jni_exports": sorted(exported), "lint_warnings": sum(i.get("severity") == "Warning" for i in lint)}

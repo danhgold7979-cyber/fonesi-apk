@@ -7,4 +7,5 @@ enum class RuntimeState : int { EMPTY = 0, CONFIGURED = 1, ENABLED = 2, FAILED =
 void configureRules(std::shared_ptr<const PathRules> rules);
 bool enableHooks();
 RuntimeState runtimeState();
+std::string runtimeFailure();
 }

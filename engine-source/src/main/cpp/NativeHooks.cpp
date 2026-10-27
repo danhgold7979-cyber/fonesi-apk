@@ -19,6 +19,7 @@ namespace {
 std::atomic<RuntimeState> state{RuntimeState::EMPTY};
 std::shared_ptr<const PathRules> rules;
 std::mutex activation;
+std::string failure;
 
 // Each call owns its replacement string, including both arguments of rename/renameat.
 class MappedPath {
@@ -148,6 +149,7 @@ bool enableHooks() {
         hook.address = dlsym(RTLD_DEFAULT, hook.name);
         if (!hook.address) {
             if (hook.optional) continue;
+            failure = std::string("Required libc symbol unavailable: ") + hook.name;
             state.store(RuntimeState::FAILED); return false;
         }
         if (std::find(addresses.begin(), addresses.end(), hook.address) != addresses.end()) { hook.address = nullptr; continue; }
@@ -159,7 +161,7 @@ bool enableHooks() {
             bool restored = true;
             for (auto it = installed.rbegin(); it != installed.rend(); ++it) restored = DobbyDestroy(*it) == 0 && restored;
             // Even a successful rollback does not authorize retry or claim guest readiness.
-            (void)restored;
+            failure = std::string("Native hook failed: ") + hook.name + (restored ? "; rollback completed" : "; rollback incomplete");
             state.store(RuntimeState::FAILED, std::memory_order_release); return false;
         }
         installed.push_back(hook.address);
@@ -169,4 +171,8 @@ bool enableHooks() {
 }
 
 RuntimeState runtimeState() { return state.load(std::memory_order_acquire); }
+std::string runtimeFailure() {
+    std::lock_guard<std::mutex> guard(activation);
+    return failure.empty() ? "Native routing is not configured" : failure;
+}
 }

@@ -2,6 +2,8 @@
 
 The Fonesi native routing/JNI/host-test code lives in `engine-source`. It is built separately and is not linked into the current Fonesi app. It does not constitute a complete Android virtualization provider.
 
+The source component also uses Fonesi's shared `apk-runtime` verifier/store and a Kotlin native-library preparer. Android apksig 8.11.1 is a dependency of the shared verifier; its license/notice is recorded in `third_party/apksig/NOTICE.md` and included in the AAR assets as `licenses/apksig.md`.
+
 The component links Dobby built from source, not a third-party archive:
 
 - Source: https://github.com/jmpews/Dobby

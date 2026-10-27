@@ -12,6 +12,8 @@ Ngày 27/10/2026, bước E4 bổ sung kiểm tra chữ ký mật mã/binary man
 
 E5 đã build [native runtime riêng từ source](docs/SOURCE_NATIVE_VALIDATION.md), có libc routing chạy thật trong hai subprocess host và AAR ARM64 align 16 KB. Module chưa nối vào app chính, chưa chạy trên Android hoặc thành engine split. Build riêng bằng `python3 scripts/prepare_source_engine.py --install-tools` rồi `python3 scripts/check_source_engine.py`; build thường không include module.
 
+E7/E8 đã bổ sung kho private giữ đủ base/split và bộ chuẩn bị thư viện native theo ABI/4 KB/16 KB; **301 test** đạt ở các tầng cloud/JVM, build/lint/audit hai bản app và component riêng đạt. [Báo cáo hiện tại](docs/SOURCE_ENGINE_VALIDATION.md) có hash APK/bundle và kết quả E6: máy ảo Android chưa chạy được probe, engine Java/Binder/classloader/lifecycle còn thiếu. Các component mới chưa thay SpaceCore hoặc mở capability split trong app.
+
 **Trạng thái `0.5.0`:** đã bổ sung khóa quản lý/shortcut bằng xác thực hệ thống, xuất/nhập tên và nhóm, tìm/lọc/chọn nhiều bản, preview phạm vi cập nhật và tự kiểm tra/cập nhật tuần tự khi Fonesi đang mở và đã mở khóa. Build mặc định `cloud` không chứa SDK; build `candidate` nối SDK thật nhưng chỉ nhận một APK đầy đủ, ARM64/API 26–34/trang 4 KB và phải bật chủ động. Split APK, Android mới và khả năng chạy/cách ly tài khoản thật vẫn chưa đạt nghiệm thu. Không gọi đây là sản phẩm đã hoàn thiện 100%. Thử điện thoại được gom về đợt sau theo yêu cầu; theo dõi [STATUS.md](docs/STATUS.md).
 
 Không dùng lối tắt mở app gốc hoặc trang web để giả lập một bản clone có tài khoản độc lập.
@@ -63,7 +65,7 @@ Kết quả unit test: `core/build/reports/tests/test/index.html`. Lint: `app/bu
 
 Kết quả SQLite/Robolectric: `app/build/reports/tests/testDebugUnitTest/index.html`. Tổng hợp chữ ký/quyền/artifact: `app/build/reports/cloud-verification.json`. `check.sh` giữ exit status của bước lỗi và từ chối kết quả không có test thực sự; không chạy thử điện thoại.
 
-Trên máy phát triển khác, cài JDK 21 và SDK 36, cấu hình `ANDROID_HOME` hoặc `local.properties`, rồi chạy `./gradlew :core:test :app:testDebugUnitTest :app:assembleDebug :app:lintDebug`. Không đưa keystore phát hành hoặc thông tin tài khoản vào Git. Khóa debug không dùng để phát hành.
+Trên máy phát triển khác, cài JDK 21 và SDK 36, cấu hình `ANDROID_HOME` hoặc `sdk.dir` trong `local.properties`, rồi chạy `./gradlew :core:test :apk-runtime:test :app:testDebugUnitTest :app:assembleDebug :app:lintDebug`. Module `apk-runtime` dùng SDK/JDK này để tạo APK ký thật cho test trong build output. Không đưa keystore phát hành hoặc thông tin tài khoản vào Git. Khóa debug không dùng để phát hành.
 
 ## Giới hạn kiểm chứng
 

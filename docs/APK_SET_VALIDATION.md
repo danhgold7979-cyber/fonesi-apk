@@ -1,5 +1,7 @@
 # E4 — kiểm tra tính toàn vẹn APK và bộ split
 
+Đây là báo cáo lịch sử E4. Từ E7 verifier/test chuyển sang module apk-runtime; artifact/hash và kết quả hiện tại nằm trong [SOURCE_ENGINE_VALIDATION.md](SOURCE_ENGINE_VALIDATION.md).
+
 Ngày thực hiện: 27/10/2026. Plan tổng thể/chi tiết và các điều chỉnh trước code ở [EXECUTION_PLAN.md](EXECUTION_PLAN.md). Source trước E4 là a1d70d2; kiểm tra mới không thay kết luận engine/runtime trong [ENGINE_SPLIT_AUDIT.md](ENGINE_SPLIT_AUDIT.md).
 
 ## Thay đổi thực tế

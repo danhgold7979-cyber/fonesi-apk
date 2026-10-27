@@ -5,7 +5,7 @@ import android.content.pm.PackageInfo
 import android.content.pm.PackageManager
 import android.os.Build
 import com.fvbox.lib.FCore
-import vn.fonesi.app.apk.ApkSetAuditor
+import vn.fonesi.apk.ApkSetAuditor
 import vn.fonesi.core.GuestBackend
 import vn.fonesi.core.GuestPackage
 import vn.fonesi.core.InstalledSource
