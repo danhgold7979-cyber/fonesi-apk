@@ -4,6 +4,8 @@
 
 Plan trước từng phần và điều chỉnh: [EXECUTION_PLAN.md](EXECUTION_PLAN.md). Bằng chứng bản hiện tại: [APK_SET_VALIDATION.md](APK_SET_VALIDATION.md). Giữ nguyên lộ trình [8 phase/32 bước](ROADMAP.md).
 
+**E5:** module native source riêng đã build ARM64/ELF 16 KB, không quyền/component, có kiểm tra thực thi libc routing trong hai subprocess Linux và giữ marker/output riêng. Không nối vào APK chính, không phải Android guest runtime. [Báo cáo E5](SOURCE_NATIVE_VALIDATION.md) ghi input/patch/license/hash và phần còn thiếu. SDK SpaceCore, dữ liệu guest và capability split của bản app hiện tại chưa thay đổi.
+
 **Cập nhật E3/E4 ngày 27/10/2026:** đã khảo sát thêm ba source engine, chưa có ứng viên đạt cổng split/runtime. Đã bổ sung kiểm tra mật mã chữ ký và binary manifest của toàn bộ bộ APK, gồm version 64-bit, base/feature/config, dependency/cycle và required split types, bằng apksig pin. Candidate có preflight chỉ đọc trước tạo user và audit lại trước import một APK, ràng buộc private copy bằng hash đã kiểm. Verifier hiểu cluster không có nghĩa SpaceCore nạp được split; capability vẫn false. Kết quả mới trong [APK_SET_VALIDATION.md](APK_SET_VALIDATION.md); mốc PHASE6_VALIDATION là lịch sử nguồn a1d70d2.
 
 | Phase/bước | Trạng thái | Bằng chứng/phần còn thiếu |

@@ -1,0 +1,129 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 5328d18..f53a0ec 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -40,3 +40 @@ option(Private.Obfuscation "Enable llvm obfuscation" OFF)
+-if ((NOT DEFINED CMAKE_BUILD_TYPE) OR (CMAKE_BUILD_TYPE STREQUAL "Debug"))
+-  set(DOBBY_DEBUG ON)
+-endif ()
++# Fonesi: honor the explicit logging option in every build type.
+@@ -375 +373 @@ if (SYSTEM.Darwin AND (NOT DOBBY_BUILD_KERNEL_MODE))
+-endif ()
+\ No newline at end of file
++endif ()
+diff --git a/common/os_arch_features.h b/common/os_arch_features.h
+index ee0586d..6ac8a04 100644
+--- a/common/os_arch_features.h
++++ b/common/os_arch_features.h
+@@ -37,8 +37 @@ namespace android {
+-inline void make_memory_readable(void *address, size_t size) {
+-#if defined(ANDROID)
+-  auto page = (void *)ALIGN_FLOOR(address, OSMemory::PageSize());
+-  if (!OSMemory::SetPermission(page, OSMemory::PageSize(), kReadExecute)) {
+-    return;
+-  }
+-#endif
+-}
++void make_memory_readable(void *address, size_t size);
+@@ -46 +39 @@ inline void make_memory_readable(void *address, size_t size) {
+-} // namespace features
+\ No newline at end of file
++} // namespace features
+diff --git a/external/logging/logging.cc b/external/logging/logging.cc
+index 86ead3d..9cd1885 100644
+--- a/external/logging/logging.cc
++++ b/external/logging/logging.cc
+@@ -1,0 +2 @@
++#include <sys/time.h>
+diff --git a/source/Backend/UserMode/ExecMemory/code-patch-tool-posix.cc b/source/Backend/UserMode/ExecMemory/code-patch-tool-posix.cc
+index bfe7361..26f4257 100644
+--- a/source/Backend/UserMode/ExecMemory/code-patch-tool-posix.cc
++++ b/source/Backend/UserMode/ExecMemory/code-patch-tool-posix.cc
+@@ -3 +3 @@
+-#include "core/arch/Cpu.h"
++#include "PlatformUnifiedInterface/ExecMemory/ClearCacheTool.h"
+@@ -37 +37 @@ PUBLIC int DobbyCodePatch(void *address, uint8_t *buffer, uint32_t buffer_size)
+-#endif
+\ No newline at end of file
++#endif
+diff --git a/source/Backend/UserMode/PlatformUtil/Linux/ProcessRuntime.cc b/source/Backend/UserMode/PlatformUtil/Linux/ProcessRuntime.cc
+index 776d25e..ce260d5 100644
+--- a/source/Backend/UserMode/PlatformUtil/Linux/ProcessRuntime.cc
++++ b/source/Backend/UserMode/PlatformUtil/Linux/ProcessRuntime.cc
+@@ -14 +14 @@
+-#define LINE_MAX 2048
++#define DOBBY_MAP_LINE_MAX 2048
+@@ -17 +17 @@ static bool memory_region_comparator(MemRange a, MemRange b) {
+-  return (a.start < b.start);
++  return (a.start() < b.start());
+@@ -28,3 +28,2 @@ const stl::vector<MemRegion> &ProcessRuntime::getMemoryLayout() {
+-  while (!feof(fp)) {
+-    char line_buffer[LINE_MAX + 1];
+-    fgets(line_buffer, LINE_MAX, fp);
++  char line_buffer[DOBBY_MAP_LINE_MAX + 1] = {};
++  while (fgets(line_buffer, sizeof(line_buffer), fp) != nullptr) {
+@@ -33 +32 @@ const stl::vector<MemRegion> &ProcessRuntime::getMemoryLayout() {
+-    if (strlen(line_buffer) == LINE_MAX && line_buffer[LINE_MAX] != '\n') {
++    if (strlen(line_buffer) == DOBBY_MAP_LINE_MAX && line_buffer[DOBBY_MAP_LINE_MAX - 1] != '\n') {
+@@ -104,3 +103,3 @@ static stl::vector<RuntimeModule> &get_process_map_with_proc_maps() {
+-  while (!feof(fp)) {
+-    char line_buffer[LINE_MAX + 1];
+-    fgets(line_buffer, LINE_MAX, fp);
++  modules->clear();
++  char line_buffer[DOBBY_MAP_LINE_MAX + 1] = {};
++  while (fgets(line_buffer, sizeof(line_buffer), fp) != nullptr) {
+@@ -109 +108 @@ static stl::vector<RuntimeModule> &get_process_map_with_proc_maps() {
+-    if (strlen(line_buffer) == LINE_MAX && line_buffer[LINE_MAX] != '\n') {
++    if (strlen(line_buffer) == DOBBY_MAP_LINE_MAX && line_buffer[DOBBY_MAP_LINE_MAX - 1] != '\n') {
+@@ -159 +158 @@ static stl::vector<RuntimeModule> &get_process_map_with_proc_maps() {
+-    RuntimeModule module;
++    RuntimeModule module = {};
+@@ -166 +165 @@ static stl::vector<RuntimeModule> &get_process_map_with_proc_maps() {
+-    module.load_address = (void *)region_start;
++    module.base = (void *)region_start;
+@@ -192 +191 @@ static stl::vector<RuntimeModule> get_process_map_with_linker_iterator() {
+-          strcpy(module.path, info->dlpi_name);
++          strncpy(module.path, info->dlpi_name, sizeof(module.path) - 1);
+@@ -194 +193 @@ static stl::vector<RuntimeModule> get_process_map_with_linker_iterator() {
+-        module.load_address = (void *)info->dlpi_addr;
++        module.base = (void *)info->dlpi_addr;
+@@ -198 +197 @@ static stl::vector<RuntimeModule> get_process_map_with_linker_iterator() {
+-            module.load_address = (void *)((addr_t)module.load_address + load_bias);
++            module.base = (void *)((addr_t)module.base + load_bias);
+@@ -231 +230 @@ RuntimeModule ProcessRuntime::getModule(const char *name) {
+-}
+\ No newline at end of file
++}
+diff --git a/source/PlatformUnifiedInterface/platform.h b/source/PlatformUnifiedInterface/platform.h
+index b946514..50bf11b 100644
+--- a/source/PlatformUnifiedInterface/platform.h
++++ b/source/PlatformUnifiedInterface/platform.h
+@@ -91 +91,12 @@ public:
+-};
+\ No newline at end of file
++};
++
++// Fonesi: define after OSMemory; common.h includes the feature declarations recursively.
++namespace features { namespace android {
++inline void make_memory_readable(void *address, size_t size) {
++#if defined(ANDROID)
++  auto page = (void *)ALIGN_FLOOR(address, OSMemory::PageSize());
++  auto span = (size_t)ALIGN_CEIL((addr_t)address + size - (addr_t)page, OSMemory::PageSize());
++  OSMemory::SetPermission(page, span, kReadExecute);
++#endif
++}
++} }
+diff --git a/source/TrampolineBridge/ClosureTrampolineBridge/arm64/closure_bridge_arm64.asm b/source/TrampolineBridge/ClosureTrampolineBridge/arm64/closure_bridge_arm64.asm
+index 7349181..406f8f5 100644
+--- a/source/TrampolineBridge/ClosureTrampolineBridge/arm64/closure_bridge_arm64.asm
++++ b/source/TrampolineBridge/ClosureTrampolineBridge/arm64/closure_bridge_arm64.asm
+@@ -52,0 +53 @@ ldr x1, [sp, #(2 * 8 + 2 * 8 + 30 * 8 + 8 * 16)]
++#if defined(__APPLE__)
+@@ -55,0 +57,3 @@ blr TMP_REG_0
++#else
++bl cdecl(common_closure_bridge_handler)
++#endif
+@@ -98 +102 @@ common_closure_bridge_handler_addr:
+-#endif
+\ No newline at end of file
++#endif

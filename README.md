@@ -10,6 +10,8 @@ Theo dõi [phase hiện tại](docs/STATUS.md) và [quy luật code/test](docs/C
 
 Ngày 27/10/2026, bước E4 bổ sung kiểm tra chữ ký mật mã/binary manifest của APK và tính nhất quán bộ split trước import: [bằng chứng](docs/APK_SET_VALIDATION.md). Đây là kiểm tra đầu vào; engine candidate vẫn chưa nhập được split. Plan và kết quả khảo sát thêm engine được lưu cùng source.
 
+E5 đã build [native runtime riêng từ source](docs/SOURCE_NATIVE_VALIDATION.md), có libc routing chạy thật trong hai subprocess host và AAR ARM64 align 16 KB. Module chưa nối vào app chính, chưa chạy trên Android hoặc thành engine split. Build riêng bằng `python3 scripts/prepare_source_engine.py --install-tools` rồi `python3 scripts/check_source_engine.py`; build thường không include module.
+
 **Trạng thái `0.5.0`:** đã bổ sung khóa quản lý/shortcut bằng xác thực hệ thống, xuất/nhập tên và nhóm, tìm/lọc/chọn nhiều bản, preview phạm vi cập nhật và tự kiểm tra/cập nhật tuần tự khi Fonesi đang mở và đã mở khóa. Build mặc định `cloud` không chứa SDK; build `candidate` nối SDK thật nhưng chỉ nhận một APK đầy đủ, ARM64/API 26–34/trang 4 KB và phải bật chủ động. Split APK, Android mới và khả năng chạy/cách ly tài khoản thật vẫn chưa đạt nghiệm thu. Không gọi đây là sản phẩm đã hoàn thiện 100%. Thử điện thoại được gom về đợt sau theo yêu cầu; theo dõi [STATUS.md](docs/STATUS.md).
 
 Không dùng lối tắt mở app gốc hoặc trang web để giả lập một bản clone có tài khoản độc lập.

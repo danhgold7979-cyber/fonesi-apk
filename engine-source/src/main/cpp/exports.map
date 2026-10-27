@@ -1,0 +1,8 @@
+FONESI_RUNTIME_1 {
+  global:
+    JNI_OnLoad;
+    Java_vn_fonesi_engine_NativeRuntime_configureNative;
+    Java_vn_fonesi_engine_NativeRuntime_enableNative;
+    Java_vn_fonesi_engine_NativeRuntime_stateNative;
+  local: *;
+};

@@ -1,5 +1,41 @@
 # Kế hoạch thực thi và đối chiếu yêu cầu
 
+## E5 — plan dựng engine từ source, trước code (27/10/2026)
+
+Đối chiếu tổng thể: E4 đã push f89ce14, 264 test đạt; không chạy lại suite cũ khi chưa đổi app. SDK SpaceCore không có source native để sửa split/16 KB. Tiếp tục phase 1/4/5 bằng runtime source riêng, không thay provider của dữ liệu đang có.
+
+1. Dựng native trước: pin source Black00Z/Blacks-BlackBox `40282a7bf4500948cfd598fc67e6e63114b26dd9` và Dobby `5dfc8546954ce3b3198132ab13fddb89ee92cdd7`. Đọc CMake/license/source trước build. Thay archive Dobby prebuilt bằng build từ source; không chạy build scripts của demo hoặc lấy keystore/APK/AAR của fork.
+2. Native module dùng allowlist C++ source filesystem/Binder/classloader cần cho sandbox. JNI bridge riêng bỏ device spoof, hide-Xposed và disableResourceLoading; không link VirtualSpoof/AntiDetection có constructor. Chưa tải thư viện hoặc nối Java init của fork còn crash/log handlers. Module tách hoàn toàn app hiện có.
+3. Fetch Git chỉ exact commit và kiểm tra working tree sạch; source/cache ở tools, source modification có review trong repo, không sửa binary đóng. Pin NDK 29.0.13846066/CMake 3.22.1, ARM64/API 26, link 16 KB. Giấy phép Apache-2.0 của upstream/Dobby và nguồn xDL phải được giữ.
+4. Build shared library thật, kiểm tra ELF/ABI/alignment/dependency/export và input không có archive prebuilt. Ghi tool versions/hash/command và phạm vi chưa chạy. Đây là build native component, chưa phải engine Java hoàn chỉnh hoặc bằng chứng account isolation.
+5. Sau native build, lập plan E6 cụ thể cho Java init sạch, parser/model/store split, classloader/resources/native libs/readback và transaction update; chỉ nối provider opt-in/namespace mới khi các phần tương ứng đã có code/build/test. Không bật importsSplitApks hoặc chuyển guest cũ sang engine khác từ kết quả native đơn lẻ.
+
+Baseline mtechenginee/BlackBox-1 `df9ab44de7c1477939b28b7fa6e666396a495452` cũng đã đọc: ít crash hacks hơn nhưng nhiều module Pine/Xposed có attribution riêng cần kiểm tra. Chưa nhập/build; không dùng nó làm lý do bỏ qua provenance của native.
+
+### Điều chỉnh E5 trước code native
+
+Đọc sâu native fork phát hiện IO.cpp gọi strlen trên vùng malloc chưa khởi tạo, chặn resource/systemui bằng heuristic, FileSystemHook chỉ tìm symbol mà chưa hook đầy đủ và UnixFileSystemHook có chữ ký JNI sai. Không nhập các file đó rồi báo engine sạch. Thay bằng native module Fonesi tự viết, dependency duy nhất là Dobby source Apache-2.0 (kèm attribution BSD của TINYSTL); chưa cần native BlackBox hoặc xDL.
+
+Thiết kế: rule map bất biến theo tiến trình, normalize đường tuyệt đối và khớp prefix theo ranh giới thư mục; không thay substring tùy ý, không log đường guest. JNI chỉ configure/enable/status, không auto-hook trong constructor/JNI_OnLoad. Hook libc file I/O bằng Dobby source, xử lý varargs open đúng O_CREAT/O_TMPFILE và giữ lifetime hai path của rename; kiểm tra symbol trước apply, lỗi hook phải rollback phần đã đổi hoặc giữ FAILED, không báo READY. Không hot-swap account trong tiến trình đã bật hook.
+
+Module Android library opt-in riêng `includeSourceEngine`, không dependency app hoặc thay SpaceCore. Pin NDK/CMake/ABI/page alignment; build AAR thật rồi kiểm tra ELF, symbol/dependency, permission manifest và không chứa prebuilt archive. Test path mapper trên host bằng tình huống đọc/ghi thư mục riêng để kiểm tra ranh giới/tương tác, không gọi host tests là Android native execution. E6 còn phải nối lifecycle/Java/Binder/component/resources/split và mới có thể nghiệm thu runtime.
+
+E5 sau build đầu: Dobby source pin có lỗi `MemRange.start`/`RuntimeModule.load_address` không khớp header; ARM64 assembly dùng relocation Mach-O trên ELF; Debug tự bật logging. Plan patch source có review: sửa theo đúng header, xử lý fgets/khởi tạo buffer và path bounded, dùng BL relocation ELF, giữ logging OFF theo cấu hình Fonesi. Prepare script xác minh exact commit + exact patch, không nới checksum hoặc dùng prebuilt. Build output `.cxx` phải ignored; ghi lỗi/build lại sau patch, không suppress compiler errors.
+
+E5 build tiếp phát hiện include Cpu.h đã bị xóa, vòng include làm OSMemory chưa được khai báo và GCC không tự nhận đuôi .asm. Sửa include đúng ClearCacheTool, tách định nghĩa make_memory_readable xuống sau OSMemory (không bỏ kiểm tra memory), khai báo assembler-with-cpp cho source ASM. Giữ pin, không chuyển sang binary hoặc đổi assertion. Chưa chạy được host tests khi build còn lỗi.
+
+Kết quả E5 phần native: source check exit 0, host libc routing thực thi trong hai subprocess và original marker không đổi; AAR ARM64 build/lint đạt, ELF ba LOAD align 16 KB, đúng bốn JNI export/dependency/manifest/license như allowlist. Lỗi verifier AAR directory-entry được sửa bằng bỏ directory trong tập file (vẫn giữ exact native file allowlist), không nới binary guard. App default dependency graph không có module mới; không chạy lại 264 test cũ vì app/core chưa đổi. [SOURCE_NATIVE_VALIDATION.md](SOURCE_NATIVE_VALIDATION.md) ghi hash và phạm vi chưa chạy.
+
+## E6 — plan kiểm tra native trên Android, trước code
+
+Đối chiếu E5: build ARM64 và host libc tests không thay Android JNI/SQLite. Cần thử framework native thực tế trước Java/provider app. Không có KVM nhưng software emulator có thể thử; chỉ được ghi boot/runtime đạt nếu lệnh thực sự thành công.
+
+1. Chuẩn bị emulator + system image Android 34 x86_64 ở tools, AVD riêng không dữ liệu người dùng, serial/port rõ; dùng software acceleration, không yêu cầu điện thoại/root. Ghi version/ABI/boot outcome; timeout/failure phải có log, không lặp vô hạn.
+2. Thêm probe APK do dự án kiểm soát, app ID riêng, không quyền/Internet hoặc SDK bên thứ ba; dùng source runtime x86_64 explicit build, không thay AAR ARM64 mặc định hoặc app chính. Hai service dedicated process A/B, host process không load hook.
+3. Probe kiểm tra JNI/config/enable, file và SQLite Android thật: original/A/B dữ liệu khác nhau, ghi mỗi process chỉ vào bản tương ứng, host đối chiếu original và cả output. Không tài khoản, không mở app gốc làm clone; process chết/lỗi phải ghi thất bại, không báo success từ trạng thái đã dispatch.
+4. Build/lint/audit chữ ký/permissions/components/ABI của probe, rồi cài/chạy chỉ trên serial emulator sở hữu riêng. Không thao tác ADB không có -s hoặc tác động điện thoại nối về sau. Giữ log/báo cáo private synthetic, không mật khẩu/OTP.
+5. Nếu software emulator không chạy được, ghi đúng lỗi, giữ runtime chưa đạt; không chuyển x86_64 thành chứng nhận ARM64/Samsung. Phần Java loader/Binder/component/cluster vẫn phải triển khai và kiểm tra riêng sau bước này, không bật provider từ probe component.
+
 ## E3 — plan tiếp tục engine trước triển khai (27/10/2026)
 
 Đối chiếu tổng thể: source 0.5.0 đã push, 246 test và gói debug đã kiểm tra; S1/S2/U1/Q1 không cần chạy lại khi chưa đổi. Điểm chính còn thiếu là engine có source/import split đầy đủ và runtime. Tiếp tục phase 1/4/5, không đổi yêu cầu sang profile giới hạn/root/web hoặc bỏ ứng dụng bắt buộc.
