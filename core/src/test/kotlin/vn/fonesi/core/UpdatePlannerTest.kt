@@ -4,10 +4,33 @@ import org.junit.Assert.*
 import org.junit.Test
 
 class UpdatePlannerTest {
+    @Test fun `large shared group validates signer once per clone instead of once per requested pair`() {
+        var comparisons = 0
+        val signer = object : java.util.AbstractSet<String>() {
+            override val size = 1
+            override fun iterator(): MutableIterator<String> = mutableSetOf("s").iterator()
+            override fun equals(other: Any?): Boolean { comparisons++; return setOf("s") == other }
+            override fun hashCode() = "s".hashCode()
+        }
+        val rows = (1..1000).map { CloneRecord("id-$it", "test.social", 1, signer, false) }
+        val source = InstalledSource("test.social", 2, setOf("s"), listOf("base.apk"))
+        val plan = UpdatePlanner.plan(rows.map { it.id }, rows, mapOf(source.packageName to source), EngineAvailability.Ready(UpdateScope.SHARED_PACKAGE))
+        assertEquals(1000, plan.targets.single().affectedCloneIds.size)
+        assertTrue("Signer comparisons must remain linear", comparisons <= 2000)
+    }
+    @Test fun `single APK capability blocks a split group without dropping other apps`() {
+        val single = InstalledSource("test.single", 2, setOf("s"), listOf("base.apk"))
+        val split = InstalledSource("test.split", 2, setOf("s"), listOf("base.apk", "split.apk"))
+        val clones = listOf(CloneRecord("a", single.packageName, 1, setOf("s"), false), CloneRecord("b", split.packageName, 1, setOf("s"), false))
+        val plan = UpdatePlanner.plan(listOf("a", "b"), clones, mapOf(single.packageName to single, split.packageName to split), EngineAvailability.Ready(UpdateScope.SHARED_PACKAGE))
+        assertEquals(listOf("a"), plan.targets.single().affectedCloneIds)
+        assertEquals(UpdateBlock("b", UpdateBlockReason.SOURCE_UNSUPPORTED), plan.blocked.single())
+    }
     private val packageName = "com.facebook.katana"
     private val source = InstalledSource(packageName, 20, setOf("certificate-a"), listOf("base.apk", "split.apk"))
-    private val perClone = EngineAvailability.Ready(UpdateScope.PER_CLONE)
-    private val shared = EngineAvailability.Ready(UpdateScope.SHARED_PACKAGE)
+    // Abstract split-capable provider for these planner tests, never a production engine.
+    private val perClone = EngineAvailability.Ready(UpdateScope.PER_CLONE, importsSplitApks = true)
+    private val shared = EngineAvailability.Ready(UpdateScope.SHARED_PACKAGE, importsSplitApks = true)
     private fun clone(id: String, version: Long = 10, running: Boolean? = false) =
         CloneRecord(id, packageName, version, setOf("certificate-a"), running)
     private fun plan(

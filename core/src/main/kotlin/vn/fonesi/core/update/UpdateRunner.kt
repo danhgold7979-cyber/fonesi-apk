@@ -10,12 +10,15 @@ import vn.fonesi.core.UpdateTarget
 import java.util.ConcurrentModificationException
 
 sealed interface RunResult {
+    data object PolicyBlocked : RunResult
     data object Busy : RunResult
     data object Idle : RunResult
     data object Paused : RunResult
     data object EngineUnavailable : RunResult
     data class Processed(val task: UpdateTask, val cleanupPending: Boolean = false) : RunResult
 }
+
+interface UpdateExecution { fun runNext(): RunResult; fun recover(): Boolean }
 
 /**
  * Durable orchestration, not a virtualization engine. The adapter must synchronously finish
@@ -29,9 +32,11 @@ class UpdateRunner(
     private val catalog: SourceCatalog,
     private val snapshots: SourceSnapshotter,
     private val lock: QueueLock,
+    private val mayApply: () -> Boolean = { true },
     private val clock: () -> Long = System::currentTimeMillis,
-) {
-    fun runNext(): RunResult {
+) : UpdateExecution {
+    override fun runNext(): RunResult {
+        if (!mayApply()) return RunResult.PolicyBlocked
         val lease = lock.acquire() ?: return RunResult.Busy
         return lease.use {
             recoverLocked()
@@ -50,7 +55,7 @@ class UpdateRunner(
     }
 
     /** Recovery is safe only while owning the OS-wide queue lock. */
-    fun recover(): Boolean {
+    override fun recover(): Boolean {
         val lease = lock.acquire() ?: return false
         lease.use { recoverLocked() }
         return true
@@ -98,6 +103,7 @@ class UpdateRunner(
                 cleanup = false // Already cleaned or intentionally retained for review.
                 return RunResult.Processed(current, cleanupPending = !clean)
             }
+            if (!mayApply()) return finish(TaskState.DEFERRED, TaskIssue.EXECUTION_POLICY)
             if (current.engineKey != engineKey) return finish(TaskState.DEFERRED, TaskIssue.ENGINE_CHANGED)
             val available = engine.availability as? EngineAvailability.Ready
                 ?: return finish(TaskState.DEFERRED, TaskIssue.ENGINE_UNAVAILABLE)
@@ -125,7 +131,9 @@ class UpdateRunner(
             if (catalog.current(current.packageName) != source) return finish(TaskState.FAILED, TaskIssue.SOURCE_CHANGED)
             val latestAvailability = engine.availability as? EngineAvailability.Ready
                 ?: return finish(TaskState.DEFERRED, TaskIssue.ENGINE_UNAVAILABLE)
-            if (latestAvailability.updateScope != current.scope) return finish(TaskState.FAILED, TaskIssue.SCOPE_CHANGED)
+            if (latestAvailability.updateScope != current.scope || latestAvailability.importsSplitApks != available.importsSplitApks) {
+                return finish(TaskState.FAILED, TaskIssue.SCOPE_CHANGED)
+            }
             // Re-read after preparation: accounts may have been opened/deleted/added in the meantime.
             val last = plan()
             if (last.blocked.isNotEmpty()) {
@@ -135,6 +143,7 @@ class UpdateRunner(
             if (last.targets.isEmpty()) return finish(TaskState.SUCCEEDED, completion = CompletionKind.ALREADY_CURRENT)
             if (last.targets.size != 1) return finish(TaskState.FAILED, TaskIssue.SCOPE_CHANGED)
             val target = last.targets.single()
+            if (!mayApply()) return finish(TaskState.DEFERRED, TaskIssue.EXECUTION_POLICY)
             val beforeApply = current.move(TaskState.APPLYING, clock(), affectedIds = target.affectedCloneIds,
                 fingerprint = snapshot.fingerprint)
             if (!store.replace(current, beforeApply, requireUnpaused = true)) {

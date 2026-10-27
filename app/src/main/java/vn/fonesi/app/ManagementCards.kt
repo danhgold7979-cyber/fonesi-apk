@@ -11,7 +11,8 @@ import vn.fonesi.core.CloneRecord
 
 @Composable
 internal fun SavedCloneCard(
-    row: CloneMetadataRow, enabled: Boolean, operational: Boolean, live: CloneRecord?, open: () -> Unit, pin: () -> Unit,
+    row: CloneMetadataRow, enabled: Boolean, operational: Boolean, selected: Boolean, toggle: () -> Unit,
+    live: CloneRecord?, open: () -> Unit, pin: () -> Unit,
     stop: () -> Unit, delete: () -> Unit, duplicate: (String) -> Unit, update: () -> Unit,
     save: (String, String?) -> Unit,
 ) {
@@ -20,7 +21,10 @@ internal fun SavedCloneCard(
     var duplicating by remember { mutableStateOf(false) }
     OutlinedCard(Modifier.fillMaxWidth()) {
         Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-            Text(row.label, style = MaterialTheme.typography.titleMedium)
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                Checkbox(checked = selected, onCheckedChange = { toggle() }, enabled = enabled && operational && live?.packageName == row.packageName)
+                Text(row.label, style = MaterialTheme.typography.titleMedium)
+            }
             Text(row.packageName, style = MaterialTheme.typography.bodySmall)
             row.groupName?.let { Text("Nhóm: $it") }
             Text(when { live == null -> "Chưa đọc được bản cài từ engine"; live.running == true -> "Engine báo đang chạy · phiên bản ${live.versionCode}"
@@ -105,6 +109,8 @@ private fun TaskState.label() = when (this) {
 }
 
 private fun TaskIssue.description() = when (this) {
+    TaskIssue.EXECUTION_POLICY -> "Đợi Fonesi đang mở/đã mở khóa và chế độ cho phép thực thi."
+    TaskIssue.SUPERSEDED_SOURCE -> "Yêu cầu nguồn cũ đã được thay thế trước khi thực thi."
     TaskIssue.PAUSED -> "Hàng đợi đã được tạm dừng."
     TaskIssue.ENGINE_CHANGED -> "Bộ máy clone đã thay đổi; cần kiểm tra lại mã bản clone."
     TaskIssue.ENGINE_UNAVAILABLE -> "Chưa có bộ máy clone sẵn sàng."

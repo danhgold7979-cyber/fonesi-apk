@@ -8,7 +8,7 @@ Lộ trình chi tiết: [8 phase, 32 bước và 4 mốc thử điện thoại](
 
 Theo dõi [phase hiện tại](docs/STATUS.md) và [quy luật code/test](docs/CODE_TEST_RULES.md).
 
-**Trạng thái `0.4.0`:** build mặc định `cloud` không chứa SDK; build `candidate` đã nối SDK thật cho tạo/mở/dừng/xóa và cập nhật trong cùng giao diện. Candidate chỉ nhận một APK đầy đủ, ARM64/API 26–34/trang 4 KB và phải bật chủ động. Chưa có runtime/đăng nhập/cách ly trên điện thoại; chưa hoàn thiện đa app split, sinh trắc học, sao lưu hay phát hành. Kiểm thử điện thoại được gom về đợt sau theo yêu cầu. Chi tiết [INTEGRATED_CANDIDATE.md](docs/INTEGRATED_CANDIDATE.md).
+**Trạng thái `0.5.0`:** đã bổ sung khóa quản lý/shortcut bằng xác thực hệ thống, xuất/nhập tên và nhóm, tìm/lọc/chọn nhiều bản, preview phạm vi cập nhật và tự kiểm tra/cập nhật tuần tự khi Fonesi đang mở và đã mở khóa. Build mặc định `cloud` không chứa SDK; build `candidate` nối SDK thật nhưng chỉ nhận một APK đầy đủ, ARM64/API 26–34/trang 4 KB và phải bật chủ động. Split APK, Android mới và khả năng chạy/cách ly tài khoản thật vẫn chưa đạt nghiệm thu. Không gọi đây là sản phẩm đã hoàn thiện 100%. Thử điện thoại được gom về đợt sau theo yêu cầu; theo dõi [STATUS.md](docs/STATUS.md).
 
 Không dùng lối tắt mở app gốc hoặc trang web để giả lập một bản clone có tài khoản độc lập.
 
@@ -21,9 +21,14 @@ Không dùng lối tắt mở app gốc hoặc trang web để giả lập một
 - Mở/ghim shortcut qua UUID theo lần tạo; kiểm tra metadata/engine/cập nhật trước dispatch, đồng bộ tên và vô hiệu hóa mục đã xóa. Có migration Room 1 → 2 giữ dữ liệu. Xem [SHORTCUTS.md](docs/SHORTCUTS.md); chưa thử launcher hoặc guest thật.
 - Candidate: registry Room schema 3, snapshot trước tạo, mã user không tái sử dụng, launch-pending bền vững, đối chiếu guest, tạo thêm bản sạch, dừng/xóa có xác nhận và nút chạy hàng đợi từng nhóm. Kiểm tra archive/chữ ký và bản APK thuộc kho riêng; không dùng dữ liệu app gốc làm readback giả.
 - Chặn thao tác clone khi engine chưa có; không tạo hồ sơ giả hoặc báo thành công giả.
+- Tìm bản clone không phân biệt dấu tiếng Việt, lọc nhóm/trạng thái, chọn các mục đang hiển thị và cập nhật một/tập chọn/tất cả qua cùng preview. Xác nhận đọc lại nguồn/phạm vi trước khi xếp hàng, ghi batch trong một transaction.
+- [Khóa giao diện](docs/ACCESS_CONTROL.md) mặc định tắt; sinh trắc mạnh hoặc mã khóa Android. Manager và shortcut cần mở khóa trước dispatch, không lưu PIN/phiên xác thực hoặc gọi UI lock là mã hóa guest.
+- [Xuất/nhập cấu hình](docs/CONFIGURATION.md) qua Android document picker, chỉ tên/nhóm/package/ref. JSON nghiêm ngặt tối đa 2 MiB, preview và map rõ bản nhận, transaction không ghi một phần; không backup tài khoản hoặc tạo guest từ file.
+- [Tự động khi đang mở](docs/UPDATE_AUTOMATION.md): mặc định tắt; chọn chỉ kiểm tra hoặc cập nhật có đồng ý. Dùng cùng journal/queue, giữ pause, không bắt đầu import khi UI ra nền/khóa, không tự retry kết quả chưa rõ.
+- Chẩn đoán API/ABI/page size, dung lượng trống/thống kê chính Fonesi và tối ưu pin; số không đọc được ghi chưa biết. Không xin Usage Access hoặc quyền đọc toàn bộ tệp.
 - Build cloud không có Internet/SDK quảng cáo. Candidate có Internet, camera/mic và quyền thông báo/foreground để thử app khách; SDK mã đóng chưa được audit toàn bộ. Tắt sao lưu tự động/truyền dữ liệu hệ thống.
 
-Runner đã nối vào adapter candidate, còn scheduler tự chạy nền chưa có: người dùng bấm chạy và giữ Fonesi mở. Chưa chứng minh SDK cập nhật giữ dữ liệu trên thiết bị. Sinh trắc học và sao lưu thủ công chưa có. [CLOUD_BACKEND.md](docs/CLOUD_BACKEND.md) mô tả hợp đồng nền; [INTEGRATED_CANDIDATE.md](docs/INTEGRATED_CANDIDATE.md) mô tả tích hợp hiện tại.
+Scheduler chạy độc lập khi Fonesi ở nền chưa triển khai; mode tự động hiện tại chỉ chạy khi có UI đang mở/đã mở khóa. Chưa chứng minh SDK giữ phiên trên thiết bị. [CLOUD_BACKEND.md](docs/CLOUD_BACKEND.md) mô tả hợp đồng nền; [INTEGRATED_CANDIDATE.md](docs/INTEGRATED_CANDIDATE.md) mô tả adapter và [ENGINE_SPLIT_AUDIT.md](docs/ENGINE_SPLIT_AUDIT.md) ghi blocker engine. Quy trình plan trước mỗi phase/bước nằm trong [EXECUTION_PLAN.md](docs/EXECUTION_PLAN.md).
 
 Build candidate và chuẩn bị gói thử cho đợt sau:
 
@@ -32,7 +37,7 @@ Build candidate và chuẩn bị gói thử cho đợt sau:
 python3 scripts/build_phone_bundle.py
 ```
 
-APK có SDK: `app/build/outputs/candidate/fonesi-0.4.0-candidate.apk`. Gói payload 1/2 và hướng dẫn: `app/build/outputs/fonesi-0.4.0-phone-test.zip`. [123 test và audit hai bản](docs/RUNTIME_INTEGRATION_VALIDATION.md) đã đạt trong cloud; runtime chưa xác minh.
+APK có SDK: `app/build/outputs/candidate/fonesi-0.5.0-candidate.apk`. Gói payload 1/2 và hướng dẫn: `app/build/outputs/fonesi-0.5.0-phone-test.zip`. [Báo cáo 0.5.0](docs/PHASE6_VALIDATION.md) ghi test/build/lint/audit hai cấu hình; runtime chưa xác minh.
 
 ## Build trong môi trường cloud
 
@@ -58,11 +63,11 @@ Trên máy phát triển khác, cài JDK 21 và SDK 36, cấu hình `ANDROID_HOM
 
 ## Giới hạn kiểm chứng
 
-Unit test kiểm tra planner/runner/filesystem và protocol adapter; Robolectric kiểm tra Room/registry với SQLite native và định tuyến/shortcut mô phỏng trên API 26/34. Không test nào chạy SDK ARM/Facebook/Zalo/TikTok hoặc chứng minh cách ly tài khoản. Kiểm thử điện thoại được hoãn theo yêu cầu; vẫn cần thực hiện trước nghiệm thu runtime. Xem [mốc cloud ban đầu](docs/CLOUD_VALIDATION.md), [mốc shortcut](docs/PHASE3_VALIDATION.md) và [mốc tích hợp 0.4.0](docs/RUNTIME_INTEGRATION_VALIDATION.md).
+Unit test kiểm tra planner/runner/filesystem và protocol adapter; Robolectric kiểm tra Room/registry với SQLite native, xác thực, cấu hình, update preview/automation và định tuyến/shortcut mô phỏng trên API 26/34. Không test nào chạy SDK ARM/Facebook/Zalo/TikTok hoặc chứng minh cách ly tài khoản. Kiểm thử điện thoại được hoãn theo yêu cầu; vẫn cần thực hiện trước nghiệm thu runtime. Các báo cáo 0.1–0.4 là mốc lịch sử; báo cáo hiện tại là [PHASE6_VALIDATION.md](docs/PHASE6_VALIDATION.md).
 
 ## Phase 1: build bộ thử engine riêng
 
-Đọc [audit engine](docs/PHASE1_ENGINE_AUDIT.md) và [thông tin SDK mã đóng](third_party/spacecore/NOTICE.md) trước khi dùng bản thử. SDK không được đưa vào app chính. Không dùng tài khoản thật trong hai APK thử.
+Đọc [audit engine](docs/PHASE1_ENGINE_AUDIT.md) và [thông tin SDK mã đóng](third_party/spacecore/NOTICE.md) trước khi dùng bản thử. Build cloud không chứa SDK; candidate tích hợp và probe riêng có SDK. Không dùng tài khoản thật trước khi payload/cách ly đạt trên thiết bị.
 
 ```bash
 python3 scripts/fetch_engine_sdk.py

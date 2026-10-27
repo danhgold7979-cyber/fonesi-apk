@@ -3,7 +3,6 @@ package vn.fonesi.app.shortcuts
 import android.app.Application
 import android.content.Intent
 import android.os.Bundle
-import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
@@ -22,15 +21,18 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import vn.fonesi.app.MainActivity
 import vn.fonesi.app.storage.LocalServices
+import vn.fonesi.app.security.*
 
 /** Explicit shortcut destination. No browsable intent filter and no package/engine intent overrides. */
-class CloneLaunchActivity : ComponentActivity() {
+class CloneLaunchActivity : LockedActivity() {
     private val model: CloneLaunchViewModel by viewModels()
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-        model.start(intent)
         setContent {
+            val gate by access.state.collectAsStateWithLifecycle()
+            AccessGate(gate, { authenticate(AuthPurpose.UNLOCK) }, { authenticate(AuthPurpose.UNLOCK, credentialOnly = true) }) {
+            LaunchedEffect(Unit) { model.start(intent) }
             val result by model.result.collectAsStateWithLifecycle()
             LaunchedEffect(result) { if (result is LaunchResult.Accepted) finish() }
             MaterialTheme {
@@ -51,6 +53,7 @@ class CloneLaunchActivity : ComponentActivity() {
                         }
                     }
                 }
+            }
             }
         }
     }
@@ -76,6 +79,7 @@ class CloneLaunchViewModel(application: Application) : AndroidViewModel(applicat
 }
 
 internal fun LaunchBlock.message(): String = when (this) {
+    LaunchBlock.LOCKED -> "Fonesi đang khóa. Hãy xác thực rồi mở lại bản clone."
     LaunchBlock.INVALID_LINK -> "Lối tắt không hợp lệ. Hãy tạo lại từ Fonesi."
     LaunchBlock.CLONE_MISSING -> "Bản clone này không còn tồn tại. Hãy chọn bản khác trong Fonesi."
     LaunchBlock.ENGINE_UNAVAILABLE -> "Chưa có bộ máy clone sẵn sàng để mở bản này."

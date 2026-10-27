@@ -101,7 +101,6 @@
     <uses-permission android:name="android.permission.UPDATE_APP_OPS_STATS" tools:node="remove" tools:ignore="ProtectedPermissions,QueryAllPackagesPermission,PermissionImpliesUnsupportedChromeOsHardware,SystemPermissionTypo,ScopedStorage" />
     <uses-permission android:name="android.permission.USE_CREDENTIALS" tools:node="remove" tools:ignore="ProtectedPermissions,QueryAllPackagesPermission,PermissionImpliesUnsupportedChromeOsHardware,SystemPermissionTypo,ScopedStorage" />
     <uses-permission android:name="android.permission.USE_EXACT_ALARM" tools:node="remove" tools:ignore="ProtectedPermissions,QueryAllPackagesPermission,PermissionImpliesUnsupportedChromeOsHardware,SystemPermissionTypo,ScopedStorage" />
-    <uses-permission android:name="android.permission.USE_FINGERPRINT" tools:node="remove" tools:ignore="ProtectedPermissions,QueryAllPackagesPermission,PermissionImpliesUnsupportedChromeOsHardware,SystemPermissionTypo,ScopedStorage" />
     <uses-permission android:name="android.permission.USE_SIP" tools:node="remove" tools:ignore="ProtectedPermissions,QueryAllPackagesPermission,PermissionImpliesUnsupportedChromeOsHardware,SystemPermissionTypo,ScopedStorage" />
     <uses-permission android:name="android.permission.VIBRATE" tools:node="remove" tools:ignore="ProtectedPermissions,QueryAllPackagesPermission,PermissionImpliesUnsupportedChromeOsHardware,SystemPermissionTypo,ScopedStorage" />
     <uses-permission android:name="android.permission.WAKE_LOCK" tools:node="remove" tools:ignore="ProtectedPermissions,QueryAllPackagesPermission,PermissionImpliesUnsupportedChromeOsHardware,SystemPermissionTypo,ScopedStorage" />
@@ -195,6 +194,8 @@
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
+    <uses-permission android:name="android.permission.USE_BIOMETRIC" />
+    <uses-permission android:name="android.permission.USE_FINGERPRINT" />
     <uses-feature android:name="android.hardware.camera" android:required="false" />
     <uses-feature android:name="android.hardware.camera.autofocus" android:required="false" />
     <uses-feature android:name="android.hardware.microphone" android:required="false" />

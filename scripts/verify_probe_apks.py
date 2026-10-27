@@ -46,7 +46,7 @@ def main():
     manifest, permissions, probe_cert = inspect_apk(probe, "vn.fonesi.probe")
     _, payload_permissions, payload_cert = inspect_apk(payload, "vn.fonesi.payload")
     _, base_permissions, _ = inspect_apk(base, "vn.fonesi.app")
-    if base_permissions != {"vn.fonesi.app.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION"}:
+    if base_permissions != {"vn.fonesi.app.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION", "android.permission.USE_BIOMETRIC", "android.permission.USE_FINGERPRINT"}:
         raise RuntimeError("Base/scanner app has unexpected permissions")
     with zipfile.ZipFile(base) as archive:
         if any("libfcore.so" in name for name in archive.namelist()):

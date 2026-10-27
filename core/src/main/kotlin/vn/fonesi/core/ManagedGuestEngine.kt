@@ -40,11 +40,13 @@ class ManagedGuestEngine(
     private val backend: GuestBackend,
     private val registry: InstanceRegistry,
     private val snapshots: SourceSnapshotter,
+    private val mayMutate: () -> Boolean = { true },
 ) : CloneEngine, StoppableCloneEngine {
     override val availability: EngineAvailability get() = if (backend.ready) EngineAvailability.Ready(UpdateScope.SHARED_PACKAGE)
         else EngineAvailability.Unavailable("Bộ máy thử nghiệm chưa được bật hoặc không khởi tạo được.")
 
     private fun ready() = check(backend.ready) { "Engine unavailable" }
+    private fun mutationAllowed() = check(mayMutate()) { "Foreground authorization is required to start an SDK mutation" }
     private fun active() = registry.list().filter { it.state in setOf(InstanceState.RESERVED, InstanceState.READY, InstanceState.DELETING) }
     private fun instance(id: String) = active().single { it.id == id }
     private fun record(row: GuestInstance): CloneRecord? {
@@ -62,23 +64,28 @@ class ManagedGuestEngine(
 
     override fun create(source: InstalledSource, label: String): CloneRecord {
         ready()
+        mutationAllowed()
         require(label.isNotBlank())
         checkSource(source)
-        val peers = listClones().filter { it.packageName == source.packageName }
-        check(peers.all { it.running == false && it.versionCode == source.versionCode && it.signerDigests == source.signerDigests }) {
-            "Stop and update existing instances before importing shared package code"
-        }
+        checkCreatePeers(source)
         val taskId = UUID.randomUUID().toString()
         val snapshot = snapshots.prepare(taskId, source)
         var enteredSdk = false
+        var unusedReservation: GuestInstance? = null
         try {
             check(snapshots.verify(snapshot) && snapshot.source.packageName == source.packageName &&
                 snapshot.source.versionCode == source.versionCode && snapshot.source.signerDigests == source.signerDigests)
+            mutationAllowed()
+            checkCreatePeers(source)
             var row = registry.reserve(source.packageName)
+            unusedReservation = row
             while (row.userId in backend.users()) {
                 registry.state(row.id, InstanceState.CONFLICT)
+                unusedReservation = null
                 row = registry.reserve(source.packageName)
+                unusedReservation = row
             }
+            mutationAllowed()
             enteredSdk = true
             backend.createUser(row.userId)
             check(row.userId in backend.users()) { "User creation not confirmed" }
@@ -90,7 +97,10 @@ class ManagedGuestEngine(
             return observed
         } catch (error: Exception) {
             // Keep uncertain imports/snapshots for diagnosis. Never uninstall to simulate rollback.
-            if (!enteredSdk) snapshots.discard(taskId)
+            if (!enteredSdk) {
+                unusedReservation?.let { registry.state(it.id, InstanceState.DELETED) }
+                snapshots.discard(taskId)
+            }
             throw error
         }
     }
@@ -99,6 +109,7 @@ class ManagedGuestEngine(
         ready()
         val row = instance(cloneId)
         check(row.state != InstanceState.DELETING && record(row) != null)
+        mutationAllowed()
         registry.pending(row.id, true) // Durable before asynchronous launch, including exceptions/death.
         backend.launch(row.userId, row.packageName)
     }
@@ -106,6 +117,7 @@ class ManagedGuestEngine(
     override fun stop(cloneId: String) {
         ready()
         val row = instance(cloneId)
+        mutationAllowed()
         backend.stop(row.userId, row.packageName)
         check(backend.inspect(row.userId, row.packageName)?.running != true) { "Stop not confirmed" }
         registry.pending(row.id, false)
@@ -116,6 +128,7 @@ class ManagedGuestEngine(
         val row = instance(cloneId)
         val live = record(row)
         check(live == null || live.running == false) { "Instance running or launch outcome unknown" }
+        mutationAllowed()
         registry.state(row.id, InstanceState.DELETING)
         if (live != null) backend.uninstall(row.userId, row.packageName)
         check(backend.inspect(row.userId, row.packageName) == null) { "Uninstall not confirmed" }
@@ -126,16 +139,29 @@ class ManagedGuestEngine(
     override fun update(target: UpdateTarget): List<CloneRecord> {
         ready()
         checkSource(target.source)
-        val current = listClones().filter { it.packageName == target.source.packageName }
+        val current = sharedRecords(target.source.packageName)
         check(current.isNotEmpty() && current.map { it.id }.toSet() == target.affectedCloneIds.toSet()) { "Shared update scope changed" }
         check(current.all { it.running == false && it.versionCode <= target.source.versionCode && it.signerDigests == target.source.signerDigests })
         val first = instance(current.first().id)
+        mutationAllowed()
         backend.install(first.userId, target.source)
-        val observed = listClones().filter { it.packageName == target.source.packageName }
+        val observed = sharedRecords(target.source.packageName)
         check(observed.map { it.id }.toSet() == target.affectedCloneIds.toSet() && observed.all {
             it.versionCode == target.source.versionCode && it.signerDigests == target.source.signerDigests
         }) { "Shared update not verified for every instance" }
         return observed
+    }
+
+    /** Missing native readback is an uncertain peer, never permission to shrink shared scope. */
+    private fun sharedRecords(packageName: String): List<CloneRecord> = active().filter { it.packageName == packageName }.map { row ->
+        check(row.state != InstanceState.DELETING) { "A shared peer still needs deletion reconciliation" }
+        checkNotNull(record(row)) { "A shared peer cannot be read back" }
+    }
+
+    private fun checkCreatePeers(source: InstalledSource) {
+        check(sharedRecords(source.packageName).all { it.running == false && it.versionCode == source.versionCode && it.signerDigests == source.signerDigests }) {
+            "Stop and update existing instances before importing shared package code"
+        }
     }
 
     private fun checkSource(source: InstalledSource) {

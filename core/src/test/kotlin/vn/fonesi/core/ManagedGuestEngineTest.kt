@@ -115,6 +115,66 @@ class ManagedGuestEngineTest {
         assertThrows(IllegalStateException::class.java) { engine().listClones() }
         assertTrue(registry.list().isEmpty())
     }
+    @Test fun missingRegistryPeerBlocksSharedCreateAndUpdateWithoutShrinkingScope() {
+        val a = engine().create(source, "A")
+        registry.reserve(source.packageName) // Interrupted import, no metadata row and no native readback.
+        assertThrows(IllegalStateException::class.java) { engine().create(source, "B") }
+        assertThrows(IllegalStateException::class.java) { engine().update(UpdateTarget(source.copy(versionCode = 2), listOf(a.id))) }
+        assertEquals(1, backend.installs.size)
+        assertEquals(0, backend.uninstalls.size)
+        assertEquals(2, registry.list().size)
+    }
+    @Test fun deletingRegistryPeerBlocksSharedImportUntilReconciled() {
+        val a = engine().create(source, "A")
+        registry.state(a.id, InstanceState.DELETING)
+        assertThrows(IllegalStateException::class.java) { engine().create(source, "B") }
+        assertThrows(IllegalStateException::class.java) { engine().update(UpdateTarget(source.copy(versionCode = 2), listOf(a.id))) }
+        assertEquals(1, backend.installs.size)
+    }
+    @Test fun foregroundLostDuringPreparationNeverReservesOrEntersSdk() {
+        var authorized = true
+        snapshots.afterPrepare = { authorized = false }
+        val guarded = ManagedGuestEngine(backend, registry, snapshots) { authorized }
+        assertThrows(IllegalStateException::class.java) { guarded.create(source, "A") }
+        assertTrue(registry.list().isEmpty()); assertTrue(backend.users().isEmpty())
+        assertTrue(backend.installs.isEmpty()); assertEquals(1, snapshots.discards)
+    }
+    @Test fun peerBecomingBusyDuringPreparationBlocksSharedCreate() {
+        engine().create(source, "A")
+        val peer = registry.list().single()
+        snapshots.afterPrepare = { backend.packages[peer.userId to source.packageName] = GuestPackage(source.packageName, 1, source.signerDigests, true) }
+        assertThrows(IllegalStateException::class.java) { engine().create(source, "B") }
+        assertEquals(1, registry.list().size); assertEquals(1, backend.installs.size)
+    }
+    @Test fun authorizationRequiredBeforeLaunchStopDeleteOrUpdateSdkEntry() {
+        val a = engine().create(source, "A")
+        val guarded = ManagedGuestEngine(backend, registry, snapshots) { false }
+        assertThrows(IllegalStateException::class.java) { guarded.launch(a.id) }
+        assertThrows(IllegalStateException::class.java) { guarded.stop(a.id) }
+        assertThrows(IllegalStateException::class.java) { guarded.delete(a.id) }
+        assertThrows(IllegalStateException::class.java) { guarded.update(UpdateTarget(source.copy(versionCode = 2), listOf(a.id))) }
+        assertEquals(0, backend.launchAttempts); assertEquals(0, backend.stopAttempts)
+        assertEquals(1, backend.installs.size); assertTrue(backend.uninstalls.isEmpty())
+        assertFalse(registry.list().single().launchPending); assertEquals(InstanceState.READY, registry.list().single().state)
+    }
+    @Test fun authorizationLostAfterFirstSdkMutationStillCompletesCreateReadback() {
+        var authorized = true
+        backend.afterCreateUser = { authorized = false }
+        val created = ManagedGuestEngine(backend, registry, snapshots) { authorized }.create(source, "A")
+        assertEquals(created, engine().listClones().single())
+        assertEquals(InstanceState.READY, registry.list().single().state)
+        assertEquals(1, snapshots.discards); assertTrue(backend.uninstalls.isEmpty())
+    }
+    @Test fun unusedReservationIsRetiredWithoutReusingIdWhenAuthorizationExpiresBeforeSdkEntry() {
+        var checks = 0
+        val guarded = ManagedGuestEngine(backend, registry, snapshots) { ++checks < 3 }
+        assertThrows(IllegalStateException::class.java) { guarded.create(source, "A") }
+        assertEquals(InstanceState.DELETED, registry.list().single().state)
+        assertTrue(backend.users().isEmpty()); assertTrue(backend.installs.isEmpty())
+        val created = engine().create(source, "B")
+        assertNotEquals(registry.list().first().id, created.id)
+        assertEquals(10002, backend.installs.single().first)
+    }
 }
 
 private class RegistryDouble : InstanceRegistry {
@@ -126,8 +186,9 @@ private class RegistryDouble : InstanceRegistry {
 }
 private class SnapshotDouble : SourceSnapshotter {
     var valid = true; var prepares = 0; var discards = 0
+    var afterPrepare: () -> Unit = {}
     override fun prepare(taskId: String, expected: InstalledSource): PreparedSource {
-        prepares++; return PreparedSource(expected.copy(apkPaths = listOf("/frozen/base.apk")), "f", emptyList())
+        prepares++; afterPrepare(); return PreparedSource(expected.copy(apkPaths = listOf("/frozen/base.apk")), "f", emptyList())
     }
     override fun verify(snapshot: PreparedSource) = valid
     override fun discard(taskId: String) { discards++ }
@@ -140,8 +201,10 @@ private class BackendDouble : GuestBackend {
     val launches = mutableListOf<Pair<Int, String>>()
     val uninstalls = mutableListOf<Pair<Int, String>>()
     var failLaunch = false; var failAfterInstall = false; var failStop = false; var shareCode = true; var launchAttempts = 0
+    var stopAttempts = 0
+    var afterCreateUser: () -> Unit = {}
     override fun users() = userIds.toSet()
-    override fun createUser(userId: Int) { userIds += userId }
+    override fun createUser(userId: Int) { userIds += userId; afterCreateUser() }
     override fun inspect(userId: Int, packageName: String) = packages[userId to packageName]
     override fun install(userId: Int, source: InstalledSource) {
         installs += userId to source
@@ -150,6 +213,6 @@ private class BackendDouble : GuestBackend {
         check(!failAfterInstall)
     }
     override fun launch(userId: Int, packageName: String) { launchAttempts++; check(!failLaunch); launches += userId to packageName }
-    override fun stop(userId: Int, packageName: String) { if (!failStop) packages.computeIfPresent(userId to packageName) { _, old -> old.copy(running = false) } }
+    override fun stop(userId: Int, packageName: String) { stopAttempts++; if (!failStop) packages.computeIfPresent(userId to packageName) { _, old -> old.copy(running = false) } }
     override fun uninstall(userId: Int, packageName: String) { uninstalls += userId to packageName; packages.remove(userId to packageName) }
 }

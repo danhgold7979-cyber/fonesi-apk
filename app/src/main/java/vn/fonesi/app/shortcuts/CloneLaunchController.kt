@@ -10,7 +10,7 @@ import vn.fonesi.core.update.TaskState
 
 enum class LaunchBlock {
     INVALID_LINK, CLONE_MISSING, ENGINE_UNAVAILABLE, ENGINE_CHANGED, IDENTITY_CHANGED,
-    UPDATE_UNRESOLVED, OPERATION_BUSY, STORAGE_ERROR, ENGINE_ERROR,
+    UPDATE_UNRESOLVED, OPERATION_BUSY, STORAGE_ERROR, ENGINE_ERROR, LOCKED,
 }
 
 sealed interface LaunchResult {
@@ -25,11 +25,13 @@ class CloneLaunchController(
     private val engineKey: String,
     private val engine: CloneEngine,
     private val lock: QueueLock,
+    private val authorized: () -> Boolean = { true },
 ) {
     fun inspect(token: String): LaunchResult = guarded(token, dispatch = false)
     fun launch(token: String): LaunchResult = guarded(token, dispatch = true)
 
     private fun guarded(token: String, dispatch: Boolean): LaunchResult {
+        if (!authorized()) return blocked(LaunchBlock.LOCKED)
         if (!CloneRoute.validToken(token)) return blocked(LaunchBlock.INVALID_LINK)
         val lease = try { lock.acquire() } catch (_: Exception) { return blocked(LaunchBlock.STORAGE_ERROR) }
             ?: return blocked(LaunchBlock.OPERATION_BUSY)
@@ -56,6 +58,7 @@ class CloneLaunchController(
             if (records.map { it.id }.distinct().size != records.size) return blocked(LaunchBlock.IDENTITY_CHANGED)
             val live = records.singleOrNull { it.id == saved.cloneId } ?: return blocked(LaunchBlock.CLONE_MISSING)
             if (live.packageName != saved.packageName) return blocked(LaunchBlock.IDENTITY_CHANGED)
+            if (!authorized()) return blocked(LaunchBlock.LOCKED)
             if (dispatch) engine.launch(saved.cloneId)
             LaunchResult.Accepted(saved)
         } catch (_: Exception) { blocked(LaunchBlock.ENGINE_ERROR) }

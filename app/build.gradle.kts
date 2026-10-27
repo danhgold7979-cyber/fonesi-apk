@@ -25,8 +25,8 @@ android {
         applicationId = "vn.fonesi.app"
         minSdk = 26
         targetSdk = 36
-        versionCode = 4
-        versionName = if (candidate) "0.4.0-candidate" else "0.4.0-cloud"
+        versionCode = 5
+        versionName = if (candidate) "0.5.0-candidate" else "0.5.0-cloud"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
     buildFeatures { compose = true }
@@ -64,6 +64,8 @@ tasks.named("preBuild") { dependsOn(verifyCandidateSdk) }
 androidComponents { beforeVariants(selector().withBuildType("release")) { if (candidate) it.enable = false } }
 ksp { arg("room.schemaLocation", "$projectDir/schemas") }
 dependencies {
+    implementation("androidx.biometric:biometric:1.1.0")
+    implementation("androidx.fragment:fragment-ktx:1.8.8")
     if (candidate) {
         implementation(files(sdkFile))
         implementation("com.tencent:mmkv-static:1.2.10")

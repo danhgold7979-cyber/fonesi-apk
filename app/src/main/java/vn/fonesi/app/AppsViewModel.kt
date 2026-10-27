@@ -23,6 +23,10 @@ import vn.fonesi.core.*
 import vn.fonesi.core.update.*
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.ensureActive
+import vn.fonesi.app.update.UpdatePreviewChangedException
+import vn.fonesi.app.update.UpdatePreviewState
+import vn.fonesi.app.update.AutoUpdateMode
+import vn.fonesi.app.update.AutoUpdatePolicy
 
 data class AppsState(
     val apps: List<DeviceApp> = emptyList(),
@@ -57,6 +61,48 @@ class AppsViewModel(application: Application) : AndroidViewModel(application) {
     val management = mutableManagement.asStateFlow()
     private val mutableRuntime = MutableStateFlow(RuntimeState())
     val runtime = mutableRuntime.asStateFlow()
+    private val mutablePreview = MutableStateFlow(UpdatePreviewState())
+    val updatePreview = mutablePreview.asStateFlow()
+    val automatic = services.automatic.state
+    private val mutableAutoPolicy = MutableStateFlow(services.autoPolicy.read())
+    val autoPolicy = mutableAutoPolicy.asStateFlow()
+    private var automaticJob: Job? = null
+    fun automaticTick() {
+        if (automaticJob?.isActive == true || mutableManagement.value.busy) return
+        val policy = services.autoPolicy.read()
+        mutableAutoPolicy.value = policy
+        if (policy.mode == AutoUpdateMode.OFF) return
+        automaticJob = viewModelScope.launch {
+            try { withContext(Dispatchers.IO) { services.automatic.check() } }
+            catch (cancelled: CancellationException) { throw cancelled }
+            catch (_: Exception) { mutableManagement.value = mutableManagement.value.copy(feedback = "Chưa chạy được tự kiểm tra. Giữ nguyên hàng đợi để kiểm tra lại.") }
+            finally { mutableAutoPolicy.value = services.autoPolicy.read(); refreshRuntime() }
+        }
+    }
+    fun setAutoMode(mode: AutoUpdateMode) {
+        viewModelScope.launch {
+            try {
+                withContext(Dispatchers.IO) { services.autoPolicy.write(mode); if (mode == AutoUpdateMode.OFF) services.automatic.check() }
+                mutableAutoPolicy.value = services.autoPolicy.read()
+                mutableManagement.value = mutableManagement.value.copy(feedback = "Đã lưu lựa chọn tự động; thao tác đang áp dụng vẫn phải hoàn tất xác minh.")
+                if (mode != AutoUpdateMode.OFF) automaticTick()
+            } catch (cancelled: CancellationException) { throw cancelled }
+            catch (_: Exception) { mutableManagement.value = mutableManagement.value.copy(feedback = "Chưa lưu được lựa chọn tự động; không xác nhận đã đổi chế độ.") }
+        }
+    }
+    fun showAutomaticPreview() {
+        services.automatic.state.value.preview?.let { mutablePreview.value = UpdatePreviewState(preview = it) }
+    }
+    private var previewJob: Job? = null
+    private val mutableDiagnostics = MutableStateFlow<DeviceDiagnostics?>(null)
+    val diagnostics = mutableDiagnostics.asStateFlow()
+    private var diagnosticsJob: Job? = null
+    fun refreshDiagnostics() {
+        diagnosticsJob?.cancel()
+        diagnosticsJob = viewModelScope.launch {
+            mutableDiagnostics.value = withContext(Dispatchers.IO) { DeviceDiagnostics.read(getApplication()) }
+        }
+    }
 
     init {
         viewModelScope.launch {
@@ -177,18 +223,33 @@ class AppsViewModel(application: Application) : AndroidViewModel(application) {
         check(it.engineKey == services.engineKey)
     }
 
-    fun updateClones(tokens: List<String>) = mutate {
-        val plan = services.operationLock().acquire().let { checkNotNull(it) }.use {
-            val rows = tokens.distinct().map(::currentClone)
-            val catalog = AndroidSourceCatalog(getApplication<Application>().packageManager)
-            val sources = rows.map { it.packageName }.distinct().mapNotNull { catalog.current(it)?.let { source -> it to source } }.toMap()
-            if (RuntimeBindings.candidate && sources.values.any { it.apkPaths.size != 1 }) throw UnsupportedSourceException()
-            val availability = engine.availability as? EngineAvailability.Ready ?: error("Engine unavailable")
-            val planned = UpdatePlanner.plan(rows.map { it.cloneId }, engine.listClones(), sources, availability)
-            services.queue.enqueue(services.engineKey, planned.targets, availability.updateScope)
-            planned
+    fun previewUpdates(tokens: List<String>) {
+        previewJob?.cancel()
+        mutablePreview.value = UpdatePreviewState(loading = true)
+        previewJob = viewModelScope.launch {
+            try {
+                val preview = withContext(Dispatchers.IO) { services.updateRequests.preview(tokens.toList()) }
+                mutablePreview.value = UpdatePreviewState(preview = preview)
+            } catch (cancelled: CancellationException) { throw cancelled }
+            catch (_: Exception) { mutablePreview.value = UpdatePreviewState(error = "Chưa đối chiếu được nguồn/engine hoặc đang có thao tác khác. Chưa xếp yêu cầu nào; hãy mở khóa/đợi rồi xem lại.") }
         }
-        "Đã xếp ${plan.targets.size} nhóm; ${plan.alreadyCurrent.size} bản đã đúng phiên bản, ${plan.blocked.size} yêu cầu bị chặn. Chọn Chạy hàng đợi để áp dụng tuần tự."
+    }
+    fun dismissUpdatePreview() { previewJob?.cancel(); mutablePreview.value = UpdatePreviewState() }
+    fun confirmUpdates(id: String) {
+        val preview = mutablePreview.value.preview?.takeIf { it.id == id } ?: return
+        mutate {
+            try {
+                val jobs = services.updateRequests.confirm(preview)
+                mutablePreview.value = UpdatePreviewState()
+                "Đã xếp/đối chiếu ${jobs.size} nhóm. Chọn Chạy hàng đợi để áp dụng tuần tự; chưa báo cập nhật thành công."
+            } catch (_: UpdatePreviewChangedException) {
+                mutablePreview.value = UpdatePreviewState(error = "Nguồn, trạng thái hoặc phạm vi đã đổi sau preview. Chưa xếp yêu cầu mới; đóng và xem trước lại.")
+                "Thông tin cập nhật đã thay đổi; cần xem trước lại."
+            } catch (error: Exception) {
+                mutablePreview.value = mutablePreview.value.copy(error = "Chưa xác nhận xếp hàng. Đóng rồi đối chiếu lại trước khi tiếp tục.")
+                throw error
+            }
+        }
     }
 
     fun runQueue() {
@@ -246,6 +307,7 @@ class AppsViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun refresh() {
+        refreshDiagnostics()
         refreshRuntime()
         scanJob?.cancel()
         scanJob = viewModelScope.launch {

@@ -15,7 +15,7 @@ def main():
     internal = "vn.fonesi.app.permission.INTERNAL_SDK"
     expected = {internal, "vn.fonesi.app.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION"} | {
         "android.permission." + name for name in ["INTERNET", "ACCESS_NETWORK_STATE", "CAMERA", "RECORD_AUDIO",
-            "FOREGROUND_SERVICE", "FOREGROUND_SERVICE_SPECIAL_USE", "POST_NOTIFICATIONS"]}
+            "FOREGROUND_SERVICE", "FOREGROUND_SERVICE_SPECIAL_USE", "POST_NOTIFICATIONS", "USE_BIOMETRIC", "USE_FINGERPRINT"]}
     if permissions != expected:
         raise RuntimeError(f"Unexpected candidate permissions: {sorted(permissions ^ expected)}")
     app = manifest.find("application")
@@ -39,7 +39,12 @@ def main():
             else: raise RuntimeError(f"Unexpected exported candidate guard: {name}")
     if public != {("activity", "vn.fonesi.app.MainActivity"), ("activity", "vn.fonesi.app.shortcuts.CloneLaunchActivity")}:
         raise RuntimeError(f"Unexpected public SDK entry points: {sorted(public)}")
-    if manifest.get(A + "versionName") != "0.4.0-candidate": raise RuntimeError("Wrong candidate version")
+    route = next(c for c in app.findall("activity") if c.get(A + "name") in ["vn.fonesi.app.shortcuts.CloneLaunchActivity", ".shortcuts.CloneLaunchActivity"])
+    if route.findall("intent-filter") or any(route.get(A + key) != value for key, value in {
+        "noHistory": "false", "excludeFromRecents": "true", "taskAffinity": "",
+    }.items()):
+        raise RuntimeError("Candidate route must retain credential result without becoming browsable/public history")
+    if manifest.get(A + "versionName") != "0.5.0-candidate": raise RuntimeError("Wrong candidate version")
     with zipfile.ZipFile(apk) as archive:
         names = archive.namelist()
         if not any(name.endswith("/libfcore.so") for name in names): raise RuntimeError("Actual engine is missing")

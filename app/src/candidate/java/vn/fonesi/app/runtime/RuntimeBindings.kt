@@ -11,6 +11,7 @@ import com.fvbox.lib.FCore
 import vn.fonesi.app.AndroidSourceCatalog
 import vn.fonesi.app.storage.FonesiDatabase
 import vn.fonesi.app.storage.RoomInstanceRegistry
+import vn.fonesi.app.security.AccessBroker
 import vn.fonesi.core.*
 import vn.fonesi.core.update.FileSourceSnapshotter
 import java.util.UUID
@@ -69,5 +70,6 @@ object RuntimeBindings {
     fun engine(context: Context, db: FonesiDatabase): CloneEngine = ManagedGuestEngine(
         SpaceCoreBackend(context) { initialized }, RoomInstanceRegistry(db, key(context)),
         FileSourceSnapshotter(context.filesDir.toPath().resolve("create-snapshots"), AndroidSourceCatalog(context.packageManager)),
+        mayMutate = { AccessBroker.get(context).hasForegroundAccess() },
     )
 }

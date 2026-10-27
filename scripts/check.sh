@@ -23,7 +23,7 @@ case "${1:-}" in
         ./scripts/gradle.sh -PengineCandidate=true :app:testDebugUnitTest :app:assembleDebug :app:lintDebug --console=plain
         python3 scripts/verify_candidate_build.py
         mkdir -p app/build/outputs/candidate
-        cp app/build/outputs/apk/debug/app-debug.apk app/build/outputs/candidate/fonesi-0.4.0-candidate.apk
+        cp app/build/outputs/apk/debug/app-debug.apk app/build/outputs/candidate/fonesi-0.5.0-candidate.apk
         cp app/build/reports/candidate-verification.json app/build/outputs/candidate/verification.json
         exit 0
         ;;

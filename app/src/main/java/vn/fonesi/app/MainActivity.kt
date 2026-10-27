@@ -1,7 +1,6 @@
 package vn.fonesi.app
 
 import android.os.Bundle
-import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
@@ -26,14 +25,42 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import android.app.ActivityManager
 import android.os.Process
 import vn.fonesi.app.runtime.RuntimeBindings
+import vn.fonesi.app.security.*
+import vn.fonesi.app.configuration.*
+import androidx.activity.result.contract.ActivityResultContracts
+import android.content.Intent
+import vn.fonesi.app.update.UpdatePreviewDialog
+import vn.fonesi.core.*
+import vn.fonesi.app.update.AutomaticUpdatesCard
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.repeatOnLifecycle
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
 
-class MainActivity : ComponentActivity() {
+class MainActivity : LockedActivity() {
     private val model: AppsViewModel by viewModels()
+    private val configuration: ConfigurationViewModel by viewModels()
+    private val exportConfiguration = registerForActivityResult(ActivityResultContracts.CreateDocument("application/json")) { uri ->
+        if (uri != null) runCatching { contentResolver.takePersistableUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION) }
+        configuration.documentSelected(DocumentAction.EXPORT, uri)
+    }
+    private val importConfiguration = registerForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
+        if (uri != null) runCatching { contentResolver.takePersistableUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION) }
+        configuration.documentSelected(DocumentAction.IMPORT, uri)
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
+            val gate by access.state.collectAsStateWithLifecycle()
+            AccessGate(gate, { authenticate(AuthPurpose.UNLOCK) }, { authenticate(AuthPurpose.UNLOCK, credentialOnly = true) }) {
+            LaunchedEffect(Unit) { model.refresh() }
+            LaunchedEffect(Unit) {
+                lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                    while (isActive) { model.automaticTick(); delay(60_000) }
+                }
+            }
             val scheme = if (isSystemInDarkTheme()) darkColorScheme(
                 primary = Color(0xFF9CD8BD), secondary = Color(0xFFB0CCC0),
             ) else lightColorScheme(
@@ -44,7 +71,10 @@ class MainActivity : ComponentActivity() {
                 val state by model.state.collectAsStateWithLifecycle()
                 val management by model.management.collectAsStateWithLifecycle()
                 val runtime by model.runtime.collectAsStateWithLifecycle()
-                FonesiScreen(state, management, runtime, model) { enabled ->
+                FonesiScreen(state, management, runtime, model, gate, configuration,
+                    export = { exportConfiguration.launch("fonesi-configuration.json") },
+                    openConfiguration = { importConfiguration.launch(arrayOf("application/json", "text/plain")) },
+                    securityChange = { authenticate(if (it) AuthPurpose.ENABLE else AuthPurpose.DISABLE) }) { enabled ->
                     if (model.configureEngine(enabled)) {
                         (getSystemService(ACTIVITY_SERVICE) as ActivityManager).runningAppProcesses.orEmpty()
                             .filter { it.uid == Process.myUid() && it.pid != Process.myPid() }
@@ -54,23 +84,47 @@ class MainActivity : ComponentActivity() {
                     }
                 }
             }
+            }
         }
     }
 
     override fun onResume() {
         super.onResume()
-        model.refresh()
+        if (access.state.value.unlocked) model.refresh()
     }
 }
 
 @Composable
 private fun FonesiScreen(state: AppsState, management: ManagementState, runtime: RuntimeState, model: AppsViewModel,
+    gate: GateState, configuration: ConfigurationViewModel, export: () -> Unit, openConfiguration: () -> Unit,
+    securityChange: (Boolean) -> Unit,
     engineChange: (Boolean) -> Unit) {
     var tab by rememberSaveable { mutableIntStateOf(0) }
     var query by rememberSaveable { mutableStateOf("") }
     var priorityOnly by rememberSaveable { mutableStateOf(true) }
     var selectedPackage by rememberSaveable { mutableStateOf<String?>(null) }
-    var updateTokens by remember { mutableStateOf<List<String>?>(null) }
+    var cloneQuery by rememberSaveable { mutableStateOf("") }
+    var cloneGroup by rememberSaveable { mutableStateOf<String?>(null) }
+    var cloneStatus by rememberSaveable { mutableStateOf(CloneStatusFilter.ALL) }
+    var selectedClones by rememberSaveable { mutableStateOf(emptyList<String>()) }
+    val preview by model.updatePreview.collectAsStateWithLifecycle()
+    val diagnostics by model.diagnostics.collectAsStateWithLifecycle()
+    val automatic by model.automatic.collectAsStateWithLifecycle()
+    val autoPolicy by model.autoPolicy.collectAsStateWithLifecycle()
+    val busy = management.busy || automatic.running
+    val cloneItems = remember(management.clones, runtime, model.engineKey) {
+        management.clones.map { row ->
+            val live = runtime.clones[row.cloneId]?.takeIf { row.engineKey == model.engineKey && it.packageName == row.packageName }
+            val status = when (live?.running) { true -> CloneStatusFilter.RUNNING; false -> CloneStatusFilter.STOPPED; null -> CloneStatusFilter.UNKNOWN }
+            CloneListItem(row.launchToken, row.packageName, row.label, row.groupName, status)
+        }
+    }
+    val visibleClones = remember(cloneItems, cloneQuery, cloneGroup, cloneStatus) { CloneListPolicy.filter(cloneItems, cloneQuery, cloneGroup, cloneStatus).map { it.token }.toSet() }
+    val eligible = remember(management.clones, runtime, model.engineKey) {
+        management.clones.filter { row -> runtime.ready && row.engineKey == model.engineKey && runtime.clones[row.cloneId]?.packageName == row.packageName }.map { it.launchToken }.toSet()
+    }
+    val retained = CloneListPolicy.retain(selectedClones.toSet(), eligible)
+    LaunchedEffect(retained, selectedClones) { if (retained != selectedClones.toSet()) selectedClones = retained.toList() }
     val visibleApps = remember(state.apps, query, priorityOnly) {
         state.apps.filter {
             (!priorityOnly || it.priority) &&
@@ -110,7 +164,7 @@ private fun FonesiScreen(state: AppsState, management: ManagementState, runtime:
                 }
                 management.error?.let { Text(it, color = MaterialTheme.colorScheme.error) }
                 management.feedback?.let { Text(it, style = MaterialTheme.typography.bodySmall) }
-                if (management.busy) LinearProgressIndicator(Modifier.fillMaxWidth())
+                if (busy) LinearProgressIndicator(Modifier.fillMaxWidth())
             }
             if (tab == 0) {
             item {
@@ -155,16 +209,23 @@ private fun FonesiScreen(state: AppsState, management: ManagementState, runtime:
                     Text("Tên và nhóm được lưu riêng. Trạng thái chạy cần bộ máy clone đối chiếu; một mục đã lưu chưa có nghĩa bản đó đang hoạt động.")
                     if (!management.loaded && management.error == null) Text("Đang đọc dữ liệu quản lý…")
                     else if (management.clones.isEmpty()) Text("Chưa có bản clone được xác nhận và lưu. App không tạo bản mẫu trong danh sách này.")
-                    OutlinedButton(onClick = model::reconcileClones, enabled = runtime.ready && !management.busy) { Text("Đối chiếu với engine") }
+                    OutlinedButton(onClick = model::reconcileClones, enabled = runtime.ready && !busy) { Text("Đối chiếu với engine") }
+                    CloneListControls(cloneQuery, { cloneQuery = it }, management.clones.mapNotNull { it.groupName }.distinct().sorted(),
+                        cloneGroup, { cloneGroup = it }, cloneStatus, { cloneStatus = it }, retained.size, visibleClones.size, (visibleClones intersect eligible).size,
+                        selectVisible = { selectedClones = CloneListPolicy.selectVisible(retained, visibleClones, eligible).toList() },
+                        clear = { selectedClones = emptyList() }, update = { model.previewUpdates(retained.toList()) },
+                        enabled = runtime.ready && management.error == null && !busy)
                 }
-                items(management.clones, key = { "clone:${it.engineKey.length}:${it.engineKey}:${it.cloneId}" }) { row ->
-                    SavedCloneCard(row, enabled = management.error == null && !management.busy,
+                items(management.clones.filter { it.launchToken in visibleClones }, key = { "clone:${it.engineKey.length}:${it.engineKey}:${it.cloneId}" }) { row ->
+                    SavedCloneCard(row, enabled = management.error == null && !busy,
                         operational = runtime.ready && row.engineKey == model.engineKey,
-                        live = if (row.engineKey == model.engineKey) runtime.clones[row.cloneId] else null,
+                        selected = row.launchToken in retained,
+                        toggle = { selectedClones = CloneListPolicy.toggle(retained, row.launchToken, eligible).toList() },
+                        live = runtime.clones[row.cloneId]?.takeIf { row.engineKey == model.engineKey && it.packageName == row.packageName },
                         open = { model.openClone(row.launchToken) }, pin = { model.pinClone(row.launchToken) },
                         stop = { model.stopClone(row.launchToken) }, delete = { model.deleteClone(row.launchToken) },
                         duplicate = { label -> model.duplicateClone(row.launchToken, label) },
-                        update = { updateTokens = listOf(row.launchToken) }) { label, group ->
+                        update = { model.previewUpdates(listOf(row.launchToken)) }) { label, group ->
                         model.renameClone(row.engineKey, row.cloneId, label, group)
                     }
                 }
@@ -176,9 +237,11 @@ private fun FonesiScreen(state: AppsState, management: ManagementState, runtime:
                     OutlinedButton(onClick = { model.setQueuePaused(!management.paused) }, enabled = management.loaded && management.error == null) {
                         Text(if (management.paused) "Cho phép chạy" else "Tạm dừng")
                     }
-                    OutlinedButton(onClick = { updateTokens = management.clones.filter { it.engineKey == model.engineKey }.map { it.launchToken } },
-                        enabled = runtime.ready && management.clones.isNotEmpty() && !management.busy) { Text("Kiểm tra cập nhật tất cả") }
-                    Button(onClick = model::runQueue, enabled = runtime.ready && !management.busy && !management.paused) { Text("Chạy hàng đợi") }
+                    OutlinedButton(onClick = { model.previewUpdates(eligible.toList()) },
+                        enabled = runtime.ready && eligible.isNotEmpty() && !busy) { Text("Kiểm tra cập nhật tất cả") }
+                    Button(onClick = model::runQueue, enabled = runtime.ready && !busy && !management.paused) { Text("Chạy hàng đợi") }
+                    AutomaticUpdatesCard(automatic, autoPolicy, runtime.ready && !management.busy,
+                        model::setAutoMode, model::automaticTick, model::showAutomaticPreview)
                     Text("Giữ Fonesi mở khi cập nhật. Nếu Android đóng tiến trình, mở lại để đối chiếu journal; không tự áp dụng lại kết quả chưa rõ.")
                     if (management.loaded && management.jobs.isEmpty()) Text("Chưa có yêu cầu cập nhật. Không có tác vụ mẫu hoặc kết quả giả.")
                 }
@@ -186,7 +249,20 @@ private fun FonesiScreen(state: AppsState, management: ManagementState, runtime:
                     UpdateTaskCard(task, management.error == null, { model.cancelTask(task.id) }, { model.retryDeferred(task.id) })
                 }
             } else {
-                item { RuntimeSettingsCard(engineChange, enabled = !management.busy) }
+                item {
+                    Text("Khóa truy cập", style = MaterialTheme.typography.titleLarge)
+                    Text(if (gate.required) "Đang bật: rời Fonesi sẽ khóa lại, gồm cả lối tắt bản clone." else "Đang tắt khóa giao diện.")
+                    Text("Dùng sinh trắc học hoặc mã khóa máy. Đây là khóa giao diện quản lý/mở mới, không mã hóa hay khóa ứng dụng khách đã chạy.")
+                    OutlinedButton(onClick = { securityChange(!gate.required) }, enabled = !gate.authenticating && !busy) {
+                        Text(if (gate.required) "Xác thực và tắt khóa" else "Xác thực và bật khóa")
+                    }
+                    gate.message?.let { Text(it) }
+                    ConfigurationCard(configuration, management.clones.filter {
+                        it.engineKey == model.engineKey && runtime.clones.containsKey(it.cloneId)
+                    }, runtime.ready, !busy, export, openConfiguration)
+                    RuntimeSettingsCard(engineChange, enabled = !busy)
+                    DeviceDiagnosticsCard(diagnostics, model::refreshDiagnostics)
+                }
             }
             item {
                 Text(if (RuntimeBindings.candidate) "Danh sách được quét trên máy. Bản thử có Internet để ứng dụng khách kết nối; SDK mã đóng chưa được audit toàn bộ."
@@ -210,17 +286,12 @@ private fun FonesiScreen(state: AppsState, management: ManagementState, runtime:
                 }
             },
             confirmButton = { TextButton(onClick = { model.createClone(selected.packageName, cloneLabel); selectedPackage = null },
-                enabled = runtime.ready && !management.busy && cloneLabel.trim().length in 1..80 &&
+                enabled = runtime.ready && !busy && cloneLabel.trim().length in 1..80 &&
                     (!RuntimeBindings.candidate || selected.source.apkPaths.size == 1)) { Text("Tạo bản sạch") } },
             dismissButton = { TextButton(onClick = { selectedPackage = null }) { Text("Đóng") } },
         )
     }
-    updateTokens?.let { tokens ->
-        AlertDialog(onDismissRequest = { updateTokens = null }, title = { Text("Cập nhật từ bản gốc") },
-            text = { Text("Đối chiếu phiên bản/chữ ký và xếp hàng yêu cầu đã chọn. Engine ứng viên dùng chung mã: mọi bản cùng ứng dụng có thể bị ảnh hưởng. Dữ liệu không được yêu cầu xóa; giữ phiên đăng nhập còn cần kiểm chứng. Bản đang dùng sẽ bị hoãn.") },
-            confirmButton = { TextButton(onClick = { model.updateClones(tokens); updateTokens = null }, enabled = tokens.isNotEmpty()) { Text("Kiểm tra và xếp hàng") } },
-            dismissButton = { TextButton(onClick = { updateTokens = null }) { Text("Hủy") } })
-    }
+    UpdatePreviewDialog(preview, !busy, model::dismissUpdatePreview, model::confirmUpdates)
 }
 
 @Composable
@@ -231,7 +302,7 @@ private fun AppCard(app: DeviceApp, onClick: () -> Unit) {
             Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
                 Text(app.label, style = MaterialTheme.typography.titleMedium)
                 Text("Bản gốc ${app.versionName}", style = MaterialTheme.typography.bodySmall)
-                Text("Chưa kiểm chứng clone", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.secondary)
+                Text(if (RuntimeBindings.candidate && app.source.apkPaths.size > 1) "Bộ split APK · engine ứng viên chưa hỗ trợ" else "Chưa kiểm chứng clone", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.secondary)
             }
             Text("Chi tiết", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.primary)
         }

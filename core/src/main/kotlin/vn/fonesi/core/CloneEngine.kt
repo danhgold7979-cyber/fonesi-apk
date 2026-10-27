@@ -18,7 +18,7 @@ interface CloneEngine {
 }
 
 sealed interface EngineAvailability {
-    data class Ready(val updateScope: UpdateScope) : EngineAvailability
+    data class Ready(val updateScope: UpdateScope, val importsSplitApks: Boolean = false) : EngineAvailability
     data class Unavailable(val reason: String) : EngineAvailability
 }
 

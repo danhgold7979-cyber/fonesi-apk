@@ -199,6 +199,17 @@ class ShortcutIntegrationTest {
         assertTrue(engine.launched.isEmpty())
     }
 
+    @Test fun lockIsCheckedBeforeLookupAndAgainImmediatelyBeforeNativeDispatch() = background {
+        val row = repo().create(source, "A")
+        var allowed = false
+        val guarded = CloneLaunchController(db, "engine-a", engine, lock()) { allowed }
+        assertBlocked(LaunchBlock.LOCKED, guarded.launch(row.launchToken))
+        allowed = true
+        engine.onList = { allowed = false }
+        assertBlocked(LaunchBlock.LOCKED, guarded.launch(row.launchToken))
+        assertEquals(0, engine.attempts)
+    }
+
     @Test fun pinUsesOpaqueIdExplicitDestinationAndUnicodeLabelsWithoutDynamicQuota() = background {
         val row = repo().create(source, "🛒".repeat(25) + "a".repeat(30))
         val service = context.getSystemService(ShortcutManager::class.java)
@@ -291,7 +302,8 @@ private class ShortcutEngineDouble : CloneEngine {
     var sequence = 0
     var attempts = 0
     var onLaunch: () -> Unit = {}
-    override fun listClones() = records.toList()
+    var onList: () -> Unit = {}
+    override fun listClones(): List<CloneRecord> { onList(); return records.toList() }
     override fun create(source: InstalledSource, label: String): CloneRecord = CloneRecord(
         "instance-${++sequence}", source.packageName, source.versionCode, source.signerDigests, false,
     ).also { records += it }

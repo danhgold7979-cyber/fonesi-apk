@@ -33,7 +33,7 @@ def main():
         raise RuntimeError("Android lint has unresolved errors")
     apk = ROOT / "app/build/outputs/apk/debug/app-debug.apk"
     manifest, permissions, _ = inspect_apk(apk, "vn.fonesi.app")
-    if permissions != {"vn.fonesi.app.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION"}:
+    if permissions != {"vn.fonesi.app.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION", "android.permission.USE_BIOMETRIC", "android.permission.USE_FINGERPRINT"}:
         raise RuntimeError("Unexpected permissions in the main APK")
     application = manifest.find("application")
     if application.get(A + "allowBackup") != "false":
@@ -58,7 +58,7 @@ def main():
     if public_components != {("activity", "vn.fonesi.app.MainActivity"), ("activity", "vn.fonesi.app.shortcuts.CloneLaunchActivity")}:
         raise RuntimeError(f"Unexpected unguarded exported main-app components: {sorted(public_components)}")
     if route is None or route.findall("intent-filter") or any(route.get(A + key) != value for key, value in {
-        "noHistory": "true", "excludeFromRecents": "true", "taskAffinity": "",
+        "noHistory": "false", "excludeFromRecents": "true", "taskAffinity": "",
     }.items()):
         raise RuntimeError("Shortcut destination differs from the reviewed explicit-only routing policy")
     with zipfile.ZipFile(apk) as archive:

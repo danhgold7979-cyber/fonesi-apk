@@ -1,38 +1,35 @@
-# Trạng thái thực hiện
+# Trạng thái thực hiện — 0.5.0
 
-**Đã triển khai bản tích hợp thử Phase 1–4, `0.4.0-candidate`; chưa hoàn thiện toàn bộ sản phẩm.** SDK thật đã nối vào luồng tạo/mở/dừng/xóa/cập nhật trong build candidate. Người dùng yêu cầu gom thử điện thoại về đợt sau. Runtime vẫn chưa nghiệm thu; split APK/Android mới và phần phase 6–7 còn thiếu. Xem [INTEGRATED_CANDIDATE.md](INTEGRATED_CANDIDATE.md).
+**Đã hoàn thành thêm phần cloud của S1/S2/U1/Q1; sản phẩm clone đa ứng dụng chưa đạt 100%.** Các phần khóa, cấu hình, chọn nhiều, preview và tự động khi đang mở đã có code và kiểm tra. SDK candidate vẫn chỉ nhập một APK, giới hạn ARM64/API 26–34/trang 4 KB; chưa thực thi được xác minh trên điện thoại. Thử thiết bị được gom về đợt sau theo yêu cầu, không chặn phát triển phần độc lập và không biến runtime chưa chạy thành đạt.
 
-| Phase/bước | Trạng thái | Bằng chứng hoặc phần còn thiếu |
+Plan trước từng phần và điều chỉnh: [EXECUTION_PLAN.md](EXECUTION_PLAN.md). Bằng chứng bản hiện tại: [PHASE6_VALIDATION.md](PHASE6_VALIDATION.md). Giữ nguyên lộ trình [8 phase/32 bước](ROADMAP.md).
+
+| Phase/bước | Trạng thái | Bằng chứng/phần còn thiếu |
 | --- | --- | --- |
-| Phase 0, bước 1–4 | Đạt phần cloud | Project, toolchain, build nền tảng và baseline trong [VALIDATION.md](VALIDATION.md). |
-| Phase 1, bước 5 | Đã đánh giá ứng viên ban đầu | [Audit](PHASE1_ENGINE_AUDIT.md); chọn SpaceCore chỉ cho phép thử ngoại tuyến, chưa chốt engine sản phẩm. |
-| Phase 1, bước 6 | Có hai phạm vi thử được giới hạn | Probe vẫn ngoại tuyến; candidate có Internet/camera/mic/thông báo/foreground, init bật chủ động. Pin hash, guard component chữ ký và audit APK cuối; SDK mã đóng chưa được audit toàn bộ. |
-| Phase 1, bước 7 | Đạt build/kiểm tra cloud trong phạm vi ghi nhận | 19 unit test đạt; app chính và hai app thử build/lint không có lỗi; kiểm tra APK/chữ ký đạt. Còn cảnh báo thật, gồm native 4 KB. |
-| Phase 1, bước 8 | Có adapter SDK thật và payload; runtime tạm hoãn | Candidate thực sự gọi SDK; chỉ nhận một APK, ARM64/API 26–34/4 KB. Chưa chứng nhận SDK khởi tạo/chạy target 36. |
-| Phase 2 | Chưa nghiệm thu | Chưa chạy tài khoản Facebook riêng trên điện thoại. |
-| Phase 3, bước 13–14 | Đã nối vòng đời và registry bền vững vào candidate | Tạo/thêm bản sạch/dừng/xóa, Room schema 3, user không tái sử dụng, launch-pending và phục hồi metadata có readback. Test cloud không thay cho SDK thật. |
-| Phase 3, bước 15–16 | Có controller mở, ghim shortcut, migration và phối hợp khóa | UUID theo lần tạo, đối chiếu namespace/package/journal, đồng bộ tên và vô hiệu hóa mục đã xóa; kiểm thử cloud không thay cho mở guest/launcher thật. Chi tiết [SHORTCUTS.md](SHORTCUTS.md). |
-| Phase 4, bước 17–18 | Đã có phần điều phối/lưu bền vững trong cloud | Snapshot base/split, chống trùng, OS lock, write-ahead marker, CAS/pause, readback và recovery. Chưa kiểm chứng engine import APK thật. |
-| Phase 4, bước 19–20 | Đã nối planner/queue/runner với adapter candidate | Cập nhật một bản/tất cả theo nhóm, chạy tuần tự khi người dùng yêu cầu, có pause trong lúc runner chạy. Chưa có scheduler tự chạy nền hoặc xác minh giữ phiên đăng nhập. |
-| Phase 5 | Bị chặn một phần bởi engine ứng viên | Chưa nhập split APK; các app bắt buộc vẫn chưa đạt và chưa được loại khỏi phạm vi. Cần engine đủ khả năng và test từng app. |
-| Phase 6 | Có thiết lập runtime/quyền; chưa hoàn tất | Chưa có sinh trắc học hoặc sao lưu/nhập cấu hình đầy đủ. |
-| Phase 7 | Chưa hoàn tất | Chưa đo máy thật, đa hãng hoặc ký bản phát hành. Không suy ra ổn định từ unit test. |
+| 0, bước 1–4 | Đạt phần cloud | Nền tảng, toolchain pin, build/audit tái tạo và baseline. |
+| 1, bước 5–7 | Có SDK ứng viên được pin và audit build | Probe riêng ngoại tuyến; candidate tích hợp có opt-in, permission allowlist và guard component chữ ký. Chưa chốt engine sản phẩm; SDK mã đóng chưa audit toàn bộ. |
+| 1, bước 8 | Adapter thật, runtime chưa nghiệm thu | Tạo/mở/dừng/xóa/cập nhật đã gọi SDK. Guard single APK/ARM64/API 26–34/4 KB; target 36 vẫn giữ. |
+| 2, bước 9–12 | Chưa chạy thiết bị | Payload/cách ly/tài khoản/One UI phải thử thật trước nghiệm thu. Không suy ra thành công từ test double. |
+| 3, bước 13–16 | Có code/kiểm tra cloud | Registry bền vững, Room schema 3/migration, user không tái sử dụng, launch-pending, đối chiếu và shortcut UUID không mở app gốc thay thế. Vòng đời/launcher/guest thật chưa thử. |
+| 4, bước 17–20 | Có điều phối và tự động foreground | Snapshot/journal/CAS/lock/pause/recovery; preview/confirm một/tập chọn/tất cả, atomic enqueue và shared peer guards. Auto OFF mặc định, CHECK hoặc APPLY khi mở/đã mở khóa; không có worker nền độc lập. Import thật/giữ phiên chưa chứng minh. |
+| 5, bước 21–24 | Bị chặn một phần bởi engine | Split APK chưa được nhập, Android mới/16 KB chưa đạt; các app bắt buộc vẫn còn trong phạm vi. E1/E2 ghi tại [ENGINE_SPLIT_AUDIT.md](ENGINE_SPLIT_AUDIT.md); không nhập fork có log/spoof/crash fallback chưa audit. |
+| 6, bước 25–28 | Đã triển khai thêm; chưa nghiệm thu toàn phase | Tìm/lọc/chọn nhiều, tên/nhóm, quyền, dung lượng/pin, khóa hệ thống và backup cấu hình đã có cloud tests. Tùy biến màu/huy hiệu riêng chưa triển khai; hardware auth/SAF/đo thiết bị thật còn chờ. |
+| 7, bước 29–32 | Có gói debug kiểm tra, chưa phát hành | Audit APK và bundle allowlist/checksums. Chưa đo độ ổn định/tài nguyên đa hãng, thử nâng cấp/cài thật hoặc ký bản release. |
 
-## Bản đã tạo
+## Bản tạo ra
 
-- App `vn.fonesi.app`, `0.4.0-cloud`: không SDK/Internet; có quản lý và hợp đồng runtime.
-- App cùng ID `0.4.0-candidate`: có SDK thật, mặc định chưa chủ động init; chỉ là bản debug để thử, chưa phải engine sản phẩm đã nghiệm thu. Không cài song song với cloud.
-- `vn.fonesi.probe`: chỉ thử SDK ứng viên; mặc định chưa chủ động khởi tạo SDK, chỉ cho phép thao tác payload của dự án.
-- `vn.fonesi.payload`: ứng dụng dữ liệu mẫu, không có quyền; dùng để đọc/ghi ID và nhãn độc lập.
+- `vn.fonesi.app`, `0.5.0-cloud`: không SDK/Internet; có quản lý và các luồng bảo vệ/cấu hình/preview. Không tạo clone khi engine unavailable.
+- Cùng ID `0.5.0-candidate`: SDK thật, khởi tạo bật chủ động; bản debug chưa nghiệm thu. Không cài song song với cloud. Không đưa debug signer thành khóa phát hành.
+- `vn.fonesi.probe`: probe riêng chỉ dùng payload do dự án kiểm soát; mặc định chưa chủ động init SDK.
+- `vn.fonesi.payload` r1/r2: không quyền, dữ liệu mẫu riêng để thử cách ly và cập nhật giữ ID/nhãn trong đợt sau.
 
-Chi tiết phần mới ở [CLOUD_BACKEND.md](CLOUD_BACKEND.md) và kết quả [CLOUD_VALIDATION.md](CLOUD_VALIDATION.md). Kết quả probe ban đầu ở [PHASE1_VALIDATION.md](PHASE1_VALIDATION.md). Quy luật phát triển ở [CODE_TEST_RULES.md](CODE_TEST_RULES.md).
+Gói hiện tại: `app/build/outputs/fonesi-0.5.0-phone-test.zip`; quy trình [PHONE_TEST_GUIDE.md](PHONE_TEST_GUIDE.md). Chưa yêu cầu cài ngay. Gỡ Fonesi có thể mất toàn bộ vùng clone; backup tên/nhóm không chứa dữ liệu đăng nhập.
 
-Luồng shortcut/schema mới được ghi ở [SHORTCUTS.md](SHORTCUTS.md), với bằng chứng bản `0.3.0-cloud` tại [PHASE3_VALIDATION.md](PHASE3_VALIDATION.md).
+## Điều kiện còn mở
 
-Bằng chứng bản `0.4.0`: [RUNTIME_INTEGRATION_VALIDATION.md](RUNTIME_INTEGRATION_VALIDATION.md), 123 test đạt; cloud và candidate build/lint/audit đạt. Đây không phải kết quả engine trên điện thoại. Đã chuẩn bị gói candidate/payload 1–2 để dùng ở đợt thử sau.
+1. Engine phải thật sự lưu/sử dụng/update cả base/split, đủ metadata/resources/classloader/native libs và readback; không thể giải quyết bằng chỉ copy/merge/re-sign APK.
+2. Phải xác minh Android/ABI/page size, target 36 và luồng khởi tạo/chạy nền của engine. SM-A525F là máy thử đầu, không phải giới hạn model của sản phẩm; Android đang cài chưa xác nhận.
+3. Payload, cách ly, đăng nhập, thông báo/media/Play Services, update giữ phiên và nhiều ứng dụng phải có kết quả thiết bị. Không hứa tránh ban, không văng hoặc vô hạn tiến trình đồng thời.
+4. Worker nền độc lập, màu/huy hiệu riêng, ký/nâng cấp release và nghiệm thu đa hãng/hiệu năng còn thiếu. Không đóng các yêu cầu này bằng test giao diện.
 
-## Việc cần làm tiếp
-
-Tiếp tục xử lý engine đủ khả năng nhập split/cập nhật đầy đủ và các phần chưa hoàn thiện. Kiểm thử điện thoại được hoãn theo yêu cầu; chưa cần cài APK ngay lúc này. Đợt thử sau vẫn phải kiểm chứng payload trước tài khoản và có thể cần sửa/thay engine. Không thể gọi code hoàn thiện toàn bộ chỉ vì đã build candidate.
-
-Không chuyển yêu cầu nghiệm thu chưa chạy thành đạt và không tự bỏ ứng dụng bắt buộc khỏi phạm vi. Nếu thay engine, phải đối chiếu namespace/khả năng import snapshot thay vì áp dụng hàng đợi cũ vào một provider khác.
+Nếu đổi provider phải namespace/đối chiếu và thiết kế migration riêng, không chạy journal của engine cũ qua engine mới. Không tự xóa guest/metadata/journal để làm kết quả có vẻ đúng.

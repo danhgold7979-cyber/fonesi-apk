@@ -2,6 +2,8 @@
 
 Áp dụng cho toàn bộ [lộ trình](ROADMAP.md). Đây là quy trình phát triển, không có nghĩa mọi phase đã vượt kiểm tra.
 
+**Yêu cầu bắt buộc mới của người dùng:** trước mỗi phase/bước nhỏ, đọc lại plan tổng thể và trạng thái, ghi plan chi tiết có đầu vào, phụ thuộc, thay đổi dự kiến, các lỗi cần xử lý và điều kiện kiểm tra trước khi sửa code. Nếu phát hiện giả định sai, sửa plan trước rồi mới đổi hướng triển khai. Không bỏ yêu cầu khỏi phạm vi để báo 100%. Theo dõi việc thực hiện tại [EXECUTION_PLAN.md](EXECUTION_PLAN.md).
+
 1. **Ghi phase/bước trước khi làm:** nêu chức năng đang thực hiện và điều kiện đạt. Không nhận phase sau hoàn tất bằng một phần code chuẩn bị trước.
 2. **Code theo một lát chức năng có thể kiểm tra:** ưu tiên engine và luồng mở/cách ly dữ liệu trước giao diện phụ. Không tạo bản clone giả, không mở app gốc để giả lập tài khoản riêng.
 3. **Kiểm tra đúng tầng:** unit test cho logic; build/lint cho tích hợp; runtime/emulator khi phù hợp; thiết bị thật cho đăng nhập, dữ liệu, thông báo và hành vi hệ thống. Kết quả một tầng không thay thế tầng khác.
@@ -15,4 +17,4 @@
 
 Mỗi cập nhật làm việc sẽ có dạng: **Phase N — bước X: việc đang làm → kiểm tra vừa chạy → kết quả → phần còn lại.** Không yêu cầu người dùng duyệt lại từng bước đã giao; chỉ cần quyết định mới khi giấy phép, chi phí, phạm vi hoặc dữ liệu vượt yêu cầu hiện có.
 
-Lệnh chung hiện tại: `./scripts/check.sh`; thêm `--with-engine-probe` khi cần kiểm tra hai module thử. Script chạy test/build/lint và kiểm tra APK thật; dừng khi bước lỗi, không cho một lượt zero-test trở thành kết quả đạt. Các engine double ở `src/test` không phải provider sản phẩm.
+Lệnh chung hiện tại: `./scripts/check.sh`; thêm `--with-engine-probe` khi cần kiểm tra hai module thử, hoặc `--with-engine-candidate` để kiểm tra cả cloud và candidate tích hợp SDK. Script chạy test/build/lint và kiểm tra APK thật; dừng khi bước lỗi, không cho một lượt zero-test trở thành kết quả đạt. Các engine double ở `src/test` không phải provider sản phẩm.

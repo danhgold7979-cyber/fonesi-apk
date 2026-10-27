@@ -5,6 +5,8 @@ data class UpdateTarget(val source: InstalledSource, val affectedCloneIds: List<
 enum class UpdateBlockReason {
     ENGINE_UNAVAILABLE, UNKNOWN_CLONE, SOURCE_MISSING, SOURCE_INVALID,
     SIGNER_REVIEW_REQUIRED, NEWER_CLONE_VERSION, IN_USE_OR_UNKNOWN,
+    SOURCE_UNSUPPORTED,
+    INCOMPLETE_GROUP,
 }
 
 data class UpdateBlock(val requestedCloneId: String, val reason: UpdateBlockReason)
@@ -20,6 +22,7 @@ data class UpdatePlan(
  * A future executor must revalidate the source and running state immediately before updating.
  */
 object UpdatePlanner {
+    private data class Decision(val source: InstalledSource?, val affected: List<CloneRecord>, val reason: UpdateBlockReason?, val current: Boolean, val busy: Boolean)
     fun plan(
         requestedIds: List<String>,
         allClones: List<CloneRecord>,
@@ -34,6 +37,23 @@ object UpdatePlanner {
             })
         }
         val byId = allClones.associateBy { it.id }
+        val groups = if (engine.updateScope == UpdateScope.SHARED_PACKAGE) allClones.groupBy { it.packageName } else emptyMap()
+        val decisions = mutableMapOf<String, Decision>()
+        fun decide(packageName: String, affected: List<CloneRecord>): Decision {
+            val source = sources[packageName]
+            val reason = when {
+                source == null -> UpdateBlockReason.SOURCE_MISSING
+                source.packageName != packageName || source.versionCode < 0 || source.apkPaths.isEmpty() ||
+                    source.apkPaths.any { it.isBlank() } || source.signerDigests.isEmpty() -> UpdateBlockReason.SOURCE_INVALID
+                affected.any { it.signerDigests != source.signerDigests } -> UpdateBlockReason.SIGNER_REVIEW_REQUIRED
+                affected.any { it.versionCode > source.versionCode } -> UpdateBlockReason.NEWER_CLONE_VERSION
+                source.apkPaths.size > 1 && !engine.importsSplitApks -> UpdateBlockReason.SOURCE_UNSUPPORTED
+                else -> null
+            }
+            val current = reason == null && affected.all { it.versionCode == source!!.versionCode }
+            val busy = reason == null && !current && affected.any { it.running != false }
+            return Decision(source, affected, reason, current, busy)
+        }
         val targets = mutableListOf<UpdateTarget>()
         val current = mutableListOf<String>()
         val blocked = mutableListOf<UpdateBlock>()
@@ -44,37 +64,25 @@ object UpdatePlanner {
                 blocked += UpdateBlock(id, UpdateBlockReason.UNKNOWN_CLONE)
                 continue
             }
-            val source = sources[clone.packageName]
-            val affected = if (engine.updateScope == UpdateScope.SHARED_PACKAGE) {
-                allClones.filter { it.packageName == clone.packageName }
-            } else listOf(clone)
-            val reason = when {
-                source == null -> UpdateBlockReason.SOURCE_MISSING
-                source.packageName != clone.packageName || source.versionCode < 0 ||
-                    source.apkPaths.isEmpty() || source.apkPaths.any { it.isBlank() } ||
-                    source.signerDigests.isEmpty() -> UpdateBlockReason.SOURCE_INVALID
-                affected.any { it.signerDigests != source.signerDigests } ->
-                    UpdateBlockReason.SIGNER_REVIEW_REQUIRED
-                affected.any { it.versionCode > source.versionCode } ->
-                    UpdateBlockReason.NEWER_CLONE_VERSION
-                else -> null
-            }
-            if (reason != null) {
-                blocked += UpdateBlock(id, reason)
+            val decision = if (engine.updateScope == UpdateScope.SHARED_PACKAGE) decisions.getOrPut(clone.packageName) {
+                decide(clone.packageName, groups.getValue(clone.packageName))
+            } else decide(clone.packageName, listOf(clone))
+            if (decision.reason != null) {
+                blocked += UpdateBlock(id, decision.reason)
                 continue
             }
-            checkNotNull(source)
-            if (affected.all { it.versionCode == source.versionCode }) {
+            val source = checkNotNull(decision.source)
+            if (decision.current) {
                 current += id
                 continue
             }
-            if (affected.any { it.running != false }) {
+            if (decision.busy) {
                 blocked += UpdateBlock(id, UpdateBlockReason.IN_USE_OR_UNKNOWN)
                 continue
             }
             if (engine.updateScope == UpdateScope.SHARED_PACKAGE &&
                 !scheduledPackages.add(clone.packageName)) continue
-            targets += UpdateTarget(source, affected.map { it.id })
+            targets += UpdateTarget(source, decision.affected.map { it.id })
         }
         return UpdatePlan(targets, current, blocked)
     }

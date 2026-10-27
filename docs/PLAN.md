@@ -26,7 +26,7 @@ Các thao tác người dùng:
 4. Xem tiến độ, lỗi, bản đang chờ và kết quả thực tế.
 5. Tạm dừng giữa các tác vụ và thử lại tác vụ lỗi.
 
-Cập nhật tự động là tùy chọn. Tác vụ thủ công và tự động dùng cùng một hàng đợi để không chạy trùng. Android có thể trì hoãn công việc nền; đối chiếu lại khi mở ứng dụng.
+Cập nhật tự động là tùy chọn. Tác vụ thủ công và tự động dùng cùng một hàng đợi để không chạy trùng. Bản 0.5.0 có OFF/kiểm tra/cập nhật khi UI đang mở và đã mở khóa; chạy nền độc lập chưa triển khai vì init/FGS SDK chưa được chứng minh. Chi tiết [UPDATE_AUTOMATION.md](UPDATE_AUTOMATION.md); không gọi mode foreground là scheduler nền đã hoàn tất.
 
 ### Trình tự xử lý
 
@@ -88,7 +88,7 @@ Theo yêu cầu cập nhật, tiến hành code/cloud test trước và gom các
 - Xóa phải có xác nhận; gỡ ứng dụng gốc phải giữ siêu dữ liệu và báo khả năng mở thực tế. Không tự xóa vùng clone theo.
 - Cảnh báo dung lượng, quyền, hạn chế nền và phiên bản chưa kiểm thử dựa trên bằng chứng thu thập được.
 - Nhật ký không chứa token, mật khẩu, nội dung tin nhắn hoặc dữ liệu riêng của ứng dụng clone. Không xuất danh sách ứng dụng lên máy chủ mặc định.
-- Có khóa giao diện quản lý bằng sinh trắc học khi triển khai M2; không mô tả đây là mã hóa mọi dữ liệu nếu engine chưa cung cấp.
+- Có khóa giao diện quản lý và shortcut bằng sinh trắc mạnh hoặc mã khóa Android trong bản 0.5.0; không mô tả đây là mã hóa mọi dữ liệu nếu engine chưa cung cấp. Xem [ACCESS_CONTROL.md](ACCESS_CONTROL.md).
 - Không bảo đảm tài khoản không bao giờ bị khóa, app không bao giờ văng hoặc số bản chạy đồng thời vô hạn.
 - Không triển khai giả mạo danh tính thiết bị, vượt kiểm tra của nền tảng hoặc tự động tương tác hàng loạt trong phạm vi này.
 
@@ -98,6 +98,8 @@ Theo yêu cầu cập nhật, tiến hành code/cloud test trước và gom các
 - GitHub read: đã xác minh.
 - Engine sản phẩm: chưa chốt. SDK ứng viên có trong probe riêng và build candidate tích hợp UI; build cloud mặc định không chứa SDK. Chưa kiểm chứng runtime; split APK còn bị chặn.
 - Đã code scanner, metadata/registry Room, mở/ghim, tạo/thêm bản sạch/dừng/xóa và hàng đợi journal/snapshot/recovery; candidate đã nối các lệnh vào API SDK thật. Chưa thực thi được xác minh trên thiết bị hoặc tài khoản thật.
+- Bản 0.5.0 bổ sung khóa hệ thống, backup tên/nhóm có preview/map/transaction, tìm/lọc/chọn nhiều, preview cập nhật atomic và tự động foreground có opt-in. Plan trước code và kết quả riêng từng phần trong [EXECUTION_PLAN.md](EXECUTION_PLAN.md); bằng chứng [PHASE6_VALIDATION.md](PHASE6_VALIDATION.md). Không đóng toàn phase 6/7 khi phần tùy biến/thiết bị/release còn thiếu.
+- Đánh giá E1/E2 vẫn chưa tìm được đường nhập/cập nhật split đủ điều kiện tích hợp; bằng chứng cụ thể trong [ENGINE_SPLIT_AUDIT.md](ENGINE_SPLIT_AUDIT.md). Đây là yêu cầu kỹ thuật còn mở, không chỉ là runtime chờ máy.
 - Toolchain cloud đã cài; đã chạy unit test và build APK nền tảng. Kết quả kiểm tra cuối cùng được ghi riêng trong `VALIDATION.md` sau khi hoàn tất.
 - Đã build/audit APK probe; test runtime engine, chạy ứng dụng clone thật, test trên Samsung/hãng khác: chưa chạy. Trạng thái cập nhật ở [STATUS.md](STATUS.md).
 - Máy thử đầu tiên người dùng cung cấp: Samsung SM-A525F. Phiên bản Android đang cài chưa được xác nhận; không suy ra từ model. Chưa có kết luận thiết bị/ứng dụng nào đã được hỗ trợ qua kiểm thử.
