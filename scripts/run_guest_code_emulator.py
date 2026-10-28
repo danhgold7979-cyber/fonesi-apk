@@ -60,7 +60,7 @@ def main():
     parser.add_argument("--source-commit", default="a9aa5a8d53b0c82eabcc071fd0e0fa19fdcc612c")
     parser.add_argument("--boot-timeout", type=int, default=480)
     parser.add_argument("--probe-timeout", type=int, default=180)
-    parser.add_argument("--proof-level", choices=("e11", "e12", "e13", "e14", "e15", "e16", "e17", "e21", "e22", "e23"), default="e11",
+    parser.add_argument("--proof-level", choices=("e11", "e12", "e13", "e14", "e15", "e16", "e17", "e21", "e22", "e23", "e24"), default="e11",
                         help="E13 additionally verifies independent synthetic native file/SQLite routes")
     args = parser.parse_args()
     if args.boot_timeout not in range(30, 601) or args.probe_timeout not in range(15, 301):
@@ -107,6 +107,7 @@ def main():
         "android_dependent_feature_code_verified": False,
         "android_dependent_feature_resources_verified": False,
         "android_feature_configuration_locale_verified": False,
+        "android_signed_private_hosted_view_lifecycle_verified": False,
         "social_apps_tested": False,
         "samsung_or_physical_device_tested": False,
     }
@@ -287,7 +288,16 @@ def main():
             evidence["android_isolated_fixture_installed"] = True
         save()
 
-        if args.proof_level in ("e21", "e22", "e23"):
+        if args.proof_level == "e24":
+            stage = "launch dedicated synthetic UI Activity with signed private View factory"
+            expected_run_id = str(uuid.uuid4())
+            started = device("shell", "am", "start", "-W", "-n",
+                             PROBE_PACKAGE + "/.SyntheticGuestUiProbeActivity",
+                             "--es", "run_id", expected_run_id, timeout=90, check=False)
+            if started.returncode:
+                raise RuntimeError("Synthetic E24 host Activity dispatch failed")
+            stage = "read signed private guest View attachment and lifecycle receipt"
+        elif args.proof_level in ("e21", "e22", "e23"):
             stage = "dispatch dedicated isolated synthetic split Activity"
             expected_run_id = str(uuid.uuid4())
             started = device("shell", "am", "start", "-W", "-n",
@@ -325,7 +335,21 @@ def main():
         deadline = time.monotonic() + args.probe_timeout
         report = None
         while time.monotonic() < deadline:
-            if args.proof_level in ("e21", "e22", "e23"):
+            if args.proof_level == "e24":
+                raw = device("exec-out", "run-as", PROBE_PACKAGE, "cat",
+                             "files/guest-ui-probe/" + expected_run_id + ".json",
+                             timeout=12, check=False)
+                if raw.returncode == 0 and len(raw.stdout) <= 16384:
+                    try:
+                        found = json.loads(raw.stdout)
+                        if found.get("complete") is True:
+                            if found.get("run_id") != expected_run_id:
+                                raise RuntimeError("E24 private View receipt UUID mismatch")
+                            report = found
+                            break
+                    except json.JSONDecodeError:
+                        pass
+            elif args.proof_level in ("e21", "e22", "e23"):
                 raw = device("exec-out", "run-as", PROBE_PACKAGE, "cat",
                              "files/split-code-probe/" + expected_run_id + ".json",
                              timeout=12, check=False)
@@ -393,7 +417,31 @@ def main():
             time.sleep(2)
         if report is None:
             raise RuntimeError("No complete Android synthetic receipt before timeout")
-        if args.proof_level in ("e21", "e22", "e23"):
+        if args.proof_level == "e24":
+            (reports / "synthetic-ui-receipt.json").write_text(json.dumps(report, indent=2) + "\n")
+            expected_true = (
+                "complete", "passed", "real_host_activity_lifecycle_verified",
+                "signed_private_guest_view_rendered", "private_guest_view_attached_to_window",
+                "private_guest_lifecycle_relay_verified", "signed_private_resources_verified",
+                "signed_private_image_rechecked", "same_android_uid",
+            )
+            expected_false = ("kernel_uid_isolation", "actual_guest_activity_attached",
+                              "third_party_guest_components_tested", "social_accounts_tested")
+            if not all(report.get(k) is True for k in expected_true) or not all(
+                    report.get(k) is False for k in expected_false):
+                raise RuntimeError("E24 signed private View/lifecycle assertions failed")
+            if (report.get("lifecycle_transcript") != "CREATE,START,RESUME,PAUSE,STOP,DESTROY" or
+                    report.get("process_name") != PROBE_PACKAGE + ":fonesi_guest_ui" or
+                    report.get("api") != 34 or type(report.get("pid")) is not int or
+                    report["pid"] <= 0 or type(report.get("uid")) is not int or
+                    report["uid"] < 0):
+                raise RuntimeError("E24 actual Android host lifecycle or process proof mismatch")
+            evidence["android_signed_private_hosted_view_lifecycle_verified"] = True
+            evidence["result"] = "PASS_E24_SIGNED_SYNTHETIC_PRIVATE_VIEW_LIFECYCLE_RELAY_ONLY"
+            print("PASS: Android 34 hosted an attached View created by signed private "
+                  "synthetic DEX and relayed CREATE→DESTROY lifecycle. "
+                  "No arbitrary guest Activity, account or UID isolation proved.", flush=True)
+        elif args.proof_level in ("e21", "e22", "e23"):
             (reports / "isolated-split-receipt.json").write_text(json.dumps(report, indent=2) + "\n")
             required_true = ("complete", "passed", "private_split_graph_verified",
                              "private_isolated_base_code_executed", "private_isolated_feature_code_executed",
