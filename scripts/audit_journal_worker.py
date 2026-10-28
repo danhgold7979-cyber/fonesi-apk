@@ -45,6 +45,8 @@ if "@Synchronized fun attach(context: Context)" not in candidate or "if (initial
 
 required_test_evidence = (
     "workerRecoversRealRoomRowsAndPrivateSnapshotsIdempotently",
+    "workerRetriesWhenQueueLockIsHeld",
+    "workerRetriesAndPreservesPreparingRowWhenSnapshotCleanupIsUnsafe",
     "FonesiDatabase.open(context, databaseName)",
     "PREPARING", "APPLYING", "VERIFYING", "REVIEW_REQUIRED",
     "preserve the user's paused queue", "Second recovery must be idempotent",
