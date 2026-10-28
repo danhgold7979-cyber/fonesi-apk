@@ -5,4 +5,6 @@ interface ISyntheticGuestChannel {
     String exchange(String nonce);
     /** Dispatch only the project-owned signed synthetic guest payload; never a third-party app. */
     String exchangeGuest(String nonce);
+    /** Public-API synthetic guest Application attach proof; never a third-party Activity. */
+    String exchangeGuestApplication(String nonce);
 }
