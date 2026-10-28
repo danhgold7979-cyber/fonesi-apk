@@ -2,6 +2,7 @@ package vn.fonesi.nativeprobe;
 
 import android.app.Application;
 import android.app.Service;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
@@ -32,6 +33,7 @@ import vn.fonesi.engine.GuestCodeLoader;
 import vn.fonesi.engine.LoadedGuestCode;
 import vn.fonesi.engine.NativeRuntime;
 import vn.fonesi.engine.PrivateGuestImageEvidence;
+import vn.fonesi.engine.SyntheticGuestScopedContext;
 
 /**
  * Explicit synthetic Android proof only. It loads a signed private test payload's DEX/resources;
@@ -156,6 +158,54 @@ public final class GuestCodeProbeService extends Service {
             ProbeData.check(ledger.readVerified(runId).getActive() == null,
                 "guest code execution is not provider activation/readback");
 
+            stage = "exercise restricted synthetic guest-scoped data context";
+            String scopedName = PAYLOAD + ".ScopedProbeEntrypoint";
+            Class<?> scopedClass = loaded.getClassLoader().loadClass(scopedName);
+            ProbeData.check(scopedClass.getClassLoader() == loaded.getClassLoader(),
+                "scoped storage synthetic code must have a private class loader");
+            boolean hostScopedAbsent = false;
+            try { getClass().getClassLoader().loadClass(scopedName); }
+            catch (ClassNotFoundException expected) { hostScopedAbsent = true; }
+            ProbeData.check(hostScopedAbsent, "synthetic scoped bytecode was accidentally packaged into host");
+
+            // Both UUIDs refer only to test data; this serial probe is NOT guest account switching.
+            SyntheticGuestScopedContext scopeA = new SyntheticGuestScopedContext(
+                getApplicationContext(), loaded, UUID.randomUUID().toString());
+            SyntheticGuestScopedContext scopeB = new SyntheticGuestScopedContext(
+                getApplicationContext(), loaded, UUID.randomUUID().toString());
+            ProbeData.check(!scopeA.getFilesDir().equals(scopeB.getFilesDir()) &&
+                !scopeA.getDatabasePath("sample.sqlite").equals(scopeB.getDatabasePath("sample.sqlite")),
+                "A/B synthetic file and database paths must be disjoint");
+            ProbeData.check(scopeA.getClassLoader() == loaded.getClassLoader() &&
+                scopeA.getResources() == loaded.getResources() &&
+                PAYLOAD.equals(scopeA.getPackageName()), "synthetic Context is bound to private APK");
+            boolean hostServiceDenied = false;
+            try { scopeA.getSystemService(Context.ACTIVITY_SERVICE); }
+            catch (UnsupportedOperationException expected) { hostServiceDenied = true; }
+            ProbeData.check(hostServiceDenied, "restricted synthetic Context must refuse host services");
+
+            String hostPrefBefore = getSharedPreferences(
+                "fonesi-e14-test-original", Context.MODE_PRIVATE).getString("marker", null);
+            java.lang.reflect.Method readScope = scopedClass.getMethod("read", Context.class);
+            java.lang.reflect.Method writeScope = scopedClass.getMethod("write", Context.class, String.class);
+            ProbeData.check("EMPTY".equals(readScope.invoke(null, scopeA)) &&
+                "EMPTY".equals(readScope.invoke(null, scopeB)), "fresh synthetic scopes must be empty");
+            String markerA = UUID.randomUUID().toString().replace("-", "");
+            String markerB = UUID.randomUUID().toString().replace("-", "");
+            ProbeData.check(!markerA.equals(markerB), "independent test markers");
+            writeScope.invoke(null, scopeA, markerA);
+            ProbeData.check(markerA.equals(readScope.invoke(null, scopeA)) &&
+                "EMPTY".equals(readScope.invoke(null, scopeB)), "A writes must never appear in B");
+            writeScope.invoke(null, scopeB, markerB);
+            ProbeData.check(markerA.equals(readScope.invoke(null, scopeA)) &&
+                markerB.equals(readScope.invoke(null, scopeB)), "A/B scoped storage readback diverged");
+            ProbeData.check(java.util.Objects.equals(hostPrefBefore, getSharedPreferences(
+                "fonesi-e14-test-original", Context.MODE_PRIVATE).getString("marker", null)),
+                "synthetic original host preference marker changed");
+            // A/B markers are synthetic test values only. They are never persisted in the report.
+            ProbeData.check(evidence.matches(image) && ledger.readVerified(runId).getActive() == null,
+                "synthetic scoped IO cannot activate or mutate a signed code image");
+
             stage = "write successful synthetic receipt";
             result.put("complete", true).put("passed", true).put("run_id", runId)
                 .put("api", Build.VERSION.SDK_INT).put("pid", Process.myPid())
@@ -165,6 +215,12 @@ public final class GuestCodeProbeService extends Service {
                 .put("guest_bytecode_executed", true).put("guest_process_verified", true)
                 .put("guest_process_name", processName).put("guest_process_pid", Process.myPid())
                 .put("guest_uid_same_as_host", true)
+                .put("synthetic_scoped_context_verified", true)
+                .put("private_file_state_verified", true)
+                .put("shared_preferences_state_verified", true)
+                .put("sqlite_state_verified", true)
+                .put("same_android_uid", true).put("kernel_uid_isolation", false)
+                .put("guest_application_attached", false)
                 .put("guest_context_executed", false).put("guest_activity_executed", false)
                 .put("binder_provider_tested", false).put("social_accounts_tested", false);
         } catch (Throwable failure) {

@@ -54,7 +54,7 @@ def main():
     parser.add_argument("--source-commit", default="a9aa5a8d53b0c82eabcc071fd0e0fa19fdcc612c")
     parser.add_argument("--boot-timeout", type=int, default=480)
     parser.add_argument("--probe-timeout", type=int, default=180)
-    parser.add_argument("--proof-level", choices=("e11", "e12", "e13"), default="e11",
+    parser.add_argument("--proof-level", choices=("e11", "e12", "e13", "e14"), default="e11",
                         help="E13 additionally verifies independent synthetic native file/SQLite routes")
     args = parser.parse_args()
     if args.boot_timeout not in range(30, 601) or args.probe_timeout not in range(15, 301):
@@ -80,6 +80,7 @@ def main():
         "android_code_image_verified": False,
         "android_guest_bytecode_verified": False,
         "android_native_ab_sqlite_verified": False,
+        "android_scoped_storage_verified": False,
         "social_apps_tested": False,
         "samsung_or_physical_device_tested": False,
     }
@@ -281,20 +282,31 @@ def main():
                              "private_resources", "activation_pending")
             expected_false = ("guest_context_executed", "guest_activity_executed",
                               "binder_provider_tested", "social_accounts_tested")
-            if args.proof_level == "e12":
+            if args.proof_level in ("e12", "e14"):
                 expected_true += ("guest_bytecode_executed", "guest_process_verified",
                                   "guest_uid_same_as_host")
                 reported_pid = report.get("guest_process_pid")
                 if (type(reported_pid) is not int or reported_pid <= 0 or
                         report.get("pid") != reported_pid or
                         report.get("guest_process_name") != PROBE_PACKAGE + ":fonesi_guest_loader"):
-                    raise RuntimeError("E12 receipt process identity or PID is invalid")
+                    raise RuntimeError("E12/E14 receipt process identity or PID is invalid")
+            if args.proof_level == "e14":
+                expected_true += ("synthetic_scoped_context_verified", "private_file_state_verified",
+                                  "shared_preferences_state_verified", "sqlite_state_verified", "same_android_uid")
+                expected_false += ("guest_application_attached", "kernel_uid_isolation")
             if not all(report.get(key) is True for key in expected_true) or not all(
                 report.get(key) is False for key in expected_false
             ):
                 raise RuntimeError("Android guest-code proof did not satisfy required assertions")
             evidence["android_code_image_verified"] = True
-            if args.proof_level == "e12":
+            if args.proof_level == "e14":
+                evidence["android_guest_bytecode_verified"] = True
+                evidence["android_scoped_storage_verified"] = True
+                evidence["result"] = "PASS_E14_SYNTHETIC_SCOPED_CONTEXT_ONLY"
+                print("PASS: Android 34 AVD executed synthetic private guest bytecode with "
+                      "distinct file, preferences and SQLite scopes. Guest Application, Activity, "
+                      "Binder and real account isolation remain unverified.", flush=True)
+            elif args.proof_level == "e12":
                 evidence["android_guest_bytecode_verified"] = True
                 evidence["result"] = "PASS_E12_SYNTHETIC_BYTECODE_ONLY"
                 print("PASS: Android 34 AVD executed synthetic signed private guest bytecode. "
