@@ -1,3 +1,11 @@
+# Fonesi APK — technical E23 PASS / product ~30% estimate (28/10/2026)
+
+**Verified technical milestone E23:** [Android 34 CI #40658194704](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40658194704) **SUCCESS** on code `e9be7c7cc211df80c27d7c811d1463244ab4e4db`: signed private 4-member base/alpha/beta/French-alpha-config APK, correct `configForSplit` attachment, dependent DEX execution and locale resource override. E21 [#40658194522](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40658194522) and E22 [#40658194520](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40658194520) regressions also **SUCCESS** on exactly the same code. [Detailed E23 results](phases/E23_SIGNED_CONFIG_SPLIT_RESULTS.md).
+
+**User application readiness: approximately 30% estimated, not measured or release-ready.** The [explicit weighted rubric](PRODUCT_PROGRESS.md) totals 28.00%, rounded for user communication; it does NOT advance for a synthetic Android proof alone. Mandatory real third-party clone/login and Samsung acceptance is **zero accepted**, not a working production feature. SpaceCore `0.5.0-candidate` still imports only a single APK under ARM64/API26–34/4 KB guard. Real guest lifecycle, multi-account safety, notifications, Play Services, signed release and device testing remain open. Main unchanged; technical work is in stacked Draft PR #12.
+
+---
+
 # Fonesi APK — E22 Android synthetic dependent-feature proof (28/10/2026)
 
 **E22 TECHNICAL CI PASS, NOT A COMPLETE PRODUCT:** [E22 Actions #40655822440](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40655822440) passed on exact source `1ec2b4d0271da1b5a9a77c00112b88086fe81a16`. On fresh AOSP34 x86_64, three project-owned signed private APKs (`base → feature.alpha → feature.beta`) were installed, audited, and exercised: beta bytecode really invoked alpha class through its parent `DexClassLoader`, and scoped resource markers resolved only from private base/alpha/beta paths. Strict SHA-256, UID/process receipt and no-account checks passed. [E21 regression #40655822472](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40655822472) also passed on the same source. [E22 results](phases/E22_DEPENDENT_ANDROID_SPLITS_RESULTS.md) record exact evidence.
