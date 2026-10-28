@@ -33,8 +33,7 @@ public final class GuestCodeProbeActivity extends Activity {
                 deadline = saved.getLong("deadline");
                 ProbeData.check(deadline > 0, "missing saved deadline");
             } else {
-                String requested = getIntent().getStringExtra(GuestCodeProbeService.EXTRA_RUN_ID);
-                runId = requested == null ? UUID.randomUUID().toString() : UUID.fromString(requested).toString();
+                runId = UUID.randomUUID().toString();
                 deadline = SystemClock.elapsedRealtime() + 120_000L;
                 startService(new Intent(this, GuestCodeProbeService.class)
                     .putExtra(GuestCodeProbeService.EXTRA_RUN_ID, runId));
