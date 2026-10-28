@@ -56,7 +56,13 @@ class UpdateJournalRecoveryWorkerTest {
                 store.setPaused(true)
                 listOf(preparing, applying, verifying, review, queued, failed, cancelled)
             }
-            val (preparing, applying, verifying, review, queued, failed, cancelled) = seeded
+            val preparing = seeded[0]
+            val applying = seeded[1]
+            val verifying = seeded[2]
+            val review = seeded[3]
+            val queued = seeded[4]
+            val failed = seeded[5]
+            val cancelled = seeded[6]
 
             File(snapshotsRoot, preparing.id).apply {
                 mkdirs()
