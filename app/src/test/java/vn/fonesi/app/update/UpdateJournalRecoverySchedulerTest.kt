@@ -3,8 +3,12 @@ package vn.fonesi.app.update
 import android.content.Context
 import androidx.test.core.app.ApplicationProvider
 import androidx.work.Configuration
+import androidx.work.CoroutineWorker
+import androidx.work.ListenableWorker
 import androidx.work.WorkInfo
 import androidx.work.WorkManager
+import androidx.work.WorkerFactory
+import androidx.work.WorkerParameters
 import androidx.work.testing.WorkManagerTestInitHelper
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
@@ -12,8 +16,7 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
-import java.util.concurrent.ConcurrentLinkedQueue
-import java.util.concurrent.Executor
+import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 
 @RunWith(RobolectricTestRunner::class)
@@ -21,10 +24,22 @@ import java.util.concurrent.TimeUnit
 class UpdateJournalRecoverySchedulerTest {
     @Test fun repeatedUnlockedSchedulingKeepsUniqueWorkAndLaterEntryCanReconcileAgain() {
         val context = ApplicationProvider.getApplicationContext<Context>()
-        val workerExecutor = GateExecutor()
+        val workerStarted = CountDownLatch(1)
+        val releaseWorker = CountDownLatch(1)
+        val workerFactory = object : WorkerFactory() {
+            override fun createWorker(
+                appContext: Context,
+                workerClassName: String,
+                workerParameters: WorkerParameters,
+            ): ListenableWorker? =
+                if (workerClassName == UpdateJournalRecoveryWorker::class.java.name) {
+                    ControlledJournalWorker(appContext, workerParameters, workerStarted, releaseWorker)
+                } else {
+                    null
+                }
+        }
         val configuration = Configuration.Builder()
-            .setExecutor(workerExecutor)
-            .setTaskExecutor(Executor { command -> command.run() })
+            .setWorkerFactory(workerFactory)
             .build()
         WorkManagerTestInitHelper.initializeTestWorkManager(
             context,
@@ -36,6 +51,9 @@ class UpdateJournalRecoverySchedulerTest {
             val scheduler = UpdateJournalRecoveryScheduler
             scheduler.ensureScheduled(context)
             scheduler.ensureScheduled(context)
+
+            assertTrue("A controlled journal worker should start for scheduling assertions",
+                workerStarted.await(10, TimeUnit.SECONDS))
 
             val startupBeforeRelease = workManager
                 .getWorkInfosForUniqueWork(STARTUP_RECOVERY)
@@ -57,14 +75,10 @@ class UpdateJournalRecoverySchedulerTest {
             assertTrue("Periodic request must target the journal-only worker",
                 periodic.tags.contains(UpdateJournalRecoveryWorker::class.java.name))
 
-            workerExecutor.release()
+            releaseWorker.countDown()
             val completedStartup = awaitStartupCompletion(workManager)
-            assertTrue(
-                "Startup recovery should complete without engine activation; states=" +
-                    completedStartup.map { "${it.id}:${it.state}" } +
-                    "; queuedWorkerTasks=${workerExecutor.pendingCount}",
-                completedStartup.any { it.id == startup.id && it.state == WorkInfo.State.SUCCEEDED },
-            )
+            assertTrue("Startup recovery should complete with the controlled worker",
+                completedStartup.any { it.id == startup.id && it.state == WorkInfo.State.SUCCEEDED })
 
             scheduler.ensureScheduled(context)
             val afterReentry = workManager
@@ -80,7 +94,7 @@ class UpdateJournalRecoverySchedulerTest {
                     .get(10, TimeUnit.SECONDS).count { !it.state.isFinished },
             )
         } finally {
-            workerExecutor.release()
+            releaseWorker.countDown()
             runCatching { workManager.cancelAllWork().result.get(10, TimeUnit.SECONDS) }
             runCatching { WorkManagerTestInitHelper.closeWorkDatabase() }
         }
@@ -97,22 +111,15 @@ class UpdateJournalRecoverySchedulerTest {
         return latest
     }
 
-    private class GateExecutor : Executor {
-        private val pending = ConcurrentLinkedQueue<Runnable>()
-        @Volatile private var released = false
-
-        override fun execute(command: Runnable) {
-            if (released) command.run() else pending.add(command)
-        }
-
-        val pendingCount: Int get() = pending.size
-
-        fun release() {
-            released = true
-            while (true) {
-                val next = pending.poll() ?: return
-                next.run()
-            }
+    private class ControlledJournalWorker(
+        context: Context,
+        parameters: WorkerParameters,
+        private val started: CountDownLatch,
+        private val release: CountDownLatch,
+    ) : CoroutineWorker(context, parameters) {
+        override suspend fun doWork(): Result = withContext(Dispatchers.IO) {
+            started.countDown()
+            if (release.await(30, TimeUnit.SECONDS)) Result.success() else Result.failure()
         }
     }
 
