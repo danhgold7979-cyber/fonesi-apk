@@ -1,3 +1,15 @@
+# Fonesi APK — E26 background recovery in validation (28/10/2026)
+
+**Current technical milestone: E26 — durable background journal recovery.** Latest code/audit fix: \`6812b3a21e0b718cedb95fd6a0c10cb0984d5944\`. [CI #40683410990](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40683410990) is running the cloud tests/audit and the opt-in candidate build/audit. The previous run [#40682178931](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40682178931) passed the cloud build/audit and failed only candidate permission audit; root cause was WorkManager's exact \`WAKE_LOCK\` and \`RECEIVE_BOOT_COMPLETED\` permissions missing from the allowlist. The candidate audit now names these exact permissions and keeps the DiagnosticsReceiver guarded by \`android.permission.DUMP\`. Do not mark E26 PASS until #40683410990 and the candidate verification report complete successfully.
+
+**Product readiness: ~30% estimate (28.00% weighted rubric), not measured.** Product plan remains 8 phases / 32 steps; technical milestones E21–E26 do not equate to product phases. [Progress rubric](PRODUCT_PROGRESS.md). E21–E25 have synthetic Android proofs only; no real third-party clone/account/device acceptance.
+
+**Next technical slice E27:** test the real Room-to-WorkManager recovery path against durable PREPARING/APPLYING/VERIFYING rows and task-scoped private snapshots, with production worker paths fixed. [E27 pre-code plan](phases/E27_ROOM_WORKER_RECOVERY_PLAN.md).
+
+\`main\` is preserved at \`c055df600f87ee9ddf0cd5d6bfc67d80d145e79d\`. Keep PR #12 Draft; no release-ready multi-clone APK is accepted.
+
+---
+
 # Fonesi APK — E25 component preflight PASS / E24 lifecycle race fixed (28/10/2026)
 
 **Latest verified technical source SHA:** `d911ee266a92a0c85ec368dbd8df77c0dba6af62`. All five technical CI workflows passed on this exact commit:
