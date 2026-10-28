@@ -17,6 +17,47 @@ interface CloneEngine {
     fun update(target: UpdateTarget): List<CloneRecord>
 }
 
+enum class EngineIsolationLevel {
+    /** Logical namespaces in the host UID; this is not a kernel sandbox. */
+    HOST_UID_NAMESPACE,
+    /** Must be independently verified as a separate Android OS UID. */
+    SEPARATE_OS_UID,
+    /** A separately isolated guest OS/container boundary. */
+    SEPARATE_GUEST_OS,
+    /** No accepted isolation evidence. */
+    UNKNOWN,
+}
+
+/**
+ * Conservative capability snapshot. Operational support and product acceptance are distinct:
+ * a provider may attempt a single-APK install without having a verified guest lifecycle or
+ * account-isolation guarantee. All acceptance fields default false.
+ */
+data class EngineCapabilities(
+    val singleApkPreflightSupported: Boolean = false,
+    val singleApkInstallSupported: Boolean = false,
+    val packageIdentityReadbackSupported: Boolean = false,
+    val splitClusterImportSupported: Boolean = false,
+    val guestActivityLifecycleVerified: Boolean = false,
+    val guestServiceLifecycleVerified: Boolean = false,
+    val guestReceiverLifecycleVerified: Boolean = false,
+    val guestProviderLifecycleVerified: Boolean = false,
+    val frameworkMediationVerified: Boolean = false,
+    val nativePageSizesBytesVerified: Set<Int> = emptySet(),
+    val updateReadbackVerified: Boolean = false,
+    val isolationLevel: EngineIsolationLevel = EngineIsolationLevel.UNKNOWN,
+    val evidenceRefs: Set<String> = emptySet(),
+) {
+    /** True only when a stronger, explicit isolation boundary has been accepted. */
+    fun satisfiesIsolation(required: EngineIsolationLevel): Boolean = when (required) {
+        EngineIsolationLevel.HOST_UID_NAMESPACE -> isolationLevel != EngineIsolationLevel.UNKNOWN
+        EngineIsolationLevel.SEPARATE_OS_UID -> isolationLevel == EngineIsolationLevel.SEPARATE_OS_UID ||
+            isolationLevel == EngineIsolationLevel.SEPARATE_GUEST_OS
+        EngineIsolationLevel.SEPARATE_GUEST_OS -> isolationLevel == EngineIsolationLevel.SEPARATE_GUEST_OS
+        EngineIsolationLevel.UNKNOWN -> false
+    }
+}
+
 sealed interface EngineAvailability {
     data class Ready(val updateScope: UpdateScope, val importsSplitApks: Boolean = false) : EngineAvailability
     data class Unavailable(val reason: String) : EngineAvailability
