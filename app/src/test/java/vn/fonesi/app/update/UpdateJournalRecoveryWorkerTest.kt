@@ -11,6 +11,7 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
+import org.robolectric.annotation.SQLiteMode
 import vn.fonesi.app.storage.FonesiDatabase
 import vn.fonesi.app.storage.RoomUpdateTaskStore
 import vn.fonesi.core.UpdateScope
@@ -25,7 +26,8 @@ import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 
 @RunWith(RobolectricTestRunner::class)
-@Config(sdk = [34])
+@Config(sdk = [34], manifest = Config.NONE)
+@SQLiteMode(SQLiteMode.Mode.NATIVE)
 class UpdateJournalRecoveryWorkerTest {
     @Test fun idleJournalRecoveryCompletesWithoutStartingCloneEngine() {
         val context = ApplicationProvider.getApplicationContext<Context>()
