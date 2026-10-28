@@ -134,6 +134,11 @@ class UpdateJournalRecoveryWorkerTest {
         )
         store.insertOrGetActive(queued)
         var current = queued
+        if (initial == TaskState.CANCELLED) {
+            val cancelled = queued.move(TaskState.CANCELLED, now + 2)
+            check(store.replace(queued, cancelled))
+            return cancelled
+        }
         if (initial != TaskState.QUEUED) {
             current = current.move(TaskState.PREPARING, now + 1)
             check(store.replace(queued, current))
@@ -172,11 +177,7 @@ class UpdateJournalRecoveryWorkerTest {
                 check(store.replace(current, next))
                 current = next
             }
-            TaskState.CANCELLED -> {
-                val next = queued.move(TaskState.CANCELLED, now + 2)
-                check(store.replace(queued, next))
-                current = next
-            }
+            TaskState.CANCELLED -> error("Handled before the PREPARING transition")
             TaskState.SUCCEEDED -> {
                 val applying = current.move(TaskState.APPLYING, now + 2,
                     affectedIds = current.cloneIds, fingerprint = "synthetic-fingerprint")
