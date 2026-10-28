@@ -1,3 +1,11 @@
+# Fonesi APK — E22 Android synthetic dependent-feature proof (28/10/2026)
+
+**E22 TECHNICAL CI PASS, NOT A COMPLETE PRODUCT:** [E22 Actions #40655822440](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40655822440) passed on exact source `1ec2b4d0271da1b5a9a77c00112b88086fe81a16`. On fresh AOSP34 x86_64, three project-owned signed private APKs (`base → feature.alpha → feature.beta`) were installed, audited, and exercised: beta bytecode really invoked alpha class through its parent `DexClassLoader`, and scoped resource markers resolved only from private base/alpha/beta paths. Strict SHA-256, UID/process receipt and no-account checks passed. [E21 regression #40655822472](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40655822472) also passed on the same source. [E22 results](phases/E22_DEPENDENT_ANDROID_SPLITS_RESULTS.md) record exact evidence.
+
+**Still NOT VERIFIED:** arbitrary third-party split/config APKs, real guest Android Application/Activity/Service/Provider, Play Services, accounts/sessions, strong UID isolation, Samsung ARM64, release signing, update persistence or production multi-account compatibility. The `0.5.0-candidate` SpaceCore provider still rejects split imports and the separate E22 probe remains test-only. `main@c055df6` is unchanged. The 8-phase/32-step master plan remains unfinished; keep the accumulated technical PR in Draft.
+
+---
+
 # Fonesi APK — E21 signed isolated synthetic split Android proof (28/10/2026)
 
 **E21 TECHNICAL GATE PASS, NOT PRODUCT COMPLETE:** [GitHub Actions 40653400751](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40653400751) ended **success** on source `2714148230815b90b57037e2aec0d4fa4a1271bc`. A new AOSP Android 34 x86_64 KVM emulator installed independently signed base + feature APKs from the project-owned fixture, executed separately loaded **private** DEX code, verified feature resources and immutable private readback. Source/APK tests, x86_64 probe compile/lint, exact permission/component audit and receipts also passed. [E21 results](phases/E21_SPLIT_ANDROID_RESULTS.md) document exact limits. 
