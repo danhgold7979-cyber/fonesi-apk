@@ -2,6 +2,7 @@ package vn.fonesi.nativeprobe;
 
 import android.app.Activity;
 import android.app.Application;
+import android.content.Intent;
 import android.content.res.Configuration;
 import android.os.Build;
 import android.os.Bundle;
@@ -25,6 +26,7 @@ import vn.fonesi.engine.GuestCodeLoader;
 import vn.fonesi.engine.LoadedGuestCode;
 import vn.fonesi.engine.NativeRuntime;
 import vn.fonesi.engine.PrivateSyntheticComponentCatalog;
+import vn.fonesi.engine.SyntheticComponentDispatchTicket;
 import vn.fonesi.engine.VerifiedPrivateSyntheticComponents;
 
 /**
@@ -44,6 +46,11 @@ public final class SyntheticGuestUiProbeActivity extends Activity {
     private String challenge;
     private String proofLevel = "e24";
     private volatile boolean privateComponentCatalogVerified;
+    private volatile boolean syntheticComponentDispatchVerified;
+    private volatile boolean dispatchOnly;
+    private boolean dispatchReceiver;
+    private String dispatchTicketJson;
+    private volatile String dispatchTicketPrivateApkSha256;
     private Class<?> privateEntrypoint;
     private PrivateApkStore store;
     private PrivateApkCluster cluster;
@@ -70,8 +77,14 @@ public final class SyntheticGuestUiProbeActivity extends Activity {
             if (saved != null) throw new IllegalStateException("Synthetic screen cannot hot-restart");
             String requestedProof = getIntent().getStringExtra("proof_level");
             if (requestedProof != null) proofLevel = requestedProof;
-            if (!"e24".equals(proofLevel) && !"e25".equals(proofLevel))
+            if (!"e24".equals(proofLevel) && !"e25".equals(proofLevel) && !"e29".equals(proofLevel))
                 throw new IllegalArgumentException("Unsupported synthetic host screen proof");
+            dispatchTicketJson = getIntent().getStringExtra("dispatch_ticket");
+            if (dispatchTicketJson != null) {
+                if (!"e29".equals(proofLevel) || dispatchTicketJson.length() > 4096)
+                    throw new IllegalArgumentException("Unexpected or oversized private dispatch ticket");
+                dispatchReceiver = true;
+            }
             String raw = getIntent().getStringExtra("run_id");
             runId = UUID.fromString(raw).toString();
             if (!runId.equals(raw)) throw new IllegalArgumentException("Noncanonical test run UUID");
@@ -109,36 +122,51 @@ public final class SyntheticGuestUiProbeActivity extends Activity {
             ProbeData.check(code.getPath().startsWith(files.getPath() + File.separator),
                 "Private screen code store escaped app");
             PrivateApkStore localStore = new PrivateApkStore(code.toPath());
-            stage = "private_signed_apk_publish_and_readback";
-            preparationStage = stage;
-            PrivateApkCluster localCluster = localStore.publish(
-                SyntheticSignedPayloadSource.fromInstalled(this), Build.VERSION.SDK_INT);
+            PrivateApkCluster localCluster;
+            SyntheticComponentDispatchTicket dispatchTicket = null;
+
+            if (dispatchReceiver) {
+                stage = "e29_parse_ticket_and_open_private_cluster";
+                preparationStage = stage;
+                dispatchTicket = SyntheticComponentDispatchTicket.Companion.fromJson(dispatchTicketJson);
+                localCluster = localStore.open(dispatchTicket.getClusterId(), Build.VERSION.SDK_INT);
+            } else {
+                stage = "private_signed_apk_publish_and_readback";
+                preparationStage = stage;
+                localCluster = localStore.publish(
+                    SyntheticSignedPayloadSource.fromInstalled(this), Build.VERSION.SDK_INT);
+            }
             ProbeData.check(localStore.open(localCluster.getId(), Build.VERSION.SDK_INT).equals(localCluster) &&
                 localCluster.getApks().getBase().getPackageName().equals(GUEST_PACKAGE) &&
                 localCluster.getApks().getSplits().isEmpty(),
                 "Synthetic UI code must be a verified, single signed private payload APK");
 
-            stage = "synthetic_dedicated_process_native_routing";
-            preparationStage = stage;
-            File src = new File(files, "e24-inert-source").getCanonicalFile();
-            File dst = new File(files, "e24-inert-target").getCanonicalFile();
-            ProbeData.check((src.isDirectory() || src.mkdirs()) && (dst.isDirectory() || dst.mkdirs()),
-                "Cannot create private inert native routes");
-            Map<String, File> routes = new LinkedHashMap<>();
-            routes.put(src.getPath(), dst);
-            NativeRuntime.configure(getApplicationContext(), routes);
-            ProbeData.check(NativeRuntime.state() == NativeRuntime.CONFIGURED,
-                "E24 native routing configuration was not accepted");
-            NativeRuntime.enable(getApplicationContext());
-            ProbeData.check(NativeRuntime.state() == NativeRuntime.ENABLED,
-                "E24 native routing could not be enabled");
+            if (dispatchReceiver) {
+                ProbeData.check(NativeRuntime.state() == NativeRuntime.ENABLED,
+                    "E29 internal dispatch must remain in the already initialized private test process");
+            } else {
+                stage = "synthetic_dedicated_process_native_routing";
+                preparationStage = stage;
+                File src = new File(files, "e24-inert-source").getCanonicalFile();
+                File dst = new File(files, "e24-inert-target").getCanonicalFile();
+                ProbeData.check((src.isDirectory() || src.mkdirs()) && (dst.isDirectory() || dst.mkdirs()),
+                    "Cannot create private inert native routes");
+                Map<String, File> routes = new LinkedHashMap<>();
+                routes.put(src.getPath(), dst);
+                NativeRuntime.configure(getApplicationContext(), routes);
+                ProbeData.check(NativeRuntime.state() == NativeRuntime.CONFIGURED,
+                    "E24 native routing configuration was not accepted");
+                NativeRuntime.enable(getApplicationContext());
+                ProbeData.check(NativeRuntime.state() == NativeRuntime.ENABLED,
+                    "E24 native routing could not be enabled");
+            }
 
-            if ("e25".equals(proofLevel)) {
+            VerifiedPrivateSyntheticComponents catalog = null;
+            if ("e25".equals(proofLevel) || "e29".equals(proofLevel)) {
                 stage = "private_signed_component_manifest_catalog";
                 preparationStage = stage;
-                VerifiedPrivateSyntheticComponents catalog =
-                    new PrivateSyntheticComponentCatalog(getApplicationContext(), localStore)
-                        .inspect(localCluster.getId());
+                catalog = new PrivateSyntheticComponentCatalog(getApplicationContext(), localStore)
+                    .inspect(localCluster.getId());
                 ProbeData.check(
                     catalog.getPackageName().equals(GUEST_PACKAGE) &&
                     catalog.getApplicationName().equals(GUEST_PACKAGE + ".SyntheticGuestApplication") &&
@@ -148,6 +176,44 @@ public final class SyntheticGuestUiProbeActivity extends Activity {
                     "Synthetic private component manifest catalog is incomplete or not private"
                 );
                 privateComponentCatalogVerified = true;
+            }
+
+            if ("e29".equals(proofLevel)) {
+                if (catalog == null)
+                    throw new IllegalStateException("E29 requires a fresh verified private component catalog");
+                if (dispatchReceiver) {
+                    stage = "e29_validate_ticket_immediately_before_private_code_load";
+                    preparationStage = stage;
+                    SyntheticComponentDispatchTicket.Companion.validate(
+                        dispatchTicket, catalog, localCluster, UUID.fromString(runId), code);
+                    syntheticComponentDispatchVerified = true;
+                    dispatchTicketPrivateApkSha256 = dispatchTicket.getPrivateApkSha256();
+                } else {
+                    stage = "e29_issue_bounded_private_component_ticket";
+                    preparationStage = stage;
+                    dispatchTicket = SyntheticComponentDispatchTicket.Companion.issue(
+                        catalog, localCluster, UUID.fromString(runId), code);
+                    dispatchTicketPrivateApkSha256 = dispatchTicket.getPrivateApkSha256();
+                    final String serializedTicket = dispatchTicket.toJson();
+                    dispatchOnly = true;
+                    preparationStage = "e29_explicit_internal_dispatch_queued";
+                    runOnUiThread(() -> {
+                        try {
+                            Intent dispatch = new Intent(
+                                SyntheticGuestUiProbeActivity.this, SyntheticGuestUiProbeActivity.class);
+                            dispatch.setPackage(getPackageName());
+                            dispatch.putExtra("proof_level", "e29");
+                            dispatch.putExtra("run_id", runId);
+                            dispatch.putExtra("dispatch_ticket", serializedTicket);
+                            startActivity(dispatch);
+                            finish();
+                        } catch (Throwable error) {
+                            failure("e29_internal_dispatch_intent", error);
+                        }
+                    });
+                    preparationFinished = true;
+                    return;
+                }
             }
 
             stage = "signed_private_dex_and_resources";
@@ -170,9 +236,12 @@ public final class SyntheticGuestUiProbeActivity extends Activity {
             ProbeData.check(localStore.open(localCluster.getId(), Build.VERSION.SDK_INT)
                 .equals(localCluster), "Private DEX/resources changed while preparing UI");
             preparationStage = "private_dex_ready_ui_callback_queued";
+            PrivateApkCluster verifiedCluster = localCluster;
+            PrivateApkStore verifiedStore = localStore;
+            Class<?> verifiedScreen = screen;
             runOnUiThread(() -> {
                 preparationStage = "private_dex_ready_ui_callback_running";
-                display(screen, localStore, localCluster);
+                display(verifiedScreen, verifiedStore, verifiedCluster);
             });
             preparationFinished = true;
         } catch (Throwable error) {
@@ -266,14 +335,17 @@ public final class SyntheticGuestUiProbeActivity extends Activity {
         String verificationStage = "final_guest_event";
         try {
             record("DESTROY");
-            if (!reported) {
+            if (!reported && !dispatchOnly) {
                 verificationStage = "final_signed_view_attachment";
                 ProbeData.check(viewAttached && verifiedPrivateClass && verifiedPrivateResource,
                     "Private View/code/resources were not all verified");
                 verificationStage = "final_e25_private_catalog";
-                if ("e25".equals(proofLevel))
+                if ("e25".equals(proofLevel) || "e29".equals(proofLevel))
                     ProbeData.check(privateComponentCatalogVerified,
                         "Signed private Android manifest component metadata was not verified");
+                if ("e29".equals(proofLevel))
+                    ProbeData.check(syntheticComponentDispatchVerified,
+                        "E29 private component dispatch ticket was not validated before private code load");
                 verificationStage = "final_android_host_lifecycle";
                 ProbeData.check(COMPLETE.equals(androidEvents),
                     "Actual Android Activity lifecycle was incomplete");
@@ -299,6 +371,10 @@ public final class SyntheticGuestUiProbeActivity extends Activity {
                     .put("signed_private_resources_verified", true)
                     .put("signed_private_image_rechecked", true)
                     .put("private_component_manifest_verified", privateComponentCatalogVerified)
+                    .put("synthetic_component_dispatch_verified", syntheticComponentDispatchVerified)
+                    .put("dispatch_ticket_private_apk_sha256", dispatchTicketPrivateApkSha256)
+                    .put("production_clone_accepted", false)
+                    .put("third_party_component_executed", false)
                     .put("real_guest_activity_registered", false)
                     .put("lifecycle_transcript", privateSequence)
                     .put("same_android_uid", true).put("kernel_uid_isolation", false)
@@ -331,6 +407,11 @@ public final class SyntheticGuestUiProbeActivity extends Activity {
                 .put("private_class_verified", verifiedPrivateClass)
                 .put("private_resource_verified", verifiedPrivateResource)
                 .put("private_component_catalog_verified", privateComponentCatalogVerified)
+                .put("synthetic_component_dispatch_verified", syntheticComponentDispatchVerified)
+                .put("dispatch_ticket_private_apk_sha256", dispatchTicketPrivateApkSha256)
+                .put("production_clone_accepted", false)
+                .put("third_party_component_executed", false)
+                .put("real_guest_activity_registered", false)
                 .put("activity_finishing", isFinishing())
                 .put("activity_destroyed", destroyed)
                 .put("preparation_stage", preparationStage)
