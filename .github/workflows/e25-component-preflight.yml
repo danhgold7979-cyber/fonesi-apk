@@ -1,0 +1,99 @@
+name: E25 AOSP34 signed private synthetic guest component preflight
+
+on:
+  push:
+    branches:
+      - phase/e21-android-split-code-proof-20261028
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: fonesi-e25-owned-android-component-v1
+  cancel-in-progress: true
+
+jobs:
+  signed-private-manifest-preflight:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    env:
+      FONESI_TOOLS_DIR: /tmp/fonesi-tools
+      ANDROID_HOME: /tmp/fonesi-tools/android-sdk
+      ANDROID_SDK_ROOT: /tmp/fonesi-tools/android-sdk
+    steps:
+      - name: Checkout exact E25 cumulative source
+        uses: actions/checkout@v4
+      - name: Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Validate emulator runner and audit Python source
+        run: |
+          python3 -m py_compile scripts/run_guest_code_emulator.py scripts/run_native_probe.py
+      - name: Bootstrap pinned SDK36 JDK21 Gradle native Dobby source
+        run: |
+          python3 scripts/bootstrap_android.py --accept-sdk-license
+          python3 scripts/prepare_source_engine.py --install-tools
+      - name: Keep existing signed APK auditor and source-engine regression green
+        run: |
+          ./scripts/gradle.sh :core:test :apk-runtime:test --console=plain
+          ./scripts/gradle.sh -PincludeSourceEngine=true -PsourceEngineAbi=x86_64 \
+            :engine-source:testDebugUnitTest --console=plain
+      - name: Compile and lint E25 private manifest catalog plus signed UI host
+        run: |
+          ./scripts/gradle.sh -PincludeNativeRuntimeProbe=true -PsourceEngineAbi=x86_64 \
+            :native-runtime-probe:assembleDebug :native-runtime-probe:lintDebug --console=plain
+          ./scripts/gradle.sh -PincludeEngineProbe=true \
+            :probe-payload:assembleDebug :probe-payload:lintDebug --console=plain
+      - name: Strictly audit signed probe component/process allowlist permissions and native ELF
+        run: python3 scripts/run_native_probe.py --audit-only
+      - name: Validate fresh signed synthetic probe and payload APKs
+        run: |
+          test -s native-runtime-probe/build/outputs/apk/debug/native-runtime-probe-debug.apk
+          test -s probe-payload/build/outputs/apk/debug/probe-payload-debug.apk
+          "$ANDROID_HOME/build-tools/36.0.0/apksigner" verify --verbose \
+            native-runtime-probe/build/outputs/apk/debug/native-runtime-probe-debug.apk
+          "$ANDROID_HOME/build-tools/36.0.0/apksigner" verify --verbose \
+            probe-payload/build/outputs/apk/debug/probe-payload-debug.apk
+      - name: Install fresh Android 34 AOSP x86_64 image only
+        run: python3 scripts/prepare_native_emulator.py --install --image aosp34
+      - name: Verify KVM access for dedicated ephemeral emulator
+        run: |
+          if test -e /dev/kvm; then
+            sudo chmod 666 /dev/kvm
+            test -r /dev/kvm
+            test -w /dev/kvm
+          else
+            echo "KVM unavailable: no simulated pass is permitted"
+          fi
+      - name: Verify exact signed PRIVATE synthetic Application/Activity catalog and hosted View
+        run: |
+          PROBE_SHA="$(sha256sum native-runtime-probe/build/outputs/apk/debug/native-runtime-probe-debug.apk | cut -d' ' -f1)"
+          PAYLOAD_SHA="$(sha256sum probe-payload/build/outputs/apk/debug/probe-payload-debug.apk | cut -d' ' -f1)"
+          python3 scripts/run_guest_code_emulator.py \
+            --apk-dir . \
+            --expected-probe-sha256 "$PROBE_SHA" \
+            --expected-payload-sha256 "$PAYLOAD_SHA" \
+            --source-commit "$GITHUB_SHA" \
+            --reports .local/e25-emulator \
+            --boot-timeout 480 --probe-timeout 180 --proof-level e25
+      - name: Upload bounded synthetic-only E25 APK and catalog receipt evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: fonesi-E25-signed-private-component-catalog-TEST-ONLY
+          path: |
+            native-runtime-probe/build/outputs/apk/debug/native-runtime-probe-debug.apk
+            probe-payload/build/outputs/apk/debug/probe-payload-debug.apk
+            .local/e24-emulator/e11-evidence.json
+            .local/e24-emulator/synthetic-ui-receipt.json
+            .local/e24-emulator/synthetic-runtime-errors.log
+          if-no-files-found: warn
+          retention-days: 7
+      - name: Preserve honest product boundary
+        run: |
+          echo "Only the signed PRIVATE synthetic component catalog was inspected and host View rendered."
+          echo "NOT VERIFIED: actual Android guest Activity registration, Service/Provider/"
+          echo "Binder mediation, kernel UID separation, social accounts, Samsung ARM64 or release."
