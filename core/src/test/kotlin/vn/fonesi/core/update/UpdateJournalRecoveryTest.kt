@@ -125,19 +125,19 @@ class UpdateJournalRecoveryTest {
         assertEquals(TaskState.QUEUED, f.store.list().single().state)
     }
 
-    @Test fun failedCompareAndSetRequestsRetryInsteadOfOverwritingConcurrentTask() {
+    @Test fun failedCompareAndSetRequestsRetryWithoutOverwritingJournal() {
         val f = fixture()
         val old = preparingWithSnapshot(f)
-        f.store.beforeReplace = { next ->
-            if (next.state == TaskState.QUEUED) {
-                val current = f.store.list().single()
-                f.store.beforeReplace = null
-                f.store.replace(current, current.move(TaskState.QUEUED, current.changedAt + 1))
-            }
+        val rejectingStore = object : UpdateTaskStore by f.store {
+            override fun replace(expected: UpdateTask, replacement: UpdateTask,
+                requireUnpaused: Boolean): Boolean = false
         }
-        val result = recovery(f).recover()
+        val result = UpdateJournalRecovery(
+            rejectingStore, f.snapshotter, FileQueueLock(f.root.resolve("queue.lock"))
+        ) { 500L }.recover()
         assertTrue(result.retryable)
-        assertEquals(TaskState.QUEUED, f.store.list().single().state)
+        assertEquals(TaskState.PREPARING, f.store.list().single().state)
+        // Cleanup completed before the failed CAS; the next pass safely repeats the idempotent discard.
         assertFalse(Files.exists(f.root.resolve("snapshots").resolve(old.id)))
     }
 }
