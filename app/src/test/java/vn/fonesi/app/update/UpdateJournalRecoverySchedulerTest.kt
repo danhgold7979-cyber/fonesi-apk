@@ -3,7 +3,6 @@ package vn.fonesi.app.update
 import android.content.Context
 import androidx.test.core.app.ApplicationProvider
 import androidx.work.Configuration
-import androidx.work.CoroutineWorker
 import androidx.work.ListenableWorker
 import androidx.work.WorkInfo
 import androidx.work.WorkManager
@@ -118,7 +117,7 @@ class UpdateJournalRecoverySchedulerTest {
         parameters: WorkerParameters,
         private val started: CountDownLatch,
         private val release: CountDownLatch,
-    ) : CoroutineWorker(context, parameters) {
+    ) : UpdateJournalRecoveryWorker(context, parameters) {
         override suspend fun doWork(): Result = withContext(Dispatchers.IO) {
             started.countDown()
             if (release.await(30, TimeUnit.SECONDS)) Result.success() else Result.failure()
