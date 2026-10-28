@@ -2,6 +2,7 @@ package vn.fonesi.nativeprobe;
 
 import android.app.Activity;
 import android.app.Application;
+import android.content.res.Configuration;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Process;
@@ -55,6 +56,7 @@ public final class SyntheticGuestUiProbeActivity extends Activity {
     private String failureStage;
     private volatile String preparationStage = "not_started";
     private volatile boolean preparationFinished;
+    private volatile int configurationChangeCallbacks;
 
     @Override protected void onCreate(Bundle saved) {
         super.onCreate(saved);
@@ -234,6 +236,11 @@ public final class SyntheticGuestUiProbeActivity extends Activity {
         }
     }
 
+    @Override public void onConfigurationChanged(Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+        configurationChangeCallbacks++;
+    }
+
     @Override protected void onStart() {
         super.onStart();
         record("START");
@@ -295,6 +302,7 @@ public final class SyntheticGuestUiProbeActivity extends Activity {
                     .put("real_guest_activity_registered", false)
                     .put("lifecycle_transcript", privateSequence)
                     .put("same_android_uid", true).put("kernel_uid_isolation", false)
+                    .put("configuration_change_callbacks", configurationChangeCallbacks)
                     .put("actual_guest_activity_attached", false)
                     .put("third_party_guest_components_tested", false)
                     .put("social_accounts_tested", false);
@@ -331,6 +339,7 @@ public final class SyntheticGuestUiProbeActivity extends Activity {
                 .put("android_is_changing_configurations", isChangingConfigurations())
                 .put("android_task_id", getTaskId())
                 .put("android_lifecycle_count", androidEvents.size())
+                .put("configuration_change_callbacks", configurationChangeCallbacks)
                 .put("actual_guest_activity_attached", false);
             saveReceipt(receipt);
         } catch (Throwable ignored) {

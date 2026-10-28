@@ -4,6 +4,21 @@ on:
   push:
     branches:
       - phase/e21-android-split-code-proof-20261028
+    paths:
+      - ".github/workflows/e25-component-preflight.yml"
+      - "native-runtime-probe/src/main/AndroidManifest.xml"
+      - "native-runtime-probe/src/main/java/vn/fonesi/nativeprobe/SyntheticGuestUiProbeActivity.java"
+      - "native-runtime-probe/src/main/java/vn/fonesi/nativeprobe/ProbeData.java"
+      - "probe-payload/src/main/java/vn/fonesi/payload/SyntheticGuestScreen.java"
+      - "engine-source/**"
+      - "apk-runtime/**"
+      - "core/**"
+      - "scripts/run_guest_code_emulator.py"
+      - "scripts/run_native_probe.py"
+      - "scripts/bootstrap_android.py"
+      - "scripts/prepare_native_emulator.py"
+      - "scripts/prepare_source_engine.py"
+      - "scripts/gradle.sh"
   workflow_dispatch:
 
 permissions:
