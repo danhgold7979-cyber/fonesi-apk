@@ -57,7 +57,7 @@ def main():
     activities = {component(a.get(A + "name")): a for a in app.findall("activity")}
     assert set(activities) == {
         PACKAGE + ".MainActivity", PACKAGE + ".GuestCodeProbeActivity",
-        PACKAGE + ".SyntheticChannelProbeActivity",
+        PACKAGE + ".SyntheticChannelProbeActivity", PACKAGE + ".SplitCodeProbeActivity",
     }, "Unexpected exported synthetic probe Activity"
     assert all(a.get(A + "exported") == "true" for a in activities.values())
     services = {component(s.get(A + "name")): s for s in app.findall("service")}
@@ -66,6 +66,7 @@ def main():
         PACKAGE + ".ProbeService$B": ":fonesi_guest_b",
         PACKAGE + ".GuestCodeProbeService": ":fonesi_guest_loader",
         PACKAGE + ".SyntheticGuestChannelService": ":fonesi_guest_channel",
+        PACKAGE + ".SplitCodeProbeService": ":fonesi_guest_split",
     }
     assert set(services) == set(expected_services), "Unexpected native probe component"
     assert all(services[name].get(A + "exported") == "false" and
