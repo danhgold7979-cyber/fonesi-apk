@@ -87,9 +87,9 @@ jobs:
           path: |
             native-runtime-probe/build/outputs/apk/debug/native-runtime-probe-debug.apk
             probe-payload/build/outputs/apk/debug/probe-payload-debug.apk
-            .local/e24-emulator/e11-evidence.json
-            .local/e24-emulator/synthetic-ui-receipt.json
-            .local/e24-emulator/synthetic-runtime-errors.log
+            .local/e25-emulator/e11-evidence.json
+            .local/e25-emulator/synthetic-ui-receipt.json
+            .local/e25-emulator/synthetic-runtime-errors.log
           if-no-files-found: warn
           retention-days: 7
       - name: Preserve honest product boundary

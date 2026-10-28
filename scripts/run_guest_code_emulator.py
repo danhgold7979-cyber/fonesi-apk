@@ -429,9 +429,13 @@ def main():
             )
             expected_false = ("kernel_uid_isolation", "actual_guest_activity_attached",
                               "third_party_guest_components_tested", "social_accounts_tested")
+            if args.proof_level == "e25" and report.get("passed") is False:
+                stage = re.sub(r"[^A-Za-z0-9_]", "", str(report.get("failure_stage", "unknown")))[:96]
+                reason = re.sub(r"[^A-Za-z0-9_]", "", str(report.get("failure_type", "unknown")))[:64]
+                raise RuntimeError("E25 signed private catalog failure at " + stage + " type " + reason)
             if not all(report.get(k) is True for k in expected_true) or not all(
                     report.get(k) is False for k in expected_false):
-                raise RuntimeError("E24 signed private View/lifecycle assertions failed")
+                raise RuntimeError("E24/E25 signed private View/lifecycle assertions failed")
             if report.get("proof_level") != args.proof_level:
                 raise RuntimeError("E24/E25 private UI proof mode differs from requested mode")
             if args.proof_level == "e25" and not (
