@@ -1,0 +1,61 @@
+name: E20 signed private isolated split loader graph (source only)
+
+on:
+  push:
+    branches:
+      - phase/e20-isolated-split-graph-20261028
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: fonesi-e20-split-graph-v1
+  cancel-in-progress: true
+
+jobs:
+  audited-split-graph:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      FONESI_TOOLS_DIR: /tmp/fonesi-tools
+      ANDROID_HOME: /tmp/fonesi-tools/android-sdk
+      ANDROID_SDK_ROOT: /tmp/fonesi-tools/android-sdk
+    steps:
+      - name: Checkout exact E20 source
+        uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Bootstrap pinned Android SDK and source native inputs
+        run: |
+          python3 scripts/bootstrap_android.py --accept-sdk-license
+          python3 scripts/prepare_source_engine.py --install-tools
+      - name: Verify core and signed binary APK auditor tests
+        run: ./scripts/gradle.sh :core:test :apk-runtime:test --console=plain
+      - name: Test signed split graph plus native host/JVM/ARM64 source and lint
+        run: python3 scripts/check_source_engine.py
+      - name: Require real signed-APK split-graph JUnit results and guard against zero-test passes
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import xml.etree.ElementTree as ET
+          root = Path("engine-source/build/test-results/testDebugUnitTest")
+          found = list(root.glob("TEST-*GuestSplitGraphTest.xml"))
+          assert len(found) == 1, f"Missing GuestSplitGraphTest JUnit result: {found}"
+          result = ET.parse(found[0]).getroot()
+          expected = int(result.get("tests", "0"))
+          assert expected >= 7 and all(int(result.get(x, "0")) == 0 for x in ("failures", "errors", "skipped")), result.attrib
+          print(f"PASS: {expected} real signed APK graph JUnit tests, including isolated guard, no failures/skip.")
+          print("NOT VERIFIED: Android isolated split code execution, resources, Activity/Binder or social apps.")
+          PY
+      - name: Upload isolated source component proof only (not a Fonesi product APK)
+        uses: actions/upload-artifact@v4
+        with:
+          name: fonesi-E20-source-split-graph-JVM-ONLY
+          path: |
+            engine-source/build/outputs/aar/engine-source-debug.aar
+            engine-source/build/reports/source-engine-verification.json
+          if-no-files-found: error
+          retention-days: 7

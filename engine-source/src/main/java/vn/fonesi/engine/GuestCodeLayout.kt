@@ -8,12 +8,26 @@ import java.io.File
 internal data class GuestCodeLayout(val cluster: PrivateApkCluster, val base: File, val splitNames: List<String>, val splits: List<File>) {
     val allApks get() = listOf(base) + splits
     companion object {
-        fun read(store: PrivateApkStore, id: String, platformApi: Int, privateDataRoot: File, hostPackage: String): GuestCodeLayout {
+        fun read(store: PrivateApkStore, id: String, platformApi: Int, privateDataRoot: File, hostPackage: String): GuestCodeLayout =
+            inspect(store, id, platformApi, privateDataRoot, hostPackage, allowGraphOnly = false)
+
+        /**
+         * Signed topology planning only. GuestCodeLoader.load MUST call read() above so isolated
+         * split execution remains blocked until Android classloader + Resources support exists.
+         */
+        fun readForGraphOnly(store: PrivateApkStore, id: String, platformApi: Int,
+            privateDataRoot: File, hostPackage: String): GuestCodeLayout =
+            inspect(store, id, platformApi, privateDataRoot, hostPackage, allowGraphOnly = true)
+
+        private fun inspect(store: PrivateApkStore, id: String, platformApi: Int,
+            privateDataRoot: File, hostPackage: String, allowGraphOnly: Boolean): GuestCodeLayout {
             val cluster = store.open(id, platformApi)
             require(cluster.apks.base.packageName != hostPackage && cluster.apks.base.packageName != "android") {
                 "Framework and host packages cannot use this guest loader"
             }
-            require(!cluster.apks.base.isolatedSplits) { "Isolated split class loaders are not implemented" }
+            require(allowGraphOnly || !cluster.apks.base.isolatedSplits) {
+                "Isolated split class loaders are not implemented"
+            }
             val root = privateDataRoot.canonicalFile
             require(root.isDirectory)
             val members = listOf(cluster.apks.base) + cluster.apks.splits
