@@ -53,10 +53,13 @@ public final class SyntheticGuestUiProbeActivity extends Activity {
     private boolean destroyed;
     private boolean reported;
     private String failureStage;
+    private volatile String preparationStage = "not_started";
+    private volatile boolean preparationFinished;
 
     @Override protected void onCreate(Bundle saved) {
         super.onCreate(saved);
         androidEvents.add("CREATE");
+        preparationStage = "activity_create";
         setContentView(new TextView(this) {{
             setText("Fonesi E24 signed PRIVATE synthetic View proof; no guest account.");
         }});
@@ -96,6 +99,7 @@ public final class SyntheticGuestUiProbeActivity extends Activity {
 
     private void prepare() {
         String stage = "signed_installed_synthetic_source";
+        preparationStage = stage;
         try {
             File owned = getApplicationContext().getDataDir().getCanonicalFile();
             File files = getFilesDir().getCanonicalFile();
@@ -104,6 +108,7 @@ public final class SyntheticGuestUiProbeActivity extends Activity {
                 "Private screen code store escaped app");
             PrivateApkStore localStore = new PrivateApkStore(code.toPath());
             stage = "private_signed_apk_publish_and_readback";
+            preparationStage = stage;
             PrivateApkCluster localCluster = localStore.publish(
                 SyntheticSignedPayloadSource.fromInstalled(this), Build.VERSION.SDK_INT);
             ProbeData.check(localStore.open(localCluster.getId(), Build.VERSION.SDK_INT).equals(localCluster) &&
@@ -112,6 +117,7 @@ public final class SyntheticGuestUiProbeActivity extends Activity {
                 "Synthetic UI code must be a verified, single signed private payload APK");
 
             stage = "synthetic_dedicated_process_native_routing";
+            preparationStage = stage;
             File src = new File(files, "e24-inert-source").getCanonicalFile();
             File dst = new File(files, "e24-inert-target").getCanonicalFile();
             ProbeData.check((src.isDirectory() || src.mkdirs()) && (dst.isDirectory() || dst.mkdirs()),
@@ -127,6 +133,7 @@ public final class SyntheticGuestUiProbeActivity extends Activity {
 
             if ("e25".equals(proofLevel)) {
                 stage = "private_signed_component_manifest_catalog";
+                preparationStage = stage;
                 VerifiedPrivateSyntheticComponents catalog =
                     new PrivateSyntheticComponentCatalog(getApplicationContext(), localStore)
                         .inspect(localCluster.getId());
@@ -142,6 +149,7 @@ public final class SyntheticGuestUiProbeActivity extends Activity {
             }
 
             stage = "signed_private_dex_and_resources";
+            preparationStage = stage;
             LoadedGuestCode image = new GuestCodeLoader(getApplicationContext(), localStore)
                 .load(localCluster.getId());
             ProbeData.check(GUEST_PACKAGE.equals(image.getPackageName()),
@@ -159,9 +167,16 @@ public final class SyntheticGuestUiProbeActivity extends Activity {
             } catch (ClassNotFoundException required) { /* genuine private code */ }
             ProbeData.check(localStore.open(localCluster.getId(), Build.VERSION.SDK_INT)
                 .equals(localCluster), "Private DEX/resources changed while preparing UI");
-            runOnUiThread(() -> display(screen, localStore, localCluster));
+            preparationStage = "private_dex_ready_ui_callback_queued";
+            runOnUiThread(() -> {
+                preparationStage = "private_dex_ready_ui_callback_running";
+                display(screen, localStore, localCluster);
+            });
+            preparationFinished = true;
         } catch (Throwable error) {
             final String failedAt = stage;
+            preparationStage = "failed_" + failedAt;
+            preparationFinished = true;
             runOnUiThread(() -> failure(failedAt, error));
         }
     }
@@ -241,6 +256,7 @@ public final class SyntheticGuestUiProbeActivity extends Activity {
 
     @Override protected void onDestroy() {
         destroyed = true;
+        preparationStage = "activity_on_destroy";
         String verificationStage = "final_guest_event";
         try {
             record("DESTROY");
@@ -310,6 +326,12 @@ public final class SyntheticGuestUiProbeActivity extends Activity {
                 .put("private_component_catalog_verified", privateComponentCatalogVerified)
                 .put("activity_finishing", isFinishing())
                 .put("activity_destroyed", destroyed)
+                .put("preparation_stage", preparationStage)
+                .put("preparation_finished", preparationFinished)
+                .put("android_is_finishing", isFinishing())
+                .put("android_is_changing_configurations", isChangingConfigurations())
+                .put("android_task_id", getTaskId())
+                .put("android_lifecycle_count", androidEvents.size())
                 .put("actual_guest_activity_attached", false);
             saveReceipt(receipt);
         } catch (Throwable ignored) {
