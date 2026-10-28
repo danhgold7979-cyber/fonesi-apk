@@ -28,7 +28,7 @@ class UpdateJournalRecoveryWorkerTest {
         val source = java.io.File(
             "src/main/java/vn/fonesi/app/update/UpdateJournalRecoveryWorker.kt"
         ).readText().replace(
-            Regex("""/\\*[\\s\\S]*?\\*/|//[^\\r\\n]*"""), ""
+            Regex("""/\*[\s\S]*?\*/|//[^\r\n]*"""), ""
         )
         assertTrue(source.contains("UpdateJournalRecovery("))
         assertTrue(source.contains("RoomUpdateTaskStore"))
