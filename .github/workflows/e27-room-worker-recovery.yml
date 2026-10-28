@@ -7,7 +7,6 @@ on:
     paths:
       - ".github/workflows/e27-room-worker-recovery.yml"
       - "app/src/main/java/vn/fonesi/app/update/UpdateJournalRecoveryWorker.kt"
-      - "app/src/main/java/vn/fonesi/app/update/UpdateJournalRecoveryScheduler.kt"
       - "app/src/main/java/vn/fonesi/app/storage/**"
       - "app/src/test/java/vn/fonesi/app/update/UpdateJournalRecoveryWorkerTest.kt"
       - "app/src/main/AndroidManifest.xml"
@@ -15,7 +14,6 @@ on:
       - "app/build.gradle.kts"
       - "core/src/main/kotlin/vn/fonesi/core/update/**"
       - "core/src/test/kotlin/vn/fonesi/core/update/**"
-      - "scripts/audit_journal_worker.py"
       - "scripts/verify_main_build.py"
       - "scripts/verify_candidate_build.py"
       - "scripts/check.sh"
