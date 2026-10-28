@@ -225,7 +225,8 @@ private fun FonesiScreen(state: AppsState, management: ManagementState, runtime:
                         open = { model.openClone(row.launchToken) }, pin = { model.pinClone(row.launchToken) },
                         stop = { model.stopClone(row.launchToken) }, delete = { model.deleteClone(row.launchToken) },
                         duplicate = { label -> model.duplicateClone(row.launchToken, label) },
-                        update = { model.previewUpdates(listOf(row.launchToken)) }) { label, group ->
+                        update = { model.previewUpdates(listOf(row.launchToken)) },
+                        saveStyle = { accent, badge -> model.styleClone(row.engineKey, row.cloneId, accent, badge) }) { label, group ->
                         model.renameClone(row.engineKey, row.cloneId, label, group)
                     }
                 }
