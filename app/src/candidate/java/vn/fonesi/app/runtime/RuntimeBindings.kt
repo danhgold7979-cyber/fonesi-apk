@@ -34,7 +34,8 @@ object RuntimeBindings {
     fun enable(context: Context, enabled: Boolean) {
         check(preferences(context).edit().putBoolean("enabled", enabled).putBoolean("initialization_pending", false).commit())
     }
-    fun attach(context: Context) {
+    @Synchronized fun attach(context: Context) {
+        if (initialized) return
         val rejection = ProbePolicy.rejectionReason(Build.VERSION.SDK_INT, Build.SUPPORTED_ABIS.toList(),
             try { Os.sysconf(OsConstants._SC_PAGESIZE) } catch (_: Exception) { -1 })
         if (rejection != null) { message = rejection; return }
