@@ -34,6 +34,7 @@ for required in (
     "referenceLedgerRejectsMissingClusterAndInvalidOwnerIdentity",
     "concurrentReferenceAcquiresAreSerializedAcrossLedgerInstances",
     "corruptReferenceIndexFailsClosedWithoutDeletingPublishedCluster",
+    "replacedReferenceRootIsRejectedBeforeCreatingLockOutsideRoot",
 ):
     if required not in tests:
         raise SystemExit(f"E38 reference ledger test is missing: {required}")
