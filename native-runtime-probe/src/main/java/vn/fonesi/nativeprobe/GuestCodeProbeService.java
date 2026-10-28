@@ -61,8 +61,12 @@ public final class GuestCodeProbeService extends Service {
         try {
             // An Android process name isolates the exercise from the host lifecycle, but
             // both processes still share an application UID. Never claim kernel-level isolation.
-            ProbeData.check(Build.VERSION.SDK_INT >= 28, "E12 process verification requires Android API 28+");
-            String processName = Application.getProcessName();
+            final String processName;
+            if (Build.VERSION.SDK_INT >= 28) {
+                processName = Application.getProcessName();
+            } else {
+                throw new IllegalStateException("E12 synthetic process proof requires Android API 28+");
+            }
             ProbeData.check((getPackageName() + ":fonesi_guest_loader").equals(processName),
                 "synthetic bytecode may run only in its dedicated named process");
             ProbeData.check(Process.myUid() == getApplicationInfo().uid,
