@@ -54,19 +54,34 @@ public final class GuestCodeProbeService extends Service {
     private void run(String runId) {
         File reports = null;
         JSONObject result = new JSONObject();
+        String stage = "canonical host-private directory";
         try {
-            reports = new File(getFilesDir(), "guest-code-probe").getCanonicalFile();
+            // Android may expose /data/user/0 as a framework-controlled alias of /data/data.
+            // Canonicalize trusted Context directories first; never relax PrivateApkStore's guards.
+            File hostRoot = getApplicationContext().getDataDir().getCanonicalFile();
+            File filesRoot = getFilesDir().getCanonicalFile();
+            ProbeData.check(filesRoot.getPath().startsWith(hostRoot.getPath() + File.separator),
+                "files directory must remain inside private host data");
+            reports = new File(filesRoot, "guest-code-probe").getCanonicalFile();
             ProbeData.check(reports.isDirectory() || reports.mkdirs(), "private report directory");
-            String root = getFilesDir().getCanonicalPath() + File.separator;
+            String root = filesRoot.getPath() + File.separator;
             ProbeData.check(reports.getPath().startsWith(root), "private report path");
 
+            stage = "read original test payload identity";
             InstalledSource source = signedPayloadSource();
-            PrivateApkStore codeStore = new PrivateApkStore(new File(getFilesDir(), "guest-code-images").toPath());
+            stage = "create canonical private APK store";
+            File codeRoot = new File(filesRoot, "guest-code-images").getCanonicalFile();
+            ProbeData.check(codeRoot.getPath().startsWith(filesRoot.getPath() + File.separator),
+                "code store must remain inside private files");
+            PrivateApkStore codeStore = new PrivateApkStore(codeRoot.toPath());
+            stage = "publish and verify signed private APK";
             PrivateApkCluster cluster = codeStore.publish(source, Build.VERSION.SDK_INT);
+            stage = "read back private cluster identity";
             PrivateGuestImageEvidence evidence = new PrivateGuestImageEvidence(codeStore, Build.VERSION.SDK_INT);
             GuestImageRef image = evidence.resolve(cluster.getId());
             ProbeData.check(evidence.matches(image), "signed private image verification");
 
+            stage = "stage durable image reference";
             GuestImageActivationLedger ledger = new GuestImageActivationLedger(
                 new File(reports, "activation").toPath(), candidate -> evidence.matches(candidate)
             );
@@ -81,16 +96,20 @@ public final class GuestCodeProbeService extends Service {
                 (syntheticGuest.isDirectory() || syntheticGuest.mkdirs()), "private synthetic routing directories");
             java.util.Map<String, File> isolatedRules = new java.util.LinkedHashMap<>();
             isolatedRules.put(syntheticSource.getPath(), syntheticGuest);
+            stage = "configure dedicated-process native routing";
             NativeRuntime.configure(getApplicationContext(), isolatedRules);
             ProbeData.check(NativeRuntime.state() == NativeRuntime.CONFIGURED, "native configuration");
+            stage = "activate dedicated-process native routing";
             NativeRuntime.enable(getApplicationContext());
             ProbeData.check(NativeRuntime.state() == NativeRuntime.ENABLED, "native activation");
 
+            stage = "load DEX and resources from private code image";
             LoadedGuestCode loaded = new GuestCodeLoader(getApplicationContext(), codeStore).load(cluster.getId());
             ProbeData.check(PAYLOAD.equals(loaded.getPackageName()), "private guest package identity");
             Class<?> payloadClass = loaded.getClassLoader().loadClass(PAYLOAD + ".PayloadActivity");
             ProbeData.check(payloadClass.getClassLoader() == loaded.getClassLoader(), "private DEX class loader");
 
+            stage = "read signed payload resource marker";
             Resources resources = loaded.getResources();
             int resourceId = resources.getIdentifier("fonesi_guest_code_probe", "string", PAYLOAD);
             ProbeData.check(resourceId != 0 &&
@@ -98,6 +117,7 @@ public final class GuestCodeProbeService extends Service {
             ProbeData.check(evidence.matches(image), "private image unchanged after class/resource load");
             ProbeData.check(ledger.readVerified(runId).getActive() == null, "code load is not guest activation");
 
+            stage = "write successful synthetic receipt";
             result.put("complete", true).put("passed", true).put("run_id", runId)
                 .put("api", Build.VERSION.SDK_INT).put("pid", Process.myPid())
                 .put("abi", Build.SUPPORTED_ABIS.length > 0 ? Build.SUPPORTED_ABIS[0] : "unknown")
@@ -108,7 +128,8 @@ public final class GuestCodeProbeService extends Service {
         } catch (Throwable failure) {
             // No paths, package data, tokens, passwords, or raw stack traces in persisted diagnostics.
             try { result.put("complete", true).put("passed", false).put("run_id", runId)
-                .put("failure_type", failure.getClass().getName()); }
+                .put("failure_type", failure.getClass().getName())
+                .put("failure_stage", stage); }
             catch (Exception ignored) { /* parent times out if report cannot be written */ }
         } finally {
             if (reports != null) try {
