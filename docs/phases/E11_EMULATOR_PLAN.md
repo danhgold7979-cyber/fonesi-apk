@@ -40,3 +40,14 @@ Nếu Android khởi động được nhưng runtime/biên nhận không đạt,
 ## Chẩn đoán hàng đợi GitHub Actions
 
 Sau các checkpoint code, lượt CI mới nhất bị `pending` trong khi một job cũ vẫn `in_progress` nhưng chưa có step nào chạy trên runner; việc `cancel-in-progress` chưa giải phóng nhóm concurrency. Đây chưa phải lỗi emulator/code-image. Cho đúng một checkpoint mới dùng group concurrency khác trên cùng nhánh, giữ `cancel-in-progress=true`, không thay assertion, hash APK, AVD ownership hoặc giới hạn thời gian; nếu runner vẫn không được cấp thì báo BLOCKED thay vì sửa mã để giả pass.
+
+## E11 runtime FAIL #1 — phân tích bằng chứng trước khi sửa code
+
+[CI 40639866184](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40639866184) **Android boot PASS, APK install PASS, nhận report theo UUID PASS, code image FAIL**. Biên nhận thực tế: `passed=false`, `failure_type=java.lang.IllegalArgumentException`; artifact `12794499781`. Không có stack/mật khẩu/log nhạy cảm, và chưa xác định exact stage.
+
+Giả thuyết cần đối chiếu: `PrivateApkStore`/ledger từ chối đường dẫn có symlink; Android `getFilesDir()` có thể trả alias thuộc hệ thống `/data/user/0` trong khi canonical trỏ `/data/data`. Không xóa guard trong store để lấy PASS. Bước sửa nhỏ:
+
+1. Trong E11 synthetic service, lấy `getDataDir().getCanonicalFile()` và `getFilesDir().getCanonicalFile()`, kiểm tra thư mục files là con trực tiếp thuộc host-private canonical data. Chỉ truyền path canonical đã xác minh cho `PrivateApkStore`; không mở đường đi ra ngoài data root. Giữ quyền/độ an toàn của store.
+2. Thêm `failure_stage` giới hạn theo công đoạn (PackageManager, APK verifier/store, ledger, native, classloader, resources), không lưu exception message chứa path/tài khoản, không thêm tài khoản thật. Test runtime sẽ chỉ rõ stage để không sửa mò.
+3. Vì probe APK đổi byte, **không dùng hash artifact a9aa như bằng chứng mã mới**. Workflow mới phải build/debug + lint probe và payload từ branch này bằng pinned toolchain/source, ghi hash mới, cài đúng hash đó trên AVD; nguồn trước đã xanh vẫn được giữ làm baseline. Không gọi công việc build source là runtime PASS.
+4. Chạy lại AOSP x86_64 KVM một lượt bounded, lưu receipt/artifact kể cả FAIL. Nếu lỗi tiếp theo, sửa theo stage và bằng chứng, không hạ assertion hoặc chuyển sang app gốc để giả guest.
