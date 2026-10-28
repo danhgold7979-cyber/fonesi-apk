@@ -27,7 +27,7 @@
             android:label="Fonesi E21 signed synthetic split test" />
         <activity android:name=".SyntheticGuestUiProbeActivity" android:exported="true"
             android:process=":fonesi_guest_ui"
-            android:configChanges="orientation|screenSize|smallestScreenSize|keyboardHidden|keyboard|navigation|screenLayout|uiMode|density|locale|layoutDirection|fontScale|colorMode"
+            android:configChanges="orientation|screenSize|smallestScreenSize|keyboardHidden|keyboard|navigation|screenLayout|uiMode|density|locale|layoutDirection|fontScale|colorMode|assetsPaths|grammaticalGender"
             android:label="Fonesi E24 private signed View test" />
         <service android:name=".SplitCodeProbeService" android:exported="false"
             android:process=":fonesi_guest_split" />
