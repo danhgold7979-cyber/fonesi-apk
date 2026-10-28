@@ -11,4 +11,8 @@ android {
     }
     compileOptions { sourceCompatibility = JavaVersion.VERSION_21; targetCompatibility = JavaVersion.VERSION_21 }
 }
-dependencies { implementation(project(":engine-source")) }
+dependencies {
+    implementation(project(":engine-source"))
+    implementation(project(":apk-runtime"))
+    implementation(project(":core"))
+}

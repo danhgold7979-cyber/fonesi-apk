@@ -1,0 +1,61 @@
+name: E10 activation source verification
+
+on:
+  push:
+    branches:
+      - develop/guest-runtime-e10-20261028
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: guest-runtime-e10-branch
+  cancel-in-progress: true
+
+jobs:
+  android-and-source:
+    runs-on: ubuntu-latest
+    timeout-minutes: 55
+    env:
+      FONESI_TOOLS_DIR: /tmp/fonesi-tools
+      ANDROID_HOME: /tmp/fonesi-tools/android-sdk
+      ANDROID_SDK_ROOT: /tmp/fonesi-tools/android-sdk
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install pinned verified Android toolchain
+        run: python3 scripts/bootstrap_android.py --accept-sdk-license
+      - name: Verify core, signed APK fixtures, app tests, build and lint
+        run: ./scripts/check.sh
+      - name: Prepare independently pinned source-native dependencies
+        run: python3 scripts/prepare_source_engine.py --install-tools
+      - name: Verify guest source component, JVM tests, native host test and ARM64 AAR
+        run: python3 scripts/check_source_engine.py
+      - name: Build and lint the isolated Android guest-code probe APK
+        run: |
+          ./scripts/gradle.sh -PincludeNativeRuntimeProbe=true -PsourceEngineAbi=x86_64 :native-runtime-probe:assembleDebug :native-runtime-probe:lintDebug --console=plain
+          ./scripts/gradle.sh -PincludeEngineProbe=true :probe-payload:assembleDebug :probe-payload:lintDebug --console=plain
+      - name: Verify on-disk synthetic probe APK outputs
+        run: |
+          test -s native-runtime-probe/build/outputs/apk/debug/native-runtime-probe-debug.apk
+          test -s probe-payload/build/outputs/apk/debug/probe-payload-debug.apk
+          sha256sum native-runtime-probe/build/outputs/apk/debug/native-runtime-probe-debug.apk probe-payload/build/outputs/apk/debug/probe-payload-debug.apk
+      - name: Upload test-only Android probe APKs
+        uses: actions/upload-artifact@v4
+        with:
+          name: fonesi-E11-synthetic-probe-debug
+          path: |
+            native-runtime-probe/build/outputs/apk/debug/native-runtime-probe-debug.apk
+            probe-payload/build/outputs/apk/debug/probe-payload-debug.apk
+          if-no-files-found: error
+          retention-days: 7
+      - name: Report remaining runtime gates honestly
+        run: |
+          echo "Android guest process: NOT RUN"
+          echo "Split guest execution: NOT RUN"
+          echo "Device/account isolation: NOT RUN"

@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Only the project-controlled test payload is visible to the technical probe. -->
+    <queries><package android:name="vn.fonesi.payload" /></queries>
     <application android:allowBackup="false" android:usesCleartextTraffic="false"
         android:label="Fonesi native probe" android:theme="@android:style/Theme.Material.Light.NoActionBar">
         <activity android:name=".MainActivity" android:exported="true">
@@ -10,5 +12,9 @@
         </activity>
         <service android:name=".ProbeService$A" android:exported="false" android:process=":fonesi_guest_a" />
         <service android:name=".ProbeService$B" android:exported="false" android:process=":fonesi_guest_b" />
+        <activity android:name=".GuestCodeProbeActivity" android:exported="true"
+            android:label="Fonesi code image test" />
+        <service android:name=".GuestCodeProbeService" android:exported="false"
+            android:process=":fonesi_guest_loader" />
     </application>
 </manifest>
