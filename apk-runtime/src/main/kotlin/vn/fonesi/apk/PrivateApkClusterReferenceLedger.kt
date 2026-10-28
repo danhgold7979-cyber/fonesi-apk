@@ -62,7 +62,7 @@ class PrivateApkClusterReferenceLedger(root: Path) {
     fun references(clusterId: String): Set<ClusterReference> = withLockedIndex { current ->
         validateClusterId(clusterId)
         current to current.filterTo(linkedSetOf()) { it.clusterId == clusterId }
-    }.second
+    }
 
     fun referencesForOwner(ownerType: ClusterOwnerType, ownerId: String, engineKey: String): Set<ClusterReference> =
         withLockedIndex { current ->
@@ -71,7 +71,7 @@ class PrivateApkClusterReferenceLedger(root: Path) {
             current to current.filterTo(linkedSetOf()) {
                 it.ownerType == ownerType && it.ownerId == ownerId && it.engineKey == engineKey
             }
-        }.second
+        }
 
     /** Dry-run only. Results are candidates for reconciliation, never authorization to delete. */
     fun unreferencedClusterIds(): Set<String> = withLockedIndex { current ->
@@ -90,7 +90,7 @@ class PrivateApkClusterReferenceLedger(root: Path) {
                 .toCollection(sortedSetOf())
         }
         current to candidates
-    }.second
+    }
 
     private fun isPublishedCluster(id: String): Boolean {
         val path = root.resolve(id)
