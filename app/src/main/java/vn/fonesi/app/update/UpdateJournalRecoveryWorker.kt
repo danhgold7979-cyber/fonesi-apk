@@ -25,22 +25,35 @@ class UpdateJournalRecoveryWorker(
         var database: FonesiDatabase? = null
         try {
             val context = applicationContext
-            val updates = File(context.filesDir, "updates").toPath()
             database = FonesiDatabase.open(context)
-            val tasks = RoomUpdateTaskStore(database)
-            // Recovery only calls discard(); SourceCatalog is never consulted in this worker.
-            val snapshots = FileSourceSnapshotter(updates.resolve("snapshots"), SourceCatalog { null })
-            val result = UpdateJournalRecovery(
-                tasks,
-                snapshots,
-                FileQueueLock(updates.resolve("queue.lock")),
-            ).recover()
-            if (!result.lockAcquired || result.retryable) Result.retry() else Result.success()
+            recoverJournal(database, File(context.filesDir, "updates"))
         } catch (_: Exception) {
             // No sensitive task/source details in WorkManager output. A later run may retry safely.
             Result.retry()
         } finally {
             database?.close()
+        }
+    }
+
+    /**
+     * Narrow test seam: the caller supplies an already-open database and private root.
+     * WorkManager input cannot choose either. Production doWork() always opens the fixed
+     * production database and uses applicationContext.filesDir/updates.
+     */
+    internal fun recoverJournal(database: FonesiDatabase, updates: File): Result {
+        return try {
+            val updatesPath = updates.toPath()
+            val tasks = RoomUpdateTaskStore(database)
+            // Recovery only calls discard(); SourceCatalog is never consulted in this worker.
+            val snapshots = FileSourceSnapshotter(updatesPath.resolve("snapshots"), SourceCatalog { null })
+            val result = UpdateJournalRecovery(
+                tasks,
+                snapshots,
+                FileQueueLock(updatesPath.resolve("queue.lock")),
+            ).recover()
+            if (!result.lockAcquired || result.retryable) Result.retry() else Result.success()
+        } catch (_: Exception) {
+            Result.retry()
         }
     }
 }
