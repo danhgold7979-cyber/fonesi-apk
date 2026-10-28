@@ -53,9 +53,6 @@ class UpdateJournalRecoverySchedulerTest {
             scheduler.ensureScheduled(context)
             scheduler.ensureScheduled(context)
 
-            assertTrue("A controlled journal worker should start for scheduling assertions",
-                workerStarted.await(10, TimeUnit.SECONDS))
-
             val startupBeforeRelease = workManager
                 .getWorkInfosForUniqueWork(STARTUP_RECOVERY)
                 .get(10, TimeUnit.SECONDS)
@@ -75,6 +72,12 @@ class UpdateJournalRecoverySchedulerTest {
             assertTrue(periodic.state == WorkInfo.State.ENQUEUED || periodic.state == WorkInfo.State.RUNNING)
             assertTrue("Periodic request must target the journal-only worker",
                 periodic.tags.contains(UpdateJournalRecoveryWorker::class.java.name))
+
+            val testDriver = checkNotNull(WorkManagerTestInitHelper.getTestDriver(context))
+            testDriver.setAllConstraintsMet(startup.id)
+            testDriver.setAllConstraintsMet(periodic.id)
+            assertTrue("A controlled journal worker should start for scheduling assertions",
+                workerStarted.await(10, TimeUnit.SECONDS))
 
             releaseWorker.countDown()
             val completedStartup = awaitStartupCompletion(workManager)
