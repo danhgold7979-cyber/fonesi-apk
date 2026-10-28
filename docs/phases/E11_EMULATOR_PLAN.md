@@ -28,3 +28,7 @@ PASS khi đồng thời: AVD boot hoàn tất và service package/activity sẵn
 Artifact CI `a9aa5a8` có Activity tạo UUID nội bộ; thêm intent `run_id` vào nhánh hiện tại sẽ không tồn tại trong byte APK đã đóng băng. Để không tuyên bố kiểm thử một source khác artifact, **không sửa Activity/probe APK ở lát cắt này**. AVD luôn tạo mới (không reuse), app chưa có bất cứ report nào; sau launch, runner đợi duy nhất một file `<uuid>.json` trong `files/guest-code-probe/` qua `run-as`, xác thực tên UUID khớp trường `run_id`, `complete=true` và đúng dữ liệu test. Trường hợp có 0/nhiều report, UUID lỗi, timeout hoặc APK hash sai đều FAIL. Lượt AVD này chỉ chạy một probe; receipt không thể tái sử dụng từ lần trước vì AVD chưa từng cài app.
 
 Ý tưởng truyền UUID explicit vào Activity thuộc mốc build APK mới về sau; phải build/test lại trước khi dùng, không ghép với artifact cũ.
+
+## Rà đường artifact và AVD trước lượt CI
+
+GitHub upload-artifact có thể giữ cây thư mục tương đối khi tải hai APK từ các module khác nhau. Runner phải tìm **đúng một tệp theo basename** trong artifact đã tải, từ chối duplicate/symlink và so hash SHA-256 trước mọi lệnh Android. Không giả định ZIP phẳng. `avdmanager create avd` có thể hỏi profile tương tác; runner gửi `no` rõ ràng qua stdin và giữ timeout, không treo bước create trên runner CI.
