@@ -256,7 +256,6 @@ public final class SyntheticGuestUiProbeActivity extends Activity {
 
     @Override protected void onDestroy() {
         destroyed = true;
-        preparationStage = "activity_on_destroy";
         String verificationStage = "final_guest_event";
         try {
             record("DESTROY");
