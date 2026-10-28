@@ -108,6 +108,18 @@ class PrivateApkStoreTest {
         }
     }
 
+    @Test fun replacedReferenceRootIsRejectedBeforeCreatingLockOutsideRoot() {
+        val ledgerRoot = temporary.root.toPath().resolve("reference-root")
+        Files.createDirectory(ledgerRoot)
+        val ledger = PrivateApkClusterReferenceLedger(ledgerRoot)
+        val moved = temporary.root.toPath().resolve("reference-root-original")
+        Files.move(ledgerRoot, moved)
+        Files.createSymbolicLink(ledgerRoot, moved)
+        assertThrows(Exception::class.java) { ledger.unreferencedClusterIds() }
+        assertFalse("Must not create a lock file through a replaced symlink root",
+            Files.exists(moved.resolve(".cluster-references.lock")))
+    }
+
     @Test fun corruptReferenceIndexFailsClosedWithoutDeletingPublishedCluster() {
         val published = cluster()
         val ledger = PrivateApkClusterReferenceLedger(root)
