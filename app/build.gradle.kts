@@ -66,6 +66,7 @@ ksp { arg("room.schemaLocation", "$projectDir/schemas") }
 dependencies {
     implementation(project(":apk-runtime"))
     implementation("androidx.biometric:biometric:1.1.0")
+    implementation("androidx.work:work-runtime-ktx:2.10.2")
     implementation("androidx.fragment:fragment-ktx:1.8.8")
     if (candidate) {
         implementation(files(sdkFile))
