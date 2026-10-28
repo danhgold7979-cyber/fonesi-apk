@@ -56,10 +56,11 @@ def main():
     parser.add_argument("--expected-split-base-sha256")
     parser.add_argument("--expected-split-feature-sha256")
     parser.add_argument("--expected-split-dependent-sha256")
+    parser.add_argument("--expected-split-config-sha256")
     parser.add_argument("--source-commit", default="a9aa5a8d53b0c82eabcc071fd0e0fa19fdcc612c")
     parser.add_argument("--boot-timeout", type=int, default=480)
     parser.add_argument("--probe-timeout", type=int, default=180)
-    parser.add_argument("--proof-level", choices=("e11", "e12", "e13", "e14", "e15", "e16", "e17", "e21", "e22"), default="e11",
+    parser.add_argument("--proof-level", choices=("e11", "e12", "e13", "e14", "e15", "e16", "e17", "e21", "e22", "e23"), default="e11",
                         help="E13 additionally verifies independent synthetic native file/SQLite routes")
     args = parser.parse_args()
     if args.boot_timeout not in range(30, 601) or args.probe_timeout not in range(15, 301):
@@ -67,15 +68,18 @@ def main():
     for digest in (args.expected_probe_sha256, args.expected_payload_sha256):
         if re.fullmatch(r"[0-9a-f]{64}", digest) is None:
             parser.error("Expected SHA-256 must be 64 lowercase hexadecimal characters")
-    if args.proof_level in ("e21", "e22"):
+    if args.proof_level in ("e21", "e22", "e23"):
         if args.split_fixture_dir is None:
             parser.error("E21 must specify its dedicated fixture directory")
         for digest in (args.expected_split_base_sha256, args.expected_split_feature_sha256):
             if not digest or re.fullmatch(r"[0-9a-f]{64}", digest) is None:
                 parser.error("Split proof requires exact SHA-256 for base and feature APKs")
-        if args.proof_level == "e22" and (not args.expected_split_dependent_sha256 or
+        if args.proof_level in ("e22", "e23") and (not args.expected_split_dependent_sha256 or
                 re.fullmatch(r"[0-9a-f]{64}", args.expected_split_dependent_sha256) is None):
-            parser.error("E22 requires an exact SHA-256 for the dependent beta APK")
+            parser.error("E22/E23 requires an exact SHA-256 for the dependent beta APK")
+        if args.proof_level == "e23" and (not args.expected_split_config_sha256 or
+                re.fullmatch(r"[0-9a-f]{64}", args.expected_split_config_sha256) is None):
+            parser.error("E23 requires exact SHA-256 for the signed config split APK")
     if re.fullmatch(r"[0-9a-f]{40}", args.source_commit) is None:
         parser.error("Source commit must be a full Git SHA-1")
     env = environment()
@@ -102,6 +106,7 @@ def main():
         "android_private_isolated_split_resources_verified": False,
         "android_dependent_feature_code_verified": False,
         "android_dependent_feature_resources_verified": False,
+        "android_feature_configuration_locale_verified": False,
         "social_apps_tested": False,
         "samsung_or_physical_device_tested": False,
     }
@@ -141,21 +146,26 @@ def main():
         split_base = None
         split_feature = None
         split_dependent = None
-        if args.proof_level in ("e21", "e22"):
+        split_config = None
+        if args.proof_level in ("e21", "e22", "e23"):
             stage = "verify signed synthetic split APK input"
             fixture_dir = args.split_fixture_dir.resolve()
             split_base = fixture_dir / "synthetic-split-base.apk"
             split_feature = fixture_dir / "synthetic-split-feature.apk"
             split_dependent = fixture_dir / "synthetic-split-dependent.apk"
+            split_config = fixture_dir / "synthetic-split-config.apk"
             members = [("base", split_base, args.expected_split_base_sha256),
                        ("feature", split_feature, args.expected_split_feature_sha256)]
-            if args.proof_level == "e22":
+            if args.proof_level in ("e22", "e23"):
                 members.append(("dependent", split_dependent, args.expected_split_dependent_sha256))
+            if args.proof_level == "e23":
+                members.append(("config", split_config, args.expected_split_config_sha256))
             for label, file, expected in members:
                 if not file.is_file() or file.is_symlink() or sha256(file) != expected:
                     raise RuntimeError("E21 signed " + label + " APK hash mismatch")
-            fixture_receipt = fixture_dir / ("dependency-checksums.json" if args.proof_level == "e22"
-                                             else "checksums.json")
+            receipt_name = {"e21": "checksums.json", "e22": "dependency-checksums.json",
+                            "e23": "config-checksums.json"}[args.proof_level]
+            fixture_receipt = fixture_dir / receipt_name
             if not fixture_receipt.is_file() or fixture_receipt.is_symlink():
                 raise RuntimeError("E21 fixture checksum manifest missing")
             source_receipt = json.loads(fixture_receipt.read_text(encoding="utf-8"))
@@ -164,7 +174,19 @@ def main():
                     source_receipt.get("base_sha256") != args.expected_split_base_sha256 or
                     source_receipt.get("feature_sha256") != args.expected_split_feature_sha256):
                 raise RuntimeError("Synthetic split fixture receipt does not match exact input APKs")
-            if args.proof_level == "e22":
+            if args.proof_level == "e23":
+                if (source_receipt.get("version") != 1 or
+                        source_receipt.get("config_name") != "feature.alpha.fr" or
+                        source_receipt.get("config_for") != "feature.alpha" or
+                        source_receipt.get("has_config_code") is not False or
+                        source_receipt.get("third_party_accounts_tested") is not False or
+                        source_receipt.get("production_guest_engine_enabled") is not False or
+                        source_receipt.get("dependent_sha256") != args.expected_split_dependent_sha256 or
+                        source_receipt.get("config_sha256") != args.expected_split_config_sha256):
+                    raise RuntimeError("E23 signed config fixture manifest is not an exact match")
+                evidence["split_config_sha256"] = args.expected_split_config_sha256
+                evidence["split_dependent_sha256"] = args.expected_split_dependent_sha256
+            elif args.proof_level == "e22":
                 if (source_receipt.get("parent") != "feature.alpha" or
                         source_receipt.get("dependent") != "feature.beta" or
                         source_receipt.get("production_guest_engine_enabled") is not False or
@@ -248,11 +270,13 @@ def main():
             if installed.returncode or "Success" not in installed.stdout:
                 raise RuntimeError("Synthetic APK install failed")
         evidence["android_apks_installed"] = True
-        if args.proof_level in ("e21", "e22"):
+        if args.proof_level in ("e21", "e22", "e23"):
             stage = "install exact signed isolated synthetic split members"
             install_members = [split_base, split_feature]
-            if args.proof_level == "e22":
+            if args.proof_level in ("e22", "e23"):
                 install_members.append(split_dependent)
+            if args.proof_level == "e23":
+                install_members.append(split_config)
             installed = device("install-multiple", "-r", *install_members, timeout=90, check=False)
             if installed.returncode or "Success" not in installed.stdout:
                 raise RuntimeError("Android PackageManager rejected the signed isolated split APK fixture")
@@ -263,7 +287,7 @@ def main():
             evidence["android_isolated_fixture_installed"] = True
         save()
 
-        if args.proof_level in ("e21", "e22"):
+        if args.proof_level in ("e21", "e22", "e23"):
             stage = "dispatch dedicated isolated synthetic split Activity"
             expected_run_id = str(uuid.uuid4())
             started = device("shell", "am", "start", "-W", "-n",
@@ -301,7 +325,7 @@ def main():
         deadline = time.monotonic() + args.probe_timeout
         report = None
         while time.monotonic() < deadline:
-            if args.proof_level in ("e21", "e22"):
+            if args.proof_level in ("e21", "e22", "e23"):
                 raw = device("exec-out", "run-as", PROBE_PACKAGE, "cat",
                              "files/split-code-probe/" + expected_run_id + ".json",
                              timeout=12, check=False)
@@ -369,7 +393,7 @@ def main():
             time.sleep(2)
         if report is None:
             raise RuntimeError("No complete Android synthetic receipt before timeout")
-        if args.proof_level in ("e21", "e22"):
+        if args.proof_level in ("e21", "e22", "e23"):
             (reports / "isolated-split-receipt.json").write_text(json.dumps(report, indent=2) + "\n")
             required_true = ("complete", "passed", "private_split_graph_verified",
                              "private_isolated_base_code_executed", "private_isolated_feature_code_executed",
@@ -382,18 +406,28 @@ def main():
                 raise RuntimeError("E21 isolated split signed APK loader/resource assertions failed")
             if report.get("proof_level") != args.proof_level:
                 raise RuntimeError("Signed split receipt proof level mismatch")
-            if args.proof_level == "e22" and not all(report.get(key) is True for key in (
+            if args.proof_level in ("e22", "e23") and not all(report.get(key) is True for key in (
                     "private_dependency_graph_verified",
                     "private_dependent_feature_code_executed",
                     "private_dependent_resources_verified")):
                 raise RuntimeError("E22 dependent parent DEX/resources proof missing")
+            if args.proof_level == "e23" and not all(report.get(key) is True for key in (
+                    "private_config_graph_verified", "private_feature_config_locale_verified")):
+                raise RuntimeError("E23 signed private feature config locale/resource assertions failed")
             if (report.get("process_name") != PROBE_PACKAGE + ":fonesi_guest_split" or
                     report.get("api") != 34 or type(report.get("pid")) is not int or
                     report["pid"] <= 0 or type(report.get("uid")) is not int or report["uid"] < 0):
                 raise RuntimeError("E21 split process/API/UID proof is invalid")
             evidence["android_private_isolated_split_code_verified"] = True
             evidence["android_private_isolated_split_resources_verified"] = True
-            if args.proof_level == "e22":
+            if args.proof_level == "e23":
+                evidence["android_dependent_feature_code_verified"] = True
+                evidence["android_dependent_feature_resources_verified"] = True
+                evidence["android_feature_configuration_locale_verified"] = True
+                evidence["result"] = "PASS_E23_SIGNED_SYNTHETIC_ALPHA_CONFIG_RESOURCES_ONLY"
+                print("PASS: Android 34 verified signed private alpha-targeted French config resources "
+                      "and base/alpha/beta DEX parent calls. No third-party accounts tested.", flush=True)
+            elif args.proof_level == "e22":
                 evidence["android_dependent_feature_code_verified"] = True
                 evidence["android_dependent_feature_resources_verified"] = True
                 evidence["result"] = "PASS_E22_SIGNED_SYNTHETIC_DEPENDENT_FEATURE_ONLY"
