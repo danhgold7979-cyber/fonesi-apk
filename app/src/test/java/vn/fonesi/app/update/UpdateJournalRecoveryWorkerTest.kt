@@ -20,6 +20,8 @@ import vn.fonesi.core.update.TaskState
 import vn.fonesi.core.update.UpdateTask
 import java.io.File
 import java.util.UUID
+import java.util.concurrent.Callable
+import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 
 @RunWith(RobolectricTestRunner::class)
@@ -35,20 +37,26 @@ class UpdateJournalRecoveryWorkerTest {
 
     @Test fun workerRecoversRealRoomRowsAndPrivateSnapshotsIdempotently() {
         val context = ApplicationProvider.getApplicationContext<Context>()
+        val io = Executors.newSingleThreadExecutor()
         val suffix = UUID.randomUUID().toString()
         val databaseName = "e27-$suffix.db"
         val testRoot = File(context.filesDir, "e27-$suffix/updates")
         val snapshotsRoot = File(testRoot, "snapshots")
-        val db = FonesiDatabase.open(context, databaseName)
+        val db = onIo(io) { FonesiDatabase.open(context, databaseName) }
         try {
             val store = RoomUpdateTaskStore(db)
-            val preparing = seed(store, TaskState.PREPARING)
-            val applying = seed(store, TaskState.APPLYING)
-            val verifying = seed(store, TaskState.VERIFYING)
-            val review = seed(store, TaskState.REVIEW_REQUIRED)
-            val queued = seed(store, TaskState.QUEUED)
-            val failed = seed(store, TaskState.FAILED)
-            val cancelled = seed(store, TaskState.CANCELLED)
+            val seeded = onIo(io) {
+                val preparing = seed(store, TaskState.PREPARING)
+                val applying = seed(store, TaskState.APPLYING)
+                val verifying = seed(store, TaskState.VERIFYING)
+                val review = seed(store, TaskState.REVIEW_REQUIRED)
+                val queued = seed(store, TaskState.QUEUED)
+                val failed = seed(store, TaskState.FAILED)
+                val cancelled = seed(store, TaskState.CANCELLED)
+                store.setPaused(true)
+                listOf(preparing, applying, verifying, review, queued, failed, cancelled)
+            }
+            val (preparing, applying, verifying, review, queued, failed, cancelled) = seeded
 
             File(snapshotsRoot, preparing.id).apply {
                 mkdirs()
@@ -60,13 +68,12 @@ class UpdateJournalRecoveryWorkerTest {
                     File(this, "prepared.apk").writeText("synthetic prepared snapshot")
                 }
             }
-            store.setPaused(true)
 
             val worker = TestListenableWorkerBuilder<UpdateJournalRecoveryWorker>(context).build()
-            val first = worker.recoverJournal(db, testRoot)
+            val first = onIo(io) { worker.recoverJournal(db, testRoot) }
             assertTrue("Expected successful recovery", first is ListenableWorker.Result.Success)
 
-            val recovered = store.list().associateBy { it.id }
+            val recovered = onIo(io) { store.list().associateBy { it.id } }
             assertEquals(TaskState.QUEUED, recovered.getValue(preparing.id).state)
             assertEquals(preparing.revision + 1, recovered.getValue(preparing.id).revision)
             assertTrue(recovered.getValue(preparing.id).affectedIds.isEmpty())
@@ -87,19 +94,20 @@ class UpdateJournalRecoveryWorkerTest {
             assertEquals(queued, recovered.getValue(queued.id))
             assertEquals(failed, recovered.getValue(failed.id))
             assertEquals(cancelled, recovered.getValue(cancelled.id))
-            assertTrue("Recovery must preserve the user's paused queue", store.isPaused())
+            assertTrue("Recovery must preserve the user's paused queue", onIo(io) { store.isPaused() })
 
-            val afterFirstRun = store.list().associateBy { it.id }
+            val afterFirstRun = recovered
             val secondWorker = TestListenableWorkerBuilder<UpdateJournalRecoveryWorker>(context).build()
-            val second = secondWorker.recoverJournal(db, testRoot)
+            val second = onIo(io) { secondWorker.recoverJournal(db, testRoot) }
             assertTrue(second is ListenableWorker.Result.Success)
             assertEquals("Second recovery must be idempotent", afterFirstRun,
-                store.list().associateBy { it.id })
-            assertTrue(store.isPaused())
+                onIo(io) { store.list().associateBy { it.id } })
+            assertTrue(onIo(io) { store.isPaused() })
         } finally {
-            db.close()
+            onIo(io) { db.close() }
             context.deleteDatabase(databaseName)
             testRoot.parentFile?.deleteRecursively()
+            io.shutdownNow()
         }
     }
 
@@ -117,6 +125,9 @@ class UpdateJournalRecoveryWorkerTest {
         assertTrue(source.contains("internal fun recoverJournal"))
         assertTrue(!source.contains("inputData"))
     }
+
+    private fun <T> onIo(io: java.util.concurrent.ExecutorService, task: () -> T): T =
+        io.submit(Callable(task)).get(30, TimeUnit.SECONDS)
 
     private fun seed(store: RoomUpdateTaskStore, initial: TaskState): UpdateTask {
         val now = System.currentTimeMillis()
