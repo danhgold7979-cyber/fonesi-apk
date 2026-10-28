@@ -1,9 +1,11 @@
 #!/usr/bin/env python3
 """Fail-closed architecture audit for E26 background journal recovery."""
 from pathlib import Path
+import re
 
 ROOT = Path(__file__).resolve().parents[1]
 worker = (ROOT / "app/src/main/java/vn/fonesi/app/update/UpdateJournalRecoveryWorker.kt").read_text()
+worker = re.sub(r"/\\*.*?\\*/|//[^\\n]*", "", worker, flags=re.DOTALL)
 application = (ROOT / "app/src/main/java/vn/fonesi/app/FonesiApplication.kt").read_text()
 manager = (ROOT / "app/src/main/java/vn/fonesi/app/MainActivity.kt").read_text()
 candidate = (ROOT / "app/src/candidate/java/vn/fonesi/app/runtime/RuntimeBindings.kt").read_text()
