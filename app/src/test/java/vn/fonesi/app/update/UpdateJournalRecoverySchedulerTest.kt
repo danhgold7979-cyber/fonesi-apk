@@ -72,6 +72,8 @@ class UpdateJournalRecoverySchedulerTest {
             val periodicAfterReentry = workManager
                 .getWorkInfosForUniqueWork(PERIODIC_RECOVERY)
                 .get(10, TimeUnit.SECONDS)
+            assertTrue("Periodic recovery must remain scheduled after another manager entry",
+                periodicAfterReentry.isNotEmpty())
             assertTrue("Periodic recovery remains unique after another manager entry",
                 periodicAfterReentry.count { !it.state.isFinished } <= 1)
         } finally {
