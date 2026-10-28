@@ -66,7 +66,7 @@ required_scheduler_test_evidence = (
     "scheduler.schedule(workManager)",
     "Two unlocked entries must keep at most one unfinished startup request",
     "Repeated calls must keep at most one unfinished periodic request",
-    "later unlocked manager entry must enqueue fresh startup reconciliation after completion",
+    "later unlocked manager entry must enqueue fresh startup reconciliation after a terminal request",
     "WorkManagerTestInitHelper.ExecutorsMode.PRESERVE_EXECUTORS",
     "cancelWorkById(requestToFinish.id)",
     "afterReentry.any { it.id !in priorIds }",
