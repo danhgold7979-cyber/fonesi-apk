@@ -1,12 +1,10 @@
 package vn.fonesi.engine
 
-import android.content.BroadcastReceiver
 import android.content.ComponentName
 import android.content.ContentResolver
 import android.content.Context
 import android.content.ContextWrapper
 import android.content.Intent
-import android.content.IntentFilter
 import android.content.ServiceConnection
 import android.content.SharedPreferences
 import android.content.pm.ApplicationInfo
@@ -37,7 +35,7 @@ class SyntheticGuestScopedContext(
         require(it == cloneId) { "Clone ID must be canonical" }
     }
     private val owned = host.dataDir.canonicalFile
-    private val scope = ownedDirectory(File(host.noBackupFilesDir.canonicalFile, "source-guest-scopes/$id"))
+    private val scope by lazy { ownedDirectory(File(host.noBackupFilesDir.canonicalFile, "source-guest-scopes/$id")) }
     private val filename = Regex("[a-zA-Z0-9_][a-zA-Z0-9_.-]{0,63}")
 
     init {
@@ -63,14 +61,14 @@ class SyntheticGuestScopedContext(
     override fun getFileStreamPath(name: String): File = checkedFile(filesDir, name)
     override fun openFileInput(name: String): FileInputStream = FileInputStream(checkedFile(filesDir, name))
     override fun openFileOutput(name: String, mode: Int): FileOutputStream {
-        require(mode == MODE_PRIVATE) { "Synthetic file IO only supports MODE_PRIVATE" }
+        require(mode == Context.MODE_PRIVATE) { "Synthetic file IO only supports MODE_PRIVATE" }
         return FileOutputStream(checkedFile(filesDir, name))
     }
     override fun deleteFile(name: String): Boolean = checkedFile(filesDir, name).delete()
     override fun getDatabasePath(name: String): File = checkedFile(childDirectory("databases"), name)
 
     override fun getSharedPreferences(name: String, mode: Int): SharedPreferences {
-        require(mode == MODE_PRIVATE) { "Synthetic preferences must use MODE_PRIVATE" }
+        require(mode == Context.MODE_PRIVATE) { "Synthetic preferences must use MODE_PRIVATE" }
         checkName(name)
         // Persist only under a namespaced host-owned preference file. Same UID means this is
         // logical separation, not a process/UID security boundary.
