@@ -1,0 +1,82 @@
+name: E26 background-safe durable journal recovery
+
+on:
+  push:
+    branches:
+      - phase/e21-android-split-code-proof-20261028
+    paths:
+      - ".github/workflows/e26-background-recovery.yml"
+      - "app/src/main/java/vn/fonesi/app/FonesiApplication.kt"
+      - "app/src/main/java/vn/fonesi/app/MainActivity.kt"
+      - "app/src/main/java/vn/fonesi/app/update/UpdateJournalRecoveryWorker.kt"
+      - "app/src/candidate/java/vn/fonesi/app/runtime/RuntimeBindings.kt"
+      - "app/src/test/java/vn/fonesi/app/update/UpdateJournalRecoveryWorkerTest.kt"
+      - "app/build.gradle.kts"
+      - "core/src/main/kotlin/vn/fonesi/core/update/**"
+      - "core/src/test/kotlin/vn/fonesi/core/update/**"
+      - "scripts/audit_journal_worker.py"
+      - "scripts/verify_main_build.py"
+      - "scripts/verify_candidate_build.py"
+      - "scripts/check.sh"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: fonesi-e26-journal-recovery-v1
+  cancel-in-progress: true
+
+jobs:
+  journal-recovery-and-app-audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      FONESI_TOOLS_DIR: /tmp/fonesi-tools
+      ANDROID_HOME: /tmp/fonesi-tools/android-sdk
+      ANDROID_SDK_ROOT: /tmp/fonesi-tools/android-sdk
+    steps:
+      - name: Checkout exact cumulative E26 source
+        uses: actions/checkout@v4
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Audit background-only architecture and validate Python source
+        run: |
+          python3 -m py_compile scripts/audit_journal_worker.py scripts/verify_main_build.py scripts/verify_candidate_build.py
+          python3 scripts/audit_journal_worker.py
+      - name: Bootstrap pinned Android SDK36 and JDK21
+        run: python3 scripts/bootstrap_android.py --accept-sdk-license
+      - name: Run core, APK auditor, Robolectric worker tests, cloud build and exact APK audit
+        run: ./scripts/check.sh
+      - name: Build and audit the opt-in candidate separately
+        run: ./scripts/check.sh --with-engine-candidate
+      - name: Verify both audited APK reports exist and keep product boundary explicit
+        run: |
+          test -s app/build/reports/cloud-verification.json
+          test -s app/build/reports/candidate-verification.json
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          cloud=json.loads(Path("app/build/reports/cloud-verification.json").read_text())
+          candidate=json.loads(Path("app/build/reports/candidate-verification.json").read_text())
+          assert cloud["engine_runtime_verified"] is False
+          assert candidate["engine_runtime_verified"] is False
+          assert cloud["version_name"] == "0.5.0-cloud"
+          assert candidate["version"] == "0.5.0-candidate"
+          print("PASS: cloud and candidate APKs separately built, signed, tested and manifest-audited.")
+          print("NOT VERIFIED: physical-device clone lifecycle, third-party accounts, session isolation or release signing.")
+          PY
+      - name: Upload debug-only build verification receipts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: fonesi-E26-journal-recovery-debug-verification-TEST-ONLY
+          path: |
+            app/build/reports/cloud-verification.json
+            app/build/reports/candidate-verification.json
+            app/build/test-results/testDebugUnitTest/TEST-*.xml
+            core/build/test-results/test/TEST-*.xml
+          if-no-files-found: warn
+          retention-days: 7
