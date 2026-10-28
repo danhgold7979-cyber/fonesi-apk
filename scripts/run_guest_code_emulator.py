@@ -123,7 +123,7 @@ def main():
         save()
         created = run([manager, "create", "avd", "--name", avd,
                        "--package", SDK_IMAGE, "--device", "pixel_6"],
-                      timeout=90, check=False, input_data="no\\n")
+                      timeout=90, check=False, input_data="no\n")
         if created.returncode:
             (reports / "avd-create.log").write_text(created.stderr[-8000:] + created.stdout[-4000:])
             raise RuntimeError("AOSP AVD creation failed")
