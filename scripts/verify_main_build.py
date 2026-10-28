@@ -39,7 +39,6 @@ def main():
         "android.permission.USE_BIOMETRIC", "android.permission.USE_FINGERPRINT",
         "android.permission.ACCESS_NETWORK_STATE", "android.permission.WAKE_LOCK",
         "android.permission.RECEIVE_BOOT_COMPLETED", "android.permission.FOREGROUND_SERVICE",
-        "android.permission.FOREGROUND_SERVICE_DATA_SYNC",
     }
     if permissions != expected_permissions:
         raise RuntimeError(f"Unexpected permissions in the main APK: {sorted(permissions ^ expected_permissions)}")
