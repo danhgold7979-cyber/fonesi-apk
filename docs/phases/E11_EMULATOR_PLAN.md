@@ -32,3 +32,7 @@ Artifact CI `a9aa5a8` có Activity tạo UUID nội bộ; thêm intent `run_id` 
 ## Rà đường artifact và AVD trước lượt CI
 
 GitHub upload-artifact có thể giữ cây thư mục tương đối khi tải hai APK từ các module khác nhau. Runner phải tìm **đúng một tệp theo basename** trong artifact đã tải, từ chối duplicate/symlink và so hash SHA-256 trước mọi lệnh Android. Không giả định ZIP phẳng. `avdmanager create avd` có thể hỏi profile tương tác; runner gửi `no` rõ ràng qua stdin và giữ timeout, không treo bước create trên runner CI.
+
+## Bằng chứng lỗi Android có giới hạn
+
+Nếu Android khởi động được nhưng runtime/biên nhận không đạt, chỉ thu logcat `AndroidRuntime:E`, `FonesiNativeProbe:E` và `libc:F` từ AVD mới tạo, giới hạn 64 KiB và không chứa dữ liệu tài khoản (AVD chỉ cài hai APK synthetic). Không lấy full logcat, cookie, thông báo người dùng hay thông tin mạng xã hội. Lỗi phải giữ nguyên trạng thái FAIL/BLOCKED và không tự gọi `confirmFromRuntimeReadback`.
