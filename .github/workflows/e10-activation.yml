@@ -32,6 +32,10 @@ jobs:
         run: python3 scripts/prepare_source_engine.py --install-tools
       - name: Verify guest source component, JVM tests, native host test and ARM64 AAR
         run: python3 scripts/check_source_engine.py
+      - name: Build and lint the isolated Android guest-code probe APK
+        run: |
+          ./scripts/gradle.sh -PincludeNativeRuntimeProbe=true -PsourceEngineAbi=x86_64 :native-runtime-probe:assembleDebug :native-runtime-probe:lintDebug --console=plain
+          ./scripts/gradle.sh -PincludeEngineProbe=true :probe-payload:assembleDebug :probe-payload:lintDebug --console=plain
       - name: Report remaining runtime gates honestly
         run: |
           echo "Android guest process: NOT RUN"
