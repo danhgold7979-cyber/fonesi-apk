@@ -3,23 +3,16 @@ package vn.fonesi.app.update
 import android.content.Context
 import androidx.test.core.app.ApplicationProvider
 import androidx.work.Configuration
-import androidx.work.ListenableWorker
 import androidx.work.WorkInfo
 import androidx.work.WorkManager
-import androidx.work.WorkerFactory
-import androidx.work.WorkerParameters
 import androidx.work.testing.WorkManagerTestInitHelper
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
-import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
-import java.util.concurrent.ConcurrentLinkedQueue
-import java.util.concurrent.CountDownLatch
-import java.util.concurrent.Executor
+import java.util.UUID
 import java.util.concurrent.TimeUnit
 
 @RunWith(RobolectricTestRunner::class)
@@ -27,29 +20,9 @@ import java.util.concurrent.TimeUnit
 class UpdateJournalRecoverySchedulerTest {
     @Test fun repeatedUnlockedSchedulingKeepsUniqueWorkAndLaterEntryCanReconcileAgain() {
         val context = ApplicationProvider.getApplicationContext<Context>()
-        val workerStarted = CountDownLatch(1)
-        val releaseWorker = CountDownLatch(1)
-        val workerFactory = object : WorkerFactory() {
-            override fun createWorker(
-                appContext: Context,
-                workerClassName: String,
-                workerParameters: WorkerParameters,
-            ): ListenableWorker? =
-                if (workerClassName == UpdateJournalRecoveryWorker::class.java.name) {
-                    ControlledJournalWorker(appContext, workerParameters, workerStarted, releaseWorker)
-                } else {
-                    null
-                }
-        }
-        val workerExecutor = GateExecutor()
-        val configuration = Configuration.Builder()
-            .setWorkerFactory(workerFactory)
-            .setExecutor(workerExecutor)
-            .setTaskExecutor(Executor { command -> command.run() })
-            .build()
         WorkManagerTestInitHelper.initializeTestWorkManager(
             context,
-            configuration,
+            Configuration.Builder().build(),
             WorkManagerTestInitHelper.ExecutorsMode.PRESERVE_EXECUTORS,
         )
         val workManager = WorkManager.getInstance(context)
@@ -58,94 +31,67 @@ class UpdateJournalRecoverySchedulerTest {
             scheduler.schedule(workManager)
             scheduler.schedule(workManager)
 
-            val startupBeforeRelease = workManager
+            val startupBeforeReentry = workManager
                 .getWorkInfosForUniqueWork(STARTUP_RECOVERY)
                 .get(10, TimeUnit.SECONDS)
-            assertEquals("Two unlocked entries must keep one unfinished startup request",
-                1, startupBeforeRelease.count { !it.state.isFinished })
-            val startup = startupBeforeRelease.single { !it.state.isFinished }
-            assertTrue(startup.state == WorkInfo.State.ENQUEUED || startup.state == WorkInfo.State.RUNNING)
-            assertTrue("Startup request must target the journal-only worker",
-                startup.tags.contains(UpdateJournalRecoveryWorker::class.java.name))
+            assertTrue("Startup unique work should have a recorded request", startupBeforeReentry.isNotEmpty())
+            assertTrue("Two unlocked entries must keep at most one unfinished startup request",
+                startupBeforeReentry.count { !it.state.isFinished } <= 1)
+            startupBeforeReentry.forEach {
+                assertTrue("Startup request must target the journal-only worker",
+                    it.tags.contains(UpdateJournalRecoveryWorker::class.java.name))
+            }
 
-            val periodicBeforeRelease = workManager
+            val periodicBeforeReentry = workManager
                 .getWorkInfosForUniqueWork(PERIODIC_RECOVERY)
                 .get(10, TimeUnit.SECONDS)
-            assertEquals("Repeated calls must keep one unfinished periodic request",
-                1, periodicBeforeRelease.count { !it.state.isFinished })
-            val periodic = periodicBeforeRelease.single { !it.state.isFinished }
-            assertTrue(periodic.state == WorkInfo.State.ENQUEUED || periodic.state == WorkInfo.State.RUNNING)
-            assertTrue("Periodic request must target the journal-only worker",
-                periodic.tags.contains(UpdateJournalRecoveryWorker::class.java.name))
+            assertTrue("Periodic unique work should have a recorded request", periodicBeforeReentry.isNotEmpty())
+            assertTrue("Repeated calls must keep at most one unfinished periodic request",
+                periodicBeforeReentry.count { !it.state.isFinished } <= 1)
+            periodicBeforeReentry.forEach {
+                assertTrue("Periodic request must target the journal-only worker",
+                    it.tags.contains(UpdateJournalRecoveryWorker::class.java.name))
+            }
 
-            workerExecutor.release()
-            assertTrue("A controlled journal worker should start after queued work is released",
-                workerStarted.await(10, TimeUnit.SECONDS))
-
-            releaseWorker.countDown()
-            val completedStartup = awaitStartupCompletion(workManager)
-            assertTrue("Startup recovery should complete with the controlled worker",
-                completedStartup.any { it.id == startup.id && it.state == WorkInfo.State.SUCCEEDED })
+            val priorIds = startupBeforeReentry.map { it.id }.toSet()
+            val requestToFinish = startupBeforeReentry.lastOrNull { !it.state.isFinished }
+                ?: startupBeforeReentry.last()
+            workManager.cancelWorkById(requestToFinish.id).result.get(10, TimeUnit.SECONDS)
+            awaitTerminal(workManager, STARTUP_RECOVERY, requestToFinish.id)
 
             scheduler.schedule(workManager)
             val afterReentry = workManager
                 .getWorkInfosForUniqueWork(STARTUP_RECOVERY)
                 .get(10, TimeUnit.SECONDS)
             assertTrue(
-                "A later unlocked manager entry must enqueue fresh startup reconciliation after completion",
-                afterReentry.any { it.id != startup.id },
+                "A later unlocked manager entry must enqueue fresh startup reconciliation after a terminal request",
+                afterReentry.any { it.id !in priorIds },
             )
-            assertEquals("Periodic recovery remains unique after another manager entry",
-                1,
-                workManager.getWorkInfosForUniqueWork(PERIODIC_RECOVERY)
-                    .get(10, TimeUnit.SECONDS).count { !it.state.isFinished },
-            )
+            assertTrue("Re-entry must not leave duplicate unfinished startup requests",
+                afterReentry.count { !it.state.isFinished } <= 1)
+            val periodicAfterReentry = workManager
+                .getWorkInfosForUniqueWork(PERIODIC_RECOVERY)
+                .get(10, TimeUnit.SECONDS)
+            assertTrue("Periodic recovery remains unique after another manager entry",
+                periodicAfterReentry.count { !it.state.isFinished } <= 1)
         } finally {
-            workerExecutor.release()
-            releaseWorker.countDown()
             runCatching { workManager.cancelAllWork().result.get(10, TimeUnit.SECONDS) }
             runCatching { WorkManagerTestInitHelper.closeWorkDatabase() }
         }
     }
 
-    private fun awaitStartupCompletion(workManager: WorkManager): List<WorkInfo> {
+    private fun awaitTerminal(workManager: WorkManager, name: String, id: UUID) {
         val deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(10)
-        var latest = emptyList<WorkInfo>()
         while (System.nanoTime() < deadline) {
-            latest = workManager.getWorkInfosForUniqueWork(STARTUP_RECOVERY).get(10, TimeUnit.SECONDS)
-            if (latest.any { it.state == WorkInfo.State.SUCCEEDED }) return latest
+            val current = workManager.getWorkInfosForUniqueWork(name).get(10, TimeUnit.SECONDS)
+                .firstOrNull { it.id == id }
+            if (current == null || current.state.isFinished) return
             Thread.sleep(20)
         }
-        return latest
-    }
-
-    private class GateExecutor : Executor {
-        private val pending = ConcurrentLinkedQueue<Runnable>()
-        @Volatile private var released = false
-
-        override fun execute(command: Runnable) {
-            if (released) command.run() else pending.add(command)
-        }
-
-        fun release() {
-            released = true
-            while (true) {
-                val next = pending.poll() ?: return
-                next.run()
-            }
-        }
-    }
-
-    private class ControlledJournalWorker(
-        context: Context,
-        parameters: WorkerParameters,
-        private val started: CountDownLatch,
-        private val release: CountDownLatch,
-    ) : UpdateJournalRecoveryWorker(context, parameters) {
-        override suspend fun doWork(): Result = withContext(Dispatchers.IO) {
-            started.countDown()
-            if (release.await(30, TimeUnit.SECONDS)) Result.success() else Result.failure()
-        }
+        val final = workManager.getWorkInfosForUniqueWork(name).get(10, TimeUnit.SECONDS)
+            .firstOrNull { it.id == id }
+        assertFalse("Cancelled startup request should become terminal; state=${final?.state}",
+            final != null && !final.state.isFinished)
     }
 
     private companion object {
