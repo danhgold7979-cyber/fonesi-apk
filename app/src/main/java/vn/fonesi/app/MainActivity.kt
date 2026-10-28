@@ -55,6 +55,11 @@ class MainActivity : LockedActivity() {
         setContent {
             val gate by access.state.collectAsStateWithLifecycle()
             AccessGate(gate, { authenticate(AuthPurpose.UNLOCK) }, { authenticate(AuthPurpose.UNLOCK, credentialOnly = true) }) {
+            LaunchedEffect(gate.unlocked) {
+                // SDK activation is allowed only while the manager is visible and access is unlocked.
+                // Background WorkManager recovery never calls RuntimeBindings.attach().
+                if (gate.unlocked) RuntimeBindings.attach(applicationContext)
+            }
             LaunchedEffect(Unit) { model.refresh() }
             LaunchedEffect(Unit) {
                 lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
