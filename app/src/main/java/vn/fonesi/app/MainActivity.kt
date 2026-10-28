@@ -30,6 +30,7 @@ import vn.fonesi.app.configuration.*
 import androidx.activity.result.contract.ActivityResultContracts
 import android.content.Intent
 import vn.fonesi.app.update.UpdatePreviewDialog
+import vn.fonesi.app.update.UpdateJournalRecoveryScheduler
 import vn.fonesi.core.*
 import vn.fonesi.app.update.AutomaticUpdatesCard
 import androidx.lifecycle.Lifecycle
@@ -58,7 +59,10 @@ class MainActivity : LockedActivity() {
             LaunchedEffect(gate.unlocked) {
                 // SDK activation is allowed only while the manager is visible and access is unlocked.
                 // Background WorkManager recovery never calls RuntimeBindings.attach().
-                if (gate.unlocked) RuntimeBindings.attach(applicationContext)
+                if (gate.unlocked) {
+                    UpdateJournalRecoveryScheduler.ensureScheduled(applicationContext)
+                    RuntimeBindings.attach(applicationContext)
+                }
             }
             LaunchedEffect(Unit) { model.refresh() }
             LaunchedEffect(Unit) {
