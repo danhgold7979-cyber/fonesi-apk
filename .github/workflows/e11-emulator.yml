@@ -1,0 +1,82 @@
+name: E11 real Android code-image proof (synthetic)
+
+on:
+  push:
+    branches:
+      - phase/e11-emulator-proof-20261028
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: fonesi-e11-owned-avd-retry1
+  cancel-in-progress: true
+
+jobs:
+  android-emulator-proof:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      FONESI_TOOLS_DIR: /tmp/fonesi-tools
+      ANDROID_HOME: /tmp/fonesi-tools/android-sdk
+      ANDROID_SDK_ROOT: /tmp/fonesi-tools/android-sdk
+    steps:
+      - name: Checkout isolated E11 runner source
+        uses: actions/checkout@v4
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Validate bounded emulator runner syntax
+        run: python3 -m py_compile scripts/run_guest_code_emulator.py
+      - name: Install pinned Android tools
+        run: python3 scripts/bootstrap_android.py --accept-sdk-license
+      - name: Build and lint the updated synthetic Android probe APKs
+        run: |
+          python3 scripts/prepare_source_engine.py --install-tools
+          ./scripts/gradle.sh -PincludeNativeRuntimeProbe=true -PsourceEngineAbi=x86_64 :native-runtime-probe:assembleDebug :native-runtime-probe:lintDebug --console=plain
+          ./scripts/gradle.sh -PincludeEngineProbe=true :probe-payload:assembleDebug :probe-payload:lintDebug --console=plain
+      - name: Verify fresh APK cryptographic signatures
+        run: |
+          test -s native-runtime-probe/build/outputs/apk/debug/native-runtime-probe-debug.apk
+          test -s probe-payload/build/outputs/apk/debug/probe-payload-debug.apk
+          "$ANDROID_HOME/build-tools/36.0.0/apksigner" verify --verbose native-runtime-probe/build/outputs/apk/debug/native-runtime-probe-debug.apk
+          "$ANDROID_HOME/build-tools/36.0.0/apksigner" verify --verbose probe-payload/build/outputs/apk/debug/probe-payload-debug.apk
+          sha256sum native-runtime-probe/build/outputs/apk/debug/native-runtime-probe-debug.apk probe-payload/build/outputs/apk/debug/probe-payload-debug.apk
+
+      - name: Install only Android 34 AOSP emulator image
+        run: python3 scripts/prepare_native_emulator.py --install --image aosp34
+      - name: Allow KVM for the ephemeral GitHub runner when present
+        run: |
+          if test -e /dev/kvm; then
+            sudo chmod 666 /dev/kvm
+            test -r /dev/kvm
+            test -w /dev/kvm
+          else
+            echo "KVM unavailable: proof will remain BLOCKED, not PASS"
+          fi
+      - name: Boot owned AVD and require actual Android DEX/resources receipt
+        run: |
+          PROBE_SHA="$(sha256sum native-runtime-probe/build/outputs/apk/debug/native-runtime-probe-debug.apk | cut -d' ' -f1)"
+          PAYLOAD_SHA="$(sha256sum probe-payload/build/outputs/apk/debug/probe-payload-debug.apk | cut -d' ' -f1)"
+          python3 scripts/run_guest_code_emulator.py --apk-dir . --expected-probe-sha256 "$PROBE_SHA" --expected-payload-sha256 "$PAYLOAD_SHA" --source-commit "$GITHUB_SHA" --reports .local/e11-emulator --boot-timeout 480 --probe-timeout 180
+      - name: Upload test-only rebuilt synthetic APKs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: fonesi-E11-rebuilt-android-probe
+          path: |
+            native-runtime-probe/build/outputs/apk/debug/native-runtime-probe-debug.apk
+            probe-payload/build/outputs/apk/debug/probe-payload-debug.apk
+          if-no-files-found: warn
+          retention-days: 7
+      - name: Upload sanitized runtime evidence even when Android fails
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: fonesi-E11-android-emulator-evidence
+          path: .local/e11-emulator/
+          if-no-files-found: warn
+          retention-days: 7
