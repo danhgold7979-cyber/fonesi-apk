@@ -1,3 +1,20 @@
+# Fonesi APK — E25 component preflight PASS / E24 lifecycle race fixed (28/10/2026)
+
+**Latest verified technical source SHA:** `d911ee266a92a0c85ec368dbd8df77c0dba6af62`. All five technical CI workflows passed on this exact commit:
+- [E21 #40670347156](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40670347156) — **SUCCESS**
+- [E22 #40670346768](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40670346768) — **SUCCESS**
+- [E23 #40670346702](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40670346702) — **SUCCESS**
+- [E24 #40670346892](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40670346892) — **SUCCESS**
+- [E25 #40670346860](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40670346860) — **SUCCESS**
+
+The E24/E25 failure was diagnosed from actual Android receipts: AOSP34 changed Activity configuration while the test-only private loader was preparing. The runner now waits for stable display/locale values and the synthetic host handles expected configuration changes. Final receipts show the full lifecycle and an attached private View. See [E24 results](phases/E24_SYNTHETIC_SCREEN_RESULTS.md) and [E25 results](phases/E25_PRIVATE_COMPONENT_PREFLIGHT_RESULTS.md).
+
+**Product completion remains ~30% (heuristic 28.00%), not measured or release-ready.** E21–E25 are synthetic runtime tests, not real third-party clone acceptance. The actual guest Activity remains unregistered; process isolation remains same-UID; no social accounts/Samsung ARM64/release APK have passed. The production candidate remains single-APK with `importsSplitApks=false`. The product master plan remains **8 phases / 32 steps**; Phase 1/2 engine/device acceptance is still blocked. Next technical milestone: **E26**, safe durable journal recovery when Fonesi is closed, without background engine initialization or APK import. See [E26 plan](phases/E26_BACKGROUND_JOURNAL_RECOVERY_PLAN.md).
+
+`main@c055df600f87ee9ddf0cd5d6bfc67d80d145e79d` is unchanged. The cumulative source remains in Draft PR #12; do not merge it as a finished product.
+
+---
+
 # Fonesi APK — E24 signed synthetic Android screen proof PASS (28/10/2026)
 
 **Technical E24 PASS** on source `66cd3a1d79fdd505b852db15f6b6213f8d0681a5`: Android 34 host Activity displayed an attached View created from signed private project-owned DEX and relayed the entire CREATE→DESTROY transcript. [E24 CI #40660505892](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40660505892) **SUCCESS**. E21 [#40660505783](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40660505783), E22 [#40660505960](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40660505960), E23 [#40660505786](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40660505786) also **SUCCESS** at this exact code SHA. [E24 detailed results](phases/E24_SYNTHETIC_SCREEN_RESULTS.md).
