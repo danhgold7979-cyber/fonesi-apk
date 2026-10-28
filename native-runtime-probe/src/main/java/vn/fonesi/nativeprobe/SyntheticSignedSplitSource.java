@@ -21,14 +21,23 @@ final class SyntheticSignedSplitSource {
     static final String PACKAGE = "vn.fonesi.splitfixture";
     static final String FEATURE = "feature.alpha";
     static final String DEPENDENT = "feature.beta";
+    static final String CONFIG = "feature.alpha.fr";
     private SyntheticSignedSplitSource() {}
 
     @SuppressWarnings("deprecation")
     static InstalledSource fromInstalled(Context context) throws Exception {
-        return fromInstalled(context, false);
+        return fromInstalled(context, "e21");
     }
 
     static InstalledSource fromInstalled(Context context, boolean withDependent) throws Exception {
+        return fromInstalled(context, withDependent ? "e22" : "e21");
+    }
+
+    static InstalledSource fromInstalled(Context context, String proof) throws Exception {
+        if (!"e21".equals(proof) && !"e22".equals(proof) && !"e23".equals(proof))
+            throw new IllegalArgumentException("Unsupported signed synthetic split verification");
+        boolean withDependent = !"e21".equals(proof);
+        boolean withConfig = "e23".equals(proof);
         PackageManager pm = context.getPackageManager();
         int flags = Build.VERSION.SDK_INT >= 28
             ? PackageManager.GET_SIGNING_CERTIFICATES : PackageManager.GET_SIGNATURES;
@@ -36,7 +45,7 @@ final class SyntheticSignedSplitSource {
         if (!PACKAGE.equals(info.packageName) || info.applicationInfo == null)
             throw new IllegalStateException("Only exact synthetic fixture package accepted");
         ApplicationInfo app = info.applicationInfo;
-        int expected = withDependent ? 2 : 1;
+        int expected = withConfig ? 3 : withDependent ? 2 : 1;
         if (app.sourceDir == null || app.splitSourceDirs == null ||
             app.splitSourceDirs.length != expected || app.splitNames == null ||
             app.splitNames.length != expected) {
@@ -50,6 +59,7 @@ final class SyntheticSignedSplitSource {
         Set<String> expectedFeatures = new LinkedHashSet<>();
         expectedFeatures.add(FEATURE);
         if (withDependent) expectedFeatures.add(DEPENDENT);
+        if (withConfig) expectedFeatures.add(CONFIG);
         if (!byName.keySet().equals(expectedFeatures)) {
             throw new SecurityException("Unexpected synthetic APK split name");
         }
@@ -57,6 +67,7 @@ final class SyntheticSignedSplitSource {
         paths.add(app.sourceDir);
         paths.add(byName.get(FEATURE));
         if (withDependent) paths.add(byName.get(DEPENDENT));
+        if (withConfig) paths.add(byName.get(CONFIG));
         if (paths.stream().anyMatch(p -> p == null || p.isEmpty()) ||
             new java.util.HashSet<>(paths).size() != paths.size())
             throw new SecurityException("Synthetic private input split member paths overlap");
