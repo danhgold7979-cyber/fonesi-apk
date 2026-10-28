@@ -111,14 +111,17 @@ public final class SyntheticGuestUiProbeActivity extends Activity {
             Map<String, File> routes = new LinkedHashMap<>();
             routes.put(src.getPath(), dst);
             NativeRuntime.configure(getApplicationContext(), routes);
-            ProbeData.check(NativeRuntime.state() == NativeRuntime.CONFIGURED);
+            ProbeData.check(NativeRuntime.state() == NativeRuntime.CONFIGURED,
+                "E24 native routing configuration was not accepted");
             NativeRuntime.enable(getApplicationContext());
-            ProbeData.check(NativeRuntime.state() == NativeRuntime.ENABLED);
+            ProbeData.check(NativeRuntime.state() == NativeRuntime.ENABLED,
+                "E24 native routing could not be enabled");
 
             stage = "signed_private_dex_and_resources";
             LoadedGuestCode image = new GuestCodeLoader(getApplicationContext(), localStore)
                 .load(localCluster.getId());
-            ProbeData.check(GUEST_PACKAGE.equals(image.getPackageName()));
+            ProbeData.check(GUEST_PACKAGE.equals(image.getPackageName()),
+                "Signed private payload package mismatch");
             int marker = image.getResources().getIdentifier(
                 "fonesi_guest_code_probe", "string", GUEST_PACKAGE);
             ProbeData.check(marker != 0 && "Fonesi signed private payload".equals(
