@@ -1,0 +1,99 @@
+name: E19 clone style Room migration and combined APK integration
+
+on:
+  push:
+    branches:
+      - phase/e19-clone-style-metadata-20261028
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: fonesi-e19-style-integration-v1
+  cancel-in-progress: true
+
+jobs:
+  audited-android-debug-bundle:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    env:
+      FONESI_TOOLS_DIR: /tmp/fonesi-tools
+      ANDROID_HOME: /tmp/fonesi-tools/android-sdk
+      ANDROID_SDK_ROOT: /tmp/fonesi-tools/android-sdk
+    steps:
+      - name: Checkout E19 clone style source
+        uses: actions/checkout@v4
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install pinned Android 36 toolchain with verified checksums
+        run: python3 scripts/bootstrap_android.py --accept-sdk-license
+      - name: Test fail-closed phone bundle ZIP verification
+        run: |
+          python3 -m py_compile scripts/verify_phone_bundle.py scripts/test_verify_phone_bundle.py
+          python3 -m unittest discover -s scripts -p test_verify_phone_bundle.py -v
+      - name: Test Room v3 to v4 migration, build and audit cloud and candidate
+        run: ./scripts/check.sh --with-engine-candidate
+      - name: Verify native source host and ARM64 JNI private APK image
+        run: |
+          python3 scripts/prepare_source_engine.py --install-tools
+          python3 scripts/check_source_engine.py
+      - name: Produce and cryptographically verify the candidate debug phone-test bundle
+        run: |
+          python3 scripts/build_phone_bundle.py
+          python3 scripts/verify_phone_bundle.py
+      - name: Check synthetic native runtime probe remains separately buildable
+        run: |
+          ./scripts/gradle.sh -PincludeNativeRuntimeProbe=true -PsourceEngineAbi=x86_64 :native-runtime-probe:assembleDebug :native-runtime-probe:lintDebug --console=plain
+          python3 scripts/run_native_probe.py --audit-only
+      - name: Expose exact KSP Room schema 4 for post-build source audit
+        run: |
+          SCHEMA=app/schemas/vn.fonesi.app.storage.FonesiDatabase/4.json
+          test -s "$SCHEMA"
+          echo "FONESI_E19_SCHEMA4_BEGIN"
+          cat "$SCHEMA"
+          echo "FONESI_E19_SCHEMA4_END"
+      - name: Verify no candidate accidentally packages source private guest runtime
+        run: |
+          test -s app/build/outputs/cloud/app-debug.apk
+          test -s app/build/outputs/candidate/fonesi-0.5.0-candidate.apk
+          test -s app/build/outputs/fonesi-0.5.0-phone-test.zip
+          python3 - <<'PY'
+          from pathlib import Path
+          import zipfile
+          cloud = Path("app/build/outputs/cloud/app-debug.apk")
+          candidate = Path("app/build/outputs/candidate/fonesi-0.5.0-candidate.apk")
+          for path in (cloud, candidate):
+              with zipfile.ZipFile(path) as z:
+                  names = z.namelist()
+                  assert not any("libfonesi_runtime.so" in n for n in names), path
+                  assert not any("e16-private-code" in n or "guest-code-images" in n for n in names), path
+          print("PASS: app APKs are isolated from opt-in source-probe native runtime.")
+          PY
+      - name: Upload audited candidate debug APK and checksum evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: fonesi-E19-styled-candidate-0.5.0-DEBUG-NOT-RELEASE
+          path: |
+            app/build/outputs/candidate/fonesi-0.5.0-candidate.apk
+            app/build/outputs/candidate/verification.json
+            app/build/outputs/cloud/app-debug.apk
+            app/build/outputs/cloud/verification.json
+            engine-source/build/reports/source-engine-verification.json
+            app/schemas/vn.fonesi.app.storage.FonesiDatabase/4.json
+          if-no-files-found: error
+          retention-days: 7
+      - name: Upload exactly verified user phone-test bundle as debug test-only artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: fonesi-E19-styled-phone-test-zip-DEBUG-NOT-RELEASE
+          path: app/build/outputs/fonesi-0.5.0-phone-test.zip
+          if-no-files-found: error
+          retention-days: 7
+      - name: Preserve honest product runtime qualification
+        run: |
+          echo "CI integration of candidate source and debug artifacts PASSED."
+          echo "NOT VERIFIED: SpaceCore on physical Samsung, real social apps/accounts,"
+          echo "split guest lifecycle, notifications, update-session safety, or signed release."
