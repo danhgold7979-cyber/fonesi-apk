@@ -1,16 +1,18 @@
-# Fonesi APK — E34 architecture decision complete / E35 provider contract next (29/10/2026)
+# Fonesi APK — E35 contract/threat-model spec complete / E36 private cluster store next (29/10/2026)
 
-**Latest verified technical milestone E29 PASS:** [workflow #40731817711](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40731817711), source SHA `10fc6b623a42b93e5fb62601b2f849c82b1fd471`. This is a signed synthetic component dispatch proof only; the receipt keeps real guest Activity registration, third-party component execution, kernel UID isolation and production clone acceptance false. [E29 results](phases/E29_PRIVATE_COMPONENT_DISPATCH_RESULTS.md).
+**Latest verified technical milestone E29 PASS:** [workflow #40731817711](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40731817711), source SHA `10fc6b623a42b93e5fb62601b2f849c82b1fd471`. This proves signed synthetic component dispatch only; production acceptance flags remain false. [E29 results](phases/E29_PRIVATE_COMPONENT_DISPATCH_RESULTS.md).
 
-**E30–E33 provider/source gates:** SpaceCore does not provide a verified production split-cluster/16 KB contract; inspected alternative engines have incomplete cluster/resource/lifecycle implementation or opaque engine binaries and unresolved source/license/native provenance. No third-party binary was imported or executed. [E30](phases/E30_PROVIDER_FEASIBILITY_RESULTS.md) · [E31](phases/E31_PROVIDER_SHORTLIST_RESULTS.md) · [E32](phases/E32_CANDIDATE_SOURCE_PROVENANCE_RESULTS.md) · [E33](phases/E33_SOURCE_ACQUISITION_RESULTS.md).
+**E30–E33 source/provider gates:** no production provider passed source, license, split, lifecycle, native provenance and isolation criteria. WaxMoon has a documented split-directory API but delegates to opaque `moon.jar`; other candidates have opaque AARs or known architecture/security gaps. No third-party binary was imported. [E30](phases/E30_PROVIDER_FEASIBILITY_RESULTS.md) · [E31](phases/E31_PROVIDER_SHORTLIST_RESULTS.md) · [E32](phases/E32_CANDIDATE_SOURCE_PROVENANCE_RESULTS.md) · [E33](phases/E33_SOURCE_ACQUISITION_RESULTS.md).
 
-**E34 decision:** do not switch to an unaudited provider or commit to a broad first-party runtime rewrite before a precise provider contract and threat model exist. [E34 results](phases/E34_FIRST_PARTY_ENGINE_ARCHITECTURE_RESULTS.md).
+**E34 decision:** do not switch to an unaudited provider or commit to a full first-party runtime rewrite without a contract and threat model. [E34 results](phases/E34_FIRST_PARTY_ENGINE_ARCHITECTURE_RESULTS.md).
 
-**Next phase: E35 — provider contract, threat model and acceptance ADR.** [E35 plan](phases/E35_PROVIDER_CONTRACT_THREAT_MODEL_PLAN.md). Define package-cluster identity, lifecycle contracts, isolation level, update transaction, legal/provenance gates and machine-checkable acceptance evidence before writing engine implementation code.
+**E35 specification complete:** provider contract, threat model, package-cluster format, acceptance matrix and ADR-001 are committed under `docs/engine/`. [E35 results](phases/E35_PROVIDER_CONTRACT_THREAT_MODEL_RESULTS.md). This is architecture specification, not production code or a shipped feature.
+
+**Next phase: E36 — private immutable package-cluster store.** First create a detailed implementation plan, then implement validation/storage only: path containment, file hashes, immutable generations, atomic publish/readback, symlink rejection and safe garbage-collection references. It must not execute guest code or enable split support in SpaceCore.
 
 **E26/E27/E28 PASS:** [E26 #40690951828](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40690951828), [E27 #40719612538](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40719612538), [E28 #40727455497](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40727455497). **E29 PASS:** [#40731817711](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40731817711).
 
-**Product readiness remains ~30% estimated (28.00% weighted rubric), not measured.** The original plan remains 8 product phases / 32 steps. Real third-party clone acceptance remains 0 applications. Technical milestone count is not product completion. See [product progress rubric](PRODUCT_PROGRESS.md).
+**Product readiness remains ~30% estimated (28.00% weighted rubric), not measured.** The original plan remains 8 product phases / 32 steps. Real third-party clone acceptance remains 0 applications. See [product progress rubric](PRODUCT_PROGRESS.md).
 
 `main` remains at `c055df600f87ee9ddf0cd5d6bfc67d80d145e79d`; cumulative work remains on `phase/e21-android-split-code-proof-20261028`; PR #12 remains open. Do not merge this technical branch as a finished product.
 
