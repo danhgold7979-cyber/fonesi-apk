@@ -627,7 +627,8 @@ def main():
             try:
                 filtered = run(
                     [adb, "-s", serial, "logcat", "-d", "-s",
-                     "AndroidRuntime:E", "FonesiNativeProbe:E", "libc:F", "*:S"],
+                     "AndroidRuntime:E", "ActivityTaskManager:W", "ActivityManager:W",
+                     "WindowManager:W", "FonesiNativeProbe:E", "libc:F", "*:S"],
                     timeout=15, check=False,
                 ).stdout
                 (reports / "synthetic-runtime-errors.log").write_text(filtered[-65536:])
