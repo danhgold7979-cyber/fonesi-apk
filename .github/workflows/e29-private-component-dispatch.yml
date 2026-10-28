@@ -91,8 +91,10 @@ jobs:
               --reports ".local/$LEVEL-emulator" \
               --boot-timeout 480 --probe-timeout 180 --proof-level "$LEVEL"
           done
+          export PAYLOAD_SHA
           python3 - <<'PY'
           import json
+          import os
           from pathlib import Path
           e24=json.loads(Path(".local/e24-emulator/synthetic-ui-receipt.json").read_text())
           e25=json.loads(Path(".local/e25-emulator/synthetic-ui-receipt.json").read_text())
@@ -104,7 +106,7 @@ jobs:
           assert e29["proof_level"] == "e29" and e29["passed"] is True
           assert e29["private_component_manifest_verified"] is True
           assert e29["synthetic_component_dispatch_verified"] is True
-          assert e29["dispatch_ticket_private_apk_sha256"] == "$PAYLOAD_SHA"
+          assert e29["dispatch_ticket_private_apk_sha256"] == os.environ["PAYLOAD_SHA"]
           assert e29["real_guest_activity_registered"] is False
           assert e29["actual_guest_activity_attached"] is False
           assert e29["kernel_uid_isolation"] is False
