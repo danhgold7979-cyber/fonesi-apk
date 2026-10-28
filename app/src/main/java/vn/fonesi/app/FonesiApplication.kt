@@ -2,8 +2,5 @@ package vn.fonesi.app
 
 import android.app.Application
 
-/**
- * Process creation must stay side-effect free. Background workers can create this Application
- * while Fonesi is locked/closed; runtime activation is performed only by the visible unlocked UI.
- */
+/** App process startup is inert; runtime activation requires an unlocked foreground Activity. */
 class FonesiApplication : Application()
