@@ -60,6 +60,8 @@ class PrivateApkStoreTest {
         val ledger = PrivateApkClusterReferenceLedger(root)
         assertTrue(ledger.acquire(ref))
         assertFalse(ledger.acquire(ref))
+        assertFalse("Timestamp changes must not duplicate the same logical owner reference",
+            ledger.acquire(ref.copy(createdAtEpochMs = 999L)))
         assertEquals(setOf(ref), PrivateApkClusterReferenceLedger(root).references(published.id))
         assertEquals(setOf(ref), ledger.referencesForOwner(ClusterOwnerType.CLONE, "clone-123", "engine-a"))
         assertTrue(ledger.unreferencedClusterIds().isEmpty())
@@ -70,7 +72,7 @@ class PrivateApkStoreTest {
         val ref = ClusterReference(published.id, ClusterOwnerType.REVIEW_REQUIRED, "task-456", "engine-a", 101L)
         val ledger = PrivateApkClusterReferenceLedger(root)
         assertTrue(ledger.acquire(ref))
-        assertTrue(ledger.release(ref))
+        assertTrue(ledger.release(ref.copy(createdAtEpochMs = 999L)))
         assertFalse(ledger.release(ref))
         assertTrue(ledger.references(published.id).isEmpty())
         assertEquals(setOf(published.id), ledger.unreferencedClusterIds())
