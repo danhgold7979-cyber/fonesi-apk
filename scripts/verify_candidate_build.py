@@ -14,8 +14,10 @@ def main():
     manifest, permissions, signer = inspect_apk(apk, "vn.fonesi.app")
     internal = "vn.fonesi.app.permission.INTERNAL_SDK"
     expected = {internal, "vn.fonesi.app.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION"} | {
-        "android.permission." + name for name in ["INTERNET", "ACCESS_NETWORK_STATE", "CAMERA", "RECORD_AUDIO",
-            "FOREGROUND_SERVICE", "FOREGROUND_SERVICE_SPECIAL_USE", "POST_NOTIFICATIONS", "USE_BIOMETRIC", "USE_FINGERPRINT"]}
+        "android.permission." + name for name in ["INTERNET", "ACCESS_NETWORK_STATE", "WAKE_LOCK",
+            "RECEIVE_BOOT_COMPLETED", "CAMERA", "RECORD_AUDIO", "FOREGROUND_SERVICE",
+            "FOREGROUND_SERVICE_DATA_SYNC", "FOREGROUND_SERVICE_SPECIAL_USE", "POST_NOTIFICATIONS",
+            "USE_BIOMETRIC", "USE_FINGERPRINT"]}
     if permissions != expected:
         raise RuntimeError(f"Unexpected candidate permissions: {sorted(permissions ^ expected)}")
     app = manifest.find("application")
@@ -26,8 +28,12 @@ def main():
         raise RuntimeError("Internal SDK guard must be signature-only")
     public = set()
     guarded = 0
-    system_guards = {("service", "com.fvbox.lib.client.proxy.ProxyJobService"): "android.permission.BIND_JOB_SERVICE",
-        ("receiver", "androidx.profileinstaller.ProfileInstallReceiver"): "android.permission.DUMP"}
+    system_guards = {
+        ("service", "com.fvbox.lib.client.proxy.ProxyJobService"): "android.permission.BIND_JOB_SERVICE",
+        ("receiver", "androidx.profileinstaller.ProfileInstallReceiver"): "android.permission.DUMP",
+        ("service", "androidx.work.impl.background.systemjob.SystemJobService"): "android.permission.BIND_JOB_SERVICE",
+        ("receiver", "androidx.work.impl.background.systemjob.RescheduleReceiver"): "android.permission.RECEIVE_BOOT_COMPLETED",
+    }
     for tag in ["activity", "activity-alias", "service", "provider", "receiver"]:
         for component in app.findall(tag):
             if component.get(A + "exported") != "true": continue
