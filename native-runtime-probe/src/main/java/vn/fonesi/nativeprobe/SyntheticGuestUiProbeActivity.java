@@ -42,7 +42,7 @@ public final class SyntheticGuestUiProbeActivity extends Activity {
     private String runId;
     private String challenge;
     private String proofLevel = "e24";
-    private boolean privateComponentCatalogVerified;
+    private volatile boolean privateComponentCatalogVerified;
     private Class<?> privateEntrypoint;
     private PrivateApkStore store;
     private PrivateApkCluster cluster;
@@ -241,22 +241,29 @@ public final class SyntheticGuestUiProbeActivity extends Activity {
 
     @Override protected void onDestroy() {
         destroyed = true;
+        String verificationStage = "final_guest_event";
         try {
             record("DESTROY");
             if (!reported) {
+                verificationStage = "final_signed_view_attachment";
                 ProbeData.check(viewAttached && verifiedPrivateClass && verifiedPrivateResource,
                     "Private View/code/resources were not all verified");
+                verificationStage = "final_e25_private_catalog";
                 if ("e25".equals(proofLevel))
                     ProbeData.check(privateComponentCatalogVerified,
                         "Signed private Android manifest component metadata was not verified");
+                verificationStage = "final_android_host_lifecycle";
                 ProbeData.check(COMPLETE.equals(androidEvents),
                     "Actual Android Activity lifecycle was incomplete");
+                verificationStage = "final_private_dex_transcript";
                 String privateSequence = (String) privateEntrypoint
                     .getMethod("completedTranscript").invoke(null);
                 ProbeData.check(String.join(",", COMPLETE).equals(privateSequence),
                     "Synthetic private bytecode did not receive every host lifecycle callback");
+                verificationStage = "final_signed_apk_readback";
                 ProbeData.check(store.open(cluster.getId(), Build.VERSION.SDK_INT).equals(cluster) &&
                     NativeRuntime.state() == NativeRuntime.ENABLED, "Signed private image changed");
+                verificationStage = "final_persist_success_receipt";
                 JSONObject receipt = new JSONObject()
                     .put("complete", true).put("passed", true).put("run_id", runId)
                     .put("proof_level", proofLevel)
@@ -279,7 +286,7 @@ public final class SyntheticGuestUiProbeActivity extends Activity {
                 saveReceipt(receipt);
             }
         } catch (Throwable error) {
-            failure("final_lifecycle_receipt", error);
+            failure(verificationStage, error);
         } finally {
             super.onDestroy();
         }
