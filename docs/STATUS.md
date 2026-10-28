@@ -1,14 +1,17 @@
-# Fonesi APK — E26 journal recovery CI PASS / E27 Room integration next (28/10/2026)
+# Fonesi APK — E27 Room-backed journal recovery CI PASS / E28 scheduling next (28/10/2026)
 
-**Latest verified E26 CI source SHA:** `b8ab4510922bfec2fb61c11b731be2b9a8d90135`. [CI #40689181420](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40689181420) completed **SUCCESS**: architecture audit, Python checks, core/APK auditor/Robolectric tests, cloud build + manifest/signature audit, opt-in candidate build + manifest/signature audit, and both verification receipts. Candidate audit explicitly retains exact WorkManager `WAKE_LOCK` and `RECEIVE_BOOT_COMPLETED` permissions; diagnostics receiver remains guarded. Previous CI #40686388941 failed because the generated candidate manifest omitted those required worker permissions; the pinned generator and checked-in overlay were corrected and the next full run passed.
+**Latest E27 recovery CI PASS:** [workflow #40719612538](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40719612538), source SHA `d0fa57508bc05a8a271b1e3da94c6f567cef77e6`. Architecture audit passed; cloud and candidate gates each reported **320 tests**, build/lint and exact APK manifest/signature audits passed, and the candidate report retained `engine_runtime_verified == false`. [Detailed E27 results](phases/E27_ROOM_WORKER_RECOVERY_RESULTS.md) and [test-only receipts](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40719612538/artifacts/12828844755).
 
-**What E26 proves:** journal recovery worker can be built and audited as journal-only; cloud and candidate APKs are separately built and audited. CI log reports the integrated candidate build/tests/lint passing. This does **not** prove actual third-party clone lifecycle, split import, account/session isolation, Samsung ARM64 behavior or release signing.
+**What E27 adds:** the worker is tested against actual uniquely named Room rows and task-scoped private snapshot files. Tests cover PREPARING cleanup/requeue, APPLYING/VERIFYING to REVIEW_REQUIRED with snapshot retention, preserving queued/review/failed/cancelled rows and pause state, idempotence, lock-contention retry, and fail-closed handling of a symlinked snapshot path. The worker remains journal-only: no SDK activation, installed-package enumeration, clone launch, or APK import. These are synthetic recovery tests, not a production clone-engine proof.
+
+**E26 remains PASS:** [CI #40690951828](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40690951828). It proves the journal-only recovery state machine and separately audited cloud/candidate builds, not third-party clone lifecycle or device compatibility.
 
 **Product readiness remains ~30% estimate (weighted rubric 28.00%), not measured.** Keep the original 8 product phases / 32 steps; do not increase product % solely because CI passes. See [progress rubric](PRODUCT_PROGRESS.md).
 
-**Next technical slice: E27 — actual Room-to-WorkManager recovery integration.** Current worker test covers an idle journal plus architecture/source checks; E27 must seed real Room rows and task-scoped private snapshot files, then assert PREPARING cleanup/requeue, APPLYING/VERIFYING review-required retention, pause preservation, CAS conflict/retry, idempotence and no engine activation. Follow [E27 pre-code plan](phases/E27_ROOM_WORKER_RECOVERY_PLAN.md). Keep test database/root injection package-private and impossible to select through WorkManager input; production path must keep fixed database and `files/updates` root.
+**Next technical slice: E28 — WorkManager scheduling idempotence and lifecycle safety.** [Pre-code plan](phases/E28_WORKMANAGER_SCHEDULING_PLAN.md). Test unique startup/periodic work, repeated calls from the visible/unlocked manager, and the fixed worker inputs before any scheduler changes. Do not initialize the clone SDK from Application startup or a background worker.
 
-`main` remains at `c055df600f87ee9ddf0cd5d6bfc67d80d145e79d`. Cumulative work stays on `phase/e21-android-split-code-proof-20261028`; PR #12 remains open/draft. Do not merge the test branch as a finished product.
+`main` remains at `c055df600f87ee9ddf0cd5d6bfc67d80d145e79d`. Cumulative work stays on `phase/e21-android-split-code-proof-20261028`; PR #12 remains open. Do not merge this technical branch as a finished product.
+
 
 
 # Fonesi APK — E25 component preflight PASS / E24 lifecycle race fixed (28/10/2026)
