@@ -1,0 +1,145 @@
+name: E23 AOSP34 signed synthetic feature configuration resource proof
+
+on:
+  push:
+    branches:
+      - phase/e21-android-split-code-proof-20261028
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: fonesi-e23-owned-avd-v1
+  cancel-in-progress: true
+
+jobs:
+  android-alpha-config-resources:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    env:
+      FONESI_TOOLS_DIR: /tmp/fonesi-tools
+      ANDROID_HOME: /tmp/fonesi-tools/android-sdk
+      ANDROID_SDK_ROOT: /tmp/fonesi-tools/android-sdk
+    steps:
+      - name: Checkout exact cumulative E23 source
+        uses: actions/checkout@v4
+      - name: Setup Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Verify E21 E22 and E23 Python syntax
+        run: |
+          python3 -m py_compile \
+            scripts/build_isolated_split_fixture.py \
+            scripts/build_dependent_split_fixture.py \
+            scripts/build_config_split_fixture.py \
+            scripts/run_guest_code_emulator.py \
+            scripts/run_native_probe.py
+      - name: Install pinned SDK36, JDK21, Gradle and native dependencies
+        run: |
+          python3 scripts/bootstrap_android.py --accept-sdk-license
+          python3 scripts/prepare_source_engine.py --install-tools
+      - name: Build signed synthetic base alpha beta and resources-only alpha French configuration
+        run: |
+          python3 scripts/build_config_split_fixture.py \
+            --output .local/e23-fixtures \
+            --sdk "$ANDROID_HOME" \
+            --java-home "$FONESI_TOOLS_DIR/jdk-21.0.13+9"
+      - name: Audit four SHA256 signed APKs and require resources-only configuration split
+        run: |
+          python3 - <<'PY'
+          import hashlib, json, pathlib, zipfile
+          root=pathlib.Path(".local/e23-fixtures")
+          receipt=json.loads((root/"config-checksums.json").read_text())
+          assert receipt["package"] == "vn.fonesi.splitfixture"
+          assert receipt["config_name"] == "feature.alpha.fr"
+          assert receipt["config_for"] == "feature.alpha"
+          assert receipt["has_config_code"] is False
+          assert receipt["signed_synthetic_only"] is True
+          assert receipt["production_guest_engine_enabled"] is False
+          assert receipt["third_party_accounts_tested"] is False
+          for kind in ("base", "feature", "dependent", "config"):
+              path=root / ("synthetic-split-" + kind + ".apk")
+              assert hashlib.sha256(path.read_bytes()).hexdigest()==receipt[kind+"_sha256"]
+              with zipfile.ZipFile(path) as z:
+                  assert {"AndroidManifest.xml", "resources.arsc"} <= set(z.namelist())
+                  if kind == "config":
+                      assert "classes.dex" not in z.namelist()
+                      assert not any(n.startswith("lib/") for n in z.namelist())
+                  else:
+                      assert "classes.dex" in z.namelist() and len(z.read("classes.dex")) > 100
+          print("PASS: four signed E23 APKs, config has resources only, all SHA-256 pinned.")
+          PY
+          for kind in base feature dependent config; do
+            "$ANDROID_HOME/build-tools/36.0.0/apksigner" verify --verbose \
+              ".local/e23-fixtures/synthetic-split-$kind.apk"
+          done
+      - name: Verify old signed APK auditor and private split graph regression
+        run: |
+          ./scripts/gradle.sh :core:test :apk-runtime:test --console=plain
+          ./scripts/gradle.sh -PincludeSourceEngine=true -PsourceEngineAbi=x86_64 \
+            :engine-source:testDebugUnitTest --console=plain
+      - name: Build and lint E23 synthetic Android probe and unchanged payload
+        run: |
+          ./scripts/gradle.sh -PincludeNativeRuntimeProbe=true -PsourceEngineAbi=x86_64 \
+            :native-runtime-probe:assembleDebug :native-runtime-probe:lintDebug --console=plain
+          ./scripts/gradle.sh -PincludeEngineProbe=true \
+            :probe-payload:assembleDebug :probe-payload:lintDebug --console=plain
+      - name: Enforce exact native probe components, permissions, ABI and ELF
+        run: python3 scripts/run_native_probe.py --audit-only
+      - name: Install only ephemeral Android 34 AOSP emulator image
+        run: python3 scripts/prepare_native_emulator.py --install --image aosp34
+      - name: Require accessible KVM on isolated CI emulator
+        run: |
+          if test -e /dev/kvm; then
+            sudo chmod 666 /dev/kvm
+            test -r /dev/kvm
+            test -w /dev/kvm
+          else
+            echo "KVM unavailable: E22 remains BLOCKED, never PASS"
+          fi
+      - name: Execute private alpha French config split plus dependent DEX on real AOSP34 emulator
+        run: |
+          PROBE_SHA="$(sha256sum native-runtime-probe/build/outputs/apk/debug/native-runtime-probe-debug.apk | cut -d' ' -f1)"
+          PAYLOAD_SHA="$(sha256sum probe-payload/build/outputs/apk/debug/probe-payload-debug.apk | cut -d' ' -f1)"
+          BASE_SHA="$(sha256sum .local/e23-fixtures/synthetic-split-base.apk | cut -d' ' -f1)"
+          ALPHA_SHA="$(sha256sum .local/e23-fixtures/synthetic-split-feature.apk | cut -d' ' -f1)"
+          BETA_SHA="$(sha256sum .local/e23-fixtures/synthetic-split-dependent.apk | cut -d' ' -f1)"
+          CONFIG_SHA="$(sha256sum .local/e23-fixtures/synthetic-split-config.apk | cut -d' ' -f1)"
+          python3 scripts/run_guest_code_emulator.py \
+            --apk-dir . \
+            --split-fixture-dir .local/e23-fixtures \
+            --expected-probe-sha256 "$PROBE_SHA" \
+            --expected-payload-sha256 "$PAYLOAD_SHA" \
+            --expected-split-base-sha256 "$BASE_SHA" \
+            --expected-split-feature-sha256 "$ALPHA_SHA" \
+            --expected-split-dependent-sha256 "$BETA_SHA" \
+            --expected-split-config-sha256 "$CONFIG_SHA" \
+            --source-commit "$GITHUB_SHA" \
+            --reports .local/e23-emulator \
+            --boot-timeout 480 --probe-timeout 180 --proof-level e23
+      - name: Upload only disposable signed E22 fixtures and sanitized Android receipts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: fonesi-E23-TEST-ONLY-alpha-FR-config-split
+          path: |
+            native-runtime-probe/build/outputs/apk/debug/native-runtime-probe-debug.apk
+            probe-payload/build/outputs/apk/debug/probe-payload-debug.apk
+            .local/e23-fixtures/synthetic-split-base.apk
+            .local/e23-fixtures/synthetic-split-feature.apk
+            .local/e23-fixtures/synthetic-split-dependent.apk
+            .local/e23-fixtures/synthetic-split-config.apk
+            .local/e23-fixtures/config-checksums.json
+            .local/e23-emulator/e11-evidence.json
+            .local/e23-emulator/isolated-split-receipt.json
+            .local/e23-emulator/synthetic-runtime-errors.log
+          if-no-files-found: warn
+          retention-days: 7
+      - name: State strict E23 synthetic configuration acceptance boundary
+        run: |
+          echo "E23 passes only signed synthetic alpha config French locale resources on AOSP34."
+          echo "NOT VERIFIED: arbitrary real apps, Google Play config delivery, guest components,"
+          echo "UID isolation, live accounts, Play Services, Samsung ARM64 or release-ready APK."
