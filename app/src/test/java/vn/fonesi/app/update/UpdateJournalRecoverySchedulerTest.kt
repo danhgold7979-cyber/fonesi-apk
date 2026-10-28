@@ -50,8 +50,8 @@ class UpdateJournalRecoverySchedulerTest {
         val workManager = WorkManager.getInstance(context)
         try {
             val scheduler = UpdateJournalRecoveryScheduler
-            scheduler.ensureScheduled(context)
-            scheduler.ensureScheduled(context)
+            scheduler.schedule(workManager)
+            scheduler.schedule(workManager)
 
             val startupBeforeRelease = workManager
                 .getWorkInfosForUniqueWork(STARTUP_RECOVERY)
@@ -84,7 +84,7 @@ class UpdateJournalRecoverySchedulerTest {
             assertTrue("Startup recovery should complete with the controlled worker",
                 completedStartup.any { it.id == startup.id && it.state == WorkInfo.State.SUCCEEDED })
 
-            scheduler.ensureScheduled(context)
+            scheduler.schedule(workManager)
             val afterReentry = workManager
                 .getWorkInfosForUniqueWork(STARTUP_RECOVERY)
                 .get(10, TimeUnit.SECONDS)
