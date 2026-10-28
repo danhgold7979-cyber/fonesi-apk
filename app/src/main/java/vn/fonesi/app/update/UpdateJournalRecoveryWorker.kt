@@ -17,7 +17,7 @@ import java.io.File
  * Background process may repair journal metadata only. It deliberately has no dependency on
  * RuntimeBindings, LocalServices, PackageManager, the clone engine, or guest/account APIs.
  */
-class UpdateJournalRecoveryWorker(
+open class UpdateJournalRecoveryWorker(
     context: Context,
     parameters: WorkerParameters,
 ) : CoroutineWorker(context, parameters) {
