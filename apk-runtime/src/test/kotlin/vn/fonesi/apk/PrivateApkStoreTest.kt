@@ -30,6 +30,30 @@ class PrivateApkStoreTest {
     private fun hex(bytes: ByteArray) = bytes.joinToString("") { "%02x".format(it.toInt() and 255) }
     private fun change(file: File, bytes: ByteArray) { check(file.setWritable(true)); file.writeBytes(bytes) }
 
+    @Test fun clusterDigestIsStableAcrossReadbackAndInputOrder() {
+        val store = PrivateApkStore(root)
+        val first = store.publish(
+            source("chat-config", "dependent-feature", "base", "main-disguised", "base-config"), 34
+        )
+        val second = store.publish(
+            source("base-config", "main-disguised", "base", "dependent-feature", "chat-config"), 34
+        )
+        assertNotEquals(first.id, second.id)
+        assertEquals(64, first.clusterDigest.length)
+        assertEquals(first.clusterDigest, store.open(first.id, 34).clusterDigest)
+        assertEquals(first.clusterDigest, second.clusterDigest)
+    }
+
+    @Test fun clusterDigestChangesWhenVerifiedClusterMembersChange() {
+        val store = PrivateApkStore(root)
+        val baseOnly = store.publish(source("main-disguised"), 34)
+        val withSplit = store.publish(source("main-disguised", "base-config"), 34)
+        val newVersion = store.publish(source("new-version", "new-version-config", version = 2), 34)
+        assertNotEquals(baseOnly.clusterDigest, withSplit.clusterDigest)
+        assertNotEquals(withSplit.clusterDigest, newVersion.clusterDigest)
+        assertEquals(newVersion.clusterDigest, store.open(newVersion.id, 34).clusterDigest)
+    }
+
     @Test fun publishedCopiesRetainEverySplitAndExactSignedBytesWithPrivatePaths() {
         val input = source("chat-config", "dependent-feature", "base", "main-disguised", "base-config")
         val expected = ApkSetAuditor.verify(input, 34)
