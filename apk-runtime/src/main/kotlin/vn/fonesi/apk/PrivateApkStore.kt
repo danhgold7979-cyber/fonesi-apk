@@ -15,7 +15,7 @@ import java.security.MessageDigest
 import java.util.UUID
 
 /** A published code snapshot, never a running/installed guest or an active-version pointer. */
-private fun clusterDigest(apks: AuditedApkSet): String {
+private fun computeClusterDigest(apks: AuditedApkSet): String {
     val digest = MessageDigest.getInstance("SHA-256")
     fun field(value: String) {
         val bytes = value.toByteArray(Charsets.UTF_8)
@@ -47,7 +47,7 @@ private fun clusterDigest(apks: AuditedApkSet): String {
 /** A published code snapshot, never a running/installed guest or an active-version pointer. */
 data class PrivateApkCluster(val id: String, val apks: AuditedApkSet) {
     /** Digest is deterministic for contents/metadata and independent of storage ID and file paths. */
-    val clusterDigest: String get() = clusterDigest(apks)
+    val clusterDigest: String get() = computeClusterDigest(apks)
 
     fun source() = InstalledSource(apks.base.packageName, apks.base.version, apks.base.signers,
         listOf(apks.base.file.path) + apks.splits.map { it.file.path })
