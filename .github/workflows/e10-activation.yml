@@ -40,6 +40,20 @@ jobs:
         run: |
           ./scripts/gradle.sh -PincludeNativeRuntimeProbe=true -PsourceEngineAbi=x86_64 :native-runtime-probe:assembleDebug :native-runtime-probe:lintDebug --console=plain
           ./scripts/gradle.sh -PincludeEngineProbe=true :probe-payload:assembleDebug :probe-payload:lintDebug --console=plain
+      - name: Verify on-disk synthetic probe APK outputs
+        run: |
+          test -s native-runtime-probe/build/outputs/apk/debug/native-runtime-probe-debug.apk
+          test -s probe-payload/build/outputs/apk/debug/probe-payload-debug.apk
+          sha256sum native-runtime-probe/build/outputs/apk/debug/native-runtime-probe-debug.apk probe-payload/build/outputs/apk/debug/probe-payload-debug.apk
+      - name: Upload test-only Android probe APKs
+        uses: actions/upload-artifact@v4
+        with:
+          name: fonesi-E11-synthetic-probe-debug
+          path: |
+            native-runtime-probe/build/outputs/apk/debug/native-runtime-probe-debug.apk
+            probe-payload/build/outputs/apk/debug/probe-payload-debug.apk
+          if-no-files-found: error
+          retention-days: 7
       - name: Report remaining runtime gates honestly
         run: |
           echo "Android guest process: NOT RUN"
