@@ -60,7 +60,9 @@ required_scheduler_test_evidence = (
     "Two unlocked entries must keep one unfinished startup request",
     "Repeated calls must keep one unfinished periodic request",
     "later unlocked manager entry must enqueue fresh startup reconciliation after completion",
-    "GateExecutor",
+    "ControlledJournalWorker",
+    "releaseWorker",
+    "WorkManagerTestInitHelper.ExecutorsMode.PRESERVE_EXECUTORS",
 )
 for required in required_scheduler_test_evidence:
     if required not in scheduler_tests:
