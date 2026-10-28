@@ -1,3 +1,11 @@
+# Fonesi APK — E21 signed isolated synthetic split Android proof (28/10/2026)
+
+**E21 TECHNICAL GATE PASS, NOT PRODUCT COMPLETE:** [GitHub Actions 40653400751](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40653400751) ended **success** on source `2714148230815b90b57037e2aec0d4fa4a1271bc`. A new AOSP Android 34 x86_64 KVM emulator installed independently signed base + feature APKs from the project-owned fixture, executed separately loaded **private** DEX code, verified feature resources and immutable private readback. Source/APK tests, x86_64 probe compile/lint, exact permission/component audit and receipts also passed. [E21 results](phases/E21_SPLIT_ANDROID_RESULTS.md) document exact limits. 
+
+**NOT VERIFIED:** arbitrary real-world split APKs, Android guest Activity/Service/Provider lifecycle, Play Services, UID-level isolation, social app accounts, ARM64/Samsung or release packaging. `0.5.0-candidate` is still SpaceCore **single-APK ARM64/API26–34/4 KB**; no release product flag is enabled. `main@c055df6` is unchanged; E21 work is in [draft PR #12](https://github.com/danhgold7979-cyber/fonesi-apk/pull/12) stacked on E20. The project's 8-phase/32-step master roadmap is **not finished**.
+
+---
+
 # Fonesi APK — trạng thái tích hợp E19 (28/10/2026)
 
 **Master plan:** [8 phase / 32 bước](ROADMAP.md). Các mốc E10–E19 bên dưới là *lát cắt kỹ thuật* thuộc master plan, không có nghĩa toàn bộ 8 phase sản phẩm đã hoàn thành. Các thay đổi tích lũy có trên nhánh [phase/e19-clone-style-metadata-20261028](https://github.com/danhgold7979-cyber/fonesi-apk/tree/phase/e19-clone-style-metadata-20261028), kế thừa E18→E17→...→E10. `main@c055df6` chưa được merge/chỉnh bởi chuỗi này.
