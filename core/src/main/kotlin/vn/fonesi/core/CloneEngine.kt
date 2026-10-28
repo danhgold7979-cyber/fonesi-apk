@@ -3,6 +3,12 @@ package vn.fonesi.core
 /** This contract does not implement virtualization. No production provider is integrated yet. */
 interface CloneEngine {
     val availability: EngineAvailability
+
+    /**
+     * Existing providers default to no accepted capabilities. Readiness alone is not evidence
+     * that a guest lifecycle, split import, native ABI or account-isolation contract is satisfied.
+     */
+    val capabilities: EngineCapabilities get() = EngineCapabilities()
     fun listClones(): List<CloneRecord>
     fun create(source: InstalledSource, label: String): CloneRecord
     /**
