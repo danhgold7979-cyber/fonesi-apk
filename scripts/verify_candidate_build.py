@@ -29,6 +29,7 @@ def main():
     public = set()
     guarded = 0
     system_guards = {
+        ("receiver", "androidx.work.impl.diagnostics.DiagnosticsReceiver"): "android.permission.DUMP",
         ("service", "com.fvbox.lib.client.proxy.ProxyJobService"): "android.permission.BIND_JOB_SERVICE",
         ("receiver", "androidx.profileinstaller.ProfileInstallReceiver"): "android.permission.DUMP",
         ("service", "androidx.work.impl.background.systemjob.SystemJobService"): "android.permission.BIND_JOB_SERVICE",
