@@ -149,6 +149,16 @@ class AppsViewModel(application: Application) : AndroidViewModel(application) {
         } catch (_: Exception) { "Đã lưu tên và nhóm. Launcher chưa nhận được tên mới; hãy quét lại để đồng bộ." }
     }
 
+    fun styleClone(engineKey: String, id: String, accentKey: String, badgeText: String?) = mutate {
+        services.metadata(engineKey).restyle(id, accentKey, badgeText)
+        try {
+            services.shortcuts.synchronizePinned(forceIcons = true)
+            "Đã lưu màu và huy hiệu; đã gửi đồng bộ lối tắt."
+        } catch (_: Exception) {
+            "Đã lưu màu và huy hiệu. Launcher chưa cập nhật biểu tượng; hãy mở lại Fonesi để thử đồng bộ."
+        }
+    }
+
     fun openClone(token: String) = mutate {
         when (val result = services.launches.launch(token)) {
             is LaunchResult.Accepted -> "Đã gửi yêu cầu mở ${result.clone.label}; chưa xác nhận màn hình ứng dụng."

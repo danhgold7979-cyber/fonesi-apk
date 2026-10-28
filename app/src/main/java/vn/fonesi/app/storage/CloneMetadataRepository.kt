@@ -40,6 +40,14 @@ class CloneMetadataRepository(
         }
     }
 
+    /** Offline-safe presentation setting; does not call the SDK or mutate guest account data. */
+    fun restyle(id: String, accentKey: String, badgeText: String?) {
+        val normalized = CloneStylePolicy.normalize(accentKey, badgeText)
+        check(db.clones().restyle(engineKey, id, normalized.accentKey, normalized.badgeText, clock()) == 1) {
+            "Saved clone metadata does not exist"
+        }
+    }
+
     fun delete(id: String, expectedToken: String? = null) {
         val saved = checkNotNull(db.clones().find(engineKey, id))
         mutateEngine(saved.packageName) {

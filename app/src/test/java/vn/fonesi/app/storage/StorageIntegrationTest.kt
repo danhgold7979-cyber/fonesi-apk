@@ -14,6 +14,7 @@ import vn.fonesi.core.*
 import vn.fonesi.core.update.*
 import java.nio.file.Files
 import java.util.UUID
+import org.json.JSONObject
 import java.util.concurrent.Callable
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
@@ -176,12 +177,74 @@ class StorageIntegrationTest {
         assertEquals("Nhãn mới", db.clones().find("engine-a", first.cloneId)?.label)
     }
 
+    @Test fun validatedCloneStyleSurvivesReopenWithoutChangingSdkOrOtherEngine() = background {
+        val first = CloneMetadataRepository(db, "engine-a", EngineDouble(), operationLock()).create(source, "A")
+        val other = CloneMetadataRepository(db, "engine-b", EngineDouble(), operationLock()).create(source, "B")
+        val token = first.launchToken
+        val offline = CloneMetadataRepository(db, "engine-a", UnavailableCloneEngine(), operationLock())
+        offline.restyle(first.cloneId, "purple", "🛒")
+        assertEquals("purple", db.clones().find("engine-a", first.cloneId)?.accentKey)
+        assertEquals("🛒", db.clones().find("engine-a", first.cloneId)?.badgeText)
+        assertEquals("teal", db.clones().find("engine-b", other.cloneId)?.accentKey)
+        assertThrows(IllegalArgumentException::class.java) { offline.restyle(first.cloneId, "unknown", "A") }
+        assertThrows(IllegalArgumentException::class.java) { offline.restyle(first.cloneId, "blue", "A\nB") }
+        assertThrows(IllegalStateException::class.java) { offline.restyle("deleted-id", "blue", null) }
+        reopen()
+        val saved = checkNotNull(db.clones().find("engine-a", first.cloneId))
+        assertEquals(token, saved.launchToken)
+        assertEquals(first.cloneId, saved.cloneId)
+        assertEquals(first.packageName, saved.packageName)
+        assertEquals(first.createdAt, saved.createdAt)
+        assertEquals("purple", saved.accentKey)
+        assertEquals("🛒", saved.badgeText)
+    }
+
+    @Test fun v3DatabaseMigratesToV4KeepingCloneTokenQueueAndEngineReservation() = background {
+        db.close()
+        context.deleteDatabase(name) // Fresh test DB may not have materialized a file yet.
+        val resource = checkNotNull(javaClass.classLoader!!.getResourceAsStream(
+            "vn.fonesi.app.storage.FonesiDatabase/3.json"))
+        val schema = JSONObject(resource.bufferedReader().use { it.readText() }).getJSONObject("database")
+        val token = UUID.randomUUID().toString()
+        context.openOrCreateDatabase(name, Context.MODE_PRIVATE, null).use { raw ->
+            val entities = schema.getJSONArray("entities")
+            for (i in 0 until entities.length()) {
+                val entity = entities.getJSONObject(i)
+                val table = entity.getString("tableName")
+                val placeholder = "$" + "{TABLE_NAME}"
+                raw.execSQL(entity.getString("createSql").replace(placeholder, table))
+                val indexes = entity.optJSONArray("indices")
+                if (indexes != null) for (j in 0 until indexes.length())
+                    raw.execSQL(indexes.getJSONObject(j).getString("createSql").replace(placeholder, table))
+            }
+            val setup = schema.getJSONArray("setupQueries")
+            for (i in 0 until setup.length()) raw.execSQL(setup.getString(i))
+            raw.execSQL("INSERT INTO clone_metadata(engineKey, cloneId, packageName, label, groupName, createdAt, changedAt, launchToken) VALUES(?,?,?,?,?,?,?,?)",
+                arrayOf("engine-a", "persist-id", "test.social", "Giữ nguyên", "Nhóm", 11, 12, token))
+            raw.execSQL("INSERT INTO queue_control(id, paused) VALUES(1, 1)")
+            raw.execSQL("INSERT INTO engine_instances(sequence, cloneId, engineKey, packageName, state, launchPending) VALUES(?,?,?,?,?,?)",
+                arrayOf(1, "reserved-id", "engine-a", "test.social", "READY", 0))
+            raw.version = 3
+        }
+        db = FonesiDatabase.open(context, name)
+        val row = db.clones().list().single()
+        assertEquals("persist-id", row.cloneId)
+        assertEquals(token, row.launchToken)
+        assertEquals("Giữ nguyên", row.label)
+        assertEquals("Nhóm", row.groupName)
+        assertEquals("teal", row.accentKey)
+        assertNull(row.badgeText)
+        assertTrue(RoomUpdateTaskStore(db).isPaused())
+        assertEquals("reserved-id", db.instances().list("engine-a").single().cloneId)
+        assertEquals(4, db.openHelper.writableDatabase.version)
+    }
+
     @Test fun unknownSchemaDoesNotDestructivelyRecreateTheDatabase() = background {
         db.close()
         context.openOrCreateDatabase(name, Context.MODE_PRIVATE, null).use { raw ->
             raw.execSQL("CREATE TABLE retained(value TEXT NOT NULL)")
             raw.execSQL("INSERT INTO retained VALUES ('must survive')")
-            raw.version = 4
+            raw.version = 5
         }
         db = FonesiDatabase.open(context, name)
         assertThrows(IllegalStateException::class.java) { db.tasks().list() }

@@ -1,11 +1,16 @@
 package vn.fonesi.app
 
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.background
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.graphics.Color
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import vn.fonesi.app.storage.CloneMetadataRow
+import vn.fonesi.app.storage.CloneStylePolicy
 import vn.fonesi.core.update.*
 import vn.fonesi.core.CloneRecord
 
@@ -14,15 +19,21 @@ internal fun SavedCloneCard(
     row: CloneMetadataRow, enabled: Boolean, operational: Boolean, selected: Boolean, toggle: () -> Unit,
     live: CloneRecord?, open: () -> Unit, pin: () -> Unit,
     stop: () -> Unit, delete: () -> Unit, duplicate: (String) -> Unit, update: () -> Unit,
+    saveStyle: (String, String?) -> Unit,
     save: (String, String?) -> Unit,
 ) {
     var editing by remember { mutableStateOf(false) }
+    var styling by remember { mutableStateOf(false) }
     var deleting by remember { mutableStateOf(false) }
     var duplicating by remember { mutableStateOf(false) }
     OutlinedCard(Modifier.fillMaxWidth()) {
         Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 Checkbox(checked = selected, onCheckedChange = { toggle() }, enabled = enabled && operational && live?.packageName == row.packageName)
+                Box(Modifier.size(30.dp).background(cloneAccentColor(row.accentKey), CircleShape),
+                    contentAlignment = Alignment.Center) {
+                    Text(row.badgeText ?: "F", color = Color.White, style = MaterialTheme.typography.labelSmall)
+                }
                 Text(row.label, style = MaterialTheme.typography.titleMedium)
             }
             Text(row.packageName, style = MaterialTheme.typography.bodySmall)
@@ -40,6 +51,7 @@ internal fun SavedCloneCard(
             }
             TextButton(onClick = { duplicating = true }, enabled = enabled && operational) { Text("Tạo thêm bản sạch") }
             TextButton(onClick = { editing = true }, enabled = enabled) { Text("Đổi tên / nhóm") }
+            TextButton(onClick = { styling = true }, enabled = enabled) { Text("Màu / huy hiệu") }
         }
     }
     if (editing) {
@@ -58,6 +70,42 @@ internal fun SavedCloneCard(
                     enabled = label.trim().length in 1..80 && group.trim().length <= 40) { Text("Lưu") }
             },
             dismissButton = { TextButton(onClick = { editing = false }) { Text("Hủy") } },
+        )
+    }
+    if (styling) {
+        var accent by remember(row.accentKey) { mutableStateOf(row.accentKey) }
+        var badge by remember(row.badgeText) { mutableStateOf(row.badgeText.orEmpty()) }
+        var expanded by remember { mutableStateOf(false) }
+        AlertDialog(
+            onDismissRequest = { styling = false },
+            title = { Text("Màu và huy hiệu bản clone") },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                    Box {
+                        OutlinedButton(onClick = { expanded = true }) {
+                            Text("Màu biểu tượng: " + cloneAccentLabel(accent))
+                        }
+                        DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+                            CloneStylePolicy.accentKeys.forEach { key ->
+                                DropdownMenuItem(text = { Text(cloneAccentLabel(key)) },
+                                    onClick = { accent = key; expanded = false })
+                            }
+                        }
+                    }
+                    OutlinedTextField(badge, { badge = it },
+                        label = { Text("Huy hiệu (tối đa 2 ký tự Unicode)") },
+                        singleLine = true, maxLines = 1)
+                    Text("Để trống để dùng chữ F. Chỉ đổi biểu tượng quản lý, không thay APK hay tài khoản.",
+                        style = MaterialTheme.typography.bodySmall)
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = { saveStyle(accent, badge); styling = false },
+                    enabled = runCatching { CloneStylePolicy.normalize(accent, badge) }.isSuccess) {
+                    Text("Lưu màu / huy hiệu")
+                }
+            },
+            dismissButton = { TextButton(onClick = { styling = false }) { Text("Hủy") } },
         )
     }
     if (deleting) AlertDialog(onDismissRequest = { deleting = false }, title = { Text("Xóa ${row.label}?") },
@@ -122,4 +170,24 @@ private fun TaskIssue.description() = when (this) {
     TaskIssue.SCOPE_CHANGED -> "Phạm vi cập nhật đã thay đổi."
     TaskIssue.INTERRUPTED, TaskIssue.ENGINE_OUTCOME_UNKNOWN, TaskIssue.VERSION_NOT_VERIFIED ->
         "Kết quả cập nhật chưa rõ; không tự áp dụng lại."
+}
+
+private fun cloneAccentColor(key: String): Color = when (key) {
+    "teal" -> Color(0xFF126B55)
+    "blue" -> Color(0xFF265BB8)
+    "purple" -> Color(0xFF723DB3)
+    "amber" -> Color(0xFFA56409)
+    "red" -> Color(0xFFB83641)
+    "slate" -> Color(0xFF556277)
+    else -> Color(0xFF126B55)
+}
+
+private fun cloneAccentLabel(key: String): String = when (key) {
+    "teal" -> "Xanh ngọc"
+    "blue" -> "Xanh dương"
+    "purple" -> "Tím"
+    "amber" -> "Hổ phách"
+    "red" -> "Đỏ"
+    "slate" -> "Xám"
+    else -> "Chưa rõ"
 }

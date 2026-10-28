@@ -18,6 +18,8 @@ data class CloneMetadataRow(
     val createdAt: Long,
     val changedAt: Long,
     @ColumnInfo(defaultValue = "''") val launchToken: String = UUID.randomUUID().toString(),
+    @ColumnInfo(defaultValue = "'teal'") val accentKey: String = "teal",
+    val badgeText: String? = null,
 )
 
 @Entity(tableName = "update_tasks", indices = [
@@ -48,6 +50,8 @@ interface CloneMetadataDao {
     @Insert fun insert(row: CloneMetadataRow)
     @Query("UPDATE clone_metadata SET label = :label, groupName = :groupName, changedAt = :now WHERE engineKey = :engine AND cloneId = :id")
     fun rename(engine: String, id: String, label: String, groupName: String?, now: Long): Int
+    @Query("UPDATE clone_metadata SET accentKey = :accent, badgeText = :badge, changedAt = :now WHERE engineKey = :engine AND cloneId = :id")
+    fun restyle(engine: String, id: String, accent: String, badge: String?, now: Long): Int
     @Query("DELETE FROM clone_metadata WHERE engineKey = :engine AND cloneId = :id") fun delete(engine: String, id: String): Int
 }
 
@@ -65,13 +69,19 @@ interface UpdateTaskDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE) fun setControl(row: QueueControlRow)
 }
 
-@Database(entities = [CloneMetadataRow::class, UpdateTaskRow::class, QueueControlRow::class, EngineInstanceRow::class], version = 3, exportSchema = true)
+@Database(entities = [CloneMetadataRow::class, UpdateTaskRow::class, QueueControlRow::class, EngineInstanceRow::class], version = 4, exportSchema = true)
 abstract class FonesiDatabase : RoomDatabase() {
     abstract fun clones(): CloneMetadataDao
     abstract fun tasks(): UpdateTaskDao
     abstract fun instances(): EngineInstanceDao
 
     companion object {
+        val MIGRATION_3_4 = object : Migration(3, 4) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE clone_metadata ADD COLUMN accentKey TEXT NOT NULL DEFAULT 'teal'")
+                db.execSQL("ALTER TABLE clone_metadata ADD COLUMN badgeText TEXT DEFAULT NULL")
+            }
+        }
         val MIGRATION_2_3 = object : Migration(2, 3) {
             override fun migrate(db: SupportSQLiteDatabase) {
                 db.execSQL("CREATE TABLE IF NOT EXISTS engine_instances (sequence INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, cloneId TEXT NOT NULL, engineKey TEXT NOT NULL, packageName TEXT NOT NULL, state TEXT NOT NULL, launchPending INTEGER NOT NULL)")
@@ -97,7 +107,7 @@ abstract class FonesiDatabase : RoomDatabase() {
             Room.databaseBuilder(context.applicationContext, FonesiDatabase::class.java, name)
                 .openHelperFactory(PreservingOpenHelperFactory())
                 .setJournalMode(JournalMode.TRUNCATE)
-                .addMigrations(MIGRATION_1_2, MIGRATION_2_3)
+                .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4)
                 .addCallback(object : Callback() {
                     override fun onOpen(db: SupportSQLiteDatabase) {
                         db.execSQL("PRAGMA synchronous=FULL")

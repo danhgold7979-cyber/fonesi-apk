@@ -11,6 +11,8 @@ import androidx.core.graphics.createBitmap
 import vn.fonesi.app.R
 import vn.fonesi.app.MainActivity
 import vn.fonesi.app.storage.CloneMetadataRow
+import vn.fonesi.app.storage.CloneStylePolicy
+import vn.fonesi.app.storage.CloneVisualStyle
 import vn.fonesi.app.storage.FonesiDatabase
 
 enum class PinResult { REQUEST_SENT, UNSUPPORTED, REJECTED }
@@ -27,7 +29,7 @@ class AndroidCloneShortcuts(private val context: Context, private val db: Fonesi
     }
 
     /** Background thread. Only missing metadata disables a shortcut; a missing engine is temporary. */
-    fun synchronizePinned() {
+    fun synchronizePinned(forceIcons: Boolean = false) {
         val service = manager ?: return
         val updates = mutableListOf<ShortcutInfo>()
         val stale = mutableListOf<String>()
@@ -35,7 +37,7 @@ class AndroidCloneShortcuts(private val context: Context, private val db: Fonesi
             val token = CloneRoute.tokenFromShortcutId(pinned.id) ?: return@forEach
             val saved = db.clones().findByLaunchToken(token)
             if (saved == null) stale += pinned.id
-            else if (pinned.shortLabel?.toString() != shortLabel(saved.label) || pinned.longLabel?.toString() != saved.label) {
+            else if (forceIcons || pinned.shortLabel?.toString() != shortLabel(saved.label) || pinned.longLabel?.toString() != saved.label) {
                 updates += info(saved)
             }
         }
@@ -48,24 +50,36 @@ class AndroidCloneShortcuts(private val context: Context, private val db: Fonesi
         .setLongLabel(clone.label)
         .setActivity(android.content.ComponentName(context, MainActivity::class.java))
         .setIntent(CloneRoute.intent(context, clone.launchToken))
-        .setIcon(icon(clone.packageName))
+        .setIcon(icon(clone))
         .build()
 
     private fun shortLabel(label: String): String = label.substring(0, label.offsetByCodePoints(0, minOf(40, label.codePointCount(0, label.length))))
 
-    private fun icon(packageName: String): Icon = try {
-        val drawable = context.packageManager.getApplicationIcon(packageName).mutate()
+    private fun icon(clone: CloneMetadataRow): Icon = try {
+        val style = CloneStylePolicy.normalize(clone.accentKey, clone.badgeText)
+        val drawable = context.packageManager.getApplicationIcon(clone.packageName).mutate()
         val bitmap = createBitmap(144, 144)
         val canvas = Canvas(bitmap)
         drawable.setBounds(0, 0, 144, 144)
         drawable.draw(canvas)
-        val paint = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = Color.rgb(18, 107, 85) }
+        val accent = when (style.accentKey) {
+            "teal" -> Color.rgb(18, 107, 85)
+            "blue" -> Color.rgb(38, 91, 184)
+            "purple" -> Color.rgb(114, 61, 179)
+            "amber" -> Color.rgb(165, 100, 9)
+            "red" -> Color.rgb(184, 54, 65)
+            "slate" -> Color.rgb(85, 98, 119)
+            else -> error("Unsupported accent")
+        }
+        val paint = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = accent }
         canvas.drawCircle(118f, 118f, 26f, paint)
         paint.color = Color.WHITE
         paint.textSize = 32f
         paint.textAlign = Paint.Align.CENTER
         paint.typeface = android.graphics.Typeface.DEFAULT_BOLD
-        canvas.drawText("F", 118f, 129f, paint)
+        val badge = CloneStylePolicy.displayBadge(style)
+        if (badge.codePointCount(0, badge.length) == 2) paint.textSize = 23f
+        canvas.drawText(badge, 118f, 129f, paint)
         Icon.createWithBitmap(bitmap)
     } catch (_: Exception) { Icon.createWithResource(context, R.drawable.ic_fonesi) }
 }

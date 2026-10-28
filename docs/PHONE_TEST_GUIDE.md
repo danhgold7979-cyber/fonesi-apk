@@ -1,3 +1,5 @@
+> **Cập nhật 28/10/2026:** chuỗi E11–E17 đã có kiểm tra **mẫu synthetic** trên Android 34 Emulator cho DEX, resources, native file/SQLite, scoped Context, Binder và Application.onCreate; đây **không** phải bằng chứng tạo/đăng nhập clone thật trên Samsung. E18/E19 đã build/audit lại candidate debug và ZIP; candidate chính vẫn SpaceCore single-APK ARM64/API26–34/4KB. Bản E19 có màu/huy hiệu và Room schema 4 (đã kiểm tra migration cloud). Chỉ dùng hash trong gói ZIP vừa tải, không dùng hash các báo cáo cũ. Không thử dữ liệu hoặc mật khẩu thật trước khi payload mẫu được nghiệm thu trên máy.
+
 # Đợt thử điện thoại sau — bản 0.5.0 candidate
 
 Gói này là bản thử chưa nghiệm thu, không phải sản phẩm hoàn thiện. Chưa yêu cầu cài ngay; dùng khi đến đợt thử thiết bị đã thống nhất. Giữ nguyên các yêu cầu đa app/split còn mở trong STATUS.md.
