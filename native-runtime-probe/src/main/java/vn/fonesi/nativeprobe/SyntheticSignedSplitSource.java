@@ -20,10 +20,15 @@ import vn.fonesi.core.InstalledSource;
 final class SyntheticSignedSplitSource {
     static final String PACKAGE = "vn.fonesi.splitfixture";
     static final String FEATURE = "feature.alpha";
+    static final String DEPENDENT = "feature.beta";
     private SyntheticSignedSplitSource() {}
 
     @SuppressWarnings("deprecation")
     static InstalledSource fromInstalled(Context context) throws Exception {
+        return fromInstalled(context, false);
+    }
+
+    static InstalledSource fromInstalled(Context context, boolean withDependent) throws Exception {
         PackageManager pm = context.getPackageManager();
         int flags = Build.VERSION.SDK_INT >= 28
             ? PackageManager.GET_SIGNING_CERTIFICATES : PackageManager.GET_SIGNATURES;
@@ -31,16 +36,28 @@ final class SyntheticSignedSplitSource {
         if (!PACKAGE.equals(info.packageName) || info.applicationInfo == null)
             throw new IllegalStateException("Only exact synthetic fixture package accepted");
         ApplicationInfo app = info.applicationInfo;
+        int expected = withDependent ? 2 : 1;
         if (app.sourceDir == null || app.splitSourceDirs == null ||
-            app.splitSourceDirs.length != 1 || app.splitNames == null ||
-            app.splitNames.length != 1 || !FEATURE.equals(app.splitNames[0])) {
-            throw new IllegalStateException("Signed synthetic isolated base + feature not installed");
+            app.splitSourceDirs.length != expected || app.splitNames == null ||
+            app.splitNames.length != expected) {
+            throw new IllegalStateException("Exact signed synthetic split member count required");
+        }
+        java.util.Map<String, String> byName = new java.util.LinkedHashMap<>();
+        for (int index = 0; index < app.splitNames.length; index++) {
+            if (byName.put(app.splitNames[index], app.splitSourceDirs[index]) != null)
+                throw new SecurityException("Duplicate synthetic feature split identity");
+        }
+        if (!byName.keySet().equals(withDependent
+            ? java.util.Set.of(FEATURE, DEPENDENT) : java.util.Set.of(FEATURE))) {
+            throw new SecurityException("Unexpected synthetic APK split name");
         }
         List<String> paths = new ArrayList<>();
         paths.add(app.sourceDir);
-        paths.add(app.splitSourceDirs[0]);
-        if (paths.get(0).equals(paths.get(1)))
-            throw new SecurityException("Private base and feature cannot share an installed file path");
+        paths.add(byName.get(FEATURE));
+        if (withDependent) paths.add(byName.get(DEPENDENT));
+        if (paths.stream().anyMatch(p -> p == null || p.isEmpty()) ||
+            new java.util.HashSet<>(paths).size() != paths.size())
+            throw new SecurityException("Synthetic private input split member paths overlap");
         Signature[] signatures = Build.VERSION.SDK_INT >= 28 && info.signingInfo != null
             ? info.signingInfo.getApkContentsSigners() : info.signatures;
         if (signatures == null || signatures.length == 0)
