@@ -44,11 +44,9 @@ private fun clusterDigest(apks: AuditedApkSet): String {
     return digest.digest().joinToString("") { "%02x".format(it.toInt() and 255) }
 }
 
+/** A published code snapshot, never a running/installed guest or an active-version pointer. */
 data class PrivateApkCluster(val id: String, val apks: AuditedApkSet) {
-    /**
-     * Deterministic identity of the verified cluster contents/metadata, independent of its random
-     * storage ID and absolute private paths. This is a digest, not a signature or install receipt.
-     */
+    /** Digest is deterministic for contents/metadata and independent of storage ID and file paths. */
     val clusterDigest: String get() = clusterDigest(apks)
 
     fun source() = InstalledSource(apks.base.packageName, apks.base.version, apks.base.signers,
@@ -207,7 +205,5 @@ class PrivateApkStore(root: Path) {
             }
             return hex(digest.digest())
         }
-
-
     }
 }
