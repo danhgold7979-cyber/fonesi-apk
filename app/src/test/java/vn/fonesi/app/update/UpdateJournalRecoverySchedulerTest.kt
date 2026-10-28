@@ -17,7 +17,9 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
+import java.util.concurrent.ConcurrentLinkedQueue
 import java.util.concurrent.CountDownLatch
+import java.util.concurrent.Executor
 import java.util.concurrent.TimeUnit
 
 @RunWith(RobolectricTestRunner::class)
@@ -39,8 +41,11 @@ class UpdateJournalRecoverySchedulerTest {
                     null
                 }
         }
+        val workerExecutor = GateExecutor()
         val configuration = Configuration.Builder()
             .setWorkerFactory(workerFactory)
+            .setExecutor(workerExecutor)
+            .setTaskExecutor(Executor { command -> command.run() })
             .build()
         WorkManagerTestInitHelper.initializeTestWorkManager(
             context,
@@ -73,10 +78,8 @@ class UpdateJournalRecoverySchedulerTest {
             assertTrue("Periodic request must target the journal-only worker",
                 periodic.tags.contains(UpdateJournalRecoveryWorker::class.java.name))
 
-            val testDriver = checkNotNull(WorkManagerTestInitHelper.getTestDriver(context))
-            testDriver.setAllConstraintsMet(startup.id)
-            testDriver.setAllConstraintsMet(periodic.id)
-            assertTrue("A controlled journal worker should start for scheduling assertions",
+            workerExecutor.release()
+            assertTrue("A controlled journal worker should start after queued work is released",
                 workerStarted.await(10, TimeUnit.SECONDS))
 
             releaseWorker.countDown()
@@ -98,6 +101,7 @@ class UpdateJournalRecoverySchedulerTest {
                     .get(10, TimeUnit.SECONDS).count { !it.state.isFinished },
             )
         } finally {
+            workerExecutor.release()
             releaseWorker.countDown()
             runCatching { workManager.cancelAllWork().result.get(10, TimeUnit.SECONDS) }
             runCatching { WorkManagerTestInitHelper.closeWorkDatabase() }
@@ -113,6 +117,23 @@ class UpdateJournalRecoverySchedulerTest {
             Thread.sleep(20)
         }
         return latest
+    }
+
+    private class GateExecutor : Executor {
+        private val pending = ConcurrentLinkedQueue<Runnable>()
+        @Volatile private var released = false
+
+        override fun execute(command: Runnable) {
+            if (released) command.run() else pending.add(command)
+        }
+
+        fun release() {
+            released = true
+            while (true) {
+                val next = pending.poll() ?: return
+                next.run()
+            }
+        }
     }
 
     private class ControlledJournalWorker(
