@@ -16,6 +16,7 @@ import org.json.JSONObject;
 import vn.fonesi.apk.PrivateApkCluster;
 import vn.fonesi.apk.PrivateApkStore;
 import vn.fonesi.engine.IsolatedSplitCodeProbeLoader;
+import vn.fonesi.engine.DependentFeatureSplitProbeLoader;
 import vn.fonesi.engine.NativeRuntime;
 
 /** E21 synthetic-only service. Not exported; no real APK components or accounts are dispatched. */
@@ -28,18 +29,23 @@ public final class SplitCodeProbeService extends Service {
     @Override public int onStartCommand(Intent intent, int flags, int startId) {
         if (intent == null || !attempted.compareAndSet(false, true)) return START_NOT_STICKY;
         final String id;
+        final String proof;
         try {
+            String requested = intent.getStringExtra("proof_level");
+            proof = requested == null ? "e21" : requested;
+            if (!"e21".equals(proof) && !"e22".equals(proof))
+                throw new IllegalArgumentException("Unsupported synthetic proof level");
             id = UUID.fromString(intent.getStringExtra(EXTRA_RUN_ID)).toString();
             if (!id.equals(intent.getStringExtra(EXTRA_RUN_ID))) throw new IllegalArgumentException();
         } catch (Exception invalid) {
             stopSelf(startId);
             return START_NOT_STICKY;
         }
-        new Thread(() -> execute(id, startId), "Fonesi-E21-private-splits").start();
+        new Thread(() -> execute(id, proof, startId), "Fonesi-private-splits").start();
         return START_NOT_STICKY;
     }
 
-    private void execute(String runId, int startId) {
+    private void execute(String runId, String proof, int startId) {
         String stage = "process_identity";
         File reports = null;
         JSONObject result = new JSONObject();
@@ -60,7 +66,7 @@ public final class SplitCodeProbeService extends Service {
                 "Private receipt escaped host files");
 
             stage = "installed_signed_split_identity";
-            vn.fonesi.core.InstalledSource input = SyntheticSignedSplitSource.fromInstalled(this);
+            vn.fonesi.core.InstalledSource input = SyntheticSignedSplitSource.fromInstalled(this, "e22".equals(proof));
             stage = "copy_and_audit_signed_private_split_cluster";
             File privateRoot = new File(files, "e21-private-images").getCanonicalFile();
             ProbeData.check(privateRoot.getPath().startsWith(files.getPath() + File.separator),
@@ -89,16 +95,25 @@ public final class SplitCodeProbeService extends Service {
             new SecureRandom().nextBytes(random);
             StringBuilder nonce = new StringBuilder(32);
             for (byte b : random) nonce.append(String.format(java.util.Locale.ROOT, "%02x", b & 255));
-            new IsolatedSplitCodeProbeLoader(getApplicationContext(), store)
-                .verify(cluster.getId(), nonce.toString());
+            if ("e22".equals(proof)) {
+                new DependentFeatureSplitProbeLoader(getApplicationContext(), store)
+                    .verify(cluster.getId(), nonce.toString());
+            } else {
+                new IsolatedSplitCodeProbeLoader(getApplicationContext(), store)
+                    .verify(cluster.getId(), nonce.toString());
+            }
             ProbeData.check(store.open(cluster.getId(), Build.VERSION.SDK_INT).equals(cluster),
                 "Signed image readback after execution failed");
 
             stage = "write_success_receipt";
             result.put("complete", true).put("passed", true).put("run_id", runId)
+                .put("proof_level", proof)
                 .put("api", Build.VERSION.SDK_INT).put("pid", Process.myPid())
                 .put("uid", Process.myUid()).put("process_name", processName)
                 .put("private_split_graph_verified", true)
+                .put("private_dependency_graph_verified", "e22".equals(proof))
+                .put("private_dependent_feature_code_executed", "e22".equals(proof))
+                .put("private_dependent_resources_verified", "e22".equals(proof))
                 .put("private_isolated_base_code_executed", true)
                 .put("private_isolated_feature_code_executed", true)
                 .put("private_isolated_resources_verified", true)
