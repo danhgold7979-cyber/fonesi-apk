@@ -28,7 +28,14 @@ def main():
     reports.mkdir(parents=True, exist_ok=True)
     cmake = TOOLS / f"android-sdk/cmake/{CMAKE}/bin/cmake"
     ninja = cmake.parent / "ninja"
+    # Dobby's pinned host source uses Clang's __has_feature(ptrauth_calls).
+    # Select Clang explicitly instead of silently bypassing that source check with GCC.
+    host_cc, host_cxx = shutil.which("clang"), shutil.which("clang++")
+    if not host_cc or not host_cxx:
+        raise RuntimeError("Pinned Dobby host proof requires Clang and Clang++")
+    host_compiler_version = subprocess.check_output([host_cxx, "--version"], text=True).splitlines()[0]
     run([cmake, "-S", ROOT / "engine-source/src/main/cpp", "-B", output / "host", "-G", "Ninja",
+         f"-DCMAKE_C_COMPILER={host_cc}", f"-DCMAKE_CXX_COMPILER={host_cxx}",
          f"-DCMAKE_MAKE_PROGRAM={ninja}", "-DCMAKE_BUILD_TYPE=Release", f"-DDOBBY_ROOT={DOBBY}"], reports / "host-configure.log")
     run([cmake, "--build", output / "host", "--target", "fonesi_native_test", "--parallel", "4"], reports / "host-build.log")
     run([output / "host/fonesi_native_test"], reports / "host-test.log", timeout=30)
@@ -81,7 +88,8 @@ def main():
     lint = ET.parse(reports / "lint-results-debug.xml").getroot().findall("issue")
     assert not any(item.get("severity") in ("Error", "Fatal") for item in lint)
     report = {"source": DOBBY_COMMIT, "patch_sha256": hashlib.sha256((ROOT / "engine-source/patches/dobby-compat.patch").read_bytes()).hexdigest(),
-              "ndk": NDK, "cmake": CMAKE, "host_native_integration_passed": True, "android_aar_built": True,
+              "ndk": NDK, "cmake": CMAKE, "host_cxx": host_compiler_version,
+              "host_native_integration_passed": True, "android_aar_built": True,
               "android_native_execution_verified": False, "app_provider_integrated": False,
               "native_library_host_tests": native_tests, "verified_aar": str(verified_archive.relative_to(ROOT)),
               "source_component_jvm_tests": component_tests, "code_layout_jvm_tests": layout_tests,
