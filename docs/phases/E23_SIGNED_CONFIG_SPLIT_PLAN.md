@@ -1,0 +1,17 @@
+# E23 — Signed configuration split resources with isolated feature dependency (pre-code plan)
+
+Date: 2026-10-28. Existing cumulative branch: `phase/e21-android-split-code-proof-20261028`; no new phase branch. Rechecked `docs/ROADMAP.md` (8 product phases / 32 steps), `docs/STATUS.md`, E20 signed split DAG, E21 synthetic base+feature and E22 synthetic base→alpha→beta Android CI. On `2749240`, E21 [40656803018](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40656803018) and E22 [40656803090](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40656803090) have completed SUCCESS.
+
+## Master scope and nonclaims
+The product clone engine and tests on real guest packages are still blocked; no work in E23 may enable SpaceCore importsSplitApks or treat Android emulator results as secure account isolation. E23 tests **one signed, project-owned, resources-only configuration split** targeting `feature.alpha` as a fourth member of the previously checked base/alpha/beta graph.
+
+## Implementation sequence
+1. Build a fourth signed APK named `feature.alpha.fr`, declaring `configForSplit="feature.alpha"` in its binary manifest, `android:hasCode=false`, and an alpha-specific French string override. Use the same disposable signer, package and version as the original signed fixture; no real APKs, secrets or production keys. Emit an exact SHA-256 receipt covering all four members. Do not silently transform the feature split into a stand-alone APK.
+2. Change only the **synthetic** signed-source allowlist: E21 remains exactly two APKs, E22 exactly three, E23 exactly four with exact names and paths. Reverify signer/version and privately publish the full APK set before running its code.
+3. New test-only loader in the same dedicated `:fonesi_guest_split` process: require the E20 graph's base→alpha→beta parentage, alpha node containing its configuration APK and no other extras. Create base/alpha/beta `DexClassLoader` objects with checked parents, never load guest code from an installed original APK, execute the real beta→alpha challenge, verify private APK readback, and test locale-dependent Resources from the canonical private APK paths.
+4. Extend the existing synthetic host Activity/service and bounded emulator proof runner to accept `--proof-level e23`, require **four** SHA-pinned members installed using `adb install-multiple` on a new owned AOSP34 x86_64 emulator and exact `pm path` membership. Accept only a fresh UUID-bound receipt proving configuration graph/resource and previous DEX flags; any missing report, failed translated value, or host/installed source fallback is FAIL.
+5. Run an E23 GitHub Actions pipeline with pinned SDK, Android 34/KVM, core/APK/source test suites, exact component/permission/ELF audit, compile/lint, signed fixture verification and Android execution. Observe E21/E22 regression on the final code SHA. Do not declare a pass based only on manifest parsing or signed fixture generation.
+6. Record exact green run, artifact hash and limitations in E23 results and STATUS only when CI actually passes. Keep PR #12 Draft until product gates are met.
+
+## Product constraints
+No arbitrary third-party config APKs, dynamic Play delivery, guest Activity/Service/Provider/Binder, permission mediation, Play Services, social login, Samsung ARM64, kernel UID isolation, safe account update or release signing. E23 is a technical slice in the 8-phase/32-step product roadmap, not Phase 23 of the app.
