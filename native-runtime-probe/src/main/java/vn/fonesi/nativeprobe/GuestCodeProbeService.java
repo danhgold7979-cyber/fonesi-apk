@@ -1,5 +1,6 @@
 package vn.fonesi.nativeprobe;
 
+import android.app.Application;
 import android.app.Service;
 import android.content.Intent;
 import android.content.pm.ApplicationInfo;
@@ -12,6 +13,8 @@ import android.os.IBinder;
 import android.os.Process;
 import org.json.JSONObject;
 import java.io.File;
+import java.nio.charset.StandardCharsets;
+import java.security.SecureRandom;
 import java.security.MessageDigest;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -54,8 +57,21 @@ public final class GuestCodeProbeService extends Service {
     private void run(String runId) {
         File reports = null;
         JSONObject result = new JSONObject();
-        String stage = "canonical host-private directory";
+        String stage = "verify dedicated Android process";
         try {
+            // An Android process name isolates the exercise from the host lifecycle, but
+            // both processes still share an application UID. Never claim kernel-level isolation.
+            final String processName;
+            if (Build.VERSION.SDK_INT >= 28) {
+                processName = Application.getProcessName();
+            } else {
+                throw new IllegalStateException("E12 synthetic process proof requires Android API 28+");
+            }
+            ProbeData.check((getPackageName() + ":fonesi_guest_loader").equals(processName),
+                "synthetic bytecode may run only in its dedicated named process");
+            ProbeData.check(Process.myUid() == getApplicationInfo().uid,
+                "reported UID does not match this host application");
+            stage = "canonical host-private directory";
             // Android may expose /data/user/0 as a framework-controlled alias of /data/data.
             // Canonicalize trusted Context directories first; never relax PrivateApkStore's guards.
             File hostRoot = getApplicationContext().getDataDir().getCanonicalFile();
@@ -117,12 +133,38 @@ public final class GuestCodeProbeService extends Service {
             ProbeData.check(evidence.matches(image), "private image unchanged after class/resource load");
             ProbeData.check(ledger.readVerified(runId).getActive() == null, "code load is not guest activation");
 
+            stage = "execute bytecode from signed private DEX image";
+            final String entryName = PAYLOAD + ".ProbeEntrypoint";
+            Class<?> entryClass = loaded.getClassLoader().loadClass(entryName);
+            ProbeData.check(entryClass.getClassLoader() == loaded.getClassLoader(),
+                "synthetic bytecode must be defined by private guest class loader");
+            boolean hostClassAbsent = false;
+            try { getClass().getClassLoader().loadClass(entryName); }
+            catch (ClassNotFoundException expected) { hostClassAbsent = true; }
+            ProbeData.check(hostClassAbsent, "synthetic entrypoint must not be bundled into host APK");
+
+            byte[] nonce = new byte[16];
+            new SecureRandom().nextBytes(nonce);
+            String challenge = hex(nonce);
+            String expectedReply = hex(MessageDigest.getInstance("SHA-256").digest(
+                ("FONESI-E12-SYNTHETIC-V1:" + challenge).getBytes(StandardCharsets.UTF_8)));
+            Object returned = entryClass.getMethod("execute", String.class).invoke(null, challenge);
+            ProbeData.check(expectedReply.equals(returned),
+                "private guest bytecode did not execute the challenge contract");
+            // Never persist challenge or response. This only proves synthetic class execution.
+            ProbeData.check(evidence.matches(image), "private APK changed during guest bytecode execution");
+            ProbeData.check(ledger.readVerified(runId).getActive() == null,
+                "guest code execution is not provider activation/readback");
+
             stage = "write successful synthetic receipt";
             result.put("complete", true).put("passed", true).put("run_id", runId)
                 .put("api", Build.VERSION.SDK_INT).put("pid", Process.myPid())
                 .put("abi", Build.SUPPORTED_ABIS.length > 0 ? Build.SUPPORTED_ABIS[0] : "unknown")
                 .put("signed_private_cluster", true).put("dex_class_loader", true)
                 .put("private_resources", true).put("activation_pending", true)
+                .put("guest_bytecode_executed", true).put("guest_process_verified", true)
+                .put("guest_process_name", processName).put("guest_process_pid", Process.myPid())
+                .put("guest_uid_same_as_host", true)
                 .put("guest_context_executed", false).put("guest_activity_executed", false)
                 .put("binder_provider_tested", false).put("social_accounts_tested", false);
         } catch (Throwable failure) {
@@ -138,6 +180,13 @@ public final class GuestCodeProbeService extends Service {
             stopSelf();
             Process.killProcess(Process.myPid()); // Never hot-swap guest code/hook policy.
         }
+    }
+
+    private static String hex(byte[] input) {
+        final char[] digits = "0123456789abcdef".toCharArray();
+        StringBuilder result = new StringBuilder(input.length * 2);
+        for (byte b : input) result.append(digits[(b >>> 4) & 15]).append(digits[b & 15]);
+        return result.toString();
     }
 
     @SuppressWarnings("deprecation")
