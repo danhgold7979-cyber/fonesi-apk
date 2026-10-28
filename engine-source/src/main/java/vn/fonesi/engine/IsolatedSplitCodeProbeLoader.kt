@@ -57,7 +57,7 @@ class IsolatedSplitCodeProbeLoader(private val context: Context, private val sto
         check(layout.cluster.apks.splits.single().feature)
         check(graph.allApks.all { it.canonicalFile == it && it.path.startsWith(owned.path + File.separator) })
 
-        val abi = Build.SUPPORTED_64_BIT_ABIS.firstOrNull()
+        val abi = Build.SUPPORTED_64_BIT_ABIS.firstOrNull() ?: error("No 64-bit guest ABI")
         check(abi == "x86_64" || abi == "arm64-v8a")
         val pageSize = Os.sysconf(OsConstants._SC_PAGESIZE).toInt()
         check(pageSize == 4096 || pageSize == 16384)
@@ -148,8 +148,8 @@ class IsolatedSplitCodeProbeLoader(private val context: Context, private val sto
     }
 
     private fun ownedDirectory(requested: File, owned: File): File {
-        val absolute = requested.absoluteFile
-        check(absolute.canonicalFile == absolute && absolute.path.startsWith(owned.path + File.separator))
+        val absolute = requested.canonicalFile
+        check(absolute.path.startsWith(owned.path + File.separator))
         check(absolute.mkdirs() || absolute.isDirectory)
         check(absolute.canonicalFile == absolute)
         return absolute
