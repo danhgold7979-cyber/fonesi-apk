@@ -39,7 +39,7 @@ jobs:
       - name: Verify signed private APK auditor and existing source runtime regression
         run: |
           ./scripts/gradle.sh :core:test :apk-runtime:test --console=plain
-          ./scripts/gradle.sh -PsourceEngineAbi=x86_64 :engine-source:testDebugUnitTest --console=plain
+          ./scripts/gradle.sh -PincludeSourceEngine=true -PsourceEngineAbi=x86_64 :engine-source:testDebugUnitTest --console=plain
       - name: Build E21 debug-only probe and synthetic payload with lint
         run: |
           ./scripts/gradle.sh -PincludeNativeRuntimeProbe=true -PsourceEngineAbi=x86_64 :native-runtime-probe:assembleDebug :native-runtime-probe:lintDebug --console=plain
