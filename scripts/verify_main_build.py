@@ -48,6 +48,7 @@ def main():
     public_components = set()
     route = None
     system_guards = {
+        ("receiver", "androidx.work.impl.diagnostics.DiagnosticsReceiver"): "android.permission.DUMP",
         ("service", "androidx.work.impl.background.systemjob.SystemJobService"): "android.permission.BIND_JOB_SERVICE",
         ("receiver", "androidx.work.impl.background.systemjob.RescheduleReceiver"): "android.permission.RECEIVE_BOOT_COMPLETED",
     }
