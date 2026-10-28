@@ -13,10 +13,16 @@ def main():
     apk = ROOT / "app/build/outputs/apk/debug/app-debug.apk"
     manifest, permissions, signer = inspect_apk(apk, "vn.fonesi.app")
     internal = "vn.fonesi.app.permission.INTERNAL_SDK"
-    expected = {internal, "vn.fonesi.app.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION"} | {
-        "android.permission." + name for name in ["INTERNET", "ACCESS_NETWORK_STATE", "WAKE_LOCK",
-            "RECEIVE_BOOT_COMPLETED", "CAMERA", "RECORD_AUDIO", "FOREGROUND_SERVICE",
-            "FOREGROUND_SERVICE_SPECIAL_USE", "POST_NOTIFICATIONS",
+    # WorkManager 2.10.2 requires these two explicit runtime scheduling permissions.
+    # Keep them exact; they are not a wildcard permission allowance.
+    work_manager_permissions = {
+        "android.permission.ACCESS_NETWORK_STATE",
+        "android.permission.WAKE_LOCK",
+        "android.permission.RECEIVE_BOOT_COMPLETED",
+    }
+    expected = {internal, "vn.fonesi.app.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION"} | work_manager_permissions | {
+        "android.permission." + name for name in ["INTERNET", "CAMERA", "RECORD_AUDIO",
+            "FOREGROUND_SERVICE", "FOREGROUND_SERVICE_SPECIAL_USE", "POST_NOTIFICATIONS",
             "USE_BIOMETRIC", "USE_FINGERPRINT"]}
     if permissions != expected:
         raise RuntimeError(f"Unexpected candidate permissions: {sorted(permissions ^ expected)}")
