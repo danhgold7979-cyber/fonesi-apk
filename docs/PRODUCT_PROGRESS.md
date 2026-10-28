@@ -28,4 +28,4 @@ The dimension estimates and weights are heuristic judgments anchored in docs/STA
 
 ## Update rule for subsequent reports
 
-Every progress message should report (1) last fully PASS technical milestone, (2) in-progress milestone, (3) product % estimate under this same rubric, (4) tests/CI proof, (5) production blockers, and (6) branch/commit. Next technical milestone is **E30 provider feasibility and production-engine acceptance gate**. Revise the % only for newly implemented/accepted product functionality, not solely for additional synthetic tests, commit counts or successful CI workflows.
+Every progress message should report (1) last fully PASS technical milestone, (2) in-progress milestone, (3) product % estimate under this same rubric, (4) tests/CI proof, (5) production blockers, and (6) branch/commit. Next technical milestone is **E32 candidate-source and provenance gate**; E30/E31 found no currently eligible production provider, so product integration remains blocked. Revise the % only for newly implemented/accepted product functionality, not solely for additional synthetic tests, commit counts or successful CI workflows.
