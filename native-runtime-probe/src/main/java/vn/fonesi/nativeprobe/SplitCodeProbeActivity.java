@@ -24,7 +24,7 @@ public final class SplitCodeProbeActivity extends Activity {
         super.onCreate(saved);
         status = new TextView(this);
         status.setPadding(24, 36, 24, 24);
-        status.setText("Fonesi E21/E22 · signed isolated synthetic APK proof");
+        status.setText("Fonesi E21/E22/E23 · signed isolated synthetic APK proof");
         setContentView(status);
         try {
             if (saved != null) {
@@ -44,7 +44,7 @@ public final class SplitCodeProbeActivity extends Activity {
                     .putExtra(SplitCodeProbeService.EXTRA_RUN_ID, runId)
                     .putExtra("proof_level", proof));
             }
-            ProbeData.check(deadline > 0 && ("e21".equals(proof) || "e22".equals(proof)),
+            ProbeData.check(deadline > 0 && ("e21".equals(proof) || "e22".equals(proof) || "e23".equals(proof)),
                 "Missing or invalid synthetic proof level/deadline");
             handler.post(this::poll);
         } catch (Throwable failure) {
