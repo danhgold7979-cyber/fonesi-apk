@@ -36,3 +36,7 @@ GitHub upload-artifact có thể giữ cây thư mục tương đối khi tải 
 ## Bằng chứng lỗi Android có giới hạn
 
 Nếu Android khởi động được nhưng runtime/biên nhận không đạt, chỉ thu logcat `AndroidRuntime:E`, `FonesiNativeProbe:E` và `libc:F` từ AVD mới tạo, giới hạn 64 KiB và không chứa dữ liệu tài khoản (AVD chỉ cài hai APK synthetic). Không lấy full logcat, cookie, thông báo người dùng hay thông tin mạng xã hội. Lỗi phải giữ nguyên trạng thái FAIL/BLOCKED và không tự gọi `confirmFromRuntimeReadback`.
+
+## Chẩn đoán hàng đợi GitHub Actions
+
+Sau các checkpoint code, lượt CI mới nhất bị `pending` trong khi một job cũ vẫn `in_progress` nhưng chưa có step nào chạy trên runner; việc `cancel-in-progress` chưa giải phóng nhóm concurrency. Đây chưa phải lỗi emulator/code-image. Cho đúng một checkpoint mới dùng group concurrency khác trên cùng nhánh, giữ `cancel-in-progress=true`, không thay assertion, hash APK, AVD ownership hoặc giới hạn thời gian; nếu runner vẫn không được cấp thì báo BLOCKED thay vì sửa mã để giả pass.
