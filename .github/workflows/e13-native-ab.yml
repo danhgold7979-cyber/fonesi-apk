@@ -48,6 +48,8 @@ jobs:
           "$ANDROID_HOME/build-tools/36.0.0/apksigner" verify --verbose probe-payload/build/outputs/apk/debug/probe-payload-debug.apk
           sha256sum native-runtime-probe/build/outputs/apk/debug/native-runtime-probe-debug.apk probe-payload/build/outputs/apk/debug/probe-payload-debug.apk
 
+      - name: Audit exact synthetic native probe components, ELF and permissions
+        run: python3 scripts/run_native_probe.py --audit-only
       - name: Install only Android 34 AOSP emulator image
         run: python3 scripts/prepare_native_emulator.py --install --image aosp34
       - name: Allow KVM for the ephemeral GitHub runner when present
