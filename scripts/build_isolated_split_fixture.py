@@ -112,8 +112,7 @@ public final class {class_name} {{
                 "--target-sdk-version", "34", "--auto-add-overlay"]
         if split is not None:
             # A genuine isolated feature must not share the base's resource ID namespace.
-            args += ["--feature-of", output / "working-base/unsigned.apk",
-                     "--package-id", "0x80"]
+            args += ["--package-id", "0x80"]
         args += [arg for flat in flats for arg in ("-R", flat)]
         run(args)
         classes = work / "classes"
