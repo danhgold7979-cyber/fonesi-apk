@@ -298,8 +298,18 @@ public final class SyntheticGuestUiProbeActivity extends Activity {
         try {
             JSONObject receipt = new JSONObject()
                 .put("complete", true).put("passed", false).put("run_id", runId)
+                .put("proof_level", proofLevel)
                 .put("failure_stage", stage)
                 .put("failure_type", error.getClass().getSimpleName())
+                .put("android_lifecycle_transcript", String.join(",", androidEvents))
+                .put("signed_view_exists", signedView != null)
+                .put("signed_view_attached", signedView != null && signedView.isAttachedToWindow())
+                .put("view_attached_verified", viewAttached)
+                .put("private_class_verified", verifiedPrivateClass)
+                .put("private_resource_verified", verifiedPrivateResource)
+                .put("private_component_catalog_verified", privateComponentCatalogVerified)
+                .put("activity_finishing", isFinishing())
+                .put("activity_destroyed", destroyed)
                 .put("actual_guest_activity_attached", false);
             saveReceipt(receipt);
         } catch (Throwable ignored) {
