@@ -47,8 +47,10 @@ final class SyntheticSignedSplitSource {
             if (byName.put(app.splitNames[index], app.splitSourceDirs[index]) != null)
                 throw new SecurityException("Duplicate synthetic feature split identity");
         }
-        if (!byName.keySet().equals(withDependent
-            ? java.util.Set.of(FEATURE, DEPENDENT) : java.util.Set.of(FEATURE))) {
+        Set<String> expectedFeatures = new LinkedHashSet<>();
+        expectedFeatures.add(FEATURE);
+        if (withDependent) expectedFeatures.add(DEPENDENT);
+        if (!byName.keySet().equals(expectedFeatures)) {
             throw new SecurityException("Unexpected synthetic APK split name");
         }
         List<String> paths = new ArrayList<>();
