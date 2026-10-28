@@ -54,7 +54,7 @@ def main():
     parser.add_argument("--source-commit", default="a9aa5a8d53b0c82eabcc071fd0e0fa19fdcc612c")
     parser.add_argument("--boot-timeout", type=int, default=480)
     parser.add_argument("--probe-timeout", type=int, default=180)
-    parser.add_argument("--proof-level", choices=("e11", "e12", "e13", "e14"), default="e11",
+    parser.add_argument("--proof-level", choices=("e11", "e12", "e13", "e14", "e15"), default="e11",
                         help="E13 additionally verifies independent synthetic native file/SQLite routes")
     args = parser.parse_args()
     if args.boot_timeout not in range(30, 601) or args.probe_timeout not in range(15, 301):
@@ -81,6 +81,7 @@ def main():
         "android_guest_bytecode_verified": False,
         "android_native_ab_sqlite_verified": False,
         "android_scoped_storage_verified": False,
+        "android_internal_binder_verified": False,
         "social_apps_tested": False,
         "samsung_or_physical_device_tested": False,
     }
@@ -192,7 +193,16 @@ def main():
         evidence["android_apks_installed"] = True
         save()
 
-        if args.proof_level == "e13":
+        if args.proof_level == "e15":
+            stage = "bind dedicated synthetic guest channel by explicit host Activity"
+            expected_run_id = str(uuid.uuid4())
+            started = device("shell", "am", "start", "-W", "-n",
+                             PROBE_PACKAGE + "/.SyntheticChannelProbeActivity",
+                             "--es", "run_id", expected_run_id, timeout=90, check=False)
+            if started.returncode:
+                raise RuntimeError("Synthetic Binder host Activity dispatch failed")
+            stage = "read exact remote same-UID Binder round-trip receipt"
+        elif args.proof_level == "e13":
             stage = "dispatch synthetic two-process native A/B probe"
             expected_run_id = str(uuid.uuid4())
             started = device("shell", "am", "start", "-W", "-n",
@@ -211,7 +221,21 @@ def main():
         deadline = time.monotonic() + args.probe_timeout
         report = None
         while time.monotonic() < deadline:
-            if args.proof_level == "e13":
+            if args.proof_level == "e15":
+                raw = device("exec-out", "run-as", PROBE_PACKAGE, "cat",
+                             "files/binder-probe/" + expected_run_id + ".json",
+                             timeout=12, check=False)
+                if raw.returncode == 0 and len(raw.stdout) <= 16384:
+                    try:
+                        found = json.loads(raw.stdout)
+                        if found.get("complete") is True:
+                            if found.get("run_id") != expected_run_id:
+                                raise RuntimeError("Synthetic Binder receipt UUID differs from requested run")
+                            report = found
+                            break
+                    except json.JSONDecodeError:
+                        pass
+            elif args.proof_level == "e13":
                 raw = device("exec-out", "run-as", PROBE_PACKAGE, "cat",
                              "files/native-probe/latest.json", timeout=12, check=False)
                 if raw.returncode == 0 and len(raw.stdout) <= 16384:
@@ -251,7 +275,28 @@ def main():
             time.sleep(2)
         if report is None:
             raise RuntimeError("No complete Android synthetic receipt before timeout")
-        if args.proof_level == "e13":
+        if args.proof_level == "e15":
+            (reports / "internal-binder-receipt.json").write_text(json.dumps(report, indent=2) + "\n")
+            host_pid, remote_pid = report.get("host_pid"), report.get("remote_pid")
+            host_uid, remote_uid = report.get("host_uid"), report.get("remote_uid")
+            expected_true = ("complete", "passed", "remote_binder_verified",
+                             "challenge_response_verified", "remote_process_distinct", "same_android_uid")
+            expected_false = ("guest_application_attached", "third_party_binder_virtualized",
+                              "social_accounts_tested", "kernel_uid_isolation")
+            if not all(report.get(k) is True for k in expected_true) or not all(
+                    report.get(k) is False for k in expected_false):
+                raise RuntimeError("Synthetic remote Binder receipt failed required assertions")
+            if not (type(host_pid) is int and host_pid > 0 and
+                    type(remote_pid) is int and remote_pid > 0 and remote_pid != host_pid and
+                    type(host_uid) is int and host_uid >= 0 and
+                    type(remote_uid) is int and remote_uid == host_uid):
+                raise RuntimeError("Binder receipt lacks distinct PIDs and exact shared UID")
+            evidence["android_internal_binder_verified"] = True
+            evidence["result"] = "PASS_E15_SYNTHETIC_INTERNAL_BINDER_ONLY"
+            print("PASS: Android 34 AVD proved versioned in-app Binder IPC between host and "
+                  "distinct synthetic guest-named process. Android UID is shared; third-party "
+                  "Binder virtualization and real account isolation remain unverified.", flush=True)
+        elif args.proof_level == "e13":
             (reports / "native-ab-receipt.json").write_text(json.dumps(report, indent=2) + "\n")
             a, b = report.get("A"), report.get("B")
             host_pid, host_uid = report.get("host_pid"), report.get("host_uid")
