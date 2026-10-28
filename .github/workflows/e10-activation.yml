@@ -1,0 +1,37 @@
+name: E10 activation source verification
+
+on:
+  push:
+    branches:
+      - develop/guest-runtime-e10-20261028
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  android-and-source:
+    runs-on: ubuntu-latest
+    timeout-minutes: 55
+    env:
+      FONESI_TOOLS_DIR: /tmp/fonesi-tools
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install pinned verified Android toolchain
+        run: python3 scripts/bootstrap_android.py --accept-sdk-license
+      - name: Verify core, signed APK fixtures, app tests, build and lint
+        run: ./scripts/check.sh
+      - name: Prepare independently pinned source-native dependencies
+        run: python3 scripts/prepare_source_engine.py --install-tools
+      - name: Verify guest source component, JVM tests, native host test and ARM64 AAR
+        run: python3 scripts/check_source_engine.py
+      - name: Report remaining runtime gates honestly
+        run: |
+          echo "Android guest process: NOT RUN"
+          echo "Split guest execution: NOT RUN"
+          echo "Device/account isolation: NOT RUN"
