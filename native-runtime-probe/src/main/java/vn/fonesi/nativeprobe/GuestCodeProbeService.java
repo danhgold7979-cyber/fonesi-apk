@@ -74,8 +74,14 @@ public final class GuestCodeProbeService extends Service {
             ProbeData.check(staged.getActive() == null && image.equals(staged.getPending()), "staged but not activated");
             ProbeData.check(image.equals(ledger.readVerified(runId).getPending()), "durable code intent");
 
-            // An empty routing map cannot make the host process a guest. This is a new, dedicated process.
-            NativeRuntime.configure(getApplicationContext(), Collections.emptyMap());
+            // Native PathRules requires at least one owned route. Only synthetic paths are mapped.
+            File syntheticSource = new File(reports, runId + "-source").getCanonicalFile();
+            File syntheticGuest = new File(reports, runId + "-guest").getCanonicalFile();
+            ProbeData.check((syntheticSource.isDirectory() || syntheticSource.mkdirs()) &&
+                (syntheticGuest.isDirectory() || syntheticGuest.mkdirs()), "private synthetic routing directories");
+            java.util.Map<String, File> isolatedRules = new java.util.LinkedHashMap<>();
+            isolatedRules.put(syntheticSource.getPath(), syntheticGuest);
+            NativeRuntime.configure(getApplicationContext(), isolatedRules);
             ProbeData.check(NativeRuntime.state() == NativeRuntime.CONFIGURED, "native configuration");
             NativeRuntime.enable(getApplicationContext());
             ProbeData.check(NativeRuntime.state() == NativeRuntime.ENABLED, "native activation");
