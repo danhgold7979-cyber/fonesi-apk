@@ -44,8 +44,8 @@ public final class SplitCodeProbeService extends Service {
         File reports = null;
         JSONObject result = new JSONObject();
         try {
-            ProbeData.check(Build.VERSION.SDK_INT >= 28 &&
-                (getPackageName() + ":fonesi_guest_split").equals(Application.getProcessName()),
+            final String processName = Build.VERSION.SDK_INT >= 28 ? Application.getProcessName() : null;
+            ProbeData.check((getPackageName() + ":fonesi_guest_split").equals(processName),
                 "E21 must run in its explicitly named guest process");
             ProbeData.check(Process.is64Bit() && Process.myUid() == getApplicationInfo().uid,
                 "E21 process ABI/UID mismatch");
@@ -97,7 +97,7 @@ public final class SplitCodeProbeService extends Service {
             stage = "write_success_receipt";
             result.put("complete", true).put("passed", true).put("run_id", runId)
                 .put("api", Build.VERSION.SDK_INT).put("pid", Process.myPid())
-                .put("uid", Process.myUid()).put("process_name", Application.getProcessName())
+                .put("uid", Process.myUid()).put("process_name", processName)
                 .put("private_split_graph_verified", true)
                 .put("private_isolated_base_code_executed", true)
                 .put("private_isolated_feature_code_executed", true)
