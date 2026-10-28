@@ -57,9 +57,16 @@ def main():
     activities = {component(a.get(A + "name")): a for a in app.findall("activity")}
     assert set(activities) == {
         PACKAGE + ".MainActivity", PACKAGE + ".GuestCodeProbeActivity",
-        PACKAGE + ".SyntheticChannelProbeActivity", PACKAGE + ".SplitCodeProbeActivity",
+        PACKAGE + ".SyntheticChannelProbeActivity", PACKAGE + ".SplitCodeProbeActivity", PACKAGE + ".SyntheticGuestUiProbeActivity",
     }, "Unexpected exported synthetic probe Activity"
     assert all(a.get(A + "exported") == "true" for a in activities.values())
+    assert activities[PACKAGE + ".SyntheticGuestUiProbeActivity"].get(A + "process") == ":fonesi_guest_ui", (
+        "E24 UI synthetic activity must run in the dedicated guest-named process"
+    )
+    assert all(a.get(A + "process") is None for name, a in activities.items()
+               if name != PACKAGE + ".SyntheticGuestUiProbeActivity"), (
+        "No older exported synthetic Activity may acquire a guest process unexpectedly"
+    )
     services = {component(s.get(A + "name")): s for s in app.findall("service")}
     expected_services = {
         PACKAGE + ".ProbeService$A": ":fonesi_guest_a",
