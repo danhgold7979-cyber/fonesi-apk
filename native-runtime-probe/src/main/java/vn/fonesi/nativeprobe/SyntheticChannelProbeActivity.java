@@ -130,6 +130,7 @@ public final class SyntheticChannelProbeActivity extends Activity {
                 .put("private_guest_resources_via_binder_verified", true)
                 .put("synthetic_guest_application_attached", true)
                 .put("synthetic_guest_application_on_create_verified", true)
+                .put("guest_application_attached", false) // No ActivityThread/PackageManager guest registration.
                 .put("full_guest_application_lifecycle_verified", false)
                 .put("guest_activity_executed", false)
                 .put("third_party_binder_virtualized", false)
