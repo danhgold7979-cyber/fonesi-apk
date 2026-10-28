@@ -22,3 +22,9 @@ Chỉ chạy trên Android emulator do workflow tạo, gắn serial cụ thể. 
 ## Cổng E11-Android
 
 PASS khi đồng thời: AVD boot hoàn tất và service package/activity sẵn sàng, cài APK đúng hash, run UUID khớp, native hook state ENABLED, private APK signed+readback, DexClassLoader load class payload và resource marker đúng, activation ledger vẫn pending, tất cả denial flags giữ false. Nếu bất kỳ điều kiện nào chưa đạt, giữ FAIL/BLOCKED và lập plan sửa cụ thể. Mốc Samsung ARM64/One UI, lifecycle/Binder, account isolation, full split/isolatedSplits, cập nhật giữ phiên, phát hành Fonesi vẫn **OPEN**.
+
+## Điều chỉnh trước khi code runner: sử dụng đúng artifact đã ký/test
+
+Artifact CI `a9aa5a8` có Activity tạo UUID nội bộ; thêm intent `run_id` vào nhánh hiện tại sẽ không tồn tại trong byte APK đã đóng băng. Để không tuyên bố kiểm thử một source khác artifact, **không sửa Activity/probe APK ở lát cắt này**. AVD luôn tạo mới (không reuse), app chưa có bất cứ report nào; sau launch, runner đợi duy nhất một file `<uuid>.json` trong `files/guest-code-probe/` qua `run-as`, xác thực tên UUID khớp trường `run_id`, `complete=true` và đúng dữ liệu test. Trường hợp có 0/nhiều report, UUID lỗi, timeout hoặc APK hash sai đều FAIL. Lượt AVD này chỉ chạy một probe; receipt không thể tái sử dụng từ lần trước vì AVD chưa từng cài app.
+
+Ý tưởng truyền UUID explicit vào Activity thuộc mốc build APK mới về sau; phải build/test lại trước khi dùng, không ghép với artifact cũ.
