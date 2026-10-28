@@ -113,10 +113,10 @@ public final class SyntheticChannelProbeActivity extends Activity {
     private void fail(String detail) {
         main.post(() -> {
             try {
+                String safeReason = detail.replaceAll("[^a-zA-Z0-9 _:-]", "");
                 complete(new JSONObject().put("complete", true).put("passed", false)
                     .put("run_id", runId).put("failure_stage", "internal_binder")
-                    .put("failure_type", detail.replaceAll("[^a-zA-Z0-9 _:-]", "").substring(
-                        0, Math.min(detail.length(), 100))));
+                    .put("failure_type", safeReason.substring(0, Math.min(safeReason.length(), 100))));
             } catch (Exception ignored) { /* no stale success if a failure cannot be saved */ }
         });
     }
