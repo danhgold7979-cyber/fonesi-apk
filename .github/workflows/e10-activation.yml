@@ -9,6 +9,10 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: guest-runtime-e10-branch
+  cancel-in-progress: true
+
 jobs:
   android-and-source:
     runs-on: ubuntu-latest
