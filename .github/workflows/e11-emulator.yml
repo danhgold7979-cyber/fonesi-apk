@@ -11,7 +11,7 @@ permissions:
   actions: read
 
 concurrency:
-  group: fonesi-e11-owned-avd
+  group: fonesi-e11-owned-avd-retry1
   cancel-in-progress: true
 
 jobs:
