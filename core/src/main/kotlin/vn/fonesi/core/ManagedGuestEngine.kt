@@ -47,6 +47,30 @@ class ManagedGuestEngine(
     override val availability: EngineAvailability get() = if (backend.ready) EngineAvailability.Ready(UpdateScope.SHARED_PACKAGE)
         else EngineAvailability.Unavailable("Bộ máy thử nghiệm chưa được bật hoặc không khởi tạo được.")
 
+    /**
+     * The adapter can preflight/install one APK and read back package identity when the SDK is
+     * initialized. This is not acceptance of guest component lifecycle, framework mediation,
+     * native page-size support or account isolation.
+     */
+    override val capabilities: EngineCapabilities get() = if (backend.ready) EngineCapabilities(
+        singleApkPreflightSupported = true,
+        singleApkInstallSupported = true,
+        packageIdentityReadbackSupported = true,
+        splitClusterImportSupported = false,
+        guestActivityLifecycleVerified = false,
+        guestServiceLifecycleVerified = false,
+        guestReceiverLifecycleVerified = false,
+        guestProviderLifecycleVerified = false,
+        frameworkMediationVerified = false,
+        nativePageSizesBytesVerified = emptySet(),
+        updateReadbackVerified = false,
+        isolationLevel = EngineIsolationLevel.UNKNOWN,
+        evidenceRefs = setOf(
+            "core/src/main/kotlin/vn/fonesi/core/ManagedGuestEngine.kt",
+            "app/src/candidate/java/vn/fonesi/app/runtime/SpaceCoreBackend.kt",
+        ),
+    ) else EngineCapabilities()
+
     private fun ready() = check(backend.ready) { "Engine unavailable" }
     private fun mutationAllowed() = check(mayMutate()) { "Foreground authorization is required to start an SDK mutation" }
     private fun active() = registry.list().filter { it.state in setOf(InstanceState.RESERVED, InstanceState.READY, InstanceState.DELETING) }
