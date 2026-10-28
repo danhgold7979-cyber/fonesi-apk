@@ -27,3 +27,7 @@ The next minimally testable milestone is to prove **actual execution of guest by
 ## Privacy, security and release boundary
 
 No passwords, cookies, auth tokens, real data, third-party APK modifications or identity spoofing; no model/firmware gates removed; native hooks remain confined to the project-owned synthetic probe. Distinct process name is **not** distinct Android UID. `main`, original SpaceCore candidate and current clone database are untouched.
+
+## E12 CI failure #1 — diagnosed before source correction
+
+GitHub Actions [40641016821](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40641016821) stopped at `native-runtime-probe:lintDebug` (`1 error, 13 warnings`): call `Application.getProcessName()` needs API 28 while `minSdk=26`. The preceding `ProbeData.check(Build.VERSION.SDK_INT >= 28)` was not a version-aware control-flow guard recognized by Android lint. **Do not lower product minSdk, raise minSdk, suppress NewApi, or edit assertions.** Replace the check with an explicit `if (Build.VERSION.SDK_INT >= 28) { ... } else { throw ... }` and keep the E12 probe fail-closed below API 28. Rerun build/lint/Android runtime on new commit; source/runtime unchanged beyond this gate.
