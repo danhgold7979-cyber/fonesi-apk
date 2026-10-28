@@ -46,7 +46,11 @@ object RuntimeBindings {
                 ?.firstOrNull { it.pid == Process.myPid() }?.processName
         }
         if (process == null) { message = "Chưa xác định được tiến trình để khởi tạo engine."; return }
-        val host = process == context.packageName
+        if (process != context.packageName) {
+            message = "Chỉ khởi tạo engine từ tiến trình chính của Fonesi đang hiển thị."
+            return
+        }
+        val host = true
         if (host && prefs.getBoolean("initialization_pending", false)) {
             message = "Lần khởi tạo trước bị gián đoạn. Tắt engine rồi kiểm tra trước khi bật lại."
             return
