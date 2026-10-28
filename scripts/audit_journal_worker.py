@@ -46,6 +46,12 @@ if ("LaunchedEffect(gate.unlocked)" not in manager
 if "@Synchronized fun attach(context: Context)" not in candidate or "if (initialized) return" not in candidate:
     raise SystemExit("Foreground SDK activation must be synchronized and idempotent")
 
+if "@Synchronized" not in scheduler or "fun ensureScheduled(context: Context)" not in scheduler:
+    raise SystemExit("WorkManager initialization/scheduling must be serialized within the process")
+if "internal fun schedule(work: WorkManager)" not in scheduler or "schedule(work)" not in scheduler:
+    raise SystemExit("Production and test paths must share the same unique scheduling implementation")
+if "WorkManager.initialize(app, Configuration.Builder().build())" not in scheduler:
+    raise SystemExit("Test/host WorkManager initialization fallback is missing")
 if "ExistingWorkPolicy.KEEP" not in scheduler or "ExistingPeriodicWorkPolicy.KEEP" not in scheduler:
     raise SystemExit("Recovery scheduler must retain unique KEEP semantics")
 if 'PeriodicWorkRequestBuilder<UpdateJournalRecoveryWorker>(6, TimeUnit.HOURS)' not in scheduler:
@@ -57,6 +63,7 @@ required_scheduler_test_evidence = (
     "repeatedUnlockedSchedulingKeepsUniqueWorkAndLaterEntryCanReconcileAgain",
     "initializeTestWorkManager",
     "getWorkInfosForUniqueWork",
+    "scheduler.schedule(workManager)",
     "Two unlocked entries must keep one unfinished startup request",
     "Repeated calls must keep one unfinished periodic request",
     "later unlocked manager entry must enqueue fresh startup reconciliation after completion",
