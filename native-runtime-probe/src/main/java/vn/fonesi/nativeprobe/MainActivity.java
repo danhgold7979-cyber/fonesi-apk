@@ -6,6 +6,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.os.Process;
 import android.os.SystemClock;
 import android.view.WindowManager;
 import android.widget.TextView;
@@ -71,7 +72,14 @@ public final class MainActivity extends Activity {
             if (first.isFile() && second.isFile()) {
                 JSONObject a = ProbeData.report(first), b = ProbeData.report(second);
                 ProbeData.check(a.optBoolean("passed") && b.optBoolean("passed"), "both native/SQLite checks must pass: " + a + b);
+                ProbeData.check(a.getInt("pid") > 0 && b.getInt("pid") > 0, "child PID must be valid");
                 ProbeData.check(a.getInt("pid") != b.getInt("pid"), "independent native processes");
+                ProbeData.check(a.getInt("pid") != Process.myPid() && b.getInt("pid") != Process.myPid(),
+                    "neither synthetic child may run in the host Activity process");
+                ProbeData.check(a.getInt("uid") == Process.myUid() && b.getInt("uid") == Process.myUid(),
+                    "probe processes share the host application's Android UID; they are not a kernel sandbox");
+                ProbeData.check(a.getInt("native_state") == NativeRuntime.ENABLED &&
+                    b.getInt("native_state") == NativeRuntime.ENABLED, "native file routing enabled in both children");
                 ProbeData.check("ORIGINAL".equals(ProbeData.marker(new File(scope, "original"))), "original file preserved");
                 ProbeData.check("ORIGINAL".equals(ProbeData.database(new File(scope, "original"))), "original database preserved");
                 for (String label : new String[]{"A", "B"}) {
@@ -81,7 +89,8 @@ public final class MainActivity extends Activity {
                 }
                 ProbeData.check(NativeRuntime.state() == NativeRuntime.EMPTY, "host process remains unhooked");
                 JSONObject result = new JSONObject().put("complete", true).put("passed", true).put("api", Build.VERSION.SDK_INT)
-                    .put("run_id", runId)
+                    .put("run_id", runId).put("host_pid", Process.myPid()).put("host_uid", Process.myUid())
+                    .put("same_android_uid", true).put("processes_have_distinct_pids", true)
                     .put("abi", Build.SUPPORTED_ABIS[0]).put("A", a).put("B", b).put("original_preserved", true)
                     .put("social_accounts_tested", false).put("full_clone_engine_tested", false);
                 ProbeData.report(new File(root, "latest.json"), result);
