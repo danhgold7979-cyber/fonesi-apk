@@ -14,16 +14,27 @@ import java.util.concurrent.TimeUnit
  * continues while the UI is closed. The worker itself never initializes the clone runtime.
  */
 object UpdateJournalRecoveryScheduler {
+    @Synchronized
     fun ensureScheduled(context: Context) {
         val app = context.applicationContext
         val work = try {
             WorkManager.getInstance(app)
         } catch (_: IllegalStateException) {
-            // Some test/host environments omit AndroidX Startup. Real Android initializes it
-            // before Activity launch; initialize only when no instance exists.
-            WorkManager.initialize(app, Configuration.Builder().build())
+            // AndroidX Startup normally initializes WorkManager before Activity launch. A test or
+            // host may omit Startup; if Startup wins the initialization race, verify its instance
+            // below rather than failing on a second initialize() call.
+            try {
+                WorkManager.initialize(app, Configuration.Builder().build())
+            } catch (_: IllegalStateException) {
+                // Re-read below. If no instance exists, getInstance() still fails closed.
+            }
             WorkManager.getInstance(app)
         }
+        schedule(work)
+    }
+
+    /** Shared unique-work policy, exposed internally so tests can inject a WorkManager instance. */
+    internal fun schedule(work: WorkManager) {
         work.enqueueUniqueWork(
             STARTUP_RECOVERY,
             ExistingWorkPolicy.KEEP,
