@@ -29,3 +29,9 @@ Ngày: 28/10/2026. Nhánh: `develop/guest-runtime-e10-20261028`. Baseline bất 
 ## Điều kiện không được vượt qua bằng giả lập
 
 Không mở app gốc thay clone; không lấy session đang có; không import binary/fork chưa audit; không gọi component code-image là guest đã chạy. `main` và guest cũ không bị thay đổi; không force-push, không merge hoặc phát hành bản không nghiệm thu.
+
+## Cập nhật plan sau CI host-compiler failure (28/10/2026)
+
+Lượt CI có SDK/Gradle chạy được core/app; bước `check_source_engine.py` dừng khi build Dobby host với GCC vì upstream `__has_feature(ptrauth_calls)` là macro Clang. Đây là lỗi lựa chọn host compiler, không phải lỗi Kotlin activation hay bằng chứng Android runtime. Không sửa test, không bỏ host native test và không đổi Dobby source/patch.
+
+Cách sửa: host CMake bắt buộc phát hiện `clang` và `clang++` hệ thống, truyền rõ `CMAKE_C_COMPILER`/`CMAKE_CXX_COMPILER` trước configure. Thiếu compiler thì thất bại có chẩn đoán. Android NDK toolchain đã pin vẫn giữ nguyên cho AAR; lưu version Clang host trong báo cáo. Chạy lại CI và chỉ đánh dấu source-native PASS khi host integration + AAR/JVM đều chạy thật.
