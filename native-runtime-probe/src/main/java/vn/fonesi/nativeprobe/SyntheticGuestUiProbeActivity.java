@@ -231,7 +231,7 @@ public final class SyntheticGuestUiProbeActivity extends Activity {
                     .put("complete", true).put("passed", true).put("run_id", runId)
                     .put("api", Build.VERSION.SDK_INT)
                     .put("pid", Process.myPid()).put("uid", Process.myUid())
-                    .put("process_name", Application.getProcessName())
+                    .put("process_name", Build.VERSION.SDK_INT >= 28 ? Application.getProcessName() : "unsupported")
                     .put("real_host_activity_lifecycle_verified", true)
                     .put("signed_private_guest_view_rendered", true)
                     .put("private_guest_view_attached_to_window", true)
