@@ -1,6 +1,6 @@
 # Fonesi APK — conservative product completion estimate
 
-Date: 2026-10-28. **Latest verified technical slice: E23, code SHA `e9be7c7cc211df80c27d7c811d1463244ab4e4db`**. Reference: [E23 Android CI](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40658194704) and [master roadmap](ROADMAP.md). This is a decision-support estimate, NOT measured product progress.
+Date: 2026-10-28. **Latest verified technical slice: E24, code SHA `66cd3a1d79fdd505b852db15f6b6213f8d0681a5`**. Reference: [E24 Android CI](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40660505892) and [master roadmap](ROADMAP.md). This is a decision-support estimate, NOT measured product progress.
 
 ## Product score (weighted engineering estimate)
 
@@ -19,7 +19,7 @@ The dimension estimates and weights are heuristic judgments anchored in `docs/ST
 
 ## Distinct acceptance counters
 
-- Technical milestone: **E23 passed** (synthetic four-APK configuration on Android 34 x86_64). E21 and E22 regressions passed on the same code SHA.
+- Technical milestone: **E24 passed** (Android-hosted signed private synthetic View/lifecycle relay). E21, E22 and E23 regressions passed on the same code SHA; no actual guest Activity registration was proven.
 - Production clone of real required social/e-commerce app: **0 applications accepted**. This is an acceptance count, not a statement that all engine code is missing.
 - Real Samsung ARM64 / non-Samsung phone acceptance: **not executed**.
 - Full 8-phase/32-step product completion: **not achieved**; first secure real guest activity/session isolation and release-device gates remain open.

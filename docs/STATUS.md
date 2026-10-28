@@ -1,3 +1,11 @@
+# Fonesi APK — E24 signed synthetic Android screen proof PASS (28/10/2026)
+
+**Technical E24 PASS** on source `66cd3a1d79fdd505b852db15f6b6213f8d0681a5`: Android 34 host Activity displayed an attached View created from signed private project-owned DEX and relayed the entire CREATE→DESTROY transcript. [E24 CI #40660505892](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40660505892) **SUCCESS**. E21 [#40660505783](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40660505783), E22 [#40660505960](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40660505960), E23 [#40660505786](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40660505786) also **SUCCESS** at this exact code SHA. [E24 detailed results](phases/E24_SYNTHETIC_SCREEN_RESULTS.md).
+
+**NOT a real guest Activity registration or production virtualized package.** Same host UID, no third-party account, actual guest Activity/Service/Provider/PackageManager/Binder, Play Services, ARM64 Samsung, session update or release acceptance. SpaceCore candidate remains single APK, `importsSplitApks=false`. [Weighted product readiness](PRODUCT_PROGRESS.md) remains estimated **~30%**, and the original 8-phase/32-step roadmap is unfinished. Keep test-only PR in Draft; `main` unchanged.
+
+---
+
 # Fonesi APK — technical E23 PASS / product ~30% estimate (28/10/2026)
 
 **Verified technical milestone E23:** [Android 34 CI #40658194704](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40658194704) **SUCCESS** on code `e9be7c7cc211df80c27d7c811d1463244ab4e4db`: signed private 4-member base/alpha/beta/French-alpha-config APK, correct `configForSplit` attachment, dependent DEX execution and locale resource override. E21 [#40658194522](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40658194522) and E22 [#40658194520](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40658194520) regressions also **SUCCESS** on exactly the same code. [Detailed E23 results](phases/E23_SIGNED_CONFIG_SPLIT_RESULTS.md).
