@@ -119,6 +119,70 @@ class UpdateJournalRecoveryWorkerTest {
         }
     }
 
+    @Test fun workerRetriesWhenQueueLockIsHeld() {
+        val context = ApplicationProvider.getApplicationContext<Context>()
+        val io = Executors.newSingleThreadExecutor()
+        val suffix = UUID.randomUUID().toString()
+        val databaseName = "e27-lock-$suffix.db"
+        val testRoot = File(context.filesDir, "e27-lock-$suffix/updates")
+        val db = onIo(io) { FonesiDatabase.open(context, databaseName) }
+        try {
+            val store = RoomUpdateTaskStore(db)
+            val preparing = onIo(io) { seed(store, TaskState.PREPARING) }
+            testRoot.mkdirs()
+            val held = vn.fonesi.core.update.FileQueueLock(testRoot.toPath().resolve("queue.lock")).acquire()
+            check(held != null)
+            try {
+                val worker = TestListenableWorkerBuilder<UpdateJournalRecoveryWorker>(context).build()
+                val result = onIo(io) { worker.recoverJournal(db, testRoot) }
+                assertTrue("Lock contention must request a retry", result is ListenableWorker.Result.Retry)
+                val persisted = onIo(io) { store.list().single { it.id == preparing.id } }
+                assertEquals(TaskState.PREPARING, persisted.state)
+                assertEquals(preparing.revision, persisted.revision)
+            } finally {
+                held.close()
+            }
+        } finally {
+            onIo(io) { db.close() }
+            context.deleteDatabase(databaseName)
+            testRoot.parentFile?.deleteRecursively()
+            io.shutdownNow()
+        }
+    }
+
+    @Test fun workerRetriesAndPreservesPreparingRowWhenSnapshotCleanupIsUnsafe() {
+        val context = ApplicationProvider.getApplicationContext<Context>()
+        val io = Executors.newSingleThreadExecutor()
+        val suffix = UUID.randomUUID().toString()
+        val databaseName = "e27-cleanup-$suffix.db"
+        val testRoot = File(context.filesDir, "e27-cleanup-$suffix/updates")
+        val snapshotsRoot = File(testRoot, "snapshots")
+        val outside = File(testRoot.parentFile, "outside")
+        val db = onIo(io) { FonesiDatabase.open(context, databaseName) }
+        try {
+            val store = RoomUpdateTaskStore(db)
+            val preparing = onIo(io) { seed(store, TaskState.PREPARING) }
+            snapshotsRoot.mkdirs()
+            outside.mkdirs()
+            val symlink = File(snapshotsRoot, preparing.id)
+            java.nio.file.Files.createSymbolicLink(symlink.toPath(), outside.toPath())
+
+            val worker = TestListenableWorkerBuilder<UpdateJournalRecoveryWorker>(context).build()
+            val result = onIo(io) { worker.recoverJournal(db, testRoot) }
+            assertTrue("Unsafe snapshot cleanup must request a retry", result is ListenableWorker.Result.Retry)
+            val persisted = onIo(io) { store.list().single { it.id == preparing.id } }
+            assertEquals("Failed cleanup must not advance journal state", TaskState.PREPARING, persisted.state)
+            assertEquals(preparing.revision, persisted.revision)
+            assertTrue("The symlink must not be followed or deleted", java.nio.file.Files.isSymbolicLink(symlink.toPath()))
+            assertTrue("The target directory must remain untouched", outside.isDirectory)
+        } finally {
+            onIo(io) { db.close() }
+            context.deleteDatabase(databaseName)
+            testRoot.parentFile?.deleteRecursively()
+            io.shutdownNow()
+        }
+    }
+
     @Test fun workerSourceHasNoRuntimeActivationDependency() {
         val source = File(
             "src/main/java/vn/fonesi/app/update/UpdateJournalRecoveryWorker.kt"
