@@ -1,14 +1,16 @@
-# Fonesi APK — E27 Room-backed journal recovery CI PASS / E28 scheduling next (28/10/2026)
+# Fonesi APK — E28 WorkManager scheduling CI PASS / E29 next (28/10/2026)
 
-**Latest E27 recovery CI PASS:** [workflow #40719612538](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40719612538), source SHA `d0fa57508bc05a8a271b1e3da94c6f567cef77e6`. Architecture audit passed; cloud and candidate gates each reported **320 tests**, build/lint and exact APK manifest/signature audits passed, and the candidate report retained `engine_runtime_verified == false`. [Detailed E27 results](phases/E27_ROOM_WORKER_RECOVERY_RESULTS.md) and [test-only receipts](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40719612538/artifacts/12828844755).
+**Latest E28 CI PASS:** [workflow #40727455497](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40727455497), tested source SHA `5e42dec5545c6884e99be33fba81399f5aca9df6`. The current branch HEAD `4deb14e29d119d0fcbae98d351a40d28021acebb` has the same Git tree SHA as the tested commit, so the tree under review is identical. [Detailed E28 results](phases/E28_WORKMANAGER_SCHEDULING_RESULTS.md) and [test-only evidence artifact](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40727455497/artifacts/12833762727).
 
-**What E27 adds:** the worker is tested against actual uniquely named Room rows and task-scoped private snapshot files. Tests cover PREPARING cleanup/requeue, APPLYING/VERIFYING to REVIEW_REQUIRED with snapshot retention, preserving queued/review/failed/cancelled rows and pause state, idempotence, lock-contention retry, and fail-closed handling of a symlinked snapshot path. The worker remains journal-only: no SDK activation, installed-package enumeration, clone launch, or APK import. These are synthetic recovery tests, not a production clone-engine proof.
+**E28 evidence:** architecture audit passed; cloud and candidate gates each reported **321 tests**, build/lint and exact APK manifest/signature audits passed. Tests cover unique startup/periodic work, repeated scheduling, and fresh startup reconciliation after a terminal request. The reports keep `engine_runtime_verified == false`. This does not prove exact background execution timing on every OEM or real third-party clone lifecycle.
 
-**E26 remains PASS:** [CI #40690951828](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40690951828). It proves the journal-only recovery state machine and separately audited cloud/candidate builds, not third-party clone lifecycle or device compatibility.
+**E27 CI PASS:** [workflow #40719612538](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40719612538). Real Room-row and task-scoped snapshot recovery tests cover PREPARING cleanup/requeue, APPLYING/VERIFYING review retention, queue pause preservation, idempotence, lock contention and unsafe symlink cleanup. [E27 results](phases/E27_ROOM_WORKER_RECOVERY_RESULTS.md).
+
+**E26 CI PASS:** [workflow #40690951828](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40690951828). The worker remains journal-only and cloud/candidate builds are separately audited.
 
 **Product readiness remains ~30% estimate (weighted rubric 28.00%), not measured.** Keep the original 8 product phases / 32 steps; do not increase product % solely because CI passes. See [progress rubric](PRODUCT_PROGRESS.md).
 
-**Next technical slice: E28 — WorkManager scheduling idempotence and lifecycle safety.** [Pre-code plan](phases/E28_WORKMANAGER_SCHEDULING_PLAN.md). Test unique startup/periodic work, repeated calls from the visible/unlocked manager, and the fixed worker inputs before any scheduler changes. Do not initialize the clone SDK from Application startup or a background worker.
+**Next technical slice: E29 — signed private component dispatch proof.** [Pre-code plan](phases/E29_PRIVATE_COMPONENT_DISPATCH_PLAN.md). Bind E25's verified private component catalog to E24's synthetic private code/View proof through a bounded test-only ticket. The Android host Activity is not a registered guest Activity; keep this distinction explicit.
 
 `main` remains at `c055df600f87ee9ddf0cd5d6bfc67d80d145e79d`. Cumulative work stays on `phase/e21-android-split-code-proof-20261028`; PR #12 remains open. Do not merge this technical branch as a finished product.
 
