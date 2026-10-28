@@ -40,7 +40,9 @@ public abstract class ProbeService extends Service {
             ProbeData.marker(original, label + "_UPDATED"); ProbeData.database(original, label + "_UPDATED");
             ProbeData.check((label + "_UPDATED").equals(ProbeData.marker(guest)), "file output reaches owned guest");
             ProbeData.check((label + "_UPDATED").equals(ProbeData.database(guest)), "SQLite update reaches owned guest");
-            result.put("passed", true).put("marker", label).put("native_state", NativeRuntime.state()).put("pid", Process.myPid());
+            result.put("passed", true).put("marker", label)
+                .put("native_state", NativeRuntime.state())
+                .put("pid", Process.myPid()).put("uid", Process.myUid());
         } catch (Throwable failure) {
             Log.e("FonesiNativeProbe", "Synthetic native check failed", failure);
             try { result.put("passed", false).put("error", failure.getClass().getName()).put("message", String.valueOf(failure.getMessage())); }

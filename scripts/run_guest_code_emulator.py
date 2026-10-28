@@ -54,8 +54,8 @@ def main():
     parser.add_argument("--source-commit", default="a9aa5a8d53b0c82eabcc071fd0e0fa19fdcc612c")
     parser.add_argument("--boot-timeout", type=int, default=480)
     parser.add_argument("--probe-timeout", type=int, default=180)
-    parser.add_argument("--proof-level", choices=("e11", "e12"), default="e11",
-                        help="E12 additionally requires actual synthetic private guest bytecode execution")
+    parser.add_argument("--proof-level", choices=("e11", "e12", "e13"), default="e11",
+                        help="E13 additionally verifies independent synthetic native file/SQLite routes")
     args = parser.parse_args()
     if args.boot_timeout not in range(30, 601) or args.probe_timeout not in range(15, 301):
         parser.error("Timeout out of bounded range")
@@ -79,6 +79,7 @@ def main():
         "android_boot_verified": False,
         "android_code_image_verified": False,
         "android_guest_bytecode_verified": False,
+        "android_native_ab_sqlite_verified": False,
         "social_apps_tested": False,
         "samsung_or_physical_device_tested": False,
     }
@@ -190,68 +191,118 @@ def main():
         evidence["android_apks_installed"] = True
         save()
 
-        stage = "launch synthetic guest-code activity"
-        result = device("shell", "am", "start", "-W", "-n",
-                        PROBE_PACKAGE + "/.GuestCodeProbeActivity", timeout=90, check=False)
-        if result.returncode:
-            raise RuntimeError("Guest code probe Activity dispatch failed")
-        # Brand-new AVD/app data: no previously saved run IDs or receipts may exist.
-        stage = "read exact dedicated process receipt"
+        if args.proof_level == "e13":
+            stage = "dispatch synthetic two-process native A/B probe"
+            expected_run_id = str(uuid.uuid4())
+            started = device("shell", "am", "start", "-W", "-n",
+                             PROBE_PACKAGE + "/.MainActivity", "--es", "run_id", expected_run_id,
+                             timeout=90, check=False)
+            if started.returncode:
+                raise RuntimeError("Synthetic A/B host activity dispatch failed")
+            stage = "read exact original/A/B filesystem and SQLite receipt"
+        else:
+            stage = "launch synthetic guest-code activity"
+            started = device("shell", "am", "start", "-W", "-n",
+                             PROBE_PACKAGE + "/.GuestCodeProbeActivity", timeout=90, check=False)
+            if started.returncode:
+                raise RuntimeError("Guest code probe Activity dispatch failed")
+            stage = "read exact dedicated process receipt"
         deadline = time.monotonic() + args.probe_timeout
         report = None
         while time.monotonic() < deadline:
-            listing = device("exec-out", "run-as", PROBE_PACKAGE, "ls", "-1",
-                             "files/guest-code-probe", timeout=12, check=False)
-            matches = sorted(line.strip() for line in listing.stdout.splitlines()
-                             if UUID_NAME.fullmatch(line.strip()))
-            if len(matches) > 1:
-                raise RuntimeError("Multiple receipts in freshly installed isolated probe")
-            if matches:
-                name = matches[0]
+            if args.proof_level == "e13":
                 raw = device("exec-out", "run-as", PROBE_PACKAGE, "cat",
-                             "files/guest-code-probe/" + name, timeout=12, check=False)
+                             "files/native-probe/latest.json", timeout=12, check=False)
                 if raw.returncode == 0 and len(raw.stdout) <= 16384:
                     try:
                         found = json.loads(raw.stdout)
                         if found.get("complete") is True:
-                            if found.get("run_id") != name.removesuffix(".json"):
-                                raise RuntimeError("Receipt run UUID does not match its file")
-                            if str(uuid.UUID(found["run_id"])) != found["run_id"]:
-                                raise RuntimeError("Receipt run UUID is not canonical")
+                            if found.get("run_id") != expected_run_id:
+                                raise RuntimeError("Synthetic native receipt UUID differs from launched run")
                             report = found
                             break
                     except json.JSONDecodeError:
                         pass
+            else:
+                # Brand-new AVD/app data: no previously saved run IDs or receipts may exist.
+                listing = device("exec-out", "run-as", PROBE_PACKAGE, "ls", "-1",
+                                 "files/guest-code-probe", timeout=12, check=False)
+                matches = sorted(line.strip() for line in listing.stdout.splitlines()
+                                 if UUID_NAME.fullmatch(line.strip()))
+                if len(matches) > 1:
+                    raise RuntimeError("Multiple receipts in freshly installed isolated probe")
+                if matches:
+                    name = matches[0]
+                    raw = device("exec-out", "run-as", PROBE_PACKAGE, "cat",
+                                 "files/guest-code-probe/" + name, timeout=12, check=False)
+                    if raw.returncode == 0 and len(raw.stdout) <= 16384:
+                        try:
+                            found = json.loads(raw.stdout)
+                            if found.get("complete") is True:
+                                if found.get("run_id") != name.removesuffix(".json"):
+                                    raise RuntimeError("Receipt run UUID does not match its file")
+                                if str(uuid.UUID(found["run_id"])) != found["run_id"]:
+                                    raise RuntimeError("Receipt run UUID is not canonical")
+                                report = found
+                                break
+                        except json.JSONDecodeError:
+                            pass
             time.sleep(2)
         if report is None:
-            raise RuntimeError("No complete Android guest-code receipt before timeout")
-        (reports / "guest-code-receipt.json").write_text(json.dumps(report, indent=2) + "\n")
-        expected_true = ("complete", "passed", "signed_private_cluster", "dex_class_loader",
-                         "private_resources", "activation_pending")
-        expected_false = ("guest_context_executed", "guest_activity_executed",
-                          "binder_provider_tested", "social_accounts_tested")
-        if args.proof_level == "e12":
-            expected_true += ("guest_bytecode_executed", "guest_process_verified",
-                              "guest_uid_same_as_host")
-            reported_pid = report.get("guest_process_pid")
-            if (type(reported_pid) is not int or reported_pid <= 0 or
-                    report.get("pid") != reported_pid or
-                    report.get("guest_process_name") != PROBE_PACKAGE + ":fonesi_guest_loader"):
-                raise RuntimeError("E12 receipt process identity or PID is invalid")
-        if not all(report.get(key) is True for key in expected_true) or not all(
-            report.get(key) is False for key in expected_false
-        ):
-            raise RuntimeError("Android guest-code proof did not satisfy required assertions")
-        evidence["android_code_image_verified"] = True
-        if args.proof_level == "e12":
-            evidence["android_guest_bytecode_verified"] = True
-            evidence["result"] = "PASS_E12_SYNTHETIC_BYTECODE_ONLY"
-            print("PASS: Android 34 AVD executed synthetic signed private guest bytecode. "
-                  "Guest Activity/Binder/account isolation remain unverified.", flush=True)
+            raise RuntimeError("No complete Android synthetic receipt before timeout")
+        if args.proof_level == "e13":
+            (reports / "native-ab-receipt.json").write_text(json.dumps(report, indent=2) + "\n")
+            a, b = report.get("A"), report.get("B")
+            host_pid, host_uid = report.get("host_pid"), report.get("host_uid")
+            if not (report.get("passed") is True and report.get("original_preserved") is True and
+                    report.get("processes_have_distinct_pids") is True and
+                    report.get("same_android_uid") is True and
+                    report.get("full_clone_engine_tested") is False and
+                    report.get("social_accounts_tested") is False and
+                    type(host_pid) is int and host_pid > 0 and
+                    type(host_uid) is int and host_uid >= 0 and
+                    isinstance(a, dict) and isinstance(b, dict)):
+                raise RuntimeError("Synthetic native A/B receipt failed top-level assertions")
+            if not all(
+                child.get("passed") is True and child.get("marker") == label and
+                child.get("native_state") == 2 and type(child.get("pid")) is int and
+                child["pid"] > 0 and child["pid"] != host_pid and
+                type(child.get("uid")) is int and child["uid"] == host_uid
+                for child, label in ((a, "A"), (b, "B"))
+            ) or a["pid"] == b["pid"]:
+                raise RuntimeError("Synthetic native A/B child identity, routing or SQLite checks failed")
+            evidence["android_native_ab_sqlite_verified"] = True
+            evidence["result"] = "PASS_E13_SYNTHETIC_NATIVE_AB_ONLY"
+            print("PASS: Android 34 AVD verified native file/SQLite routing in distinct A/B processes, "
+                  "original data preserved. Processes share Android UID; account isolation unverified.", flush=True)
         else:
-            evidence["result"] = "PASS_E11_SYNTHETIC_ONLY"
-            print("PASS: Android 34 AVD loaded private signed payload DEX and resources. "
-                  "Guest Activity, Binder and account isolation remain unverified.", flush=True)
+            (reports / "guest-code-receipt.json").write_text(json.dumps(report, indent=2) + "\n")
+            expected_true = ("complete", "passed", "signed_private_cluster", "dex_class_loader",
+                             "private_resources", "activation_pending")
+            expected_false = ("guest_context_executed", "guest_activity_executed",
+                              "binder_provider_tested", "social_accounts_tested")
+            if args.proof_level == "e12":
+                expected_true += ("guest_bytecode_executed", "guest_process_verified",
+                                  "guest_uid_same_as_host")
+                reported_pid = report.get("guest_process_pid")
+                if (type(reported_pid) is not int or reported_pid <= 0 or
+                        report.get("pid") != reported_pid or
+                        report.get("guest_process_name") != PROBE_PACKAGE + ":fonesi_guest_loader"):
+                    raise RuntimeError("E12 receipt process identity or PID is invalid")
+            if not all(report.get(key) is True for key in expected_true) or not all(
+                report.get(key) is False for key in expected_false
+            ):
+                raise RuntimeError("Android guest-code proof did not satisfy required assertions")
+            evidence["android_code_image_verified"] = True
+            if args.proof_level == "e12":
+                evidence["android_guest_bytecode_verified"] = True
+                evidence["result"] = "PASS_E12_SYNTHETIC_BYTECODE_ONLY"
+                print("PASS: Android 34 AVD executed synthetic signed private guest bytecode. "
+                      "Guest Activity/Binder/account isolation remain unverified.", flush=True)
+            else:
+                evidence["result"] = "PASS_E11_SYNTHETIC_ONLY"
+                print("PASS: Android 34 AVD loaded private signed payload DEX and resources. "
+                      "Guest Activity, Binder and account isolation remain unverified.", flush=True)
         save()
     except BaseException as failure:
         evidence["failure_stage"] = stage
