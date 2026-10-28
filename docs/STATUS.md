@@ -1,6 +1,33 @@
-> **Nhánh phát triển hiện tại (28/10/2026):** `develop/guest-runtime-e10-20261028`, baseline `main@c055df6` giữ nguyên. [E10 plan](phases/E10_ACTIVATION_PLAN.md) / [E10 results](phases/E10_ACTIVATION_RESULTS.md) / [E11 plan](phases/E11_ANDROID_PROBE_PLAN.md) / [E11 results](phases/E11_ANDROID_PROBE_RESULTS.md).
->
-> E10 đã thêm durable code image activation ledger (15/15 local Kotlin/JVM cases qua, chưa gọi Gradle full suite đạt) và adapter verify private APK cluster. E11 đã code đường probe Android để tải DEX/tài nguyên từ payload thử nghiệm trong process riêng, có run UUID và fail-closed report; **chưa có bằng chứng thực thi Android từ thiết bị**. GitHub Actions branch kiểm tra build/lint/test; kết quả CI phải đọc trực tiếp ở HEAD mới nhất. Không đổi candidate SpaceCore, không tuyên bố clone/social/account hoạt động, không phát hành APK hoàn chỉnh.
+# Fonesi APK — trạng thái tích hợp E19 (28/10/2026)
+
+**Master plan:** [8 phase / 32 bước](ROADMAP.md). Các mốc E10–E19 bên dưới là *lát cắt kỹ thuật* thuộc master plan, không có nghĩa toàn bộ 8 phase sản phẩm đã hoàn thành. Các thay đổi tích lũy có trên nhánh [phase/e19-clone-style-metadata-20261028](https://github.com/danhgold7979-cyber/fonesi-apk/tree/phase/e19-clone-style-metadata-20261028), kế thừa E18→E17→...→E10. `main@c055df6` chưa được merge/chỉnh bởi chuỗi này.
+
+## Cổng kiểm chứng đã có bằng chứng
+
+| Mốc | Bằng chứng CI chính xác | Điều được chứng minh |
+| --- | --- | --- |
+| E11 | [Android 34 PASS](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40640306977) | Nạp DEX/resources private từ APK ký thật, ứng dụng mẫu |
+| E12 | [Android 34 PASS](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40641518802) | Gọi bytecode mẫu qua classloader private |
+| E13 | [Android 34 PASS](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40641656320) | File/SQLite mẫu A/B ở tiến trình khác nhau, cùng Android UID |
+| E14 | [Android 34 PASS](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40643847891) | Scoped Context **chỉ dành cho mẫu thử**: file/preferences/SQLite |
+| E15 | [Android 34 PASS](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40644938313) | Kênh Binder nội bộ và PID/UID/nonce |
+| E16 | [Android 34 PASS](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40646052743) | Binder khởi chạy bytecode từ APK private của mẫu |
+| E17 | [Android 34 PASS](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40647059820) | Attach/onCreate Application **mẫu** bằng API công khai |
+| E18 | [CI tích hợp PASS](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40647494054) | 299 test app/shared, cloud/candidate/source-native, gói debug ZIP 7 tệp/hash |
+| E19 | [CI đầu PASS](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40648215912) | 307 test app/shared, Room 3→4, màu/huy hiệu, build/lint/candidate/bundle. Schema 4 đúng KSP đã commit sau lượt CI này; HEAD mới phải tái kiểm tra. |
+
+Chi tiết E19: [plan](phases/E19_CLONE_STYLE_PLAN.md), [results](phases/E19_RESULTS.md). Các kết quả trên là từ **Android Emulator AOSP34 x86_64** hoặc test cloud, không phải Samsung/ARM64 thực tế dùng tài khoản.
+
+## Cổng sản phẩm chưa hoàn thành
+
+- **Engine sản phẩm:** SDK SpaceCore candidate vẫn chỉ nhập một APK hoàn chỉnh trên ARM64/API26–34/4KB. Không import split đầy đủ; source engine E11–E17 chưa tích hợp vào APK chính như provider chạy được Activity/Service/Provider của app bất kỳ.
+- **Cách ly tài khoản:** ContextWrapper và nhiều process dưới *cùng UID* không tạo kernel/UID sandbox. Facebook/Messenger/Zalo/TikTok/Threads/X/Shopee/YouTube chưa có nghiệm thu đăng nhập, dữ liệu, thông báo, Play Services, cập nhật giữ phiên.
+- **Thiết bị và phát hành:** chưa thử ARM64/One UI, hãng khác, overnight/performance, cài nâng cấp và khóa ký release. Không tuyên bố debug test ZIP là APK phát hành.
+- **UI/khóa:** style mới đã qua Robolectric/Room; màn hình launcher/hardware auth/SAF thực còn chờ kiểm tra trên máy. Background worker đóng app vẫn chưa có bằng chứng/triển khai.
+
+---
+
+## Mốc nền tảng 0.5.0/E9 — báo cáo lịch sử trước E10
 
 # Trạng thái thực hiện — 0.5.0
 
