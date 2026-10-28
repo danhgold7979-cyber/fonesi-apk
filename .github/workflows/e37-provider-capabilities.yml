@@ -1,0 +1,79 @@
+name: E37 provider capability and truthful manager gating
+
+on:
+  push:
+    branches:
+      - phase/e21-android-split-code-proof-20261028
+    paths:
+      - ".github/workflows/e37-provider-capabilities.yml"
+      - "core/src/main/kotlin/vn/fonesi/core/CloneEngine.kt"
+      - "core/src/main/kotlin/vn/fonesi/core/ManagedGuestEngine.kt"
+      - "core/src/test/kotlin/vn/fonesi/core/EngineCapabilitiesTest.kt"
+      - "app/src/main/java/vn/fonesi/app/AppsViewModel.kt"
+      - "app/src/main/java/vn/fonesi/app/MainActivity.kt"
+      - "app/src/candidate/java/vn/fonesi/app/runtime/RuntimeBindings.kt"
+      - "app/src/candidate/java/vn/fonesi/app/runtime/SpaceCoreBackend.kt"
+      - "scripts/audit_engine_capabilities.py"
+      - "scripts/check.sh"
+      - "scripts/verify_main_build.py"
+      - "scripts/verify_candidate_build.py"
+      - "apk-runtime/src/main/kotlin/vn/fonesi/apk/PrivateApkStore.kt"
+      - "apk-runtime/src/test/kotlin/vn/fonesi/apk/PrivateApkStoreTest.kt"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: fonesi-e37-provider-capabilities-v1
+  cancel-in-progress: true
+
+jobs:
+  provider-capability-contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      FONESI_TOOLS_DIR: /tmp/fonesi-tools
+      ANDROID_HOME: /tmp/fonesi-tools/android-sdk
+      ANDROID_SDK_ROOT: /tmp/fonesi-tools/android-sdk
+    steps:
+      - name: Checkout exact cumulative E37 source
+        uses: actions/checkout@v4
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Audit capability claims and compile audit scripts
+        run: |
+          python3 -m py_compile scripts/audit_engine_capabilities.py scripts/verify_main_build.py scripts/verify_candidate_build.py
+          python3 scripts/audit_engine_capabilities.py
+      - name: Bootstrap pinned Android SDK36 and JDK21
+        run: python3 scripts/bootstrap_android.py --accept-sdk-license
+      - name: Run core/APK/app tests and cloud build audit
+        run: ./scripts/check.sh
+      - name: Build and audit opt-in candidate separately
+        run: ./scripts/check.sh --with-engine-candidate
+      - name: Verify explicit production acceptance boundary
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          core = Path("core/src/main/kotlin/vn/fonesi/core/CloneEngine.kt").read_text()
+          runtime = Path("app/src/candidate/java/vn/fonesi/app/runtime/RuntimeBindings.kt").read_text()
+          assert "const val supportsSplits = false" in runtime
+          assert "guestActivityLifecycleVerified: Boolean = false" in core
+          assert "isolationLevel: EngineIsolationLevel = EngineIsolationLevel.UNKNOWN" in core
+          print("PASS: split execution, real guest lifecycle and account isolation remain unaccepted.")
+          PY
+      - name: Upload test-only capability audit receipts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: fonesi-E37-provider-capabilities-TEST-ONLY
+          path: |
+            app/build/reports/cloud-verification.json
+            app/build/reports/candidate-verification.json
+            app/build/test-results/testDebugUnitTest/TEST-*.xml
+            apk-runtime/build/test-results/test/TEST-*.xml
+            core/build/test-results/test/TEST-*.xml
+          if-no-files-found: warn
+          retention-days: 7
