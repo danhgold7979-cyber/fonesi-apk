@@ -7,6 +7,7 @@ ROOT = Path(__file__).resolve().parents[1]
 worker = (ROOT / "app/src/main/java/vn/fonesi/app/update/UpdateJournalRecoveryWorker.kt").read_text()
 worker = re.sub(r"/\*[\s\S]*?\*/|//[^\r\n]*", "", worker)
 application = (ROOT / "app/src/main/java/vn/fonesi/app/FonesiApplication.kt").read_text()
+scheduler = (ROOT / "app/src/main/java/vn/fonesi/app/update/UpdateJournalRecoveryScheduler.kt").read_text()
 manager = (ROOT / "app/src/main/java/vn/fonesi/app/MainActivity.kt").read_text()
 candidate = (ROOT / "app/src/candidate/java/vn/fonesi/app/runtime/RuntimeBindings.kt").read_text()
 
@@ -26,12 +27,12 @@ for required in required_worker:
     if required not in worker:
         raise SystemExit(f"E26 worker is missing required journal-only behavior: {required}")
 
-if "RuntimeBindings.attach" in application or "attachBaseContext" in application:
-    raise SystemExit("Application startup must not initialize the native clone SDK")
-if "enqueueUniqueWork(" not in application or "enqueueUniquePeriodicWork(" not in application:
+if "RuntimeBindings" in application or "attachBaseContext" in application:
+    raise SystemExit("Application process startup must remain side-effect free")
+if "enqueueUniqueWork(" not in scheduler or "enqueueUniquePeriodicWork(" not in scheduler:
     raise SystemExit("Startup and periodic journal recovery must both be scheduled")
-if "LaunchedEffect(gate.unlocked)" not in manager or "if (gate.unlocked) RuntimeBindings.attach(applicationContext)" not in manager:
-    raise SystemExit("SDK activation must be tied to visible unlocked manager UI")
+if "LaunchedEffect(gate.unlocked)" not in manager or "UpdateJournalRecoveryScheduler.ensureScheduled(applicationContext)" not in manager or "RuntimeBindings.attach(applicationContext)" not in manager:
+    raise SystemExit("Recovery scheduling and SDK activation must be tied to visible unlocked manager UI")
 if "@Synchronized fun attach(context: Context)" not in candidate or "if (initialized) return" not in candidate:
     raise SystemExit("Foreground SDK activation must be synchronized and idempotent")
 
