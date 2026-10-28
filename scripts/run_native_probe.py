@@ -49,9 +49,24 @@ def main():
     assert manifest.find("uses-sdk").get(A + "minSdkVersion") == "26"
     app = manifest.find("application")
     assert app.get(A + "allowBackup") == "false" and app.get(A + "usesCleartextTraffic") == "false"
-    assert len(app.findall("activity")) == 1
-    services = app.findall("service")
-    assert len(services) == 2 and all(s.get(A + "exported") == "false" and s.get(A + "process").startswith(":fonesi_guest_") for s in services)
+    # Keep the legacy A/B probe audit compatible with the explicitly declared
+    # E11 code-image probe, without permitting arbitrary exported components.
+    def component(name):
+        assert name, "Component name missing"
+        return PACKAGE + name if name.startswith(".") else name
+    activities = {component(a.get(A + "name")): a for a in app.findall("activity")}
+    assert set(activities) == {PACKAGE + ".MainActivity", PACKAGE + ".GuestCodeProbeActivity"}
+    assert all(a.get(A + "exported") == "true" for a in activities.values())
+    services = {component(s.get(A + "name")): s for s in app.findall("service")}
+    expected_services = {
+        PACKAGE + ".ProbeService$A": ":fonesi_guest_a",
+        PACKAGE + ".ProbeService$B": ":fonesi_guest_b",
+        PACKAGE + ".GuestCodeProbeService": ":fonesi_guest_loader",
+    }
+    assert set(services) == set(expected_services), "Unexpected native probe component"
+    assert all(services[name].get(A + "exported") == "false" and
+               services[name].get(A + "process") == expected
+               for name, expected in expected_services.items()), "Guest services must be internal and isolated by name"
     with zipfile.ZipFile(apk) as z:
         assert [n for n in z.namelist() if n.startswith("lib/") and n.endswith(".so")] == ["lib/x86_64/libfonesi_runtime.so"]
         blob = z.read("lib/x86_64/libfonesi_runtime.so")
