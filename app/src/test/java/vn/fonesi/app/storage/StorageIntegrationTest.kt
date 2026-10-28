@@ -201,7 +201,7 @@ class StorageIntegrationTest {
 
     @Test fun v3DatabaseMigratesToV4KeepingCloneTokenQueueAndEngineReservation() = background {
         db.close()
-        assertTrue(context.deleteDatabase(name))
+        context.deleteDatabase(name) // Fresh test DB may not have materialized a file yet.
         val resource = checkNotNull(javaClass.classLoader!!.getResourceAsStream(
             "vn.fonesi.app.storage.FonesiDatabase/3.json"))
         val schema = JSONObject(resource.bufferedReader().use { it.readText() }).getJSONObject("database")
@@ -235,7 +235,7 @@ class StorageIntegrationTest {
         assertEquals("teal", row.accentKey)
         assertNull(row.badgeText)
         assertTrue(RoomUpdateTaskStore(db).isPaused())
-        assertEquals("reserved-id", db.instances().list("engine-a").single().id)
+        assertEquals("reserved-id", db.instances().list("engine-a").single().cloneId)
         assertEquals(4, db.openHelper.writableDatabase.version)
     }
 
