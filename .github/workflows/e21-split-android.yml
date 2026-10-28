@@ -36,14 +36,6 @@ jobs:
         run: |
           python3 scripts/bootstrap_android.py --accept-sdk-license
           python3 scripts/prepare_source_engine.py --install-tools
-      - name: Verify signed private APK auditor and existing source runtime regression
-        run: |
-          ./scripts/gradle.sh :core:test :apk-runtime:test --console=plain
-          ./scripts/gradle.sh -PincludeSourceEngine=true -PsourceEngineAbi=x86_64 :engine-source:testDebugUnitTest --console=plain
-      - name: Build E21 debug-only probe and synthetic payload with lint
-        run: |
-          ./scripts/gradle.sh -PincludeNativeRuntimeProbe=true -PsourceEngineAbi=x86_64 :native-runtime-probe:assembleDebug :native-runtime-probe:lintDebug --console=plain
-          ./scripts/gradle.sh -PincludeEngineProbe=true :probe-payload:assembleDebug :probe-payload:lintDebug --console=plain
       - name: Generate isolated base and feature APKs with disposable same-signer test key
         run: |
           python3 scripts/build_isolated_split_fixture.py --output .local/e21-fixtures \
@@ -71,6 +63,14 @@ jobs:
           PY
           "$ANDROID_HOME/build-tools/36.0.0/apksigner" verify --verbose .local/e21-fixtures/synthetic-split-base.apk
           "$ANDROID_HOME/build-tools/36.0.0/apksigner" verify --verbose .local/e21-fixtures/synthetic-split-feature.apk
+      - name: Verify signed private APK auditor and existing source runtime regression
+        run: |
+          ./scripts/gradle.sh :core:test :apk-runtime:test --console=plain
+          ./scripts/gradle.sh -PincludeSourceEngine=true -PsourceEngineAbi=x86_64 :engine-source:testDebugUnitTest --console=plain
+      - name: Build E21 debug-only probe and synthetic payload with lint
+        run: |
+          ./scripts/gradle.sh -PincludeNativeRuntimeProbe=true -PsourceEngineAbi=x86_64 :native-runtime-probe:assembleDebug :native-runtime-probe:lintDebug --console=plain
+          ./scripts/gradle.sh -PincludeEngineProbe=true :probe-payload:assembleDebug :probe-payload:lintDebug --console=plain
       - name: Audit existing probe component allowlist and native ELF
         run: python3 scripts/run_native_probe.py --audit-only
       - name: Install only owned Android 34 AOSP x86_64 system image
