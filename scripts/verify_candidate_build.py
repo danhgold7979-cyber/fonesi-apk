@@ -16,7 +16,7 @@ def main():
     expected = {internal, "vn.fonesi.app.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION"} | {
         "android.permission." + name for name in ["INTERNET", "ACCESS_NETWORK_STATE", "WAKE_LOCK",
             "RECEIVE_BOOT_COMPLETED", "CAMERA", "RECORD_AUDIO", "FOREGROUND_SERVICE",
-            "FOREGROUND_SERVICE_DATA_SYNC", "FOREGROUND_SERVICE_SPECIAL_USE", "POST_NOTIFICATIONS",
+            "FOREGROUND_SERVICE_SPECIAL_USE", "POST_NOTIFICATIONS",
             "USE_BIOMETRIC", "USE_FINGERPRINT"]}
     if permissions != expected:
         raise RuntimeError(f"Unexpected candidate permissions: {sorted(permissions ^ expected)}")
