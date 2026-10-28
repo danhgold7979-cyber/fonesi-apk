@@ -16,6 +16,12 @@ import java.util.UUID
 
 /** A published code snapshot, never a running/installed guest or an active-version pointer. */
 data class PrivateApkCluster(val id: String, val apks: AuditedApkSet) {
+    /**
+     * Deterministic identity of the verified cluster contents/metadata, independent of its random
+     * storage ID and absolute private paths. This is a digest, not a signature or install receipt.
+     */
+    val clusterDigest: String get() = digestCluster(apks)
+
     fun source() = InstalledSource(apks.base.packageName, apks.base.version, apks.base.signers,
         listOf(apks.base.file.path) + apks.splits.map { it.file.path })
 }
@@ -169,6 +175,35 @@ class PrivateApkStore(root: Path) {
             Files.newInputStream(path).use { stream ->
                 val buffer = ByteArray(65536)
                 while (true) { val count = stream.read(buffer); if (count < 0) break; digest.update(buffer, 0, count) }
+            }
+            return hex(digest.digest())
+        }
+
+        private fun digestCluster(apks: AuditedApkSet): String {
+            val digest = MessageDigest.getInstance("SHA-256")
+            fun field(value: String) {
+                val bytes = value.toByteArray(Charsets.UTF_8)
+                digest.update(java.nio.ByteBuffer.allocate(4).putInt(bytes.size).array())
+                digest.update(bytes)
+            }
+            field("fonesi-package-cluster-v1")
+            field(apks.base.packageName)
+            field(apks.base.version.toString())
+            apks.base.signers.sorted().forEach { field("signer:$it") }
+            val members = listOf(apks.base) + apks.splits.sortedBy { it.splitName.orEmpty() }
+            members.forEach { member ->
+                field(if (member.splitName == null) "BASE" else "SPLIT")
+                field(member.splitName.orEmpty())
+                field(member.feature.toString())
+                field(member.configFor.orEmpty())
+                member.dependencies.sorted().forEach { field("dependency:$it") }
+                member.requiredTypes.sorted().forEach { field("requires:$it") }
+                member.providedTypes.sorted().forEach { field("provides:$it") }
+                field(member.splitRequired.toString())
+                field(member.isolatedSplits.toString())
+                member.signers.sorted().forEach { field("member-signer:$it") }
+                field(member.sha256)
+                field(member.file.length().toString())
             }
             return hex(digest.digest())
         }
