@@ -27,7 +27,9 @@ class UpdateJournalRecoveryWorkerTest {
         // from the closed-source SDK and all installed/guest package APIs.
         val source = java.io.File(
             "src/main/java/vn/fonesi/app/update/UpdateJournalRecoveryWorker.kt"
-        ).readText()
+        ).readText().replace(
+            Regex("""/\\*[\\s\\S]*?\\*/|//[^\\r\\n]*"""), ""
+        )
         assertTrue(source.contains("UpdateJournalRecovery("))
         assertTrue(source.contains("RoomUpdateTaskStore"))
         assertTrue(!source.contains("RuntimeBindings"))
