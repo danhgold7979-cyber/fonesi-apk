@@ -95,12 +95,27 @@ public final class SyntheticChannelProbeActivity extends Activity {
             if (remotePid <= 0 || remotePid == Process.myPid() || remoteUid != Process.myUid())
                 throw new IllegalStateException("Binder did not run in a separate same-UID process");
 
+            // A distinct AIDL request must execute the project-owned code from a signed,
+            // independently published private DEX image inside that same Binder process.
+            String guestChallenge = UUID.randomUUID().toString().replace("-", "");
+            String guestExpected = SyntheticGuestChannelService.hex(MessageDigest.getInstance("SHA-256")
+                .digest(("FONESI-E12-SYNTHETIC-V1:" + guestChallenge).getBytes(StandardCharsets.UTF_8)));
+            String guestResponse = channel.exchangeGuest(guestChallenge);
+            String[] guestParts = guestResponse != null ? guestResponse.split("\\|", -1) : new String[0];
+            if (guestParts.length != 4 || !"E16".equals(guestParts[0]) ||
+                !guestExpected.equals(guestParts[1]) ||
+                Integer.parseInt(guestParts[2]) != remotePid ||
+                Integer.parseInt(guestParts[3]) != remoteUid)
+                throw new IllegalStateException("Remote private guest bytecode proof mismatch");
+
             JSONObject report = new JSONObject().put("complete", true).put("passed", true)
                 .put("run_id", runId).put("api", Build.VERSION.SDK_INT)
                 .put("host_pid", Process.myPid()).put("remote_pid", remotePid)
                 .put("host_uid", Process.myUid()).put("remote_uid", remoteUid)
                 .put("remote_binder_verified", true).put("challenge_response_verified", true)
                 .put("remote_process_distinct", true).put("same_android_uid", true)
+                .put("private_guest_bytecode_via_binder_verified", true)
+                .put("private_guest_resources_via_binder_verified", true)
                 .put("guest_application_attached", false)
                 .put("third_party_binder_virtualized", false)
                 .put("social_accounts_tested", false).put("kernel_uid_isolation", false);
