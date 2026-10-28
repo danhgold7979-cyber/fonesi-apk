@@ -76,10 +76,10 @@ def main():
     def save():
         evidence_file.write_text(json.dumps(evidence, indent=2, sort_keys=True) + "\n", encoding="utf-8")
 
-    def run(cmd, timeout=45, check=True):
+    def run(cmd, timeout=45, check=True, input_data=None):
         return subprocess.run(
             [str(arg) for arg in cmd], stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-            env=env, timeout=timeout, check=check, text=True,
+            env=env, timeout=timeout, check=check, text=True, input=input_data,
         )
 
     serial = None
@@ -88,8 +88,14 @@ def main():
     stage = "verify APK input"
     save()
     try:
-        probe_apk = args.apk_dir / "native-runtime-probe-debug.apk"
-        payload_apk = args.apk_dir / "probe-payload-debug.apk"
+        def unique_artifact(name):
+            candidates = [p for p in args.apk_dir.rglob(name) if p.is_file() and not p.is_symlink()]
+            if len(candidates) != 1:
+                raise RuntimeError("Expected exactly one verified artifact: " + name)
+            return candidates[0]
+
+        probe_apk = unique_artifact("native-runtime-probe-debug.apk")
+        payload_apk = unique_artifact("probe-payload-debug.apk")
         for label, file, expected in (
             ("probe", probe_apk, PROBE_SHA256), ("payload", payload_apk, PAYLOAD_SHA256)
         ):
@@ -117,7 +123,7 @@ def main():
         save()
         created = run([manager, "create", "avd", "--name", avd,
                        "--package", SDK_IMAGE, "--device", "pixel_6"],
-                      timeout=90, check=False)
+                      timeout=90, check=False, input_data="no\\n")
         if created.returncode:
             (reports / "avd-create.log").write_text(created.stderr[-8000:] + created.stdout[-4000:])
             raise RuntimeError("AOSP AVD creation failed")
