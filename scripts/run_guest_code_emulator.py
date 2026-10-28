@@ -272,6 +272,43 @@ def main():
             if installed.returncode or "Success" not in installed.stdout:
                 raise RuntimeError("Synthetic APK install failed")
         evidence["android_apks_installed"] = True
+        if args.proof_level in ("e24", "e25"):
+            # AOSP first boot can deliver late display/locale configuration changes after
+            # sys.boot_completed. Launching the lifecycle probe during that window destroys
+            # the Activity before its private DEX worker finishes. Require four identical
+            # read-only framework/display snapshots before the Activity lifecycle test.
+            stage = "wait for stable Android UI configuration before E24/E25"
+            deadline = time.monotonic() + 40
+            previous = None
+            stable_samples = 0
+            while time.monotonic() < deadline:
+                snapshot = []
+                for command in (
+                    ("shell", "wm", "size"),
+                    ("shell", "wm", "density"),
+                    ("shell", "settings", "get", "system", "font_scale"),
+                    ("shell", "settings", "get", "system", "user_rotation"),
+                    ("shell", "getprop", "persist.sys.locale"),
+                    ("shell", "getprop", "persist.sys.language"),
+                    ("shell", "getprop", "persist.sys.country"),
+                ):
+                    result = device(*command, timeout=8, check=False)
+                    if result.returncode != 0:
+                        raise RuntimeError("Cannot read Android UI configuration fingerprint")
+                    snapshot.append(result.stdout.strip())
+                current = tuple(snapshot)
+                if current == previous:
+                    stable_samples += 1
+                else:
+                    previous = current
+                    stable_samples = 0
+                if stable_samples >= 3:
+                    evidence["android_ui_configuration_stable"] = True
+                    save()
+                    break
+                time.sleep(2)
+            else:
+                raise RuntimeError("Android UI configuration did not stabilize before E24/E25")
         if args.proof_level in ("e21", "e22", "e23"):
             stage = "install exact signed isolated synthetic split members"
             install_members = [split_base, split_feature]
