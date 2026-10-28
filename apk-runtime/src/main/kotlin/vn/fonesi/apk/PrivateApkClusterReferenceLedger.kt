@@ -50,12 +50,13 @@ class PrivateApkClusterReferenceLedger(root: Path) {
     fun acquire(reference: ClusterReference): Boolean = withLockedIndex { current ->
         validate(reference)
         require(isPublishedCluster(reference.clusterId)) { "Cannot reference a missing or unsafe cluster" }
-        if (reference in current) current to false else (current + reference) to true
+        if (current.any { sameOwner(it, reference) }) current to false else (current + reference) to true
     }
 
     fun release(reference: ClusterReference): Boolean = withLockedIndex { current ->
         validate(reference)
-        if (reference !in current) current to false else (current - reference) to true
+        val next = current.filterNot { sameOwner(it, reference) }.toSet()
+        if (next == current) current to false else next to true
     }
 
     fun references(clusterId: String): Set<ClusterReference> = withLockedIndex { current ->
@@ -96,6 +97,10 @@ class PrivateApkClusterReferenceLedger(root: Path) {
         return Files.isDirectory(path, NOFOLLOW_LINKS) && path.toRealPath() == path &&
             Files.isRegularFile(path.resolve("cluster.index"), NOFOLLOW_LINKS)
     }
+
+    private fun sameOwner(left: ClusterReference, right: ClusterReference): Boolean =
+        left.clusterId == right.clusterId && left.ownerType == right.ownerType &&
+            left.ownerId == right.ownerId && left.engineKey == right.engineKey
 
     private fun validate(reference: ClusterReference) {
         validateClusterId(reference.clusterId)
