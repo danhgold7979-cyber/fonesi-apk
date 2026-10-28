@@ -132,13 +132,12 @@ class UpdateJournalRecoveryTest {
             if (next.state == TaskState.QUEUED) {
                 val current = f.store.list().single()
                 f.store.beforeReplace = null
-                f.store.replace(current, current.copy(revision = current.revision + 1,
-                    changedAt = current.changedAt + 1))
+                f.store.replace(current, current.move(TaskState.QUEUED, current.changedAt + 1))
             }
         }
         val result = recovery(f).recover()
         assertTrue(result.retryable)
-        assertEquals(TaskState.PREPARING, f.store.list().single().state)
+        assertEquals(TaskState.QUEUED, f.store.list().single().state)
         assertFalse(Files.exists(f.root.resolve("snapshots").resolve(old.id)))
     }
 }
