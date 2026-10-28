@@ -49,11 +49,19 @@ def main():
     parser = argparse.ArgumentParser(description="Synthetic Android code-image proof (no account data)")
     parser.add_argument("--apk-dir", type=Path, required=True)
     parser.add_argument("--reports", type=Path, default=ROOT / ".local/e11-emulator")
+    parser.add_argument("--expected-probe-sha256", default=PROBE_SHA256)
+    parser.add_argument("--expected-payload-sha256", default=PAYLOAD_SHA256)
+    parser.add_argument("--source-commit", default="a9aa5a8d53b0c82eabcc071fd0e0fa19fdcc612c")
     parser.add_argument("--boot-timeout", type=int, default=480)
     parser.add_argument("--probe-timeout", type=int, default=180)
     args = parser.parse_args()
     if args.boot_timeout not in range(30, 601) or args.probe_timeout not in range(15, 301):
         parser.error("Timeout out of bounded range")
+    for digest in (args.expected_probe_sha256, args.expected_payload_sha256):
+        if re.fullmatch(r"[0-9a-f]{64}", digest) is None:
+            parser.error("Expected SHA-256 must be 64 lowercase hexadecimal characters")
+    if re.fullmatch(r"[0-9a-f]{40}", args.source_commit) is None:
+        parser.error("Source commit must be a full Git SHA-1")
     env = environment()
     sdk = Path(env["ANDROID_HOME"])
     adb = sdk / "platform-tools/adb"
@@ -64,7 +72,7 @@ def main():
     attempt = str(uuid.uuid4())
     evidence = {
         "attempt_id": attempt,
-        "source_commit": "a9aa5a8d53b0c82eabcc071fd0e0fa19fdcc612c",
+        "source_commit": args.source_commit,
         "result": "RUNNING",
         "android_boot_verified": False,
         "android_code_image_verified": False,
@@ -97,12 +105,13 @@ def main():
         probe_apk = unique_artifact("native-runtime-probe-debug.apk")
         payload_apk = unique_artifact("probe-payload-debug.apk")
         for label, file, expected in (
-            ("probe", probe_apk, PROBE_SHA256), ("payload", payload_apk, PAYLOAD_SHA256)
+            ("probe", probe_apk, args.expected_probe_sha256),
+            ("payload", payload_apk, args.expected_payload_sha256)
         ):
             if not file.is_file() or file.is_symlink() or sha256(file) != expected:
                 raise RuntimeError(label + " APK not present or hash differs from green CI artifact")
-        evidence["probe_sha256"] = PROBE_SHA256
-        evidence["payload_sha256"] = PAYLOAD_SHA256
+        evidence["probe_sha256"] = args.expected_probe_sha256
+        evidence["payload_sha256"] = args.expected_payload_sha256
         save()
 
         stage = "verify owned SDK and hardware acceleration"
