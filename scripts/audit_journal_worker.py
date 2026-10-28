@@ -64,12 +64,12 @@ required_scheduler_test_evidence = (
     "initializeTestWorkManager",
     "getWorkInfosForUniqueWork",
     "scheduler.schedule(workManager)",
-    "Two unlocked entries must keep one unfinished startup request",
-    "Repeated calls must keep one unfinished periodic request",
+    "Two unlocked entries must keep at most one unfinished startup request",
+    "Repeated calls must keep at most one unfinished periodic request",
     "later unlocked manager entry must enqueue fresh startup reconciliation after completion",
-    "ControlledJournalWorker",
-    "releaseWorker",
     "WorkManagerTestInitHelper.ExecutorsMode.PRESERVE_EXECUTORS",
+    "cancelWorkById(requestToFinish.id)",
+    "afterReentry.any { it.id !in priorIds }",
 )
 for required in required_scheduler_test_evidence:
     if required not in scheduler_tests:
