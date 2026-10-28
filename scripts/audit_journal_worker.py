@@ -5,7 +5,7 @@ import re
 
 ROOT = Path(__file__).resolve().parents[1]
 worker = (ROOT / "app/src/main/java/vn/fonesi/app/update/UpdateJournalRecoveryWorker.kt").read_text()
-worker = re.sub(r"/\\*.*?\\*/|//[^\\n]*", "", worker, flags=re.DOTALL)
+worker = re.sub(r"/\*[\s\S]*?\*/|//[^\r\n]*", "", worker)
 application = (ROOT / "app/src/main/java/vn/fonesi/app/FonesiApplication.kt").read_text()
 manager = (ROOT / "app/src/main/java/vn/fonesi/app/MainActivity.kt").read_text()
 candidate = (ROOT / "app/src/candidate/java/vn/fonesi/app/runtime/RuntimeBindings.kt").read_text()
