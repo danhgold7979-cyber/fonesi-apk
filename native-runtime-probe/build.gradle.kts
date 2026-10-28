@@ -1,6 +1,7 @@
 plugins { id("com.android.application") }
 android {
     namespace = "vn.fonesi.nativeprobe"
+    buildFeatures { aidl = true }
     compileSdk = 36
     defaultConfig {
         applicationId = "vn.fonesi.nativeprobe"

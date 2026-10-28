@@ -16,5 +16,9 @@
             android:label="Fonesi code image test" />
         <service android:name=".GuestCodeProbeService" android:exported="false"
             android:process=":fonesi_guest_loader" />
+        <activity android:name=".SyntheticChannelProbeActivity" android:exported="true"
+            android:label="Fonesi internal Binder test" />
+        <service android:name=".SyntheticGuestChannelService" android:exported="false"
+            android:process=":fonesi_guest_channel" />
     </application>
 </manifest>
