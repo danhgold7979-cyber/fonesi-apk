@@ -59,8 +59,12 @@ class UpdateJournalRecoverySchedulerTest {
 
             workerExecutor.release()
             val completedStartup = awaitStartupCompletion(workManager)
-            assertTrue("Startup recovery should complete without engine activation",
-                completedStartup.any { it.id == startup.id && it.state == WorkInfo.State.SUCCEEDED })
+            assertTrue(
+                "Startup recovery should complete without engine activation; states=" +
+                    completedStartup.map { "${it.id}:${it.state}" } +
+                    "; queuedWorkerTasks=${workerExecutor.pendingCount}",
+                completedStartup.any { it.id == startup.id && it.state == WorkInfo.State.SUCCEEDED },
+            )
 
             scheduler.ensureScheduled(context)
             val afterReentry = workManager
@@ -100,6 +104,8 @@ class UpdateJournalRecoverySchedulerTest {
         override fun execute(command: Runnable) {
             if (released) command.run() else pending.add(command)
         }
+
+        val pendingCount: Int get() = pending.size
 
         fun release() {
             released = true
