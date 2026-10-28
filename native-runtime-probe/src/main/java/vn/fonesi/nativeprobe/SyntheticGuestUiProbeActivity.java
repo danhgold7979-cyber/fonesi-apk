@@ -23,6 +23,8 @@ import vn.fonesi.apk.PrivateApkStore;
 import vn.fonesi.engine.GuestCodeLoader;
 import vn.fonesi.engine.LoadedGuestCode;
 import vn.fonesi.engine.NativeRuntime;
+import vn.fonesi.engine.PrivateSyntheticComponentCatalog;
+import vn.fonesi.engine.VerifiedPrivateSyntheticComponents;
 
 /**
  * E24: real Android HOST Activity with an attached View created by independently signed,
@@ -39,6 +41,8 @@ public final class SyntheticGuestUiProbeActivity extends Activity {
     private File reports;
     private String runId;
     private String challenge;
+    private String proofLevel = "e24";
+    private boolean privateComponentCatalogVerified;
     private Class<?> privateEntrypoint;
     private PrivateApkStore store;
     private PrivateApkCluster cluster;
@@ -59,6 +63,10 @@ public final class SyntheticGuestUiProbeActivity extends Activity {
         try {
             // Fail closed on Activity recreation: never reuse a prior private classloader/process.
             if (saved != null) throw new IllegalStateException("Synthetic screen cannot hot-restart");
+            String requestedProof = getIntent().getStringExtra("proof_level");
+            if (requestedProof != null) proofLevel = requestedProof;
+            if (!"e24".equals(proofLevel) && !"e25".equals(proofLevel))
+                throw new IllegalArgumentException("Unsupported synthetic host screen proof");
             String raw = getIntent().getStringExtra("run_id");
             runId = UUID.fromString(raw).toString();
             if (!runId.equals(raw)) throw new IllegalArgumentException("Noncanonical test run UUID");
@@ -116,6 +124,22 @@ public final class SyntheticGuestUiProbeActivity extends Activity {
             NativeRuntime.enable(getApplicationContext());
             ProbeData.check(NativeRuntime.state() == NativeRuntime.ENABLED,
                 "E24 native routing could not be enabled");
+
+            if ("e25".equals(proofLevel)) {
+                stage = "private_signed_component_manifest_catalog";
+                VerifiedPrivateSyntheticComponents catalog =
+                    new PrivateSyntheticComponentCatalog(getApplicationContext(), localStore)
+                        .inspect(localCluster.getId());
+                ProbeData.check(
+                    catalog.getPackageName().equals(GUEST_PACKAGE) &&
+                    catalog.getApplicationName().equals(GUEST_PACKAGE + ".SyntheticGuestApplication") &&
+                    catalog.getActivityName().equals(GUEST_PACKAGE + ".PayloadActivity") &&
+                    catalog.getActivityExported() &&
+                    catalog.getPrivatePath().equals(localCluster.getApks().getBase().getFile().getPath()),
+                    "Synthetic private component manifest catalog is incomplete or not private"
+                );
+                privateComponentCatalogVerified = true;
+            }
 
             stage = "signed_private_dex_and_resources";
             LoadedGuestCode image = new GuestCodeLoader(getApplicationContext(), localStore)
@@ -222,6 +246,9 @@ public final class SyntheticGuestUiProbeActivity extends Activity {
             if (!reported) {
                 ProbeData.check(viewAttached && verifiedPrivateClass && verifiedPrivateResource,
                     "Private View/code/resources were not all verified");
+                if ("e25".equals(proofLevel))
+                    ProbeData.check(privateComponentCatalogVerified,
+                        "Signed private Android manifest component metadata was not verified");
                 ProbeData.check(COMPLETE.equals(androidEvents),
                     "Actual Android Activity lifecycle was incomplete");
                 String privateSequence = (String) privateEntrypoint
@@ -232,6 +259,7 @@ public final class SyntheticGuestUiProbeActivity extends Activity {
                     NativeRuntime.state() == NativeRuntime.ENABLED, "Signed private image changed");
                 JSONObject receipt = new JSONObject()
                     .put("complete", true).put("passed", true).put("run_id", runId)
+                    .put("proof_level", proofLevel)
                     .put("api", Build.VERSION.SDK_INT)
                     .put("pid", Process.myPid()).put("uid", Process.myUid())
                     .put("process_name", Build.VERSION.SDK_INT >= 28 ? Application.getProcessName() : "unsupported")
@@ -241,6 +269,8 @@ public final class SyntheticGuestUiProbeActivity extends Activity {
                     .put("private_guest_lifecycle_relay_verified", true)
                     .put("signed_private_resources_verified", true)
                     .put("signed_private_image_rechecked", true)
+                    .put("private_component_manifest_verified", privateComponentCatalogVerified)
+                    .put("real_guest_activity_registered", false)
                     .put("lifecycle_transcript", privateSequence)
                     .put("same_android_uid", true).put("kernel_uid_isolation", false)
                     .put("actual_guest_activity_attached", false)
