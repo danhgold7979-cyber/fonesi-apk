@@ -1,20 +1,20 @@
-# Fonesi APK — E29 synthetic component ticket dispatch CI PASS / E30 provider gate next (28/10/2026)
+# Fonesi APK — E29 synthetic component dispatch CI PASS / E30 production-engine gate next (28/10/2026)
 
-**Latest E29 CI PASS:** [workflow #40731817711](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40731817711), source SHA `10fc6b623a42b93e5fb62601b2f849c82b1fd471`. E24 and E25 regressions passed on the same code tree; E29's AOSP34 emulator proof confirmed the UUID/hash-bound internal ticket dispatch and signed private View lifecycle. [E29 results](phases/E29_PRIVATE_COMPONENT_DISPATCH_RESULTS.md) and [test-only evidence artifact](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40731817711/artifacts/12835337834).
+**Latest technical milestone E29 PASS:** [workflow #40731817711](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40731817711), tested source SHA `10fc6b623a42b93e5fb62601b2f849c82b1fd471`. The signed, project-owned synthetic component ticket was bound to a private APK hash, package/version/signer/component and UUID, then revalidated after explicit host-Activity dispatch. E21–E25 emulator regressions passed on the integration source. [E29 results](phases/E29_PRIVATE_COMPONENT_DISPATCH_RESULTS.md) and [test-only receipt artifact](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40731817711/artifacts/12835337834).
 
-**E29 acceptance boundary:** this proves a private manifest/catalog-to-host dispatch ticket only. It does not register or execute the declared guest `PayloadActivity`; the host still owns the Android Activity/Window. The receipt keeps `real_guest_activity_registered == false`, `actual_guest_activity_attached == false`, `third_party_component_executed == false`, `kernel_uid_isolation == false`, and `production_clone_accepted == false`.
+**Critical limitation:** this is still a synthetic private View running under Fonesi's registered host Activity. The receipt explicitly keeps `real_guest_activity_registered=false`, `third_party_component_executed=false`, `kernel_uid_isolation=false`, and `production_clone_accepted=false`. No real third-party clone has been accepted.
 
-**E28 CI PASS:** [workflow #40727455497](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40727455497). Cloud and candidate gates each reported **321 tests**; WorkManager unique scheduling, build/lint and exact APK audits passed. [E28 results](phases/E28_WORKMANAGER_SCHEDULING_RESULTS.md).
+**E28 PASS:** [workflow #40727455497](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40727455497), 321 tests per cloud/candidate gate, build/lint and exact APK signature/manifest audits passed. [E28 results](phases/E28_WORKMANAGER_SCHEDULING_RESULTS.md).
 
-**E27 CI PASS:** [workflow #40719612538](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40719612538). Room-backed recovery covers PREPARING cleanup/requeue, interrupted APPLYING/VERIFYING review retention, pause preservation, idempotence, lock contention and unsafe symlink cleanup.
+**E27 PASS:** [workflow #40719612538](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40719612538), Room-backed journal recovery, snapshot retention/cleanup, lock contention and unsafe symlink tests passed.
 
-**E26 CI PASS:** [workflow #40690951828](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40690951828). The worker remains journal-only and cloud/candidate builds are separately audited.
+**E26 PASS:** [workflow #40690951828](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40690951828), journal-only worker architecture and separately audited cloud/candidate APKs passed.
 
-**Product readiness remains ~30% estimate (weighted rubric 28.00%), not measured.** Keep the original 8 product phases / 32 steps; do not increase product % solely because technical CI passes. See [progress rubric](PRODUCT_PROGRESS.md).
+**Current phase:** E29 complete. **Next: E30 — provider feasibility and production-engine acceptance gate.** Inspect the pinned SpaceCore API and potential source engines against real requirements: base/split APK clusters, real guest component lifecycle, resources/classloader/native libraries, framework services, account isolation, update/readback, Android 16 KB/native ABI support and license/provenance. E30 must produce a code-evidence decision matrix before any production provider changes. Do not promote synthetic host dispatch to production or enable `importsSplitApks` without an independently verified implementation.
 
-**Next technical slice: E30 — production provider feasibility and acceptance gate.** Inspect the pinned candidate and source-engine adapter against the real requirements: full base/split cluster import, guest component lifecycle, resources/native libraries, framework mediation and per-account isolation. If a provider cannot meet these requirements, document exact API blockers and keep unsupported operations disabled rather than representing the synthetic host as a production clone.
+**Product readiness remains ~30% estimated (28.00% weighted rubric), not measured.** The original product plan remains 8 phases / 32 steps. Technical milestone count is not product completion. See [product progress rubric](PRODUCT_PROGRESS.md).
 
-`main` remains at `c055df600f87ee9ddf0cd5d6bfc67d80d145e79d`. Cumulative work stays on `phase/e21-android-split-code-proof-20261028`; PR #12 remains open. Do not merge this technical branch as a finished product.
+`main` remains at `c055df600f87ee9ddf0cd5d6bfc67d80d145e79d`; cumulative work remains on `phase/e21-android-split-code-proof-20261028`; PR #12 remains open. Do not merge the technical branch as a finished product.
 
 
 
