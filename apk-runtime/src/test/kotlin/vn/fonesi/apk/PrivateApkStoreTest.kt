@@ -54,6 +54,69 @@ class PrivateApkStoreTest {
         assertEquals(newVersion.clusterDigest, store.open(newVersion.id, 34).clusterDigest)
     }
 
+    @Test fun clusterReferencesAreIdempotentDurableAndOwnerScoped() {
+        val published = cluster()
+        val ref = ClusterReference(published.id, ClusterOwnerType.CLONE, "clone-123", "engine-a", 100L)
+        val ledger = PrivateApkClusterReferenceLedger(root)
+        assertTrue(ledger.acquire(ref))
+        assertFalse(ledger.acquire(ref))
+        assertEquals(setOf(ref), PrivateApkClusterReferenceLedger(root).references(published.id))
+        assertEquals(setOf(ref), ledger.referencesForOwner(ClusterOwnerType.CLONE, "clone-123", "engine-a"))
+        assertTrue(ledger.unreferencedClusterIds().isEmpty())
+    }
+
+    @Test fun releasingLastReferenceOnlyMarksOrphanCandidateAndNeverDeletesCluster() {
+        val published = cluster()
+        val ref = ClusterReference(published.id, ClusterOwnerType.REVIEW_REQUIRED, "task-456", "engine-a", 101L)
+        val ledger = PrivateApkClusterReferenceLedger(root)
+        assertTrue(ledger.acquire(ref))
+        assertTrue(ledger.release(ref))
+        assertFalse(ledger.release(ref))
+        assertTrue(ledger.references(published.id).isEmpty())
+        assertEquals(setOf(published.id), ledger.unreferencedClusterIds())
+        assertEquals(published, PrivateApkStore(root).open(published.id, 34))
+    }
+
+    @Test fun referenceLedgerRejectsMissingClusterAndInvalidOwnerIdentity() {
+        val ledger = PrivateApkClusterReferenceLedger(root)
+        val missing = java.util.UUID.randomUUID().toString()
+        assertThrows(Exception::class.java) {
+            ledger.acquire(ClusterReference(missing, ClusterOwnerType.CLONE, "clone-1", "engine-a", 1L))
+        }
+        val published = cluster()
+        assertThrows(Exception::class.java) {
+            ledger.acquire(ClusterReference(published.id, ClusterOwnerType.CLONE, " ", "engine-a", 1L))
+        }
+        assertTrue(ledger.references(published.id).isEmpty())
+    }
+
+    @Test fun concurrentReferenceAcquiresAreSerializedAcrossLedgerInstances() {
+        val published = cluster()
+        val ref = ClusterReference(published.id, ClusterOwnerType.UPDATE_TASK, "task-789", "engine-a", 102L)
+        val first = PrivateApkClusterReferenceLedger(root)
+        val second = PrivateApkClusterReferenceLedger(root)
+        val pool = Executors.newFixedThreadPool(2)
+        try {
+            val results = pool.invokeAll(listOf(Callable { first.acquire(ref) }, Callable { second.acquire(ref) }))
+                .map { it.get(30, TimeUnit.SECONDS) }
+            assertEquals(1, results.count { it })
+            assertEquals(setOf(ref), PrivateApkClusterReferenceLedger(root).references(published.id))
+        } finally {
+            pool.shutdownNow()
+        }
+    }
+
+    @Test fun corruptReferenceIndexFailsClosedWithoutDeletingPublishedCluster() {
+        val published = cluster()
+        val ledger = PrivateApkClusterReferenceLedger(root)
+        val ref = ClusterReference(published.id, ClusterOwnerType.ROLLBACK, "rollback-1", "engine-a", 103L)
+        assertTrue(ledger.acquire(ref))
+        val index = root.resolve("cluster.references").toFile()
+        change(index, byteArrayOf(0, 1, 2, 3))
+        assertThrows(Exception::class.java) { PrivateApkClusterReferenceLedger(root).references(published.id) }
+        assertTrue("Reference corruption must never delete package bytes", published.apks.base.file.isFile)
+    }
+
     @Test fun publishedCopiesRetainEverySplitAndExactSignedBytesWithPrivatePaths() {
         val input = source("chat-config", "dependent-feature", "base", "main-disguised", "base-config")
         val expected = ApkSetAuditor.verify(input, 34)
