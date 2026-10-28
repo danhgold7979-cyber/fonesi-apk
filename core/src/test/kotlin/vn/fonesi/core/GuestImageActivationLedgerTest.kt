@@ -100,6 +100,17 @@ class GuestImageActivationLedgerTest {
         check(ledger().read(clone).pending == first)
     }
 
+    @Test fun callerCannotMutateImageSignerIdentityAfterStaging() {
+        val mutable = mutableSetOf("a".repeat(64))
+        val ref = GuestImageRef(UUID.randomUUID().toString(), "vn.fonesi.fixture", 1, mutable)
+        accepted += ref
+        ledger().stage(clone, 0, ref)
+        mutable += "b".repeat(64)
+        check(ref.signerSha256 == setOf("a".repeat(64)))
+        check(ledger().read(clone).pending == ref)
+        fails<UnsupportedOperationException> { (ref.signerSha256 as MutableSet<String>).add("c".repeat(64)) }
+    }
+
     @Test fun invalidImageReferencesAreRejectedBeforeIOMutation() {
         fails<IllegalArgumentException> { GuestImageRef("../bad", "vn.fonesi.fixture", 1, signer) }
         fails<IllegalArgumentException> { GuestImageRef(UUID.randomUUID().toString(), "invalid", 1, signer) }
