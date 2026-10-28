@@ -236,6 +236,18 @@ def main():
         save()
         raise
     finally:
+        # This fresh AVD contains only the project-controlled synthetic APKs.
+        # Capture bounded crash tags, not a full system/user logcat.
+        if serial is not None and evidence.get("android_boot_verified"):
+            try:
+                filtered = run(
+                    [adb, "-s", serial, "logcat", "-d", "-s",
+                     "AndroidRuntime:E", "FonesiNativeProbe:E", "libc:F", "*:S"],
+                    timeout=15, check=False,
+                ).stdout
+                (reports / "synthetic-runtime-errors.log").write_text(filtered[-65536:])
+            except (OSError, subprocess.SubprocessError):
+                pass
         # Stop only the process group started by this runner; never touch physical devices.
         if process is not None and process.poll() is None:
             try:
