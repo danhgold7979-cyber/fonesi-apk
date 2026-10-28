@@ -1,6 +1,7 @@
 package vn.fonesi.app
 
 import android.app.Application
+import androidx.work.Configuration
 import androidx.work.ExistingPeriodicWorkPolicy
 import androidx.work.ExistingWorkPolicy
 import androidx.work.OneTimeWorkRequestBuilder
@@ -16,7 +17,14 @@ import java.util.concurrent.TimeUnit
 class FonesiApplication : Application() {
     override fun onCreate() {
         super.onCreate()
-        val work = WorkManager.getInstance(this)
+        val work = try {
+            WorkManager.getInstance(this)
+        } catch (_: IllegalStateException) {
+            // AndroidX Startup normally initializes WorkManager before Application.onCreate().
+            // Some host/test environments omit the initializer; initialize only in that case.
+            WorkManager.initialize(this, Configuration.Builder().build())
+            WorkManager.getInstance(this)
+        }
         work.enqueueUniqueWork(
             STARTUP_RECOVERY,
             ExistingWorkPolicy.KEEP,
