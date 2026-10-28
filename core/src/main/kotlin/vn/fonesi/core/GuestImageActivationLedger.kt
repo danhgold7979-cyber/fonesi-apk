@@ -1,36 +1,34 @@
-package vn.fonesi.core
-
-import java.io.ByteArrayInputStream
-import java.io.ByteArrayOutputStream
-import java.io.DataInputStream
-import java.io.DataOutputStream
-import java.nio.ByteBuffer
-import java.nio.channels.FileChannel
-import java.nio.file.Files
-import java.nio.file.LinkOption.NOFOLLOW_LINKS
-import java.nio.file.Path
-import java.nio.file.StandardCopyOption.ATOMIC_MOVE
-import java.nio.file.StandardCopyOption.REPLACE_EXISTING
-import java.nio.file.StandardOpenOption.CREATE
-import java.nio.file.StandardOpenOption.CREATE_NEW
-import java.nio.file.StandardOpenOption.READ
-import java.nio.file.StandardOpenOption.WRITE
-import java.security.MessageDigest
-import java.util.UUID
-
 /** A verified code image reference, not a running guest or evidence of account isolation. */
-data class GuestImageRef(
+class GuestImageRef(
     val clusterId: String,
     val packageName: String,
     val versionCode: Long,
-    val signerSha256: Set<String>,
+    signerSha256: Set<String>,
 ) {
+    /** Snapshot the caller's collection: a later mutation cannot change a staged identity. */
+    val signerSha256: Set<String> = java.util.Collections.unmodifiableSet(LinkedHashSet(signerSha256))
+
     init {
         require(UUID.fromString(clusterId).toString() == clusterId) { "Invalid image ID" }
         require(PACKAGE.matches(packageName) && packageName.length <= 255) { "Invalid package" }
         require(versionCode >= 0) { "Invalid version" }
-        require(signerSha256.size in 1..32 && signerSha256.all { DIGEST.matches(it) }) { "Invalid signing identity" }
+        require(this.signerSha256.size in 1..32 && this.signerSha256.all { DIGEST.matches(it) }) { "Invalid signing identity" }
     }
+
+    fun copy(
+        clusterId: String = this.clusterId,
+        packageName: String = this.packageName,
+        versionCode: Long = this.versionCode,
+        signerSha256: Set<String> = this.signerSha256,
+    ) = GuestImageRef(clusterId, packageName, versionCode, signerSha256)
+
+    override fun equals(other: Any?): Boolean = this === other || (other is GuestImageRef &&
+        clusterId == other.clusterId && packageName == other.packageName &&
+        versionCode == other.versionCode && signerSha256 == other.signerSha256)
+    override fun hashCode(): Int = (((clusterId.hashCode() * 31 + packageName.hashCode()) * 31 +
+        versionCode.hashCode()) * 31 + signerSha256.hashCode())
+    override fun toString() = "GuestImageRef(clusterId=" + clusterId + ", packageName=" + packageName +
+        ", versionCode=" + versionCode + ", signers=" + signerSha256.size + ")"
 
     companion object {
         private val PACKAGE = Regex("[A-Za-z_][A-Za-z0-9_]*(\\.[A-Za-z_][A-Za-z0-9_]*)+")
