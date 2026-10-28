@@ -115,6 +115,9 @@ class PrivateApkClusterReferenceLedger(root: Path) {
 
     private fun <T> withLockedIndex(block: (Set<ClusterReference>) -> Pair<Set<ClusterReference>, T>): T =
         synchronized(PROCESS_LOCK) {
+            check(Files.isDirectory(root, NOFOLLOW_LINKS) && root.toRealPath() == root) {
+                "Reference ledger root changed"
+            }
             val lockPath = root.resolve(lockName)
             FileChannel.open(lockPath, CREATE, WRITE).use { channel ->
                 channel.lock().use {
