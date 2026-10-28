@@ -80,7 +80,9 @@ class PrivateApkClusterReferenceLedger(root: Path) {
                 .filter { path ->
                     val name = path.fileName.toString()
                     runCatching { validateClusterId(name); true }.getOrDefault(false) &&
-                        Files.isDirectory(path, NOFOLLOW_LINKS) && path.toRealPath() == path
+                        Files.isDirectory(path, NOFOLLOW_LINKS) && path.toRealPath() == path &&
+                        Files.isRegularFile(path.resolve("cluster.index"), NOFOLLOW_LINKS) &&
+                        path.resolve("cluster.index").toRealPath() == path.resolve("cluster.index")
                 }
                 .map { it.fileName.toString() }
                 .filter { it !in referenced }
