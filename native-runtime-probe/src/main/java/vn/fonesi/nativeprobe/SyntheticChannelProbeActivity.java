@@ -108,6 +108,18 @@ public final class SyntheticChannelProbeActivity extends Activity {
                 Integer.parseInt(guestParts[3]) != remoteUid)
                 throw new IllegalStateException("Remote private guest bytecode proof mismatch");
 
+            String appChallenge = UUID.randomUUID().toString().replace("-", "");
+            String appExpected = SyntheticGuestChannelService.hex(MessageDigest.getInstance("SHA-256")
+                .digest(("FONESI-E12-SYNTHETIC-V1:" + appChallenge).getBytes(StandardCharsets.UTF_8)));
+            String appResponse = channel.exchangeGuestApplication(appChallenge);
+            String[] appParts = appResponse != null ? appResponse.split("\\|", -1) : new String[0];
+            if (appParts.length != 5 || !"E17".equals(appParts[0]) ||
+                !appExpected.equals(appParts[1]) ||
+                Integer.parseInt(appParts[2]) != remotePid ||
+                Integer.parseInt(appParts[3]) != remoteUid ||
+                !"1".equals(appParts[4]))
+                throw new IllegalStateException("Synthetic private Application attach/onCreate proof mismatch");
+
             JSONObject report = new JSONObject().put("complete", true).put("passed", true)
                 .put("run_id", runId).put("api", Build.VERSION.SDK_INT)
                 .put("host_pid", Process.myPid()).put("remote_pid", remotePid)
@@ -116,7 +128,10 @@ public final class SyntheticChannelProbeActivity extends Activity {
                 .put("remote_process_distinct", true).put("same_android_uid", true)
                 .put("private_guest_bytecode_via_binder_verified", true)
                 .put("private_guest_resources_via_binder_verified", true)
-                .put("guest_application_attached", false)
+                .put("synthetic_guest_application_attached", true)
+                .put("synthetic_guest_application_on_create_verified", true)
+                .put("full_guest_application_lifecycle_verified", false)
+                .put("guest_activity_executed", false)
                 .put("third_party_binder_virtualized", false)
                 .put("social_accounts_tested", false).put("kernel_uid_isolation", false);
             main.post(() -> complete(report));
