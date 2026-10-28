@@ -109,7 +109,7 @@ public final class {class_name} {{
         unsigned = work / "unsigned.apk"
         args = [aapt2, "link", "-o", unsigned, "-I", jar,
                 "--manifest", manifest, "--min-sdk-version", "26",
-                "--target-sdk-version", "34"]
+                "--target-sdk-version", "34", "--auto-add-overlay"]
         if split is not None:
             # A genuine isolated feature must not share the base's resource ID namespace.
             args += ["--feature-of", output / "working-base/unsigned.apk",
