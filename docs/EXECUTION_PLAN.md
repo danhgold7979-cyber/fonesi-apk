@@ -1,5 +1,9 @@
 # Kế hoạch thực thi và đối chiếu yêu cầu
 
+## E58 — serialized private cluster association (pre-code, 29/10/2026)
+
+Original **Product Phase 3 steps 14–16** with Phase 4 retained APK reference safety. Branch `phase/e58-clone-cluster-association-lock-20261029` stacked on E57 reporting SHA `f4d534a233c1c65ab6408a4aef962a44c49a672d`, whose documentation CI was still pending at planning; E57 code `abd18c1` passed [CI #40870539313](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40870539313). [E58 pre-code plan](phases/E58_CLONE_CLUSTER_ASSOCIATION_LOCK_PLAN.md): prevent CLONE ownership/metadata association from racing E56 stop by requiring a shared OS operation lease in the production association path. Keep Room transaction/owner invariants and do not double-acquire a lock in provider-confirmed delete. Add native SQLite lock/ref regressions and dedicated E40–E58 cloud/candidate CI before technical PASS. Product remains 28.00% weighted; 0 accepted real third-party clones, no split/provider/GC activation.
+
 ## E57 — verified code SHA (29/10/2026)
 
 Original **Product Phase 3 steps 14–16** plus **Phase 6 step 25**. E57 `abd18c118e3e42fe8415142d3799caefc7cf1f08` [CI #40870539313](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40870539313) **SUCCESS** across all E40–E57 audits, pinned cloud/candidate build/test/lint/signature/permission gates, and no-split/provider/GC checks. Offline clone rename and restyle now take the same OS lock as E56 stop and release it on failures; SQLite regressions cover lock contention, namespace and durable readback. [Detailed results](phases/E57_CLONE_PRESENTATION_OPERATION_LOCK_RESULTS.md), [Draft PR #31](https://github.com/danhgold7979-cyber/fonesi-apk/pull/31). Weighted product completion remains **28.00%**, 0 accepted real third-party clones; report HEAD must pass its own CI.
