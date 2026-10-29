@@ -1,22 +1,18 @@
-# Fonesi APK — E39 Room cluster ownership migration in CI (29/10/2026)
+# Fonesi APK — E40 in progress; E39 CI verified (29/10/2026)
 
-**Latest fully verified milestone: E38 PASS (reference-ledger primitive)** — [workflow #40743707502](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40743707502), 332 tests per cloud/candidate gate. [E38 results](phases/E38_CLUSTER_REFERENCE_RETENTION_RESULTS.md).
+**Repository:** [danhgold7979-cyber/fonesi-apk](https://github.com/danhgold7979-cyber/fonesi-apk)  
+**Product roadmap:** Phase 3, steps 13–16 (clone identity and lifecycle); Phase 3 is not accepted yet.  
+**Technical milestone:** E39 **PASS in cloud and candidate CI** on code source SHA `07d582e09bce8e1d21249c79333767ba8efdb4f0` — [workflow #40803931491](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40803931491). Core 118 + APK runtime 44 + Android/Robolectric 172 = **334 tests per gate**, with 0 failures/errors/skips. Build, lint, signature/permission and single-APK/split-disabled audits passed. The generated Room schema v5 was reviewed from the workflow artifact and is now committed as `app/schemas/vn.fonesi.app.storage.FonesiDatabase/5.json` (identity hash `dcf8872ce248771d576b6a200438241d`).
 
-**E39 implementation is present but not yet accepted.** Room schema v5 and migration 4→5 add `cluster_references`; `ClusterReferenceRepository` provides transactional acquire/release, owner lookups and report-only reconciliation. The first E39 compile errors were fixed by explicit lambdas and by supplying the required engine key to the migration test. The next run exposed a stale assertion in `StorageIntegrationTest`: the v3 migration now correctly ends at schema v5, so the expected version was changed from 4 to 5; the unknown-schema fixture was advanced from version 5 to 6. The workflow trigger was updated to include `StorageIntegrationTest.kt`.
+**E40 — IN PROGRESS, not PASS.** Plan: [E40 clone/cluster ownership](phases/E40_CLONE_CLUSTER_OWNERSHIP_PLAN.md); detailed execution plan is at the top of [EXECUTION_PLAN.md](EXECUTION_PLAN.md). The current branch head before E40 code is `d24b1b1d515c454cf4767d5c84e1b1a61363c105`. Work is to add nullable clone metadata `clusterId`, a non-destructive Room 5→6 migration, transactional association/generation switching, and post-provider-confirmed metadata deletion/reference release. Tests and same-source cloud/candidate CI are still required.
 
-Current validation run: [E39 #40803931491](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40803931491), source SHA `07d582e09bce8e1d21249c79333767ba8efdb4f0`. At last check, the cloud/core/APK/app test step remained in progress; do not mark E39 PASS until cloud and candidate gates complete, migration tests pass, and generated schema v5 is reviewed.
+**Safety boundary:** E39 only provides a Room owner-reference registry; E40 must keep it consistent with clone metadata. No cluster deletion/garbage collection, automatic APK publication, split import, guest Activity registration, or account isolation is enabled or proven. Keep `supportsSplits=false`, `importsSplitApks=false`, `real_guest_activity_registered=false`, `kernel_uid_isolation=false`, and `production_clone_accepted=false`.
 
-Prior E39 runs are not passes: [#40793343705](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40793343705), [#40802790656](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40802790656), and [#40803367018](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40803367018) failed on earlier compile/test issues. The rerun at [#40803170307](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40803170307) was cancelled after a test fixture change.
+**Product readiness:** **28.00% by the existing weighted heuristic (reported as ~30%)**, unchanged. Real third-party clone acceptance remains 0 apps. Device/account acceptance remains pending. The roadmap remains **8 product phases / 32 steps / 4 phone acceptance milestones**; E numbers are technical increments, not new product phases.
 
-**Safety boundary:** Room ownership remains a standalone reference registry, not yet integrated into clone metadata or update-task state transitions. No cluster garbage collection/deletion is implemented. SpaceCore remains single-APK only; `supportsSplits=false`, `importsSplitApks=false`, `real_guest_activity_registered=false`, `kernel_uid_isolation=false`, and `production_clone_accepted=false`.
+`main@c055df600f87ee9ddf0cd5d6bfc67d80d145e79d` remains unchanged. [PR #12](https://github.com/danhgold7979-cyber/fonesi-apk/pull/12) remains open as Draft; do not merge this cumulative technical branch as a finished product.
 
-**Last synthetic execution milestone E29 PASS:** [workflow #40731817711](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40731817711). E36 private cluster store integrity [#40738045402](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40738045402) and E37 capability gating [#40741094158](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40741094158) passed their recorded gates.
-
-**Product readiness remains ~30% estimated (28.00% weighted rubric), not measured.** Real third-party clone acceptance remains 0 applications. The original plan remains 8 product phases / 32 steps. See [product progress rubric](PRODUCT_PROGRESS.md).
-
-`main` remains at `c055df600f87ee9ddf0cd5d6bfc67d80d145e79d`; cumulative work remains on `phase/e21-android-split-code-proof-20261028`; PR #12 remains open. Do not merge this technical branch as a finished product.
-
-
+---
 
 # Fonesi APK — E25 component preflight PASS / E24 lifecycle race fixed (28/10/2026)
 

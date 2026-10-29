@@ -1,6 +1,6 @@
 # Fonesi APK — conservative product completion estimate
 
-Date: 2026-10-29. **Latest verified technical slice: E29**, code SHA `10fc6b623a42b93e5fb62601b2f849c82b1fd471`. [E29 workflow #40731817711](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40731817711) passed; E21–E25 emulator regressions passed on the E29 integration SHA. E26 [#40690951828](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40690951828), E27 [#40719612538](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40719612538), and E28 [#40727455497](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40727455497) also passed. See [master roadmap](ROADMAP.md). This is a decision-support estimate, NOT measured product progress.
+Date: 2026-10-29. **Latest fully verified technical slice: E39 PASS** — code SHA `07d582e09bce8e1d21249c79333767ba8efdb4f0`, [workflow #40803931491](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40803931491). Both cloud and opt-in candidate gates passed with 334 tests per gate, build/lint/APK audits and split-import guards. Generated Room schema v5 is reviewed and committed. E40 clone-metadata/cluster ownership integration is in progress and is not accepted yet. The last synthetic Android host-lifecycle proof remains E29; these storage gates do not prove a real guest Activity or account isolation. See [master roadmap](ROADMAP.md). This is a decision-support estimate, NOT measured product progress.
 
 ## Product score (weighted engineering estimate)
 
@@ -19,11 +19,12 @@ The dimension estimates and weights are heuristic judgments anchored in docs/STA
 
 ## Distinct acceptance counters
 
-- Technical milestone: **E29 passed**. E24 host Activity created/attached a View from signed private synthetic DEX and relayed its real host lifecycle; E25 parsed a private signed synthetic component manifest; E29 bound that verified component record to a UUID/hash/signer-bound dispatch ticket. None registers/launches a real guest Activity.
+- Latest fully verified technical milestone: **E39 PASS** (Room v5 owner-reference registry; cloud/candidate gates at workflow #40803931491). Latest synthetic Android host-lifecycle milestone: **E29 PASS**. E24 host Activity attached a View from signed private synthetic DEX; E25 parsed a private signed synthetic component manifest; E29 bound the component record to a UUID/hash/signer-bound dispatch ticket. None registers/launches a real guest Activity.
 - Production clone of real required social/e-commerce app: **0 applications accepted**.
 - Real Samsung ARM64 / non-Samsung phone acceptance: **not executed**.
 - Full 8-phase/32-step product completion: **not achieved**. Product Phase 1/2 still lacks a fully verified engine and real-device/account isolation acceptance.
-- E26/E27/E28: safe journal recovery, Room-backed crash recovery, and unique WorkManager scheduling passed their CI gates. These are reliability improvements, not proof of a real guest engine.
+- E26/E27/E28: safe journal recovery, Room-backed crash recovery, and unique WorkManager scheduling passed their CI gates. E36/E37/E38/E39 provide private-store integrity, capability gating, file-ledger and Room reference infrastructure. These are reliability/storage improvements, not proof of a real guest engine.
+- E40 is in progress: associate clone metadata with a readback-verified private cluster and release its CLONE owner reference only after provider-confirmed deletion. No split import or cluster garbage collection is enabled.
 - GitHub main remains on c055df600f87ee9ddf0cd5d6bfc67d80d145e79d; cumulative source remains Draft PR #12.
 
 ## Update rule for subsequent reports
