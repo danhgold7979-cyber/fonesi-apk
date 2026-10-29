@@ -1,5 +1,10 @@
 # Kế hoạch thực thi và đối chiếu yêu cầu
 
+## E50 — preview private-source authority conflict (pre-code, 29/10/2026)
+
+Branch `phase/e50-preview-private-source-authority-20261029` from E49 integration source `23ea57d65fd562d5cc611040e2e8791f6462779c`, with parent CI #40851203055 pending at plan creation. Original product Phase 4 steps 17–20. [Detailed E50 plan](phases/E50_PREVIEW_PRIVATE_SOURCE_AUTHORITY_PLAN.md): display durable private-source conflict as an explicit blocked reason in update preview, filter unsafe original-app targets without altering E47 atomic confirm, native SQLite stale-preview/legacy/owner regressions, pinned cloud/candidate workflow, no provider/split/GC. Weighted 28%, 0 real apps accepted.
+
+
 ## E49 — pre-code integration of E46 foreground, E47 manual and E48 recovery source authority (29/10/2026)
 
 Branch `phase/e49-source-authority-gates-integration-20261029`, stacked on E48 implementation `b02ef1a9b245c211f565cfb16918aa692043cd9a` and bounded E45 verified baseline. Original product Phase 4, steps 17–20. [E49 detailed pre-code plan](phases/E49_SOURCE_AUTHORITY_GATES_INTEGRATION_PLAN.md). Carry disjoint E46 foreground original-source guard, E47 manual update confirmation private-queue conflict guard and E48 recovery-time no-false-success guard into one source with all their tests. Do not overwrite independent branch histories or claim product engine readiness. Requires own E40–E49 source audits and pinned cloud/candidate build/lint/APK verification at exact E49 SHA. Keep Room v6, split import disabled, no garbage collection and original weighted product 28.00%.
