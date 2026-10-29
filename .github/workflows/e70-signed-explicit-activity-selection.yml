@@ -225,7 +225,7 @@ jobs:
           files = list(Path("apk-runtime/build/test-results/test").glob("*SignedPrivateExplicitActivityResolverTest.xml"))
           assert files, "E70 signed Activity selection tests did not execute"
           xml = ET.parse(files[0]).getroot()
-          assert int(xml.get("tests", "0")) >= 8
+          assert int(xml.get("tests", "0")) >= 11
           assert all(int(xml.get(x, "0")) == 0 for x in ("failures", "errors", "skipped"))
           print("PASS: signed PRIVATE Activity selection verified with real binary APK fixtures")
           PY

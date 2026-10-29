@@ -18,7 +18,9 @@ for token in (
     "component.kind == PrivateComponentKind.ACTIVITY_ALIAS",
     "it.className == component.aliasTarget && it.kind == PrivateComponentKind.ACTIVITY",
     "component.enabled != false && target.enabled != false",
+    "inventory.applicationPermission == null",
     "component.permission == null && target.permission == null",
+    "inventory.applicationEnabled != false",
     "caller == ExplicitActivityCaller.EXTERNAL_UNTRUSTED",
     "component.exported == true && component.enabled == true",
     "target.enabled == true",
@@ -32,6 +34,11 @@ assert resolver.index("component.permission == null") < resolver.index("Verified
     resolver.index("fun select("))
 for forbidden in ("startActivity(", "getLaunchIntentForPackage(", "PackageManager.", "Intent(", "installPackage("):
     assert forbidden not in resolver, "Unexpected guest execution API: " + forbidden
+catalog = read("apk-runtime/src/main/kotlin/vn/fonesi/apk/PrivateApkComponentCatalog.kt")
+assert "val applicationPermission: String?" in catalog and "val applicationEnabled: Boolean?" in catalog
+assert "appPermission = optionalText(string(\"permission\"), \"application permission\")" in catalog
+assert "appEnabled = declaredBoolean(\"enabled\")" in catalog
+assert "manifest.applicationPermission == null" in catalog and "manifest.applicationEnabled == null" in catalog
 assert "fun selectExplicitActivity(" in loader
 assert "SignedPrivateExplicitActivityResolver.select(componentInventory, packageName, className, caller)" in loader
 assert "componentInventory.clusterId == clusterId && componentInventory.packageName == packageName" in loader
@@ -44,9 +51,13 @@ for name in (
     "exportedSignedAliasSelectsExactlyItsPrivateActivityTarget",
     "cannotSubstituteAnotherPackageComponentKindOrImplicitEntry",
     "featureActivityCanOnlyBeResolvedFromItsVerifiedSignedSplit",
+    "inheritedSignedApplicationPermissionBlocksActivityWithoutPermissionBroker",
+    "disabledSignedApplicationBlocksEvenExplicitlyEnabledPublicActivity",
+    "featureSplitCannotOverrideBaseApplicationPermissionPolicy",
 ):
     assert name in tests, "E70 signed PRIVATE Activity JVM regression missing: " + name
-for member in ("catalog-public", "catalog-public-feature"):
+for member in ("catalog-public", "catalog-public-feature", "catalog-app-protected",
+               "catalog-app-disabled", "catalog-split-app-permission"):
     assert 'apk("' + member + '"' in fixture
 assert 'const val supportsSplits = false' in read("app/src/candidate/java/vn/fonesi/app/runtime/RuntimeBindings.kt")
 assert 'check(source.apkPaths.size == 1)' in read("app/src/candidate/java/vn/fonesi/app/runtime/SpaceCoreBackend.kt")
