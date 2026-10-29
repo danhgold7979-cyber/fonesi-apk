@@ -64,6 +64,9 @@ on:
       - "docs/PRODUCT_PROGRESS.md"
       - "docs/EXECUTION_PLAN.md"
       - "scripts/check.sh"
+  pull_request:
+    branches:
+      - phase/e53-background-private-source-recovery-20261029
   workflow_dispatch:
 
 permissions:
