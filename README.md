@@ -2,7 +2,7 @@
 
 Ứng dụng Android dự kiến quản lý nhiều bản clone của các ứng dụng trên điện thoại, ưu tiên mạng xã hội, không yêu cầu root.
 
-**Trạng thái mới nhất (29/10/2026):** E39 Room ownership registry đã PASS cloud/candidate CI ([#40803931491](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40803931491), 334 test mỗi gate). E40 đang tích hợp registry với metadata clone; chưa chứng minh split import hoặc cách ly tài khoản thật. Tiến độ sản phẩm theo rubric vẫn 28% (~30%), không phải phần trăm E hoàn thành.
+**Trạng thái mới nhất (29/10/2026):** E41 đã PASS CI với 358 test mỗi gate trên commit `d8c0a44584f1821e5ce91fa7a6a9f8875c0783ff` ([workflow #40840049529](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40840049529)). E40 đã PASS trước đó. E41 chỉ bổ sung Room reference retention cho tác vụ cập nhật/review; chưa có engine hỗ trợ split APK hoặc chứng minh cách ly tài khoản thật. Tiến độ sản phẩm theo rubric vẫn 28% (~30% làm tròn), không lấy số E làm tỷ lệ hoàn thiện.
 
 Kế hoạch sản phẩm và các điều kiện kỹ thuật nằm trong [docs/PLAN.md](docs/PLAN.md).
 
