@@ -1,5 +1,10 @@
 # Kế hoạch thực thi và đối chiếu yêu cầu
 
+## E46 — bounded cloud/candidate technical PASS (29/10/2026)
+
+On exact source `ef06a06818c997aba1a0c796171ea1b265ebdd9f`, [workflow #40849553940](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40849553940) concluded **SUCCESS**: 394 tests per cloud/candidate gate, build/lint/signature/permissions, E40–E46 audits and split-disabled/non-GC controls. [E46 results](phases/E46_FOREGROUND_SOURCE_AUTHORITY_RESULTS.md). Foreground original-source reconcile/retry now skips retained/private-owner tasks; no provider activation, real guest/session or phone acceptance. Original product Phase 4 steps 17–20 remain open and the weighted estimate stays 28.00%.
+
+
 ## E46 — foreground original-source authority guard (pre-code, 29/10/2026)
 
 Branch `phase/e46-foreground-source-authority-20261029` from E45 `64e0a285da84360e3fdea57135367d5b9bd6f8b5`; parent E45 cloud/candidate run #40848683404 was running at plan creation. Product **Phase 4, steps 17–20**. [Pre-code E46 plan](phases/E46_FOREGROUND_SOURCE_AUTHORITY_PLAN.md): ensure foreground auto-update cannot cancel or retry E43–E45 retained/private-source tasks (including legacy pre-marker E41-owned tasks) merely because the *original* installed app source changes; preserve legacy handling, Room v6, no provider or split activation; native SQLite negative tests, exact-SHA cloud/candidate audits required. Product 28.00%, real accepted apps 0.

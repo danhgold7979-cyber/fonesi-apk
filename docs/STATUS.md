@@ -1,3 +1,13 @@
+# Fonesi APK — E46 foreground original-source authority PASS; Phase 4 incomplete (29/10/2026)
+
+**Repository:** [danhgold7979-cyber/fonesi-apk](https://github.com/danhgold7979-cyber/fonesi-apk). **Branch:** `phase/e46-foreground-source-authority-20261029`; [Draft PR #20](https://github.com/danhgold7979-cyber/fonesi-apk/pull/20), stacked on E45 Draft PR #19. `main` remains `c055df600f87ee9ddf0cd5d6bfc67d80d145e79d`.
+
+**Product:** Phase 4, roadmap steps 17–20. **E46 bounded technical PASS** on exact source `ef06a06818c997aba1a0c796171ea1b265ebdd9f`: [CI #40849553940](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40849553940) SUCCESS, **394 tests per cloud/candidate gate**, source audits, build, lint, APK signature/permissions and no-split/no-GC checks passed. [E46 results](phases/E46_FOREGROUND_SOURCE_AUTHORITY_RESULTS.md) and [pre-code plan](phases/E46_FOREGROUND_SOURCE_AUTHORITY_PLAN.md).
+
+**What passed:** foreground original-source auto updater no longer cancels/requeues private retained-source tasks or older E41 owner-associated tasks just because the installed original app source differs. Original-source legacy work still has its prior tests. No production guest engine, full split import, UID/account isolation, phone or social-app acceptance. **28.00%** weighted product estimate and **0** real apps accepted. A later reporting commit is not included in the code SHA CI evidence.
+
+---
+
 # Fonesi APK — E44 technical PASS, Phase 4 still incomplete (29/10/2026)
 
 **Repository:** [danhgold7979-cyber/fonesi-apk](https://github.com/danhgold7979-cyber/fonesi-apk). **Development branch:** `phase/e44-atomic-batch-retained-enqueue-20261029`, [Draft PR #17](https://github.com/danhgold7979-cyber/fonesi-apk/pull/17), stacked on E43 PR #16. `main@c055df600f87ee9ddf0cd5d6bfc67d80d145e79d` unchanged.
