@@ -144,6 +144,45 @@ class SignedPrivateExplicitActivityResolverTest {
         }
     }
 
+    @Test fun explicitActivityProcessOverrideIsRejectedForEveryCaller() {
+        val signed = manifest("catalog-public")
+        val changed = signed.copy(components = signed.components.map {
+            if (it.className == "$pkg.PublicActivity") it.copy(processName = ":isolatedGuest") else it
+        })
+        for (caller in ExplicitActivityCaller.values()) {
+            assertThrows(IllegalArgumentException::class.java) {
+                select(changed, "PublicActivity", caller)
+            }
+        }
+        assertEquals("$pkg.PublicActivity", select(signed, "PublicActivity").targetActivityName)
+    }
+
+    @Test fun signedAliasProcessOverrideCannotBypassMissingProcessMediator() {
+        val signed = manifest("catalog-public")
+        val changed = signed.copy(components = signed.components.map {
+            if (it.className == "$pkg.PublicAlias") it.copy(processName = "$pkg.remote") else it
+        })
+        for (caller in ExplicitActivityCaller.values()) {
+            assertThrows(IllegalArgumentException::class.java) {
+                select(changed, "PublicAlias", caller)
+            }
+        }
+        assertEquals("$pkg.AliasTarget", select(signed, "PublicAlias").targetActivityName)
+    }
+
+    @Test fun signedAliasCannotSelectActivityTargetWithUnmediatedProcess() {
+        val signed = manifest("catalog-public")
+        val changed = signed.copy(components = signed.components.map {
+            if (it.className == "$pkg.AliasTarget") it.copy(processName = ":remote") else it
+        })
+        for (caller in ExplicitActivityCaller.values()) {
+            assertThrows(IllegalArgumentException::class.java) {
+                select(changed, "PublicAlias", caller)
+            }
+        }
+        assertEquals("$pkg.AliasTarget", select(signed, "PublicAlias").targetActivityName)
+    }
+
     @Test fun featureActivityCanOnlyBeResolvedFromItsVerifiedSignedSplit() {
         val signed = manifest("catalog-public", "catalog-public-feature", "catalog-config")
         val selection = select(signed, "FeatureActivity")

@@ -1,3 +1,13 @@
+# Fonesi APK — E71 technical PASS; original Product Phase 1 still incomplete (29/10/2026)
+
+**Repository:** [danhgold7979-cyber/fonesi-apk](https://github.com/danhgold7979-cyber/fonesi-apk); branch `phase/e71-signed-activity-process-safety-20261029`, stacked [Draft PR #45](https://github.com/danhgold7979-cyber/fonesi-apk/pull/45) on E70 [Draft PR #44](https://github.com/danhgold7979-cyber/fonesi-apk/pull/44). `main@c055df600f87ee9ddf0cd5d6bfc67d80d145e79d` unchanged.
+
+Original Product **Phase 1 steps 7–8**, preparatory for Phase 3 step 15. **E71 technical PASS** at code/test source SHA `c1d825bbd356db40e175555da23d786e124ff481`: [CI #40911242212](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40911242212) **SUCCESS**, **506 cloud/candidate tests per gate**, signed binary fixture regressions, pinned SDK/JDK build/lint/APK signature/permissions, opt-in source-engine AAR and E40–E71 source audits all passed. [Test-only artifact #12914412753](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40911242212/artifacts/12914412753). Parent E70 code `469b5aa5` passed [CI #40910681708](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40910681708) with 503 tests per gate.
+
+E71 rejects per-Activity/Activity-alias/alias target `android:process` without guest process allocation. [E71 plan](phases/E71_SIGNED_ACTIVITY_PROCESS_SAFETY_PLAN.md) | [results](phases/E71_SIGNED_ACTIVITY_PROCESS_SAFETY_RESULTS.md). The results merge SHA requires independent CI. This is read-only signed metadata, not Android guest runtime or account isolation. **Product readiness 28.00%, accepted real third-party clones 0.** No full split provider, guest process/UID/account, Samsung tests or release signing.
+
+---
+
 # Fonesi APK — E70 technical PASS; Product Phase 1 engine acceptance remains blocked (29/10/2026)
 
 **Repository:** [danhgold7979-cyber/fonesi-apk](https://github.com/danhgold7979-cyber/fonesi-apk). Branch `phase/e70-signed-explicit-activity-selection-20261029`, [Draft PR #44](https://github.com/danhgold7979-cyber/fonesi-apk/pull/44) stacked on E69; `main@c055df600f87ee9ddf0cd5d6bfc67d80d145e79d` unchanged.

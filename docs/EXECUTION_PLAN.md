@@ -1,8 +1,16 @@
 # Kế hoạch thực thi và đối chiếu yêu cầu
 
-## E70 — technical PASS on exact signed private Activity selector source (29/10/2026)
+## E71 — technical PASS at exact source SHA (29/10/2026)
 
-Original Product **Phase 1 steps 7–8**, preparing Phase 3 step 15. Implementation SHA `469b5aa567344154622c099a73351b6ae60494d9` [CI #40910681708](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40910681708) **SUCCESS**, 503 cloud/candidate tests per gate, signed manifest fixture tests, pinned build/lint/SDK/APK signatures/permissions, source-engine AAR and E40–E70 audits. Read-only explicit Activity/alias selector checks signed package identity, exported/enabled and inherited Application permission policy, no actual guest launch. [E70 results](phases/E70_SIGNED_EXPLICIT_ACTIVITY_SELECTION_RESULTS.md), [Draft PR #44](https://github.com/danhgold7979-cyber/fonesi-apk/pull/44). Reporting SHA needs separate exact-head CI. Weighted 28.00%, 0 real guest/account/phone acceptance.
+Original **Product Phase 1 steps 7–8**, Phase 3 step 15 dependency. Implementation SHA `c1d825bbd356db40e175555da23d786e124ff481` [CI #40911242212](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40911242212) **SUCCESS**, **506 tests per cloud/candidate gate**, E40–E71 audits, signed fixtures, build/lint/APK signatures/permissions and opt-in source-engine AAR. Explicit per-component `android:process` is refused without native process mediation; three JVM regressions. [E71 results](phases/E71_SIGNED_ACTIVITY_PROCESS_SAFETY_RESULTS.md), [Draft PR #45](https://github.com/danhgold7979-cyber/fonesi-apk/pull/45). E70 source `469b5aa5` [CI #40910681708](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40910681708) passed 503 tests/gate. Reporting HEAD requires separate CI. Weighted product 28.00%, 0 accepted real clones.
+
+## E70 — signed Activity selection code PASS (29/10/2026)
+
+Source `469b5aa567344154622c099a73351b6ae60494d9` [CI #40910681708](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40910681708) **SUCCESS**, 503 tests per cloud/candidate gate, source AAR and real signed APK manifest regressions. [E70 results](phases/E70_SIGNED_EXPLICIT_ACTIVITY_SELECTION_RESULTS.md). Original Product Phase 1 steps 7–8. No guest execution or account/phone proof; weighted 28.00%.
+
+## E71 — signed explicit Activity process declaration guard (pre-code, 29/10/2026)
+
+Original Product **Phase 1 steps 7–8** (source guest execution preparation), Phase 3 step 15 dependency. E71 branch `phase/e71-signed-activity-process-safety-20261029` from E70 source `469b5aa567344154622c099a73351b6ae60494d9`, [Draft PR #44](https://github.com/danhgold7979-cyber/fonesi-apk/pull/44); E70 exact source CI was still in progress at planning, not PASS. [E71 detailed plan](phases/E71_SIGNED_ACTIVITY_PROCESS_SAFETY_PLAN.md) adds explicit per-component `android:process` rejection for Activity, alias and alias target, since no guest process mediator exists. Signed inventory fixture regressions and E40–E71 pinned dual-flavor/source-engine CI required. Product remains **28.00%**, zero accepted real clones; no split/guest runtime/account/phone/release claims.
 
 ## E70 — signed Application-level permission/enable inheritance amendment (pre-code, 29/10/2026)
 
