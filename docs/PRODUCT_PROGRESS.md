@@ -1,10 +1,14 @@
 # Fonesi APK — conservative product completion estimate
 
-Date: 2026-10-29. **Latest verified technical milestone E66 PASS**, exact code SHA `979ef76bb1b228b28841575f1cfa88d5778d5231` [CI #40899947204](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40899947204) **SUCCESS**, **480 tests per cloud/candidate gate** and E40–E66 audits/build/lint/signature/permission checks. E65 report source independently passed [CI #40898925395](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40898925395). These are safety increments, not real social app/account acceptance. **Weighted product 28.00%, 0 real third-party clones accepted**.
+Date: 2026-10-29. **Latest verified technical milestone E67 PASS** at exact code/test SHA `2d631994601594e7848e3ab0c2662f8fa5af0204`: [CI #40900943479](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40900943479) **SUCCESS**, **486 cloud/candidate tests per gate**, E40–E67 audits, build/lint/signatures/permission checks. E66 code and its reporting HEAD passed [CI #40899947204](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40899947204) and [CI #40901211794](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40901211794) separately. These are fail-closed technical gates, NOT real Android guest/session/account acceptance. **Weighted product readiness 28.00%**, **0 accepted real third-party clone apps**.
 
-## E66 native shared update recheck is not a full guest provider
+## E67 guest create pre-install recheck does not establish real guest execution
 
-Revalidating guest IDs/native user/version/signers/not-running state before SDK shared update prevents stale-image import in JVM protocol tests, but does not enable full split APK import, confirm guest Activity/UID/account separation or prove session preservation on a real phone. [E66 results](phases/E66_SHARED_UPDATE_DISPATCH_REVALIDATION_RESULTS.md). The weighted readiness rubric remains unchanged.
+Native guest reservation, frozen APK, and all existing READY/stopped native peers are rechecked after user creation but before shared SDK install, preventing stale code import in six JVM regressions. This does not prove actual Android guest Activity/Service/Provider, UID/account isolation, split APK import or real device usage. [Results](phases/E67_CREATE_PREINSTALL_PEER_GUARD_RESULTS.md). Weighted rubric unchanged.
+
+## E66 late shared update identity recheck is not full update acceptance
+
+E66 revalidates all native guest identities after foreground authorization before shared update dispatch. Five JVM regressions passed with no real guest/account/phone session acceptance; see [E66 results](phases/E66_SHARED_UPDATE_DISPATCH_REVALIDATION_RESULTS.md). Full split provider/update session proof remains open.
 
 ## E65 native guest delete guard does not establish real guest retention
 
@@ -87,7 +91,7 @@ The dimension estimates and weights are heuristic judgments anchored in docs/STA
 
 ## Distinct acceptance counters
 
-- Latest verified technical milestone: **E66 PASS** at source `979ef76bb1b228b28841575f1cfa88d5778d5231`, [CI #40899947204](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40899947204), 480 tests per cloud/candidate gate. Parent E65 implementation/report SHAs also passed. None proves runtime guest app/account/phone acceptance.
+- Latest verified technical milestone: **E67 PASS**, exact source `2d631994601594e7848e3ab0c2662f8fa5af0204`, [CI #40900943479](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40900943479), 486 tests per cloud/candidate gate. E66 code/report commits separately passed CI. Neither establishes real guest/app/account/device acceptance.
 - Production clone of real required social/e-commerce app: **0 applications accepted**.
 - Real Samsung ARM64 / non-Samsung phone acceptance: **not executed**.
 - Full 8-phase/32-step product completion: **not achieved**. Product Phase 1/2 still lacks a fully verified engine and real-device/account isolation acceptance.
