@@ -210,8 +210,25 @@ class ManagedGuestEngine(
         val current = sharedRecords(target.source.packageName)
         check(current.isNotEmpty() && current.map { it.id }.toSet() == target.affectedCloneIds.toSet()) { "Shared update scope changed" }
         check(current.all { it.running == false && it.versionCode <= target.source.versionCode && it.signerDigests == target.source.signerDigests })
+        // A shared install changes code for every native user; capture stable
+        // user/clone ownership as well as the SDK package identity snapshot.
+        val originalPeers = active().filter { it.packageName == target.source.packageName }
+        check(originalPeers.size == current.size && originalPeers.map { it.id }.toSet() == current.map { it.id }.toSet()) {
+            "Shared update guest ownership scope changed"
+        }
         val first = instance(current.first().id)
         mutationAllowed()
+        // Foreground authorization and external native activity may have
+        // changed SDK/registry state since planning. Recheck before dispatch.
+        val dispatchPeers = active().filter { it.packageName == target.source.packageName }
+        check(dispatchPeers.size == originalPeers.size && dispatchPeers.toSet() == originalPeers.toSet()) {
+            "Shared update guest users or lifecycle changed before SDK install"
+        }
+        val dispatchRecords = sharedRecords(target.source.packageName)
+        check(dispatchRecords.size == current.size && dispatchRecords.toSet() == current.toSet() &&
+            instance(first.id) == first) {
+            "Shared update native identity or running state changed before SDK install"
+        }
         backend.install(first.userId, target.source)
         val observed = sharedRecords(target.source.packageName)
         check(observed.map { it.id }.toSet() == target.affectedCloneIds.toSet() && observed.all {
