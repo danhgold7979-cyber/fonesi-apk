@@ -1,3 +1,13 @@
+# Fonesi APK — E45 bounded technical PASS, Phase 4 incomplete (29/10/2026)
+
+**Repository:** [danhgold7979-cyber/fonesi-apk](https://github.com/danhgold7979-cyber/fonesi-apk). **Development branch:** `phase/e45-retained-batch-source-quarantine-20261029`, [Draft PR #19](https://github.com/danhgold7979-cyber/fonesi-apk/pull/19) stacked on E44 batch Draft #17, with separately verified E44 source quarantine Draft #18. `main@c055df600f87ee9ddf0cd5d6bfc67d80d145e79d` unchanged.
+
+**Original product roadmap:** Phase 4, steps 17–20. **E45 code SHA `64e0a285da84360e3fdea57135367d5b9bd6f8b5` technical PASS** at [CI #40848683404](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40848683404) **SUCCESS**: **390 tests in each cloud/candidate gate**, build/lint/signature/permission audits, E40–E45 source checks, split-disabled and no-GC guards all succeeded. Workflow test-only artifact 12886437182. See [E45 results](phases/E45_RETAINED_BATCH_SOURCE_QUARANTINE_RESULTS.md) and [pre-code plan](phases/E45_RETAINED_BATCH_SOURCE_QUARANTINE_PLAN.md).
+
+**Code:** verified private APK batch sources, atomic Room queue/owners, durable retained-source flag and no-fallback guard preventing original-app source execution. The old update runner remains for non-retained tasks; E45 cannot run a retained private guest source. **E46** to inspect recovery-time guard. Production real guest Activity, complete split provider, independent UID/accounts, social app updates and Samsung/other physical devices remain unaccepted. Room v6, `supportsSplits=false`. **Product estimate 28.00% (~30% rounded), real applications accepted 0.** Do not claim Phase 4/product acceptance, release or merge. The documentation HEAD's CI must also pass before treating it as tested.
+
+---
+
 # Fonesi APK — E44 technical PASS, Phase 4 still incomplete (29/10/2026)
 
 **Repository:** [danhgold7979-cyber/fonesi-apk](https://github.com/danhgold7979-cyber/fonesi-apk). **Development branch:** `phase/e44-atomic-batch-retained-enqueue-20261029`, [Draft PR #17](https://github.com/danhgold7979-cyber/fonesi-apk/pull/17), stacked on E43 PR #16. `main@c055df600f87ee9ddf0cd5d6bfc67d80d145e79d` unchanged.
