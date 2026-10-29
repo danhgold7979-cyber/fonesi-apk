@@ -23,8 +23,10 @@ on:
       - "docs/phases/E54_UNBLOCKED_QUEUE_WORK_SELECTION_RESULTS.md"
       - "docs/phases/E55_ENGINE_SCOPED_QUEUE_CONTROLS_PLAN.md"
       - "docs/phases/E55_ENGINE_SCOPED_QUEUE_CONTROLS_RESULTS.md"
-      - "docs/phases/E57_STOP_CLONE_IDENTITY_REVALIDATION_PLAN.md"
-      - "docs/phases/E57_STOP_CLONE_IDENTITY_REVALIDATION_RESULTS.md"
+      - "docs/phases/E56_STOP_CLONE_IDENTITY_REVALIDATION_PLAN.md"
+      - "docs/phases/E57_CLONE_PRESENTATION_OPERATION_LOCK_PLAN.md"
+      - "docs/phases/E56_STOP_CLONE_IDENTITY_REVALIDATION_RESULTS.md"
+      - "docs/phases/E57_CLONE_PRESENTATION_OPERATION_LOCK_RESULTS.md"
       - "app/src/main/java/vn/fonesi/app/storage/CloneMetadataRepository.kt"
       - "app/src/main/java/vn/fonesi/app/storage/CloneStopIdentityGuard.kt"
       - "app/src/test/java/vn/fonesi/app/storage/CloneStopIdentityGuardTest.kt"
@@ -152,7 +154,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: fonesi-E57-stop-clone-identity-TEST-ONLY
+          name: fonesi-E57-presentation-lock-TEST-ONLY
           path: |
             app/schemas/vn.fonesi.app.storage.FonesiDatabase/6.json
             app/build/reports/cloud-verification.json
