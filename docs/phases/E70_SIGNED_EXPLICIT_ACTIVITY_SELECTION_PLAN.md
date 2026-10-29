@@ -18,3 +18,7 @@ E68 returns signed PRIVATE manifest component metadata, and E69 binds it to a so
 ## Product/runtime blockers unchanged
 
 No actual Android guest Activity instance/Service/Provider, Binder framework mediation, full split provider (`supportsSplits=false`, `importsSplitApks=false`), independent Android UID/account isolation, Samsung/social-app runtime, or release signing. Weighted product readiness **28.00%**, **0 accepted real third-party clone apps**.
+
+## Plan amendment before follow-up code (29/10/2026)
+
+Security review found an inherited Android declaration: `<application android:permission>` can impose a default component permission even when a child Activity has no explicit permission, and `<application android:enabled="false">` must block launch regardless of the Activity attributes. The original E70 selector only checked per-component metadata. Before coding this amendment, extend the signed E68 binary manifest catalog inventory to retain **optional base Application permission and enabled** attributes, reject feature/config split overrides of these base authorization fields, and fail closed on any application-level permission (no broker exists) or explicitly disabled Application. Add real signed APK fixtures for protected/disabled Application and regression tests proving external/internal selection is denied. Do not infer runtime permission grants. Update E70 audit and pinned JVM test count; preserve same no-guest-execution and product boundaries.
