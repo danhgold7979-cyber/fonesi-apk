@@ -40,6 +40,8 @@ data class VerifiedPrivateComponentInventory(
     val applicationPermission: String? = null,
     /** Null means not explicitly declared; false always prevents component selection. */
     val applicationEnabled: Boolean? = null,
+    /** Signed base Application default process; never infer a usable guest process from null. */
+    val applicationProcessName: String? = null,
 )
 
 /**
@@ -74,7 +76,7 @@ object PrivateApkComponentCatalog {
             }
             require(member.splitName == null ||
                 (manifest.applicationClass == null && manifest.applicationPermission == null &&
-                    manifest.applicationEnabled == null)) {
+                    manifest.applicationEnabled == null && manifest.applicationProcessName == null)) {
                 "Split APK cannot redefine the base Application authorization"
             }
             manifest
@@ -99,6 +101,7 @@ object PrivateApkComponentCatalog {
             base.signers.toSet(), signed.apks.splits.map { checkNotNull(it.splitName) }.sorted(),
             parsed.first().applicationClass, all.toList(),
             parsed.first().applicationPermission, parsed.first().applicationEnabled,
+            parsed.first().applicationProcessName,
         )
     }
 
@@ -107,6 +110,7 @@ object PrivateApkComponentCatalog {
         val components: List<VerifiedPrivateComponent>,
         val applicationPermission: String?,
         val applicationEnabled: Boolean?,
+        val applicationProcessName: String?,
     )
 
     private fun parseBinaryManifest(file: File, expectedPackage: String, splitName: String?): Parsed {
@@ -135,6 +139,7 @@ object PrivateApkComponentCatalog {
         var appClass: String? = null
         var appPermission: String? = null
         var appEnabled: Boolean? = null
+        var appProcess: String? = null
         val components = mutableListOf<VerifiedPrivateComponent>()
         while (parser.next() != AndroidBinXmlParser.EVENT_END_DOCUMENT) {
             if (parser.eventType != AndroidBinXmlParser.EVENT_START_ELEMENT) continue
@@ -183,6 +188,7 @@ object PrivateApkComponentCatalog {
                     appClass = string("name")?.let(::className)
                     appPermission = optionalText(string("permission"), "application permission")
                     appEnabled = declaredBoolean("enabled")
+                    appProcess = optionalText(string("process"), "application process")
                 }
                 tag in KINDS -> {
                     require(applicationSeen && parser.depth == 3) { "Misplaced executable component" }
@@ -221,6 +227,6 @@ object PrivateApkComponentCatalog {
             }
         }
         require(manifestSeen && applicationSeen) { "Signed APK manifest lacks an Application" }
-        return Parsed(appClass, components, appPermission, appEnabled)
+        return Parsed(appClass, components, appPermission, appEnabled, appProcess)
     }
 }
