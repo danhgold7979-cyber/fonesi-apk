@@ -2,7 +2,7 @@
 
 Ứng dụng Android dự kiến quản lý nhiều bản clone của các ứng dụng trên điện thoại, ưu tiên mạng xã hội, không yêu cầu root.
 
-**Trạng thái mới nhất (29/10/2026):** E45 đã PASS trên source `64e0a285da84360e3fdea57135367d5b9bd6f8b5` ([CI #40848683404](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40848683404)) với **390 test mỗi gate cloud/candidate**, build/lint/chữ ký/quyền APK và audit đạt. E45 tích hợp batch nguồn APK private có xác minh với dấu nguồn bền vững và khóa không fallback sang APK gốc ở luồng chạy cập nhật cũ. Vẫn chưa có engine chạy bản clone thật, split import đầy đủ, cách ly tài khoản/UID và thử Samsung. **Sản phẩm 28%** theo rubric; `main` chưa merge.
+**Trạng thái mới nhất (29/10/2026):** E48 đã PASS CI ở source `b02ef1a9b245c211f565cfb16918aa692043cd9a` ([workflow #40850652184](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40850652184)) với **395 test mỗi cấu hình cloud/candidate** và build/lint/chữ ký/quyền APK đạt. E48 khóa luồng recovery không dùng phiên bản từ engine cũ để báo cập nhật thành công cho nguồn APK private; tác vụ chưa rõ kết quả được giữ để rà soát. E46/E47 là nhánh riêng đang tích hợp cùng E48 tại E49. Chưa đạt engine guest thực, split import đầy đủ, cách ly tài khoản/UID, thử Samsung. **Tiến độ sản phẩm 28%** theo rubric; `main` chưa merge.
 
 Kế hoạch sản phẩm và các điều kiện kỹ thuật nằm trong [docs/PLAN.md](docs/PLAN.md).
 

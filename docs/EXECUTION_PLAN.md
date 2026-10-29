@@ -1,5 +1,10 @@
 # Kế hoạch thực thi và đối chiếu yêu cầu
 
+## E48 — technical CI PASS on fail-closed retained recovery (29/10/2026)
+
+Source `b02ef1a9b245c211f565cfb16918aa692043cd9a` [CI #40850652184](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40850652184) **SUCCESS**: 395 tests cloud and 395 candidate, signed APK/lint/build and E40–E45+E48 source audits passed. [E48 results](phases/E48_RETAINED_RECOVERY_QUARANTINE_RESULTS.md). Denied retained or pre-marker owner-only APPLYING/VERIFYING remain REVIEW_REQUIRED, and their PREPARING/REVIEW_REQUIRED snapshots/owners are not silently deleted. This does not activate a provider or close Phase 4. Product 28.00%, 0 real apps; report-only HEAD requires independent CI.
+
+
 ## E48 — recovery-time retained source quarantine pre-code plan (29/10/2026)
 
 Branch `phase/e48-retained-recovery-quarantine-20261029` starts from E45 report HEAD `3da43261747f28f49c86356cb79afb42699f6e3d`, source E45 [CI #40848683404](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40848683404) PASS, 390 cloud/candidate tests each. E46/E47 are distinct parallel technical branches; do not mix their results. [E48 detailed plan](phases/E48_RETAINED_RECOVERY_QUARANTINE_PLAN.md). Original product Phase 4 steps 18–20: guard `UpdateRunner.recoverLocked` with existing fail-closed retained-source authority before legacy engine version readback or snapshot deletion. Denied APPLYING/VERIFYING → REVIEW_REQUIRED with immutable marker; denied PREPARING/REVIEW_REQUIRED remain held; legitimate legacy recovery unchanged. Add negative JVM tests and pinned E48 cloud/candidate audits. No product % increase from storage/routing reliability: 28.00%, zero real clones.
