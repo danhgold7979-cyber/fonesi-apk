@@ -62,7 +62,9 @@ class CloneMetadataRepository(
                 engine.delete(id)
             }
             check(engine.listClones().none { it.id == id }) { "Engine still reports the clone; metadata preserved" }
-            db.clones().delete(engineKey, id)
+            // Release a CLONE reference only after provider-confirmed absence, atomically with metadata.
+            CloneClusterOwnershipRepository(db, clock)
+                .deleteMetadataAfterProviderConfirmed(engineKey, id, saved.launchToken)
         }
     }
 
