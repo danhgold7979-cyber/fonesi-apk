@@ -136,12 +136,12 @@ class AppsViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun cancelTask(id: String) = mutate {
-        check(services.queue.cancel(id))
+        check(services.queue.cancel(services.engineKey, id))
         "Đã hủy yêu cầu chưa thực thi."
     }
 
     fun retryDeferred(id: String) = mutate {
-        check(services.queue.retryDeferred(id))
+        check(services.queue.retryDeferred(services.engineKey, id))
         "Đã đưa yêu cầu về trạng thái chờ kiểm tra lại."
     }
 
