@@ -54,6 +54,9 @@ class CloneMetadataRepository(
             require(engine.availability is EngineAvailability.Ready) { "Engine chưa sẵn sàng" }
             check(db.clones().find(engineKey, id)?.launchToken == saved.launchToken) { "Clone metadata changed" }
             check(expectedToken == null || saved.launchToken == expectedToken) { "Stale delete request" }
+            // Fail closed before any irreversible provider mutation if owner state is corrupt.
+            val ownership = CloneClusterOwnershipRepository(db, clock)
+            ownership.preflightDeletion(engineKey, id, saved.launchToken)
             val records = engine.listClones()
             check(records.map { it.id }.distinct().size == records.size) { "Ambiguous engine IDs" }
             val live = records.singleOrNull { it.id == id }
@@ -63,8 +66,7 @@ class CloneMetadataRepository(
             }
             check(engine.listClones().none { it.id == id }) { "Engine still reports the clone; metadata preserved" }
             // Release a CLONE reference only after provider-confirmed absence, atomically with metadata.
-            CloneClusterOwnershipRepository(db, clock)
-                .deleteMetadataAfterProviderConfirmed(engineKey, id, saved.launchToken)
+            ownership.deleteMetadataAfterProviderConfirmed(engineKey, id, saved.launchToken)
         }
     }
 
