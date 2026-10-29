@@ -1,5 +1,9 @@
 # Kế hoạch thực thi và đối chiếu yêu cầu
 
+## E76 — no class initialization during signed Activity preflight (pre-code, 30/10/2026)
+
+Original **Product Phase 1 steps 7–8**, preparing Phase 3 step 15. Branch `phase/e76-activity-preflight-no-class-init-20261030` from E75 reporting HEAD `801f68b4e73e91face130b8ee2d8bda91929e5d3`, [Draft PR #49](https://github.com/danhgold7979-cyber/fonesi-apk/pull/49). E75 code `f6da373a` [CI #40927202073](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40927202073) **SUCCESS**, 510 cloud/candidate tests per gate and source-engine AAR/JVM checks; E75 report SHA CI [#40929241688](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40929241688) still running at planning. [E76 plan](phases/E76_ACTIVITY_PREFLIGHT_NO_CLASS_INIT_PLAN.md): add JVM proof that both successful and failed Activity constructor preflight paths do not trigger guest `<clinit>`. Exact-source E40–E76 dual-flavor and source-engine CI required; no guest runtime claim. Product 28.00%, 0 accepted real clones.
+
 ## E75 — exact-source technical PASS: signed Activity constructor shape (30/10/2026)
 
 Original Product **Phase 1 steps 7–8**, preparing Phase 3 step 15. Source/test SHA `f6da373ae11806cce727fab0f07433d521a2c594` [CI #40927202073](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40927202073) **SUCCESS**, **510 tests per cloud/candidate gate**, E40–E75 audits, build/lint/APK signature/permission checks and source-engine native AAR/JVM class preflight. Requires public no-arg constructor via reflection without invoking it; two constructor-specific regressions prove rejection/side-effect absence. [E75 results](phases/E75_ACTIVITY_CONSTRUCTOR_PREFLIGHT_RESULTS.md), [Draft PR #49](https://github.com/danhgold7979-cyber/fonesi-apk/pull/49). Reporting SHA needs independent CI. E74 still only synthetic host Activity/classloader proof, not guest execution. Product 28.00%, 0 accepted real clones.
