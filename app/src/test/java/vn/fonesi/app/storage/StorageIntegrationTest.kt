@@ -304,7 +304,7 @@ class StorageIntegrationTest {
         }
     }
 
-    @Test fun retainedSourceMarkerIsStrictAndLegacySourcePolicyChecksOlderOwnerReferences() = background {
+    @Test fun retainedSourceMarkerIsStrictAndLegacySourcePolicyChecksOlderOwnerReferences(): Unit = background {
         val job = UpdateTask.create("engine-a", UpdateTarget(source, listOf("clone-1")),
             UpdateScope.PER_CLONE, 100L)
         assertEquals(job, RoomUpdateTaskStore(db).insertOrGetActive(job))
