@@ -23,7 +23,7 @@ class ExecutionPolicyTest {
         val result = runner(f) { allowed }.runNext() as RunResult.Processed
         assertEquals(TaskState.DEFERRED, result.task.state); assertEquals(TaskIssue.EXECUTION_POLICY, result.task.issue)
         assertEquals(0, f.engine.calls); assertFalse(Files.exists(f.root.resolve("snapshots").resolve(job.id)))
-        f.afterPrepare = null; allowed = true; assertTrue(f.queue.retryDeferred(job.id))
+        f.afterPrepare = null; allowed = true; assertTrue(f.queue.retryDeferred("test-engine", job.id))
         assertEquals(TaskState.SUCCEEDED, (runner(f) { allowed }.runNext() as RunResult.Processed).task.state)
     }
     @Test fun policyLostAfterSdkEntryStillVerifiesInsteadOfPretendingCancellation() {
