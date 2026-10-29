@@ -67,6 +67,76 @@ class ManagedGuestEngineTest {
         assertThrows(IllegalStateException::class.java) { engine().stop(a.id) }
         assertEquals(true, engine().listClones().single().running)
     }
+    @Test fun missingNativeReadbackAfterStopPreservesLaunchPendingForReview() {
+        val clone = engine().create(source, "A")
+        engine().launch(clone.id)
+        val row = registry.list().single()
+        backend.packages.remove(row.userId to row.packageName)
+        assertThrows(IllegalStateException::class.java) { engine().stop(clone.id) }
+        assertEquals(1, backend.stopAttempts)
+        assertTrue(registry.list().single().launchPending)
+        assertEquals(InstanceState.READY, registry.list().single().state)
+        assertTrue(backend.uninstalls.isEmpty())
+    }
+
+    @Test fun wrongPackageGuestReadbackCannotConfirmStopOrClearPending() {
+        val clone = engine().create(source, "A")
+        engine().launch(clone.id)
+        val row = registry.list().single()
+        backend.packages[row.userId to row.packageName] =
+            GuestPackage("another.package", source.versionCode, source.signerDigests, false)
+        assertThrows(IllegalStateException::class.java) { engine().stop(clone.id) }
+        assertEquals(1, backend.stopAttempts)
+        assertEquals(listOf(clone.id), registry.list().map { it.id })
+        assertTrue(registry.list().single().launchPending)
+    }
+
+    @Test fun invalidVersionGuestReadbackCannotConfirmStop() {
+        val clone = engine().create(source, "A")
+        engine().launch(clone.id)
+        val row = registry.list().single()
+        backend.packages[row.userId to row.packageName] =
+            GuestPackage(row.packageName, -1, source.signerDigests, false)
+        assertThrows(IllegalStateException::class.java) { engine().stop(clone.id) }
+        assertTrue(registry.list().single().launchPending)
+        assertEquals(1, backend.stopAttempts)
+    }
+
+    @Test fun emptySignerGuestReadbackCannotConfirmStop() {
+        val clone = engine().create(source, "A")
+        engine().launch(clone.id)
+        val row = registry.list().single()
+        backend.packages[row.userId to row.packageName] =
+            GuestPackage(row.packageName, source.versionCode, emptySet(), false)
+        assertThrows(IllegalStateException::class.java) { engine().stop(clone.id) }
+        assertTrue(registry.list().single().launchPending)
+        assertEquals(1, backend.stopAttempts)
+    }
+
+    @Test fun stillRunningNativeReadbackCannotConfirmStopEvenIfBackendReturns() {
+        val clone = engine().create(source, "A")
+        engine().launch(clone.id)
+        val row = registry.list().single()
+        backend.packages[row.userId to row.packageName] =
+            GuestPackage(row.packageName, source.versionCode, source.signerDigests, true)
+        backend.failStop = true
+        assertThrows(IllegalStateException::class.java) { engine().stop(clone.id) }
+        assertTrue(registry.list().single().launchPending)
+        assertEquals(1, backend.stopAttempts)
+    }
+
+    @Test fun positiveExactNativeStoppedReadbackAloneClearsDurablePending() {
+        val clone = engine().create(source, "A")
+        engine().launch(clone.id)
+        assertTrue(registry.list().single().launchPending)
+        engine().stop(clone.id)
+        assertFalse(registry.list().single().launchPending)
+        assertEquals(InstanceState.READY, registry.list().single().state)
+        assertEquals(listOf(clone.id), engine().listClones().map { it.id })
+        assertEquals(1, backend.stopAttempts)
+        assertEquals(0, backend.uninstalls.size)
+    }
+
     @Test fun preexistingNativeUserIsReservedAsConflictAndNeverOverwritten() {
         backend.userIds += 10001
         engine().create(source, "A")

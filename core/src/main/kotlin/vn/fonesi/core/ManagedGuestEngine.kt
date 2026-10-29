@@ -146,7 +146,16 @@ class ManagedGuestEngine(
         val row = instance(cloneId)
         mutationAllowed()
         backend.stop(row.userId, row.packageName)
-        check(backend.inspect(row.userId, row.packageName)?.running != true) { "Stop not confirmed" }
+        // A missing guest is an unknown stop outcome, never evidence that the existing
+        // clone stopped. Keep launchPending durable until an exact native readback.
+        val observed = checkNotNull(backend.inspect(row.userId, row.packageName)) {
+            "Guest stop has no native package readback; reconciliation required"
+        }
+        check(observed.packageName == row.packageName &&
+            observed.version >= 0 && observed.signers.isNotEmpty() &&
+            !observed.running) {
+            "Guest stop identity or stopped state not verified"
+        }
         registry.pending(row.id, false)
     }
 
