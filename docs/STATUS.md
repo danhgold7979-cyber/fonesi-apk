@@ -1,3 +1,15 @@
+# Fonesi APK — E76 technical PASS; Android guest lifecycle remains unaccepted (30/10/2026)
+
+**Repository:** [danhgold7979-cyber/fonesi-apk](https://github.com/danhgold7979-cyber/fonesi-apk); branch `phase/e76-activity-preflight-no-class-init-20261030`, [Draft PR #50](https://github.com/danhgold7979-cyber/fonesi-apk/pull/50) stacked on E75 [Draft PR #49](https://github.com/danhgold7979-cyber/fonesi-apk/pull/49). `main@c055df600f87ee9ddf0cd5d6bfc67d80d145e79d` unchanged.
+
+Original Product **Phase 1 steps 7–8**, preparing Phase 3 step 15. **E76 technical PASS** at exact source/test SHA `8abf642a4387b9e80cdc7288c0b84c3b4161a296`: [CI #40929596439](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40929596439) **SUCCESS**, **510 tests per cloud/candidate gate**, E40–E76 audit, build/lint/APK signatures/permissions, source-engine AAR and JVM class preflight. Both successful and failed constructor preflight prove guest static initializers are not executed. [Test-only artifact #12923060854](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40929596439/artifacts/12923060854). E75 code `f6da373a` [CI #40927202073](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40927202073) and report SHA `801f68b4` [CI #40929241688](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40929241688) both passed independently.
+
+[E76 plan](phases/E76_ACTIVITY_PREFLIGHT_NO_CLASS_INIT_PLAN.md) | [results](phases/E76_ACTIVITY_PREFLIGHT_NO_CLASS_INIT_RESULTS.md). This is JVM preflight only; no Android guest Activity was instantiated, attached or launched. The reporting commit needs independent CI.
+
+**Weighted product readiness 28.00%, accepted real third-party clones 0.** Full split provider, ActivityThread/Instrumentation, guest Context/PackageManager/Binder, independent UID/account, Samsung/social app device acceptance and release signing remain unmet. Keep Draft; no main merge.
+
+---
+
 # Fonesi APK — E75 technical PASS; Android guest lifecycle remains unaccepted (30/10/2026)
 
 **Repository:** [danhgold7979-cyber/fonesi-apk](https://github.com/danhgold7979-cyber/fonesi-apk); branch `phase/e75-activity-constructor-preflight-20261030`, [Draft PR #49](https://github.com/danhgold7979-cyber/fonesi-apk/pull/49) stacked on E74 [Draft PR #48](https://github.com/danhgold7979-cyber/fonesi-apk/pull/48). `main@c055df600f87ee9ddf0cd5d6bfc67d80d145e79d` unchanged.

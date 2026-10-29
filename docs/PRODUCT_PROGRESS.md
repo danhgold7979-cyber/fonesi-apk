@@ -1,5 +1,11 @@
 # Fonesi APK — conservative product completion estimate
 
+Date: 2026-10-30. **Latest verified technical milestone E76 PASS** at exact source SHA `8abf642a4387b9e80cdc7288c0b84c3b4161a296`: [CI #40929596439](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40929596439) **SUCCESS**, **510 tests per cloud/candidate gate**, E40–E76 audits, build/lint/signature/permission checks and source-engine AAR. Both successful and failed Activity constructor preflight paths leave a guest static-initializer sentinel untouched. E75 code/report CI also passed [#40927202073](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40927202073) and [#40929241688](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40929241688). These are JVM safety checks, not guest Activity lifecycle/account acceptance. **Weighted readiness 28.00%, 0 accepted real third-party clones**.
+
+## E76 class initialization safety is not guest lifecycle execution
+
+Reflection and `Class.forName(..., false, ...)` preserve the non-executing preflight boundary for both success and failure cases. No ActivityThread/Instrumentation attach, Binder/PackageManager virtualization, independent UID/accounts or full split provider. [E76 results](phases/E76_ACTIVITY_PREFLIGHT_NO_CLASS_INIT_RESULTS.md). Rubric unchanged.
+
 Date: 2026-10-30. **Latest verified technical milestone E75 PASS** at exact source SHA `f6da373ae11806cce727fab0f07433d521a2c594`: [CI #40927202073](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40927202073) **SUCCESS**, **510 tests per cloud/candidate gate**, E40–E75 audits, build/lint/APK signature/permissions and source-engine AAR/class-preflight tests. This validates constructor shape without running guest code; it is not Android lifecycle or account isolation acceptance. **Weighted product readiness 28.00%, accepted real third-party clone apps 0**.
 
 ## E75 constructor preflight is not guest Activity lifecycle
@@ -127,7 +133,7 @@ The dimension estimates and weights are heuristic judgments anchored in docs/STA
 
 ## Distinct acceptance counters
 
-- Latest verified technical milestone: **E75 PASS**, exact source `f6da373ae11806cce727fab0f07433d521a2c594`, [CI #40927202073](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40927202073), 510 tests per cloud/candidate gate. No accepted real guest app/account/device.
+- Latest verified technical milestone: **E76 PASS**, source `8abf642a4387b9e80cdc7288c0b84c3b4161a296`, [CI #40929596439](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40929596439), 510 tests per cloud/candidate gate. E75 source and reporting commits also passed. No real guest app/account/device accepted.
 - Production clone of real required social/e-commerce app: **0 applications accepted**.
 - Real Samsung ARM64 / non-Samsung phone acceptance: **not executed**.
 - Full 8-phase/32-step product completion: **not achieved**. Product Phase 1/2 still lacks a fully verified engine and real-device/account isolation acceptance.
