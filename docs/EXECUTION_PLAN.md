@@ -1,5 +1,9 @@
 # Kế hoạch thực thi và đối chiếu yêu cầu
 
+## E75 — exact-source technical PASS: signed Activity constructor shape (30/10/2026)
+
+Original Product **Phase 1 steps 7–8**, preparing Phase 3 step 15. Source/test SHA `f6da373ae11806cce727fab0f07433d521a2c594` [CI #40927202073](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40927202073) **SUCCESS**, **510 tests per cloud/candidate gate**, E40–E75 audits, build/lint/APK signature/permission checks and source-engine native AAR/JVM class preflight. Requires public no-arg constructor via reflection without invoking it; two constructor-specific regressions prove rejection/side-effect absence. [E75 results](phases/E75_ACTIVITY_CONSTRUCTOR_PREFLIGHT_RESULTS.md), [Draft PR #49](https://github.com/danhgold7979-cyber/fonesi-apk/pull/49). Reporting SHA needs independent CI. E74 still only synthetic host Activity/classloader proof, not guest execution. Product 28.00%, 0 accepted real clones.
+
 ## E75 — signed PRIVATE Activity constructor preflight (pre-code, 30/10/2026)
 
 Original Product **Phase 1 steps 7–8**, preparing Phase 3 step 15. E75 branch `phase/e75-activity-constructor-preflight-20261030` from E74 source `0c62831931366612f06c69d8396e68801f384ceb`, [Draft PR #48](https://github.com/danhgold7979-cyber/fonesi-apk/pull/48); E74 source [CI #40919455047](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40919455047) SUCCESS and E73 [CI #40917685335](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40917685335) SUCCESS. [Detailed E75 plan](phases/E75_ACTIVITY_CONSTRUCTOR_PREFLIGHT_PLAN.md): inspect (never invoke) the signed PRIVATE Activity's public zero-argument constructor before future lifecycle dispatch; test invalid constructor shapes and prove no constructor side effect. Pinned E40–E75 cloud/candidate/source-engine AAR CI required. E74 remains classloader metadata proof only, not guest Activity execution. Product 28.00%, 0 accepted real clones.

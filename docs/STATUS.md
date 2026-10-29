@@ -1,3 +1,15 @@
+# Fonesi APK — E75 technical PASS; Android guest lifecycle remains unaccepted (30/10/2026)
+
+**Repository:** [danhgold7979-cyber/fonesi-apk](https://github.com/danhgold7979-cyber/fonesi-apk); branch `phase/e75-activity-constructor-preflight-20261030`, [Draft PR #49](https://github.com/danhgold7979-cyber/fonesi-apk/pull/49) stacked on E74 [Draft PR #48](https://github.com/danhgold7979-cyber/fonesi-apk/pull/48). `main@c055df600f87ee9ddf0cd5d6bfc67d80d145e79d` unchanged.
+
+Original Product **Phase 1 steps 7–8**, preparing Phase 3 step 15. **E75 technical PASS** at exact code/test SHA `f6da373ae11806cce727fab0f07433d521a2c594`: [CI #40927202073](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40927202073) **SUCCESS**, **510 tests per cloud/candidate gate**, E40–E75 audits, build/lint/APK signatures/permissions and opt-in source-engine AAR/JVM class preflight. [Test-only artifact #12920584024](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40927202073/artifacts/12920584024). Constructor shape is checked without executing it; private classloader identity and Activity type checks remain.
+
+[E75 plan](phases/E75_ACTIVITY_CONSTRUCTOR_PREFLIGHT_PLAN.md) | [results](phases/E75_ACTIVITY_CONSTRUCTOR_PREFLIGHT_RESULTS.md). E74 only builds the synthetic host probe; no Android guest Activity was instantiated/attached/launched in CI. Reporting-only HEAD requires independent CI.
+
+**Weighted product readiness 28.00%, accepted real third-party clone apps 0.** Full split APK provider, ActivityThread/Instrumentation lifecycle, guest Context/PackageManager/Binder permissions, independent UID/account and Samsung/other-device session acceptance remain unmet. Keep Draft, no main merge.
+
+---
+
 # Fonesi APK — E74 technical BUILD/AUDIT PASS, Android runtime NOT VERIFIED (29/10/2026)
 
 **Repo:** [danhgold7979-cyber/fonesi-apk](https://github.com/danhgold7979-cyber/fonesi-apk). Branch `phase/e74-signed-private-activity-class-probe-20261029`, [Draft PR #48](https://github.com/danhgold7979-cyber/fonesi-apk/pull/48) stacked on E73. Main `c055df600f87ee9ddf0cd5d6bfc67d80d145e79d` unchanged.
