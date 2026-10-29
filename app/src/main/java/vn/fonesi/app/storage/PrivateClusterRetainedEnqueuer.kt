@@ -11,6 +11,9 @@ import vn.fonesi.core.update.UpdateTask
 import java.util.UUID
 import java.util.concurrent.Callable
 
+/** One explicitly selected, already published private source for a queued update target. */
+data class RetainedClusterTarget(val target: UpdateTarget, val clusterId: String)
+
 /**
  * Offline-only atomic task enqueue + source ownership, for a previously published private APK set.
  *
@@ -18,9 +21,6 @@ import java.util.concurrent.Callable
  * Room write. No APK is installed, activated, imported, launched or deleted here. This is not yet
  * connected to the production UpdateRequestService or the virtualization provider.
  */
-/** One explicitly selected, already published private source for a queued update target. */
-data class RetainedClusterTarget(val target: UpdateTarget, val clusterId: String)
-
 class PrivateClusterRetainedEnqueuer(
     private val db: FonesiDatabase,
     private val clock: () -> Long = System::currentTimeMillis,

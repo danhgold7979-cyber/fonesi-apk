@@ -1,5 +1,10 @@
 # Kế hoạch thực thi và đối chiếu yêu cầu
 
+## E44 — bounded cloud/candidate technical PASS (29/10/2026)
+
+Exact tested source `9d7270b207a6dd82e50befa484850c5360bd740f`: [E44 CI #40845568917](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40845568917) **SUCCESS**, **382 tests per cloud/candidate gate**, build/lint/signature/permissions and E40–E44 audits passed. [Verified E44 results](phases/E44_ATOMIC_BATCH_RETAINED_ENQUEUE_RESULTS.md). The public opt-in batch API verifies all signed private clusters before one all-or-nothing Room task/owner transaction; it does not connect to UI/provider, change Room schema, enable split import or prove account isolation. Product estimate remains 28.00%; 0 accepted real app clones. A report-only follow-up HEAD must independently pass CI.
+
+
 ## E44 — pre-code atomic multi-target private-source retained queue (29/10/2026)
 
 Branch `phase/e44-atomic-batch-retained-enqueue-20261029` stacks on E43 reporting HEAD `785cb956ce3f193c8e5f1b05dfc569470522b265`. Original Phase 4, roadmap steps 17–20. [E44 detailed pre-code plan](phases/E44_ATOMIC_BATCH_RETAINED_ENQUEUE_PLAN.md). Verify all batch cluster IDs and source identities via signed private-store readback before DB mutation, fail closed on duplicate dedup identities, then enqueue every task and acquire matching UPDATE_TASK owner in one Room transaction. Add negative native-SQLite rollback/idempotence/conflict tests and pinned cloud/candidate CI audits. Do not change normal UI/engine behavior, Room schema, split import or GC; retain product estimate 28.00% and real-app acceptance 0.
