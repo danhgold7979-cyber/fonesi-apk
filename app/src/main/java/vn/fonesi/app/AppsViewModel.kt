@@ -13,6 +13,7 @@ import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import vn.fonesi.app.storage.CloneMetadataRow
+import vn.fonesi.app.storage.CloneStopIdentityGuard
 import vn.fonesi.app.storage.LocalServices
 import vn.fonesi.core.update.UpdateTask
 import vn.fonesi.app.shortcuts.LaunchResult
@@ -219,7 +220,14 @@ class AppsViewModel(application: Application) : AndroidViewModel(application) {
     fun stopClone(token: String) = mutate {
         val row = currentClone(token)
         services.operationLock().acquire().let { checkNotNull(it) }.use {
-            check(services.database.clones().findByLaunchToken(token)?.cloneId == row.cloneId)
+            CloneStopIdentityGuard.requireSameGuest(
+                row,
+                services.database.clones().findByLaunchToken(token),
+                services.engineKey,
+                token,
+                engine.listClones(),
+            )
+            // Keep the existing conservative global package/update barrier for now.
             check(services.tasks.list().none { it.packageName == row.packageName && it.state in setOf(
                 TaskState.PREPARING, TaskState.APPLYING, TaskState.VERIFYING, TaskState.REVIEW_REQUIRED) })
             (engine as? StoppableCloneEngine ?: error("Stop unavailable")).stop(row.cloneId)
