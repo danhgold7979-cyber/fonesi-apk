@@ -1,3 +1,27 @@
+# Fonesi APK — E64 technical PASS; Product Phase 3 remains incomplete (29/10/2026)
+
+**Repository:** [danhgold7979-cyber/fonesi-apk](https://github.com/danhgold7979-cyber/fonesi-apk). **Branch:** `phase/e64-unknown-guest-launch-retry-gate-20261029`, stacked [Draft PR #38](https://github.com/danhgold7979-cyber/fonesi-apk/pull/38) on E63 [Draft PR #37](https://github.com/danhgold7979-cyber/fonesi-apk/pull/37); `main@c055df600f87ee9ddf0cd5d6bfc67d80d145e79d` unchanged.
+
+**Roadmap:** Product **Phase 3 steps 14–16**, building on original 8-phase/32-step roadmap. **E64 technical PASS** at exact code/test SHA `a54c034d21711b7d15d301ebe67a5466c19a3d7d`: [CI #40895219310](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40895219310) **SUCCESS**, 470 tests in each cloud/candidate gate, E40–E64 source audits, pinned Android SDK/JDK, build, lint, APK signatures/permissions and no split/provider/garbage-collection activation. [Test-only receipt artifact #12907157275](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40895219310/artifacts/12907157275). Parent E63 code `bbaf4bbb4765033306d8a84619ab245d16e18513` independently passed [CI #40894087779](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40894087779) (467 tests per gate).
+
+**Change:** E64 prevents automatic or manual repeat guest launches while prior durable `launchPending` has an unknown native outcome. Known native running state or explicit, positively verified stop is required before another SDK launch; three JVM regressions cover unexpected failure/recreation and allowed reconfirmation. [E64 pre-code plan](phases/E64_UNKNOWN_GUEST_LAUNCH_RETRY_PLAN.md) | [E64 results](phases/E64_UNKNOWN_GUEST_LAUNCH_RETRY_RESULTS.md). This reporting merge's HEAD must independently pass CI; do not confuse documentation HEAD with the verified implementation SHA.
+
+**Product readiness:** **28.00% weighted**, 0 accepted real third-party clones. Production full split import, guest Activity/Service/Provider and separate Android UID/account sessions, Samsung/other-device and social-app testing, and release signing are **not accepted**. Keep PRs Draft, no `main` merge or production release.
+
+---
+
+# Fonesi APK — E63 technical PASS; Product Phase 3 remains incomplete (29/10/2026)
+
+**Repository:** [danhgold7979-cyber/fonesi-apk](https://github.com/danhgold7979-cyber/fonesi-apk). **Branch:** `phase/e63-ready-shared-guest-mutations-20261029`, stacked [Draft PR #37](https://github.com/danhgold7979-cyber/fonesi-apk/pull/37) on [E62 Draft PR #36](https://github.com/danhgold7979-cyber/fonesi-apk/pull/36); `main@c055df600f87ee9ddf0cd5d6bfc67d80d145e79d` unmerged.
+
+**Product roadmap:** original Phase 3 steps 13–16, with shared update safety in Phase 4 steps 17–20. **E63 technical PASS** at exact code/test SHA `bbaf4bbb4765033306d8a84619ab245d16e18513`: [GitHub Actions #40894087779](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40894087779) **SUCCESS**, verified exact checkout, E40–E63 source audits, **467 tests per cloud/candidate gate**, builds, lint, APK signatures/permissions and no split/provider/GC activation. [Test-only artifact #12906503636](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40894087779/artifacts/12906503636). E62 verified HEAD `505fc58f864532e0cff8d815d77287cd0f161974` also passed [CI #40889192439](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40889192439).
+
+**Actual code:** Shared APK create/update now rejects an interrupted, native-backed RESERVED peer until confirmed READY, before any new private source snapshot, SDK import or shared update. Three JVM regressions cover RESERVED-only create/update and mixed READY/RESERVED scope. [E63 plan](phases/E63_READY_SHARED_MUTATIONS_PLAN.md) | [verified results](phases/E63_READY_SHARED_MUTATIONS_RESULTS.md). This subsequent reporting commit needs its own CI to be called verified.
+
+**Product readiness:** **28.00% weighted**, 0 accepted real third-party clone apps. Full split provider, guest Android Activity/Service/Provider, UID/account isolation, Samsung and other phone/session testing and release signing remain unaccepted. Keep Draft; no merge, release or 100% claim.
+
+---
+
 # Fonesi APK — E61 technical PASS; Product Phase 3 incomplete (29/10/2026)
 
 **Repo:** [danhgold7979-cyber/fonesi-apk](https://github.com/danhgold7979-cyber/fonesi-apk). **Branch:** `phase/e61-guest-stop-identity-continuity-20261029`, [Draft PR #35](https://github.com/danhgold7979-cyber/fonesi-apk/pull/35), stacked on E60 [Draft PR #34](https://github.com/danhgold7979-cyber/fonesi-apk/pull/34). `main@c055df600f87ee9ddf0cd5d6bfc67d80d145e79d` unchanged.
