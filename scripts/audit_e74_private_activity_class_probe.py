@@ -49,7 +49,9 @@ for required in (
     '"real_guest_activity_registered", "production_clone_accepted"',
     '"PASS_E74_SIGNED_PRIVATE_ACTIVITY_CLASS_PREFLIGHT_ONLY"',
     '"android_private_activity_class_preflight_verified"] = True',
-    'if not (Path("/dev/kvm").exists()',
+    'has_kvm = Path("/dev/kvm").exists() and os.access("/dev/kvm", os.R_OK | os.W_OK)',
+    'if not has_kvm and not (args.proof_level == "e77" and args.allow_software_emulation)',
+    'args.allow_software_emulation and args.proof_level != "e77"',
 ):
     assert required in runner, "E74 runner source/receipt safety missing: " + required
 assert "args.expected_payload_sha256" in runner and "args.expected_probe_sha256" in runner
