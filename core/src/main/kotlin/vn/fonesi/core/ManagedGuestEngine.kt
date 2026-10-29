@@ -135,7 +135,10 @@ class ManagedGuestEngine(
     override fun launch(cloneId: String) {
         ready()
         val row = instance(cloneId)
-        check(row.state != InstanceState.DELETING && record(row) != null)
+        // A RESERVED import may have native bytes but has not passed create/readback
+        // confirmation. Reconciliation can inspect it; normal launch must not.
+        check(row.state == InstanceState.READY) { "Guest clone is not confirmed READY" }
+        check(record(row) != null) { "Guest package readback unavailable" }
         mutationAllowed()
         registry.pending(row.id, true) // Durable before asynchronous launch, including exceptions/death.
         backend.launch(row.userId, row.packageName)

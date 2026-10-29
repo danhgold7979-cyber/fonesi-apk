@@ -57,6 +57,35 @@ class ManagedGuestEngineTest {
         assertNull(engine().listClones().single().running)
         assertEquals(1, backend.launchAttempts)
     }
+    @Test fun reservedNativePackageReadbackCannotAuthorizeLaunch() {
+        backend.failAfterInstall = true
+        assertThrows(IllegalStateException::class.java) { engine().create(source, "Unconfirmed") }
+        val reserved = registry.list().single()
+        assertEquals(InstanceState.RESERVED, reserved.state)
+        assertNotNull(backend.inspect(reserved.userId, reserved.packageName))
+        assertThrows(IllegalStateException::class.java) { engine().launch(reserved.id) }
+        assertFalse(registry.list().single().launchPending)
+        assertEquals(0, backend.launchAttempts)
+        assertTrue(backend.launches.isEmpty())
+    }
+
+    @Test fun nonReadyLifecycleStatesCannotDispatchOrMarkPending() {
+        val confirmed = engine().create(source, "A")
+        val row = registry.list().single()
+        for (state in listOf(InstanceState.DELETING, InstanceState.CONFLICT, InstanceState.DELETED)) {
+            registry.state(confirmed.id, state)
+            assertThrows(Exception::class.java) { engine().launch(confirmed.id) }
+            assertFalse(registry.list().single().launchPending)
+            assertEquals(0, backend.launchAttempts)
+            assertTrue(backend.launches.isEmpty())
+        }
+        registry.state(confirmed.id, InstanceState.READY)
+        engine().launch(confirmed.id)
+        assertTrue(registry.list().single().launchPending)
+        assertEquals(1, backend.launchAttempts)
+        assertEquals(listOf(row.userId to row.packageName), backend.launches)
+    }
+
     @Test fun observedRunningConfirmsDispatchAndFailedStopDoesNotClearItsState() {
         val a = engine().create(source, "A"); engine().launch(a.id)
         val row = registry.list().single()
