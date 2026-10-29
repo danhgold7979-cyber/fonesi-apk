@@ -38,7 +38,8 @@ class ForegroundAutoUpdaterTest {
     private fun catalog() = SourceCatalog { sources[it] }
     private fun runner(): UpdateExecution = UpdateRunner("engine", engine, tasks, catalog(),
         FileSourceSnapshotter(root.toPath().resolve("snapshots"), catalog()), operationLock(),
-        mayApply = { foreground && policy.read().mode == AutoUpdateMode.APPLY_WHILE_OPEN })
+        mayApply = { foreground && policy.read().mode == AutoUpdateMode.APPLY_WHILE_OPEN },
+        allowLegacySource = RoomLegacyUpdateSourcePolicy(db)::allows)
     private fun automatic() = ForegroundAutoUpdater(db, "engine", policy,
         UpdateRequestService(db, "engine", engine, catalog(), tasks, operationLock()) { foreground }, tasks,
         autoLock(), operationLock(), { foreground }, ::runner)
@@ -124,6 +125,43 @@ class ForegroundAutoUpdaterTest {
         assertEquals(TaskIssue.SUPERSEDED_SOURCE, tasks.list().single { it.id == old.id }.issue)
         assertEquals(3L, engine.records.first { it.id == "a" }.versionCode)
     }
+    @Test fun retainedPrivateQueueIsNotCancelledByOriginalAppVersionChange(): Unit = background {
+        policy.write(AutoUpdateMode.APPLY_WHILE_OPEN)
+        val oldPrivate = sources.getValue("test.alpha").copy(versionCode = 1L)
+        // Only durable marker is required to reproduce foreground authority confusion.
+        // No synthetic bytes are represented as a signed private-store publication.
+        val retained = UpdateQueue(tasks).enqueue("engine",
+            listOf(UpdateTarget(oldPrivate, listOf("a"))), UpdateScope.SHARED_PACKAGE,
+            retainedSource = true).single()
+        assertTrue(retained.retainedSource)
+
+        automatic().check()
+
+        assertEquals(retained, tasks.list().first { it.id == retained.id })
+        assertEquals(TaskState.QUEUED, tasks.list().first { it.id == retained.id }.state)
+        assertEquals(0, engine.updates) // The original catalog must not bypass retained source authority.
+    }
+
+    @Test fun preMarkerPrivateOwnerTypesAreNotCancelledByOriginalAppPreview(): Unit = background {
+        policy.write(AutoUpdateMode.APPLY_WHILE_OPEN)
+        val protected = rows.mapIndexed { i, row ->
+            val oldSource = sources.getValue(row.packageName).copy(versionCode = 1L)
+            val task = UpdateQueue(tasks).enqueue("engine",
+                listOf(UpdateTarget(oldSource, listOf(row.cloneId))), UpdateScope.SHARED_PACKAGE).single()
+            assertFalse(task.retainedSource) // Legacy E41 marker absent.
+            val ownerType = if (i == 0) "UPDATE_TASK" else "REVIEW_REQUIRED"
+            assertTrue(db.clusterReferences().insert(ClusterReferenceRow(
+                UUID.randomUUID().toString(), ownerType, task.id, "engine", 10L + i)) > 0)
+            task
+        }
+
+        automatic().check()
+
+        assertTrue(protected.all { old -> tasks.list().first { it.id == old.id } == old })
+        assertEquals(2, db.clusterReferences().list().size)
+        assertEquals(0, engine.updates)
+    }
+
     @Test fun anotherCoordinatorLeasePreventsASecondRun(): Unit = background {
         policy.write(AutoUpdateMode.APPLY_WHILE_OPEN)
         autoLock().acquire()!!.use { automatic().check() }

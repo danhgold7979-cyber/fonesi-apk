@@ -2,6 +2,7 @@ package vn.fonesi.app.update
 
 import vn.fonesi.app.storage.CloneMetadataRow
 import vn.fonesi.app.storage.FonesiDatabase
+import vn.fonesi.app.storage.RoomLegacyUpdateSourcePolicy
 import vn.fonesi.core.*
 import vn.fonesi.core.update.*
 import java.util.UUID
@@ -35,6 +36,21 @@ class UpdateRequestService(
     private val lock: QueueLock,
     private val authorized: () -> Boolean,
 ) {
+    private val originalSourcePolicy = RoomLegacyUpdateSourcePolicy(db)
+
+    /**
+     * Only original-app queue work is created by this service. Any active retained private
+     * task (including E41-owned pre-marker tasks) makes the entire original-source consent
+     * conflict unsafe. Called inside the same Room transaction as all selected inserts.
+     */
+    private fun rejectPrivateSourceConflicts(targets: List<UpdateTarget>) {
+        val packages = targets.map { it.source.packageName }.toSet()
+        check(tasks.list().none { task ->
+            task.engineKey == engineKey && task.packageName in packages &&
+                !task.state.terminal && !originalSourcePolicy.allows(task)
+        }) { "Active private-source update cannot be replaced by original-app queue consent" }
+    }
+
     fun preview(tokens: List<String>): UpdatePreview {
         val lease = checkNotNull(lock.acquire())
         return lease.use { capture(tokens) }
@@ -46,6 +62,7 @@ class UpdateRequestService(
             if (!preview.equivalent(current)) throw UpdatePreviewChangedException()
             check(authorized())
             db.runInTransaction(Callable {
+                rejectPrivateSourceConflicts(current.plan.targets)
                 val jobs = UpdateQueue(tasks).enqueue(engineKey, current.plan.targets, current.availability.updateScope)
                 check(authorized())
                 jobs
