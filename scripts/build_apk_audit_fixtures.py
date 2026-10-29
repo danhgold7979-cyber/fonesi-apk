@@ -116,6 +116,30 @@ def main():
         '<provider android:name=".CollisionProvider" android:authorities="vn.fonesi.fixture.accounts" '
         'android:exported="false" />'
         '</application>'))
+    # E70 only selects explicitly named signed/private Activity metadata. No runtime launch.
+    apk("catalog-public", application=(
+        '<application android:hasCode="false">'
+        '<activity android:name=".PublicActivity" android:exported="true" android:enabled="true" />'
+        '<activity android:name=".LocalActivity" android:exported="false" android:enabled="true" />'
+        '<activity android:name=".UnknownExported" android:enabled="true" />'
+        '<activity android:name=".UnknownEnabled" android:exported="true" />'
+        '<activity android:name=".DisabledActivity" android:exported="true" android:enabled="false" />'
+        '<activity android:name=".ProtectedActivity" android:exported="true" android:enabled="true" '
+        'android:permission="vn.fonesi.fixture.ACCESS" />'
+        '<activity android:name=".AliasTarget" android:exported="false" android:enabled="true" />'
+        '<activity-alias android:name=".PublicAlias" android:targetActivity=".AliasTarget" '
+        'android:exported="true" android:enabled="true" />'
+        '<activity-alias android:name=".DisabledAlias" android:targetActivity=".AliasTarget" '
+        'android:exported="true" android:enabled="false" />'
+        '<activity android:name=".DisabledTarget" android:enabled="false" android:exported="true" />'
+        '<activity-alias android:name=".AliasToDisabled" android:targetActivity=".DisabledTarget" '
+        'android:enabled="true" android:exported="true" />'
+        '<service android:name=".NotActivity" android:exported="true" android:enabled="true" />'
+        '</application>'))
+    apk("catalog-public-feature", split="feature.public", feature=True, application=(
+        '<application android:hasCode="false">'
+        '<activity android:name=".FeatureActivity" android:enabled="true" android:exported="true" />'
+        '</application>'))
     apk("catalog-bad-alias", application=(
         '<application android:hasCode="false">'
         '<activity-alias android:name=".OrphanAlias" android:targetActivity=".NotDeclared" android:exported="false" />'
