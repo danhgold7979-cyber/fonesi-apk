@@ -120,8 +120,10 @@ class ManagedGuestEngineTest {
         val clone = engine().create(source, "A")
         engine().launch(clone.id)
         val row = registry.list().single()
-        backend.packages[row.userId to row.packageName] =
-            GuestPackage("another.package", source.versionCode, source.signerDigests, false)
+        backend.afterStop = { userId, packageName ->
+            backend.packages[userId to packageName] =
+                GuestPackage("another.package", source.versionCode, source.signerDigests, false)
+        }
         assertThrows(IllegalStateException::class.java) { engine().stop(clone.id) }
         assertEquals(1, backend.stopAttempts)
         assertEquals(listOf(clone.id), registry.list().map { it.id })
@@ -132,8 +134,10 @@ class ManagedGuestEngineTest {
         val clone = engine().create(source, "A")
         engine().launch(clone.id)
         val row = registry.list().single()
-        backend.packages[row.userId to row.packageName] =
-            GuestPackage(row.packageName, -1, source.signerDigests, false)
+        backend.afterStop = { userId, packageName ->
+            backend.packages[userId to packageName] =
+                GuestPackage(packageName, -1L, source.signerDigests, false)
+        }
         assertThrows(IllegalStateException::class.java) { engine().stop(clone.id) }
         assertTrue(registry.list().single().launchPending)
         assertEquals(1, backend.stopAttempts)
@@ -143,8 +147,10 @@ class ManagedGuestEngineTest {
         val clone = engine().create(source, "A")
         engine().launch(clone.id)
         val row = registry.list().single()
-        backend.packages[row.userId to row.packageName] =
-            GuestPackage(row.packageName, source.versionCode, emptySet(), false)
+        backend.afterStop = { userId, packageName ->
+            backend.packages[userId to packageName] =
+                GuestPackage(packageName, source.versionCode, emptySet(), false)
+        }
         assertThrows(IllegalStateException::class.java) { engine().stop(clone.id) }
         assertTrue(registry.list().single().launchPending)
         assertEquals(1, backend.stopAttempts)
