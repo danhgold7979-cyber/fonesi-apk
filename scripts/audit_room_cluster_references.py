@@ -15,8 +15,11 @@ for required in (
     'tableName = "cluster_references"',
     "MIGRATION_4_5",
     "Migration(4, 5)",
-    "version = 5",
-    "addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5)",
+    "version = 6",
+    "MIGRATION_5_6",
+    "Migration(5, 6)",
+    "ALTER TABLE clone_metadata ADD COLUMN clusterId TEXT",
+    "addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6)",
     "abstract fun clusterReferences(): ClusterReferenceDao",
 ):
     if required not in database:
@@ -54,6 +57,6 @@ if "const val supportsSplits = false" not in runtime:
 if "check(source.apkPaths.size == 1)" not in backend:
     raise SystemExit("SpaceCore single-APK guard must remain intact")
 
-print("PASS: Room v5 migration and transactional cluster-reference repository are present.")
+print("PASS: Room v6 migration and transactional cluster-reference repository are present.")
 print("PASS: missing/orphan reconciliation is report-only; no destructive GC is implemented.")
 print("PASS: SpaceCore split import remains disabled and provider install path is unchanged.")
