@@ -22,6 +22,7 @@ import vn.fonesi.core.InstalledSource
 import vn.fonesi.core.UpdateScope
 import vn.fonesi.core.UpdateTarget
 import vn.fonesi.core.update.TaskState
+import vn.fonesi.core.update.UpdateQueue
 import vn.fonesi.core.update.UpdateTask
 import java.io.File
 import java.nio.file.Files
@@ -236,6 +237,48 @@ class PrivateClusterRetainedBatchEnqueuerTest {
         assertEquals(listOf(preparing), queued())
         assertEquals(listOf(beta.id), references(queuedBeta))
         assertTrue(io { db.clusterReferences().forCluster(alpha.id).isEmpty() })
+    }
+
+    @Test fun retainedBatchBlocksOriginalSourceFallbackAfterReopen() {
+        val alpha = cluster("test.alpha")
+        val beta = cluster("test.beta")
+        val writer = PrivateClusterRetainedEnqueuer(db)
+        val tasks = io {
+            writer.enqueueBatchReadBackVerified(engineKey,
+                listOf(target("test.alpha") to alpha, target("test.beta") to beta),
+                UpdateScope.SHARED_PACKAGE)
+        }
+        assertEquals(2, tasks.size)
+        assertTrue(tasks.all { it.retainedSource })
+        assertTrue(queued().all { it.retainedSource })
+        assertEquals(listOf(alpha.id), references(tasks[0]))
+        assertEquals(listOf(beta.id), references(tasks[1]))
+        assertFalse(io { RoomLegacyUpdateSourcePolicy(db).allows(tasks[0]) })
+        assertFalse(io { RoomLegacyUpdateSourcePolicy(db).allows(tasks[1]) })
+        io { db.close(); db = FonesiDatabase.open(context, dbName) }
+        assertEquals(tasks, queued())
+        assertFalse(io { RoomLegacyUpdateSourcePolicy(db).allows(queued()[0]) })
+        assertFalse(io { RoomLegacyUpdateSourcePolicy(db).allows(queued()[1]) })
+    }
+
+    @Test fun legacyActiveTaskRejectsRetainedBatchAndRollsBackEarlierSource() {
+        val alpha = cluster("test.alpha")
+        val beta = cluster("test.beta")
+        val original = io {
+            UpdateQueue(RoomUpdateTaskStore(db)).enqueue(engineKey,
+                listOf(target("test.beta")), UpdateScope.SHARED_PACKAGE).single()
+        }
+        assertFalse(original.retainedSource)
+        val writer = PrivateClusterRetainedEnqueuer(db)
+        assertThrows(IllegalStateException::class.java) {
+            io {
+                writer.enqueueBatchReadBackVerified(engineKey,
+                    listOf(target("test.alpha") to alpha, target("test.beta") to beta),
+                    UpdateScope.SHARED_PACKAGE)
+            }
+        }
+        assertEquals(listOf(original), queued())
+        assertTrue(io { db.clusterReferences().list().isEmpty() })
     }
 
     private fun <T> io(block: () -> T): T = runBlocking {

@@ -59,8 +59,8 @@ class PrivateClusterRetainedEnqueuer(
         val verifiedTarget = UpdateTarget(verifiedSource, target.affectedCloneIds.toList())
         return db.runInTransaction(Callable {
             val task = UpdateQueue(RoomUpdateTaskStore(db), clock)
-                .enqueue(engineKey, listOf(verifiedTarget), scope).single()
-            check(task.state == TaskState.QUEUED &&
+                .enqueue(engineKey, listOf(verifiedTarget), scope, retainedSource = true).single()
+            check(task.state == TaskState.QUEUED && task.retainedSource &&
                 task.engineKey == engineKey &&
                 task.packageName == verifiedSource.packageName &&
                 task.versionCode == verifiedSource.versionCode &&
