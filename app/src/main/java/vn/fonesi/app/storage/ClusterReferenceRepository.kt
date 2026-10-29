@@ -41,7 +41,7 @@ class ClusterReferenceRepository(
     suspend fun references(clusterId: String): Set<ClusterReference> {
         validateClusterId(clusterId)
         return db.withTransaction {
-            db.clusterReferences().forCluster(clusterId).mapTo(linkedSetOf(), ClusterReferenceRow::toReference)
+            db.clusterReferences().forCluster(clusterId).mapTo(linkedSetOf()) { it.toReference() }
         }
     }
 
