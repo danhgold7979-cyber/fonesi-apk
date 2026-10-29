@@ -1,5 +1,10 @@
 # Kế hoạch thực thi và đối chiếu yêu cầu
 
+## E47 — exact-source technical CI PASS (29/10/2026)
+
+Implementation `2ccffc5e5184245c29e1a86955919b3765606012`: [E47 Actions #40850268707](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40850268707) **SUCCESS**, **402 tests per cloud/candidate gate**, build/lint/signature/permissions and E40–E47/no-split/no-GC audits passed. [Detailed results](phases/E47_ORIGINAL_SOURCE_CONFIRMATION_RESULTS.md). Original product Phase 4 steps 17–20 remain open. A report-only commit needs independent exact-HEAD CI; weighted product score remains 28.00%, real-app acceptance 0.
+
+
 ## E47 — original-source confirmation conflict quarantine (pre-code, 29/10/2026)
 
 Branch `phase/e47-original-source-confirmation-20261029` stacks on E46 source `ef06a06818c997aba1a0c796171ea1b265ebdd9f` while E46 CI #40849553940 is pending. Original product **Phase 4, steps 17–20**. [Detailed E47 plan](phases/E47_ORIGINAL_SOURCE_CONFIRMATION_PLAN.md): transactionally refuse an original installed-app preview confirmation when the same engine/package has any nonterminal E45 retained source or older E41 owner-associated task; preserve all-or-nothing multi-package enqueue, no provider/GC, Room v6 and legacy unowned flows. Source audits, native-SQLite regressions, full cloud/candidate CI on exact SHA and parent acceptance required. Product score 28%, real apps 0.
