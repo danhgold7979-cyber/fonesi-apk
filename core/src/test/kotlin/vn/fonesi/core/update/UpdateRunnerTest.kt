@@ -42,15 +42,10 @@ class UpdateRunnerTest {
         val queued = f.enqueue()
         val preparing = queued.move(TaskState.PREPARING, 101L)
         assertTrue(f.store.replace(queued, preparing))
-        val verifying = preparing.move(TaskState.APPLYING, 102L,
+        val applying = preparing.move(TaskState.APPLYING, 102L,
             affectedIds = listOf("a"), fingerprint = "pre-marker-private")
-            .move(TaskState.VERIFYING, 103L)
-        assertTrue(f.store.replace(preparing, verifying.copy(
-            revision = preparing.revision + 1,
-            state = TaskState.APPLYING,
-            changedAt = 102L,
-        )))
-        val applying = f.store.list().single()
+        assertTrue(f.store.replace(preparing, applying))
+        val verifying = applying.move(TaskState.VERIFYING, 103L)
         assertTrue(f.store.replace(applying, verifying))
         f.engine.clones[0] = f.engine.clones.single().copy(versionCode = 2L)
         val runner = UpdateRunner("test-engine", f.engine, f.store, f.catalog, f.snapshotter,
