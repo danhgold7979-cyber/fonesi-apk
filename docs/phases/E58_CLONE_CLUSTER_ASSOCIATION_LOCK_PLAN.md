@@ -6,6 +6,10 @@ Date: 2026-10-29. Repository `danhgold7979-cyber/fonesi-apk`. New development br
 
 `CloneClusterOwnershipRepository.associateReadBackVerified` currently performs Room metadata and CLONE reference transitions transactionally, but takes no OS operation lease. E56 `AppsViewModel.stopClone` and E57 rename/restyle hold the shared lock. Association may race the stop's lock-time snapshot of `clusterId` and its actual provider dispatch, even though Room CAS protects the ownership transaction. A Room-only CAS cannot serialize with an external SDK side effect.
 
+## Reconciliation before E58 source edits (29/10/2026)
+
+E57 reporting SHA `f4d534a233c1c65ab6408a4aef962a44c49a672d` independently passed [CI #40871698660](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40871698660). Actual E58 base branch is `c27912cd31f5a2dfe60fcf8739f1fee4a89fe0fb` (plan committed). The branch currently has no E58 code or CI. Source review found one production constructor at `CloneMetadataRepository.delete` (the delete caller already owns `operationLock`) and an E40 SQLite test fixture using `associateReadBackVerified`. E58 will require explicit `QueueLock` dependency for `CloneClusterOwnershipRepository` and lock both public `associate` (including `PrivateApkStore.open`) and the internal test seam. The deletion helpers must not reacquire this lock. The existing E40 tests will inject a real `FileQueueLock`, not an always-granted test dummy.
+
 ## Implementation plan and constraints
 
 1. Verify E57 report SHA, E56/E57 stop and lock code, `CloneClusterOwnershipRepository`, all call sites and native SQLite tests; keep `main` untouched. Do not claim parent reporting PASS until its exact CI succeeds.
