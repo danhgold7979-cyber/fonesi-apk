@@ -212,11 +212,77 @@ class UpdateRunnerTest {
         assertEquals(0, f.engine.calls)
     }
 
-    @Test fun `engine change cannot reuse another engine's account IDs`() {
+    @Test fun `foreign only queued work remains untouched instead of ENGINE_CHANGED`() {
         val f = fixture(); val target = UpdateTarget(checkNotNull(f.source), listOf("a"))
-        f.queue.enqueue("different-engine", listOf(target), UpdateScope.PER_CLONE)
-        assertEquals(TaskIssue.ENGINE_CHANGED, f.runner().runNext().task().issue)
+        val foreign = f.queue.enqueue("different-engine", listOf(target), UpdateScope.PER_CLONE).single()
+        assertEquals(RunResult.Idle, f.runner().runNext())
+        assertEquals(listOf(foreign), f.store.list())
         assertEquals(0, f.engine.calls)
+        assertFalse(Files.exists(f.root.resolve("snapshots").resolve(foreign.id)))
+    }
+
+    @Test fun `foreign queued same-package work ahead of local task cannot steal this runner`() {
+        val f = fixture(); val target = UpdateTarget(checkNotNull(f.source), listOf("a"))
+        val foreign = f.queue.enqueue("different-engine", listOf(target), UpdateScope.PER_CLONE).single()
+        val local = f.enqueue()
+        val result = f.runner().runNext().task()
+        assertEquals(local.id, result.id)
+        assertEquals(TaskState.SUCCEEDED, result.state)
+        assertEquals(foreign, f.store.list().first { it.id == foreign.id })
+        assertEquals(1, f.engine.calls)
+    }
+
+    @Test fun `foreign preparing journal and snapshot survive recovery and local execution`() {
+        val f = fixture(); val target = UpdateTarget(checkNotNull(f.source), listOf("a"))
+        val foreign = f.queue.enqueue("different-engine", listOf(target), UpdateScope.PER_CLONE).single()
+        val preparing = foreign.move(TaskState.PREPARING, 501L)
+        assertTrue(f.store.replace(foreign, preparing))
+        f.files.prepare(foreign.id, checkNotNull(f.source))
+        val foreignSnapshot = f.root.resolve("snapshots").resolve(foreign.id)
+        assertTrue(Files.exists(foreignSnapshot))
+        assertTrue(f.runner().recover())
+        assertEquals(preparing, f.store.list().single())
+        assertTrue(Files.exists(foreignSnapshot))
+        val local = f.enqueue()
+        assertEquals(local.id, f.runner().runNext().task().id)
+        assertEquals(preparing, f.store.list().first { it.id == foreign.id })
+        assertTrue(Files.exists(foreignSnapshot))
+        assertEquals(1, f.engine.calls)
+    }
+
+    @Test fun `foreign applying task cannot be recovered from matching local engine metadata`() {
+        val f = fixture(); val target = UpdateTarget(checkNotNull(f.source), listOf("a"))
+        val foreign = f.queue.enqueue("different-engine", listOf(target), UpdateScope.PER_CLONE).single()
+        val preparing = foreign.move(TaskState.PREPARING, 601L)
+        assertTrue(f.store.replace(foreign, preparing))
+        f.files.prepare(foreign.id, checkNotNull(f.source))
+        val applying = preparing.move(TaskState.APPLYING, 602L,
+            affectedIds = listOf("a"), fingerprint = "foreign-unknown-outcome")
+        assertTrue(f.store.replace(preparing, applying))
+        f.engine.clones[0] = f.engine.clones.single().copy(versionCode = 2L)
+        assertTrue(f.runner().recover())
+        assertEquals(listOf(applying), f.store.list())
+        assertTrue(Files.exists(f.root.resolve("snapshots").resolve(foreign.id)))
+        assertEquals(RunResult.Idle, f.runner().runNext())
+        assertEquals(0, f.engine.calls)
+    }
+
+    @Test fun `foreign review-required same-package task does not block local queue`() {
+        val f = fixture(); val target = UpdateTarget(checkNotNull(f.source), listOf("a"))
+        val foreign = f.queue.enqueue("different-engine", listOf(target), UpdateScope.PER_CLONE).single()
+        val preparing = foreign.move(TaskState.PREPARING, 701L)
+        assertTrue(f.store.replace(foreign, preparing))
+        val applying = preparing.move(TaskState.APPLYING, 702L,
+            affectedIds = listOf("a"), fingerprint = "foreign-unverified")
+        assertTrue(f.store.replace(preparing, applying))
+        val review = applying.move(TaskState.REVIEW_REQUIRED, 703L, TaskIssue.INTERRUPTED)
+        assertTrue(f.store.replace(applying, review))
+        val local = f.enqueue()
+        val result = f.runner().runNext().task()
+        assertEquals(local.id, result.id)
+        assertEquals(TaskState.SUCCEEDED, result.state)
+        assertEquals(review, f.store.list().first { it.id == foreign.id })
+        assertEquals(1, f.engine.calls)
     }
 
     @Test fun `scope change is rejected before import`() {

@@ -1,0 +1,20 @@
+# E52 — Engine-scoped queue execution and crash recovery (pre-code plan)
+
+Date: 2026-10-29. Repository `danhgold7979-cyber/fonesi-apk`. Development branch `phase/e52-engine-scoped-queue-recovery-20261029` stacked on E51 retained-enqueue code `4c7c3a24e7201278d4fc5ce72120c881d21ddf40` ([Draft PR #25](https://github.com/danhgold7979-cyber/fonesi-apk/pull/25), [E51 parent CI #40853007668](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40853007668) pending at E52 planning). The earlier E50 source `37ff68f4cd51582cababccaa01bfc77b505f9ea3` passed [CI #40851899007](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40851899007). E52 acceptance requires E51 parent gates as well as its own exact-SHA results. Original **Product Phase 4, roadmap steps 18–20**. E52 is not another product Phase.
+
+## Defect and authoritative scope
+
+The durable task store is shared across engine keys. `UpdateRunner.recoverLocked()` currently loops over the **entire** store, even when recovering a different engine's PREPARING/APPLYING/VERIFYING task. It can discard that other engine's snapshot, rewrite PREPARING to QUEUED or incorrectly promote unknown APPLYING/VERIFYING to REVIEW_REQUIRED. `runNext()` likewise selects other engines' QUEUED work and may mark it ENGINE_CHANGED, while a foreign-engine same-package REVIEW_REQUIRED/active task blocks this engine's work. The stable `engineKey` is the isolation boundary for execution and recovery; this does not add real OS sandboxing.
+
+## Implementation order / invariants
+
+1. Recheck E50 exact HEAD, PR and CI; inspect `UpdateRunner`, `MemoryTasks` and the current core tests. Keep existing queue lock, pause control, per-package exclusivity and all E45–E50 retained-source authority gates.
+2. In `runNext`, filter the durable snapshot to `task.engineKey == engineKey` **before** choosing queued work or checking earlier active/review-required tasks. Do not use another engine's package name, clone IDs or journal to veto or process the selected engine.
+3. In `recoverLocked`, skip records with a different engine key **before** calling any source policy, snapshot deletion, journal CAS or engine readback. Preserve foreign PREPARING/unknown APPLYING/VERIFYING/REVIEW_REQUIRED records exactly. Keep local uncertain outcomes fail-closed, with no blind retries.
+4. Update the prior test that expected foreign tasks to be marked ENGINE_CHANGED (unsafe). Add JVM regressions for: foreign-only queued task remains intact; foreign queued before local queued same-package cannot steal the runner; foreign PREPARING snapshot remains intact during both recovery and local execution; foreign APPLYING with matching local clone version cannot become success or review; foreign REVIEW_REQUIRED does not suppress local same-package task. Retain existing own-engine success/recovery/lock/pause tests.
+5. Add an E52 static safety audit checking early engine scoping and fixture regressions. Carry the pinned E40–E51 audits; run cloud/candidate tests, build, lint, APK signature/permission checks and no-split/no-GC proof at the exact E52 source SHA on a dedicated workflow; inspect test receipt counts and failures. If CI fails, fix and rerun before claiming E52 PASS.
+6. Update E52 results, STATUS, PRODUCT_PROGRESS and PR from actual exact-source evidence. Do not merge to main or publish.
+
+## Acceptance boundary / blockers
+
+Only this engine may select, recover, rewrite or discard its own task snapshots. Other engine task journal/references/snapshots must remain untouched; same-package work from another engine cannot cause false ENGINE_CHANGED or starvation. Global operation lock and global pause remain intentionally shared. No production guest Activity, full-split import, independent OS UID/session, actual third-party update or physical phone acceptance is claimed. Room v6 stays; `supportsSplits=false`, `importsSplitApks=false`; no destructive private-cluster GC or guest-provider activation. Product estimate **28.00%**, accepted real applications **0**.

@@ -1,6 +1,10 @@
 # Fonesi APK — conservative product completion estimate
 
-Date: 2026-10-29. **Latest accepted technical milestone: E45 PASS** on exact code SHA `64e0a285da84360e3fdea57135367d5b9bd6f8b5`, [CI #40848683404](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40848683404). Both cloud and candidate passed **390 tests per gate**, 0 failed tests, build/lint/signature/permission and E40–E45 source audits. Technical E45 combines batch-atomic verified private-source ownership and durable `retainedSource` original-app fallback quarantine; no real guest app, account or phone proof. Weighted engineering estimate remains **28.00% (~30% rounded)** and accepted production social/e-commerce clones remain zero.
+Date: 2026-10-29. **Latest accepted technical milestone: E52 PASS** at exact code SHA `59bf73522b3a86c1caca57af8613bb2e7b915b2b`: [GitHub Actions #40853790848](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40853790848) **SUCCESS** with **423 tests per cloud/candidate gate**, build/lint/SDK/signature/permission and E40–E52 audits. E51 original/private-source collision fix separately passed [CI #40853007668](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40853007668), 419 tests each gate. This is a journal/queue isolation improvement, not accepted third-party guest execution or account separation. Product weighted estimate stays **28.00% (~30% rounded)**; **0** real third-party apps accepted.
+
+## E52 namespace-scoped queue/recovery is not Phase 4 acceptance
+
+The global Room journal may contain tasks from several engine namespaces. `UpdateRunner` only schedules and recovers tasks with its own `engineKey`; five JVM regressions verify foreign queued, preparing, applying and review tasks are neither rewritten nor treated as local blockers. [E52 evidence](phases/E52_ENGINE_SCOPED_QUEUE_RECOVERY_RESULTS.md). This cannot establish full split APK import, guest Activity lifecycle, independent Android UID/account sessions or physical-phone update data retention.
 
 ## E45 integration is not Phase 4 acceptance
 
@@ -43,13 +47,13 @@ The dimension estimates and weights are heuristic judgments anchored in docs/STA
 
 ## Distinct acceptance counters
 
-- Latest fully verified technical milestone: **E45 PASS** ([CI #40848683404](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40848683404)); E44 batch and quarantine also **PASS**; E43 also **PASS** ([CI #40843854486](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40843854486)); E42 also **PASS** ([CI #40841923812](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40841923812)); E41 also **PASS** ([CI #40840049529](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40840049529)); E40 also **PASS** (Room v6 clone/CLONE owner association and safe deletion; cloud/candidate gates at workflow #40837064438). E39 Room v5 reference registry also passed at workflow #40803931491. Latest synthetic Android host-lifecycle milestone: **E29 PASS**. E24 host Activity attached a View from signed private synthetic DEX; E25 parsed a private signed synthetic component manifest; E29 bound the component record to a UUID/hash/signer-bound dispatch ticket. None registers/launches a real guest Activity.
+- Latest verified technical milestone: **E52 PASS** [CI #40853790848](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40853790848), exact code source `59bf73522b3a86c1caca57af8613bb2e7b915b2b`, 423 tests per cloud/candidate gate. E51 private-enqueue safety also **PASS** [CI #40853007668](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40853007668), 419 each. E29 remains the latest synthetic Android host lifecycle proof; no guest Activity/UID or social-app account acceptance.
 - Production clone of real required social/e-commerce app: **0 applications accepted**.
 - Real Samsung ARM64 / non-Samsung phone acceptance: **not executed**.
 - Full 8-phase/32-step product completion: **not achieved**. Product Phase 1/2 still lacks a fully verified engine and real-device/account isolation acceptance.
 - E26/E27/E28: safe journal recovery, Room-backed crash recovery, and unique WorkManager scheduling passed their CI gates. E36/E37/E38/E39 provide private-store integrity, capability gating, file-ledger and Room reference infrastructure. These are reliability/storage improvements, not proof of a real guest engine.
 - E40 is technically verified: readback-verified clone/cluster association and safe CLONE release after provider-confirmed deletion. No split import or cluster garbage collection is enabled.
-- GitHub `main` remains on `c055df600f87ee9ddf0cd5d6bfc67d80d145e79d`; E45 Draft PR #19 is stacked on E44 batch Draft #17 and E43 Draft #16 (E44 quarantine Draft #18 tested separately), which is stacked on E42 Draft #15, E41 Draft #14 and E40 Draft #13.
+- GitHub `main` remains on `c055df600f87ee9ddf0cd5d6bfc67d80d145e79d`; E52 Draft PR #26 is stacked on E51 Draft PR #25, E50 Draft PR #24 and E49 Draft PR #23, with earlier E40–E48 ancestors. Neither E52 nor underlying draft PRs are merged.
 
 ## Update rule for subsequent reports
 
