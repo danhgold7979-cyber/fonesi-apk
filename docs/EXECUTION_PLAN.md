@@ -1,5 +1,10 @@
 # Kế hoạch thực thi và đối chiếu yêu cầu
 
+## E47 — original-source confirmation conflict quarantine (pre-code, 29/10/2026)
+
+Branch `phase/e47-original-source-confirmation-20261029` stacks on E46 source `ef06a06818c997aba1a0c796171ea1b265ebdd9f` while E46 CI #40849553940 is pending. Original product **Phase 4, steps 17–20**. [Detailed E47 plan](phases/E47_ORIGINAL_SOURCE_CONFIRMATION_PLAN.md): transactionally refuse an original installed-app preview confirmation when the same engine/package has any nonterminal E45 retained source or older E41 owner-associated task; preserve all-or-nothing multi-package enqueue, no provider/GC, Room v6 and legacy unowned flows. Source audits, native-SQLite regressions, full cloud/candidate CI on exact SHA and parent acceptance required. Product score 28%, real apps 0.
+
+
 ## E46 — foreground original-source authority guard (pre-code, 29/10/2026)
 
 Branch `phase/e46-foreground-source-authority-20261029` from E45 `64e0a285da84360e3fdea57135367d5b9bd6f8b5`; parent E45 cloud/candidate run #40848683404 was running at plan creation. Product **Phase 4, steps 17–20**. [Pre-code E46 plan](phases/E46_FOREGROUND_SOURCE_AUTHORITY_PLAN.md): ensure foreground auto-update cannot cancel or retry E43–E45 retained/private-source tasks (including legacy pre-marker E41-owned tasks) merely because the *original* installed app source changes; preserve legacy handling, Room v6, no provider or split activation; native SQLite negative tests, exact-SHA cloud/candidate audits required. Product 28.00%, real accepted apps 0.
