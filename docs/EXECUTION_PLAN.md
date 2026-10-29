@@ -1,5 +1,10 @@
 # Kế hoạch thực thi và đối chiếu yêu cầu
 
+## E54 — avoid private-source queue head-of-line starvation without unsafe fallback (pre-code, 29/10/2026)
+
+Technical E54 for original Product Phase 4 steps 18–20, branch `phase/e54-unblocked-queue-work-selection-20261029` stacked on E53 [Draft PR #27](https://github.com/danhgold7979-cyber/fonesi-apk/pull/27) reporting SHA `eb1c38a8aaa4977f93653b52a26e362df7d12cb4`. E53 code [CI #40855911991](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40855911991) **PASS**, 427 tests per gate; E53 reporting [CI #40857083739](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40857083739) was in_progress at planning. [E54 detailed pre-code plan](phases/E54_UNBLOCKED_QUEUE_WORK_SELECTION_PLAN.md): retain E52 engine scope and same-package protection, choose first eligible original-source task instead of letting a blocked retained-source head starve unrelated package updates. Core regressions for retained, older owner-only, and protected same-package cases; pinned E40–E54 full cloud/candidate audit. Product 28%, zero accepted real clones, no provider/split/GC activation.
+
+
 ## E53 — technical PASS on exact code SHA (29/10/2026)
 
 E53 WorkManager private-source journal protection implementation `76ab8d3ac991f92f8d2a21b5c4fff3d51b45e3b9` [CI #40855911991](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40855911991) **SUCCESS**: **427 tests per cloud/candidate gate**, full build/lint/pinned SDK/APK signature and permission audits, E40–E53 source safety PASS. [E53 results](phases/E53_BACKGROUND_PRIVATE_SOURCE_RECOVERY_RESULTS.md). Retained-marker and E41 Room owner authority are checked before background PREPARING snapshot deletion and journal reset, while unowned legacy cleanup and uncertain outcome review remain supported. E52 parent code and reporting SHAs separately succeeded at CI #40853790848 and #40855141141. Original Product Phase 4 steps 18–20 remain incomplete, product 28%, zero real app/account/phone acceptance; report HEAD requires independent CI.
