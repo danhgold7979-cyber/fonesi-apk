@@ -1,5 +1,10 @@
 # Kế hoạch thực thi và đối chiếu yêu cầu
 
+## E49 — pre-code integration of E46 foreground, E47 manual and E48 recovery source authority (29/10/2026)
+
+Branch `phase/e49-source-authority-gates-integration-20261029`, stacked on E48 implementation `b02ef1a9b245c211f565cfb16918aa692043cd9a` and bounded E45 verified baseline. Original product Phase 4, steps 17–20. [E49 detailed pre-code plan](phases/E49_SOURCE_AUTHORITY_GATES_INTEGRATION_PLAN.md). Carry disjoint E46 foreground original-source guard, E47 manual update confirmation private-queue conflict guard and E48 recovery-time no-false-success guard into one source with all their tests. Do not overwrite independent branch histories or claim product engine readiness. Requires own E40–E49 source audits and pinned cloud/candidate build/lint/APK verification at exact E49 SHA. Keep Room v6, split import disabled, no garbage collection and original weighted product 28.00%.
+
+
 ## E48 — recovery-time retained source quarantine pre-code plan (29/10/2026)
 
 Branch `phase/e48-retained-recovery-quarantine-20261029` starts from E45 report HEAD `3da43261747f28f49c86356cb79afb42699f6e3d`, source E45 [CI #40848683404](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40848683404) PASS, 390 cloud/candidate tests each. E46/E47 are distinct parallel technical branches; do not mix their results. [E48 detailed plan](phases/E48_RETAINED_RECOVERY_QUARANTINE_PLAN.md). Original product Phase 4 steps 18–20: guard `UpdateRunner.recoverLocked` with existing fail-closed retained-source authority before legacy engine version readback or snapshot deletion. Denied APPLYING/VERIFYING → REVIEW_REQUIRED with immutable marker; denied PREPARING/REVIEW_REQUIRED remain held; legitimate legacy recovery unchanged. Add negative JVM tests and pinned E48 cloud/candidate audits. No product % increase from storage/routing reliability: 28.00%, zero real clones.
