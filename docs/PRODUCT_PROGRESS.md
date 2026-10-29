@@ -1,6 +1,10 @@
 # Fonesi APK — conservative product completion estimate
 
-Date: 2026-10-29. **Latest verified technical milestone E64 PASS** at exact code/test SHA `a54c034d21711b7d15d301ebe67a5466c19a3d7d`: [CI #40895219310](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40895219310) **SUCCESS** with **470 tests per cloud/candidate gate**, E40–E64 audits, pinned build/lint/signature/permission checks. E63 code `bbaf4bbb` passed [CI #40894087779](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40894087779) (467 tests/gate). These are bounded technical guards, **not** real Android clone/account acceptance. **Weighted product readiness 28.00%**, **0 accepted real third-party clones**.
+Date: 2026-10-29. **Latest verified technical milestone E65 PASS** at exact code/test SHA `9393f288be8d311e3c2f4f65a989c022eda190fa`, [CI #40897506047](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40897506047) **SUCCESS** with **475 tests per cloud/candidate gate**, E40–E65 audits, pinned build/lint/signatures/permissions. E64 code `a54c034d` passed [CI #40895219310](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40895219310) (470 tests/gate), E63 `bbaf4bbb` passed [CI #40894087779](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40894087779) (467 tests/gate). These are bounded safety gates, not app/account/phone acceptance. **Weighted product readiness remains 28.00%**, **0 accepted real third-party clones**.
+
+## E65 native guest delete guard does not establish real guest retention
+
+A second pre-deletion native readback must confirm unchanged package/version/signers and stopped status, or sustained absence, before durable DELETING and SDK uninstall. This narrows an SDK identity-race window in core protocol tests; it does not prove an atomic native uninstall, independent Android UID/account safety, split APK import or Samsung real data deletion/retention. [E65 results](phases/E65_NATIVE_GUEST_DELETE_IDENTITY_RESULTS.md). Product rubric is unchanged.
 
 ## E64 unknown guest relaunch quarantine is not engine acceptance
 
@@ -79,7 +83,7 @@ The dimension estimates and weights are heuristic judgments anchored in docs/STA
 
 ## Distinct acceptance counters
 
-- Latest verified technical milestone: **E64 PASS**, code SHA `a54c034d21711b7d15d301ebe67a5466c19a3d7d`, [CI #40895219310](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40895219310), 470 cloud/candidate tests per gate. Previous E63 source `bbaf4bbb` passed [CI #40894087779](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40894087779), 467 tests/gate. Neither is real social-app or device/account acceptance.
+- Latest verified technical milestone: **E65 PASS**, code source `9393f288be8d311e3c2f4f65a989c022eda190fa`, [CI #40897506047](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40897506047) **475 tests per cloud/candidate gate**. E64 and E63 code/report SHAs independently passed CI; 0 real guest/social-app/phone acceptance.
 - Production clone of real required social/e-commerce app: **0 applications accepted**.
 - Real Samsung ARM64 / non-Samsung phone acceptance: **not executed**.
 - Full 8-phase/32-step product completion: **not achieved**. Product Phase 1/2 still lacks a fully verified engine and real-device/account isolation acceptance.

@@ -12,7 +12,7 @@ Date: 2026-10-29. Exact repository `danhgold7979-cyber/fonesi-apk`, original **P
 
 **E63 technical PASS** on exact source/test commit `bbaf4bbb4765033306d8a84619ab245d16e18513`: [GitHub Actions #40894087779](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40894087779) **SUCCESS** with verified checkout SHA, E40–E63 audits, pinned Android/JDK toolchain, **467 tests in each cloud and candidate test gate** (zero test failures reported), build, lint, APK signature/permissions and no split/provider/garbage-collection activation checks. [Test-only receipts artifact #12906503636](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40894087779/artifacts/12906503636). These are JVM/Robolectric and build receipts, **not** runtime execution proof of a third-party guest.
 
-This results-only reporting commit has a newer SHA and requires independent exact-SHA CI. Do not conflate verified code `bbaf4bbb` with documentation HEAD.
+The results-only reporting SHA `ba26d2104ab7a28d23b7bfd96a0c8451b9bf71b1` independently passed [GitHub Actions #40895952892](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40895952892) **SUCCESS**. The verified code/test SHA remains `bbaf4bbb4765033306d8a84619ab245d16e18513`.
 
 ## Remaining limitations
 

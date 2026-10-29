@@ -1,3 +1,15 @@
+# Fonesi APK — E65 technical PASS; Product Phase 3 remains incomplete (29/10/2026)
+
+**Repository:** [danhgold7979-cyber/fonesi-apk](https://github.com/danhgold7979-cyber/fonesi-apk), branch `phase/e65-native-guest-delete-identity-20261029`, [Draft PR #39](https://github.com/danhgold7979-cyber/fonesi-apk/pull/39) stacked on E64 [Draft PR #38](https://github.com/danhgold7979-cyber/fonesi-apk/pull/38); `main@c055df600f87ee9ddf0cd5d6bfc67d80d145e79d` unchanged.
+
+**Product phase:** original Phase 3 steps 14–16 (of 8 phases/32 steps), with delete/data safety dependencies. **E65 technical PASS** on exact code/test SHA `9393f288be8d311e3c2f4f65a989c022eda190fa`: [GitHub Actions #40897506047](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40897506047) **SUCCESS**, 475 tests per cloud/candidate gate, E40–E65 audits, pinned SDK build, lint, APK signature/permission checks and split/provider/GC disabled. [Test-only artifact #12907962058](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40897506047/artifacts/12907962058). E64 code `a54c034d` [CI #40895219310](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40895219310) and its reporting SHA `3da8eddd` [CI #40896767719](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40896767719) passed independently. E63 report `ba26d210` [CI #40895952892](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40895952892) also succeeded.
+
+**Code:** Guest delete now confirms a second exact native package/version/signers/stopped snapshot after foreground authorization and **before** changing state or invoking native uninstall; originally absent guest must remain absent. Five JVM regressions prove changed native identities cannot cause wrong deletion. [E65 pre-code plan](phases/E65_NATIVE_GUEST_DELETE_IDENTITY_PLAN.md) | [E65 results](phases/E65_NATIVE_GUEST_DELETE_IDENTITY_RESULTS.md). Reporting HEAD requires its own exact-SHA CI.
+
+**Product readiness:** **28.00% weighted**, **0 accepted real third-party clone apps**. Full split import, guest Android Activity/Service/Provider, UID/account session isolation, Samsung/other-device tests and release signing remain unaccepted. Keep PR Draft; no main merge, release or 100% claim.
+
+---
+
 # Fonesi APK — E64 technical PASS; Product Phase 3 remains incomplete (29/10/2026)
 
 **Repository:** [danhgold7979-cyber/fonesi-apk](https://github.com/danhgold7979-cyber/fonesi-apk). **Branch:** `phase/e64-unknown-guest-launch-retry-gate-20261029`, stacked [Draft PR #38](https://github.com/danhgold7979-cyber/fonesi-apk/pull/38) on E63 [Draft PR #37](https://github.com/danhgold7979-cyber/fonesi-apk/pull/37); `main@c055df600f87ee9ddf0cd5d6bfc67d80d145e79d` unchanged.
