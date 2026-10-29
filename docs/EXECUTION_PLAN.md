@@ -1,5 +1,10 @@
 # Kế hoạch thực thi và đối chiếu yêu cầu
 
+## E44 — pre-code atomic multi-target private-source retained queue (29/10/2026)
+
+Branch `phase/e44-atomic-batch-retained-enqueue-20261029` stacks on E43 reporting HEAD `785cb956ce3f193c8e5f1b05dfc569470522b265`. Original Phase 4, roadmap steps 17–20. [E44 detailed pre-code plan](phases/E44_ATOMIC_BATCH_RETAINED_ENQUEUE_PLAN.md). Verify all batch cluster IDs and source identities via signed private-store readback before DB mutation, fail closed on duplicate dedup identities, then enqueue every task and acquire matching UPDATE_TASK owner in one Room transaction. Add negative native-SQLite rollback/idempotence/conflict tests and pinned cloud/candidate CI audits. Do not change normal UI/engine behavior, Room schema, split import or GC; retain product estimate 28.00% and real-app acceptance 0.
+
+
 ## E43 — verified atomic private-source enqueue increment (29/10/2026)
 
 Exact tested SHA `0579d7ebee2ef829347d77d6b3169255f1d8e92c`, [CI #40843854486](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40843854486) **SUCCESS**: cloud and candidate **374 tests each**, 0 failures/errors/skips, build/lint/signature/permissions and single-APK/no-GC safety audits. [E43 detailed results](phases/E43_ATOMIC_RETAINED_ENQUEUE_RESULTS.md), [pre-code plan](phases/E43_ATOMIC_RETAINED_ENQUEUE_PLAN.md). Room v6 unchanged. Bounded storage-only technical PASS; Phase 4, production engine, real guest session and device acceptance still open.
