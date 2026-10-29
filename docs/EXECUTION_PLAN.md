@@ -1,5 +1,28 @@
 # Kế hoạch thực thi và đối chiếu yêu cầu
 
+## E40 — integrate Room clone metadata with private APK cluster ownership (plan before code)
+
+Repository: `danhgold7979-cyber/fonesi-apk`; branch `phase/e21-android-split-code-proof-20261028`; starting HEAD `1ddef332ce2a53e68448627b3165202f87149307`.
+Product alignment: Phase 3, roadmap steps 13–16 (stable clone identity/lifecycle), with Phase 4 storage-retention dependency. E39 is accepted only for its own Room v5 ownership registry: workflow [#40803931491](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40803931491) passed cloud and candidate gates on source `07d582e09bce8e1d21249c79333767ba8efdb4f0`, 334 tests in each gate. This does not make E40 pass.
+
+### Pre-code audit and implementation sequence
+
+1. Keep the existing Room ownership registry as the sole owner authority; do not use the file ledger to authorize deletion. Preserve SpaceCore's single-APK and disabled-split guards.
+2. Extend `CloneMetadataRow` with nullable `clusterId`; migrate Room schema 5→6 with a non-destructive nullable-column migration. Existing rows must migrate to null, with clone IDs, launch tokens, tasks, queue pause state, engine instances and E39 owner rows preserved.
+3. Add a dedicated clone/cluster ownership repository that accepts only a canonical UUID and a cluster returned by `PrivateApkStore.open` readback. Validate clone/engine identity and package match. In one Room transaction, assert the old metadata/reference relationship is consistent, acquire the new CLONE reference, update `clusterId`, and only then release the old reference. Reject ambiguous or inconsistent owner references without mutation.
+4. Integrate deletion with the existing clone metadata lifecycle: under the existing operation lock, validate the expected launch token, confirm provider deletion/absence first, then atomically delete clone metadata and release exactly its matching CLONE reference. If metadata and references disagree, preserve metadata and fail closed. Never delete cluster files or other owner types.
+5. Add tests for 5→6 migration and null legacy values; valid association; idempotent re-association; generation switch; wrong package/engine/clone; malformed/missing cluster; inconsistent/multiple CLONE references; stale delete token; provider deletion failure; atomic rollback; database reopen and unrelated UPDATE_TASK/REVIEW_REQUIRED/ROLLBACK references retained.
+6. Update schema/audit/workflow coverage and execute the exact cloud plus opt-in candidate gates. Review generated schema v6 and the candidate's install/split guard evidence. Do not mark E40 PASS until both gates succeed on the same source SHA and migration/schema evidence is reviewed.
+
+### Acceptance boundary
+
+- A non-null `clone_metadata.clusterId` has exactly one matching `CLONE` reference for the same `engineKey/cloneId`; null means no CLONE reference.
+- Association, generation switch, and post-provider-confirmed deletion keep metadata/reference state atomic and fail closed on inconsistencies.
+- Existing data survives migration and process/database reopen.
+- No automatic cluster publication, cluster deletion/GC, original-app fallback, split import, guest launch, account isolation, or product-phase completion is claimed.
+- Product readiness percentage remains unchanged for this storage-only increment unless accepted product functionality changes under `docs/PRODUCT_PROGRESS.md`.
+
+
 ## E9 — plan nạp code/resources private, trước code
 
 Đối chiếu tổng thể: E7/E8 đã push d5a6ff7, 301 test và các artifact có báo cáo; E6 chưa chạy Android. Vẫn thiếu classloader/resources/lifecycle/Binder trước khi có provider hoàn chỉnh. Bước này chỉ làm code image loader, không gọi Application.onCreate/Activity hoặc đưa SDK SpaceCore thành hỗ trợ split.
