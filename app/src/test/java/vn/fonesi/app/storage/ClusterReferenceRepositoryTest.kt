@@ -29,7 +29,12 @@ class ClusterReferenceRepositoryTest {
         try {
             val repository = ClusterReferenceRepository(db) { 500L }
             val cloneRef = ClusterReference(UUID.randomUUID().toString(), ClusterOwnerType.CLONE, "clone-1", "engine-a", 100L)
-            val reviewRef = cloneRef.copy(ownerType = ClusterOwnerType.REVIEW_REQUIRED, ownerId = "task-1", createdAtEpochMs = 200L)
+            val reviewRef = cloneRef.copy(
+                clusterId = UUID.randomUUID().toString(),
+                ownerType = ClusterOwnerType.REVIEW_REQUIRED,
+                ownerId = "task-1",
+                createdAtEpochMs = 200L,
+            )
             assertTrue(withContext(Dispatchers.IO) { repository.acquire(cloneRef) })
             assertFalse(withContext(Dispatchers.IO) { repository.acquire(cloneRef.copy(createdAtEpochMs = 999L)) })
             assertTrue(withContext(Dispatchers.IO) { repository.acquire(reviewRef) })
