@@ -1,5 +1,10 @@
 # Kế hoạch thực thi và đối chiếu yêu cầu
 
+## E49 — integrated source authority technical CI PASS (29/10/2026)
+
+Exact tested SHA `23ea57d65fd562d5cc611040e2e8791f6462779c` [CI #40851203055](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40851203055) **SUCCESS**, cloud/candidate **407 tests each**, 0 failed tests, build/lint/signature/permissions and E40–E49 audits passed. [Full results](phases/E49_SOURCE_AUTHORITY_GATES_INTEGRATION_RESULTS.md) and [pre-code plan](phases/E49_SOURCE_AUTHORITY_GATES_INTEGRATION_PLAN.md). The E46 foreground, E47 manual original-app confirmation and E48 recovery retained-source authority gates coexist without weakening E45 atomic queue. Room v6 unchanged, split disabled, no destructive GC. No new provider/runtime acceptance; product remains 28.00%, real third-party apps accepted 0. The subsequent docs/report HEAD has its own CI.
+
+
 ## E49 — pre-code integration of E46 foreground, E47 manual and E48 recovery source authority (29/10/2026)
 
 Branch `phase/e49-source-authority-gates-integration-20261029`, stacked on E48 implementation `b02ef1a9b245c211f565cfb16918aa692043cd9a` and bounded E45 verified baseline. Original product Phase 4, steps 17–20. [E49 detailed pre-code plan](phases/E49_SOURCE_AUTHORITY_GATES_INTEGRATION_PLAN.md). Carry disjoint E46 foreground original-source guard, E47 manual update confirmation private-queue conflict guard and E48 recovery-time no-false-success guard into one source with all their tests. Do not overwrite independent branch histories or claim product engine readiness. Requires own E40–E49 source audits and pinned cloud/candidate build/lint/APK verification at exact E49 SHA. Keep Room v6, split import disabled, no garbage collection and original weighted product 28.00%.
