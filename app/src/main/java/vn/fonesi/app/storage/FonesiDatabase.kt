@@ -90,6 +90,8 @@ interface CloneMetadataDao {
     fun rename(engine: String, id: String, label: String, groupName: String?, now: Long): Int
     @Query("UPDATE clone_metadata SET accentKey = :accent, badgeText = :badge, changedAt = :now WHERE engineKey = :engine AND cloneId = :id")
     fun restyle(engine: String, id: String, accent: String, badge: String?, now: Long): Int
+    @Query("UPDATE clone_metadata SET clusterId = :clusterId, changedAt = :now WHERE engineKey = :engine AND cloneId = :id AND launchToken = :expectedToken")
+    fun associateCluster(engine: String, id: String, expectedToken: String, clusterId: String?, now: Long): Int
     @Query("DELETE FROM clone_metadata WHERE engineKey = :engine AND cloneId = :id") fun delete(engine: String, id: String): Int
 }
 

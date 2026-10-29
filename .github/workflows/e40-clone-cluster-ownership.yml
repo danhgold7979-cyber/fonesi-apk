@@ -6,6 +6,7 @@ on:
       - phase/e40-clone-cluster-ownership-20261029
     paths:
       - ".github/workflows/e39-room-cluster-ownership.yml"
+      - ".github/workflows/e40-clone-cluster-ownership.yml"
       - "app/src/main/java/vn/fonesi/app/storage/FonesiDatabase.kt"
       - "app/src/main/java/vn/fonesi/app/storage/ClusterReferenceRepository.kt"
       - "app/src/main/java/vn/fonesi/app/storage/CloneClusterOwnershipRepository.kt"
