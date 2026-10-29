@@ -21,3 +21,8 @@ E74's existing runner can boot a dedicated owned AOSP API 34 x86_64 emulator, in
 ## Exclusions
 
 This emulator exercises the project-controlled synthetic host Activity and a signed PRIVATE payload class; it does **not** instantiate/attach/launch the guest Activity, virtualize ActivityThread/Instrumentation/Binder/PackageManager, isolate Android UID/accounts, enable full split APK provider, or test social logins. Physical Samsung SM-A525F remains a separate acceptance gate. Product readiness stays **28.00%**, accepted real third-party clones **0**.
+
+
+## Runtime adjustment after first CI attempt (30/10/2026)
+
+The first E77 workflow attempt `#40931231012` passed audit, cloud/candidate and source-engine checks and installed the AOSP image, but the emulator runner stopped before boot because the GitHub-hosted runner has no accessible `/dev/kvm`. This is a **runner capability blocker**, not a guest-preflight assertion failure. E77 now allows a narrowly scoped `--allow-software-emulation` only when `proof-level=e77`, uses QEMU `-accel off`, and increases the bounded boot timeout to 600 seconds. All older proof levels still fail closed without KVM; no audit-only fallback is allowed. E77 is not PASS unless the new exact-SHA workflow actually boots Android and validates the full receipt. If software emulation cannot boot within the limit, report the limitation and leave Android runtime unverified rather than claim success.
