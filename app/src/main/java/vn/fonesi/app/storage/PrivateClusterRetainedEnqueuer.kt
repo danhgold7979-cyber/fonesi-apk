@@ -58,6 +58,10 @@ class PrivateClusterRetainedEnqueuer(
         // Always use the private verified source, never the caller's source APK file paths.
         val verifiedTarget = UpdateTarget(verifiedSource, target.affectedCloneIds.toList())
         return db.runInTransaction(Callable {
+            // E47 guards original-source enqueue after a private task; E51 also closes the
+            // reverse order, including different version/dedup keys. Room task+owner writes
+            // and this source-authority preflight must share the same transaction.
+            rejectActiveUnmarkedSource(engineKey, verifiedSource.packageName)
             val task = UpdateQueue(RoomUpdateTaskStore(db), clock)
                 .enqueue(engineKey, listOf(verifiedTarget), scope, retainedSource = true).single()
             check(task.state == TaskState.QUEUED && task.retainedSource &&
@@ -139,6 +143,19 @@ class PrivateClusterRetainedEnqueuer(
                 enqueueReadBackVerified(engineKey, target, scope, cluster)
             }
         })
+    }
+
+    /**
+     * A previously enqueued original-app source cannot be silently shadowed by a verified
+     * private APK generation for the same engine/package, even with another version/clone ID.
+     * Historical terminal tasks are not active; multiple legitimate *retained* PER_CLONE
+     * tasks remain independently owned. Called only under the enclosing Room transaction.
+     */
+    private fun rejectActiveUnmarkedSource(engineKey: String, packageName: String) {
+        check(RoomUpdateTaskStore(db).list().none { existing ->
+            existing.engineKey == engineKey && existing.packageName == packageName &&
+                !existing.state.terminal && !existing.retainedSource
+        }) { "Active original-app or pre-marker source prevents private APK enqueue" }
     }
 
     private fun requireOwner(engineKey: String) {
