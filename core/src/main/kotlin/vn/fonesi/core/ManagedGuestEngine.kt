@@ -104,6 +104,7 @@ class ManagedGuestEngine(
             backend.validateSource(snapshot.source)
             mutationAllowed()
             checkCreatePeers(source)
+            val peerSnapshot = active().filter { it.packageName == source.packageName }
             var row = registry.reserve(source.packageName)
             unusedReservation = row
             while (row.userId in backend.users()) {
@@ -116,6 +117,24 @@ class ManagedGuestEngine(
             enteredSdk = true
             backend.createUser(row.userId)
             check(row.userId in backend.users()) { "User creation not confirmed" }
+            // Creating a native user is the first irreversible SDK mutation.
+            // Before importing shared package code, validate the frozen source,
+            // our reservation, and every other native guest again. Keep the
+            // reservation/snapshot for reconciliation if any check is uncertain.
+            check(snapshots.verify(snapshot)) { "Prepared APK changed after native user creation" }
+            check(instance(row.id) == row) { "Reserved native guest identity changed before install" }
+            check(backend.inspect(row.userId, row.packageName) == null) {
+                "Reserved user already has a guest package; refusing to overwrite"
+            }
+            val peersBeforeInstall = active().filter { it.packageName == source.packageName && it.id != row.id }
+            check(peersBeforeInstall.size == peerSnapshot.size && peersBeforeInstall.toSet() == peerSnapshot.toSet()) {
+                "Shared package guest scope changed after native user creation"
+            }
+            check(peersBeforeInstall.all { peer ->
+                peer.state == InstanceState.READY &&
+                    record(peer)?.let { it.running == false && it.versionCode == source.versionCode &&
+                        it.signerDigests == source.signerDigests } == true
+            }) { "Existing native guest is busy, missing or changed before shared APK import" }
             backend.install(row.userId, snapshot.source)
             val observed = checkNotNull(record(row))
             check(observed.versionCode == source.versionCode && observed.signerDigests == source.signerDigests)
