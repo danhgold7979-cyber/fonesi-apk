@@ -53,7 +53,7 @@ class ClusterReferenceRepository(
         validateOwner(ownerId, engineKey)
         return db.withTransaction {
             db.clusterReferences().forOwner(ownerType.name, ownerId, engineKey)
-                .mapTo(linkedSetOf(), ClusterReferenceRow::toReference)
+                .mapTo(linkedSetOf()) { it.toReference() }
         }
     }
 
@@ -62,7 +62,7 @@ class ClusterReferenceRepository(
     }
 
     suspend fun all(): Set<ClusterReference> = db.withTransaction {
-        db.clusterReferences().list().mapTo(linkedSetOf(), ClusterReferenceRow::toReference)
+        db.clusterReferences().list().mapTo(linkedSetOf()) { it.toReference() }
     }
 
     /** Reconciliation is report-only. It never repairs or deletes ambiguous ownership automatically. */
