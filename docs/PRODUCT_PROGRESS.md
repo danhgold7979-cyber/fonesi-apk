@@ -1,6 +1,10 @@
 # Fonesi APK — conservative product completion estimate
 
-Date: 2026-10-29. **Latest technical PASS E58** on exact source `07fc3262eb78f9bc1b4fa27069cbce596ad6b244`, [GitHub Actions #40881081227](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40881081227) **SUCCESS**: **449 tests per cloud and candidate gate**, each 140 core + 44 APK runtime + 265 Android/Robolectric, 0 failures/errors/skips, pinned build/lint, signatures/permissions and E40–E58 audits. This locks CLONE private APK association against cooperating clone stop/metadata mutations; it does **not** activate a production guest engine. **Weighted product readiness stays 28.00% (~30% rounded); 0 accepted real third-party clone apps.**
+Date: 2026-10-29. **Latest technical PASS E59**, exact code/test `7176ae9c8c9eaf92989ddef3e4882b06e3e9c367`: [CI #40883514023](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40883514023) **SUCCESS**, **453 tests per cloud/candidate gate** (140 core + 44 APK runtime + 269 Android/Robolectric), 0 failed/errors/skipped; SDK/build/lint/signature/permissions and E40–E59 audits passed. This is a lock-time clone-delete stale identity guard, **not an accepted guest runtime or product phase**. **Weighted product readiness remains 28.00% (~30% rounded)** with **0 accepted real third-party clones**.
+
+## E59 lock-time delete identity is not guest-lifecycle acceptance
+
+`CloneMetadataRepository.delete` now requires the entire saved metadata row to remain identical when the shared OS lease is acquired, before external provider deletion. SQLite regressions inject a cooperating writer between pre-lock snapshot and lease acquisition with the same launch token, showing fail-closed behavior for renamed or cluster-switched metadata; the real guest/provider was **not** exercised. Real APK import, independent Android UID/account sessions, physical-phone data retention and release signing remain open. [E59 results](phases/E59_DELETE_LOCKTIME_IDENTITY_RESULTS.md).
 
 ## E58 association lock does not complete guest or device acceptance
 

@@ -1,5 +1,9 @@
 # Kế hoạch thực thi và đối chiếu yêu cầu
 
+## E59 — technical PASS on exact source `7176ae9c8c9eaf92989ddef3e4882b06e3e9c367` (29/10/2026)
+
+Original Product Phase 3 steps 14–16. [Draft PR #33](https://github.com/danhgold7979-cyber/fonesi-apk/pull/33) stacked on E58. **E59 code/test SHA `7176ae9c8c9eaf92989ddef3e4882b06e3e9c367`**, [GitHub Actions #40883514023](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40883514023) **SUCCESS**: cloud/candidate **453 tests each** (140 core, 44 APK runtime, 269 Android/Robolectric), zero failures/errors/skips, pinned SDK/build/lint/signatures/permissions, E40–E59 audit and no split/provider/GC activation. Full lock-time clone metadata row equality prevents deleting by stale pre-lock identity even when launch token is unchanged; synthetic Room/OS lease interleaving tests preserve metadata and owner references after reopen. [E59 results](phases/E59_DELETE_LOCKTIME_IDENTITY_RESULTS.md). The reporting commit must also be verified; product remains 28.00% with zero real clones accepted.
+
 ## E59 — pre-code lock-time delete identity revalidation (29/10/2026)
 
 Original **Product Phase 3 steps 14–16**. Branch `phase/e59-delete-locktime-identity-20261029` stacks on E58 report head `3cb0494ae80dd1d49566f1fbcc211b4efbfc380a`; E58 code/test `07fc3262eb78f9bc1b4fa27069cbce596ad6b244` [CI #40881081227](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40881081227) **PASS (449 tests per gate)**; report commit has separate CI. [Detailed E59 pre-code plan](phases/E59_DELETE_LOCKTIME_IDENTITY_PLAN.md): guard `CloneMetadataRepository.delete` against any full-row identity change between the pre-lock snapshot and the lock-time readback, before provider dispatch. Native SQLite interleaving tests, E40–E59 audits, pinned cloud/candidate build/lint/signatures/permissions, and split/provider/GC restrictions required before PASS. Product 28.00% weighted, 0 real accepted clones; no merge to main.
