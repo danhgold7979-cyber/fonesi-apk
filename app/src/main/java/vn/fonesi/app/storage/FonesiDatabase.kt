@@ -20,6 +20,7 @@ data class CloneMetadataRow(
     @ColumnInfo(defaultValue = "''") val launchToken: String = UUID.randomUUID().toString(),
     @ColumnInfo(defaultValue = "'teal'") val accentKey: String = "teal",
     val badgeText: String? = null,
+    val clusterId: String? = null,
 )
 
 @Entity(tableName = "update_tasks", indices = [
@@ -89,6 +90,8 @@ interface CloneMetadataDao {
     fun rename(engine: String, id: String, label: String, groupName: String?, now: Long): Int
     @Query("UPDATE clone_metadata SET accentKey = :accent, badgeText = :badge, changedAt = :now WHERE engineKey = :engine AND cloneId = :id")
     fun restyle(engine: String, id: String, accent: String, badge: String?, now: Long): Int
+    @Query("UPDATE clone_metadata SET clusterId = :clusterId, changedAt = :now WHERE engineKey = :engine AND cloneId = :id AND launchToken = :expectedToken")
+    fun associateCluster(engine: String, id: String, expectedToken: String, clusterId: String?, now: Long): Int
     @Query("DELETE FROM clone_metadata WHERE engineKey = :engine AND cloneId = :id") fun delete(engine: String, id: String): Int
 }
 
@@ -106,7 +109,7 @@ interface UpdateTaskDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE) fun setControl(row: QueueControlRow)
 }
 
-@Database(entities = [CloneMetadataRow::class, UpdateTaskRow::class, QueueControlRow::class, EngineInstanceRow::class, ClusterReferenceRow::class], version = 5, exportSchema = true)
+@Database(entities = [CloneMetadataRow::class, UpdateTaskRow::class, QueueControlRow::class, EngineInstanceRow::class, ClusterReferenceRow::class], version = 6, exportSchema = true)
 abstract class FonesiDatabase : RoomDatabase() {
     abstract fun clones(): CloneMetadataDao
     abstract fun tasks(): UpdateTaskDao
@@ -119,6 +122,12 @@ abstract class FonesiDatabase : RoomDatabase() {
                 db.execSQL("CREATE TABLE IF NOT EXISTS cluster_references (clusterId TEXT NOT NULL, ownerType TEXT NOT NULL, ownerId TEXT NOT NULL, engineKey TEXT NOT NULL, createdAtEpochMs INTEGER NOT NULL, PRIMARY KEY(clusterId, ownerType, ownerId, engineKey))")
                 db.execSQL("CREATE INDEX IF NOT EXISTS index_cluster_references_clusterId ON cluster_references (clusterId)")
                 db.execSQL("CREATE INDEX IF NOT EXISTS index_cluster_references_ownerType_ownerId_engineKey ON cluster_references (ownerType, ownerId, engineKey)")
+            }
+        }
+        val MIGRATION_5_6 = object : Migration(5, 6) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                // Existing clones have no verified private-cluster association.
+                db.execSQL("ALTER TABLE clone_metadata ADD COLUMN clusterId TEXT")
             }
         }
         val MIGRATION_3_4 = object : Migration(3, 4) {
@@ -152,7 +161,7 @@ abstract class FonesiDatabase : RoomDatabase() {
             Room.databaseBuilder(context.applicationContext, FonesiDatabase::class.java, name)
                 .openHelperFactory(PreservingOpenHelperFactory())
                 .setJournalMode(JournalMode.TRUNCATE)
-                .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5)
+                .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6)
                 .addCallback(object : Callback() {
                     override fun onOpen(db: SupportSQLiteDatabase) {
                         db.execSQL("PRAGMA synchronous=FULL")

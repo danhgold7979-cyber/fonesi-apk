@@ -1,0 +1,93 @@
+name: E40 Clone and private APK cluster ownership
+
+on:
+  push:
+    branches:
+      - phase/e40-clone-cluster-ownership-20261029
+    paths:
+      - ".github/workflows/e39-room-cluster-ownership.yml"
+      - ".github/workflows/e40-clone-cluster-ownership.yml"
+      - "app/src/main/java/vn/fonesi/app/storage/FonesiDatabase.kt"
+      - "app/src/main/java/vn/fonesi/app/storage/ClusterReferenceRepository.kt"
+      - "app/src/main/java/vn/fonesi/app/storage/CloneClusterOwnershipRepository.kt"
+      - "app/src/main/java/vn/fonesi/app/storage/CloneMetadataRepository.kt"
+      - "app/src/test/java/vn/fonesi/app/storage/ClusterReferenceRepositoryTest.kt"
+      - "app/src/test/java/vn/fonesi/app/storage/CloneClusterOwnershipRepositoryTest.kt"
+      - "app/src/test/java/vn/fonesi/app/storage/StorageIntegrationTest.kt"
+      - "app/schemas/vn.fonesi.app.storage.FonesiDatabase/**"
+      - "apk-runtime/src/main/kotlin/vn/fonesi/apk/PrivateApkClusterReferenceLedger.kt"
+      - "apk-runtime/src/test/kotlin/vn/fonesi/apk/PrivateApkStoreTest.kt"
+      - "scripts/audit_cluster_references.py"
+      - "scripts/audit_room_cluster_references.py"
+      - "scripts/audit_e40_clone_cluster_ownership.py"
+      - "docs/phases/E40_CLONE_CLUSTER_OWNERSHIP_PLAN.md"
+      - "docs/EXECUTION_PLAN.md"
+      - "docs/STATUS.md"
+      - "docs/PRODUCT_PROGRESS.md"
+      - "scripts/check.sh"
+      - "scripts/verify_main_build.py"
+      - "scripts/verify_candidate_build.py"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: fonesi-e40-clone-cluster-ownership-v1
+  cancel-in-progress: true
+
+jobs:
+  room-cluster-ownership:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      FONESI_TOOLS_DIR: /tmp/fonesi-tools
+      ANDROID_HOME: /tmp/fonesi-tools/android-sdk
+      ANDROID_SDK_ROOT: /tmp/fonesi-tools/android-sdk
+    steps:
+      - name: Checkout exact E40 source
+        uses: actions/checkout@v4
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Audit E40 clone/cluster ownership contract and compile audit scripts
+        run: |
+          python3 -m py_compile scripts/audit_cluster_references.py scripts/audit_room_cluster_references.py scripts/audit_e40_clone_cluster_ownership.py scripts/verify_main_build.py scripts/verify_candidate_build.py
+          python3 scripts/audit_cluster_references.py
+          python3 scripts/audit_room_cluster_references.py
+          python3 scripts/audit_e40_clone_cluster_ownership.py
+      - name: Bootstrap pinned Android SDK36 and JDK21
+        run: python3 scripts/bootstrap_android.py --accept-sdk-license
+      - name: Run E40 Room migration, cluster ledger, APK auditor and cloud tests
+        run: ./scripts/check.sh
+      - name: Build and audit opt-in candidate separately
+        run: ./scripts/check.sh --with-engine-candidate
+      - name: Verify provider install and destructive-GC boundaries
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          backend = Path("app/src/candidate/java/vn/fonesi/app/runtime/SpaceCoreBackend.kt").read_text()
+          runtime = Path("app/src/candidate/java/vn/fonesi/app/runtime/RuntimeBindings.kt").read_text()
+          repo = Path("app/src/main/java/vn/fonesi/app/storage/ClusterReferenceRepository.kt").read_text()
+          ledger = Path("apk-runtime/src/main/kotlin/vn/fonesi/apk/PrivateApkClusterReferenceLedger.kt").read_text()
+          assert "check(source.apkPaths.size == 1)" in backend
+          assert "const val supportsSplits = false" in runtime
+          assert "fun collectGarbage(" not in repo
+          assert "fun collectGarbage(" not in ledger
+          print("PASS: Room ownership is report-only and does not enable split import or destructive collection.")
+          PY
+      - name: Upload generated Room schema and test-only receipts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: fonesi-E40-clone-cluster-ownership-TEST-ONLY
+          path: |
+            app/schemas/vn.fonesi.app.storage.FonesiDatabase/6.json
+            app/build/reports/cloud-verification.json
+            app/build/reports/candidate-verification.json
+            app/build/test-results/testDebugUnitTest/TEST-*.xml
+            apk-runtime/build/test-results/test/TEST-*.xml
+            core/build/test-results/test/TEST-*.xml
+          if-no-files-found: warn
+          retention-days: 7

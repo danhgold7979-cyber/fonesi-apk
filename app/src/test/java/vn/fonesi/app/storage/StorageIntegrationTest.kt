@@ -165,6 +165,54 @@ class StorageIntegrationTest {
         assertTrue(engine.records.any { it.id == b.cloneId })
     }
 
+    @Test fun inconsistentClusterOwnershipBlocksProviderDeletionBeforeGuestIsTouched() = background {
+        val engine = EngineDouble()
+        val repository = CloneMetadataRepository(db, "engine-a", engine, operationLock())
+        val saved = repository.create(source, "Protected clone")
+        val conflictingCluster = UUID.randomUUID().toString()
+        db.clusterReferences().insert(ClusterReferenceRow(
+            clusterId = conflictingCluster,
+            ownerType = vn.fonesi.apk.ClusterOwnerType.CLONE.name,
+            ownerId = saved.cloneId,
+            engineKey = "engine-a",
+            createdAtEpochMs = 5L,
+        ))
+
+        assertThrows(IllegalStateException::class.java) {
+            repository.delete(saved.cloneId, saved.launchToken)
+        }
+
+        // The mismatch must be detected before engine.delete(), not merely after it.
+        assertEquals(saved, db.clones().find("engine-a", saved.cloneId))
+        assertEquals(listOf(saved.cloneId), engine.records.map { it.id })
+        assertEquals(listOf(conflictingCluster), db.clusterReferences()
+            .forOwner(vn.fonesi.apk.ClusterOwnerType.CLONE.name, saved.cloneId, "engine-a")
+            .map { it.clusterId })
+    }
+
+    @Test fun providerFailurePreservesAssociatedMetadataAndOtherOwners() = background {
+        val engine = EngineDouble()
+        val repository = CloneMetadataRepository(db, "engine-a", engine, operationLock())
+        val saved = repository.create(source, "Existing clone")
+        val clusterId = UUID.randomUUID().toString()
+        check(db.clones().associateCluster("engine-a", saved.cloneId, saved.launchToken, clusterId, 10L) == 1)
+        db.clusterReferences().insert(ClusterReferenceRow(
+            clusterId, vn.fonesi.apk.ClusterOwnerType.CLONE.name, saved.cloneId, "engine-a", 10L,
+        ))
+        db.clusterReferences().insert(ClusterReferenceRow(
+            clusterId, vn.fonesi.apk.ClusterOwnerType.REVIEW_REQUIRED.name, "review-1", "engine-a", 11L,
+        ))
+
+        engine.leaveOnDelete = true
+        assertThrows(IllegalStateException::class.java) {
+            repository.delete(saved.cloneId, saved.launchToken)
+        }
+        assertEquals(clusterId, db.clones().find("engine-a", saved.cloneId)?.clusterId)
+        assertTrue(engine.records.any { it.id == saved.cloneId })
+        assertEquals(setOf(vn.fonesi.apk.ClusterOwnerType.CLONE.name, vn.fonesi.apk.ClusterOwnerType.REVIEW_REQUIRED.name),
+            db.clusterReferences().forCluster(clusterId).map { it.ownerType }.toSet())
+    }
+
     @Test fun namespacesAndOfflineRenamePreserveOtherEnginesMetadata() = background {
         val first = CloneMetadataRepository(db, "engine-a", EngineDouble(), operationLock()).create(source, "A")
         CloneMetadataRepository(db, "engine-b", EngineDouble(), operationLock()).create(source, "B")
@@ -199,7 +247,7 @@ class StorageIntegrationTest {
         assertEquals("🛒", saved.badgeText)
     }
 
-    @Test fun v3DatabaseMigratesToV5KeepingCloneTokenQueueAndEngineReservation() = background {
+    @Test fun v3DatabaseMigratesToV6KeepingCloneTokenQueueAndEngineReservation() = background {
         db.close()
         context.deleteDatabase(name) // Fresh test DB may not have materialized a file yet.
         val resource = checkNotNull(javaClass.classLoader!!.getResourceAsStream(
@@ -236,7 +284,7 @@ class StorageIntegrationTest {
         assertNull(row.badgeText)
         assertTrue(RoomUpdateTaskStore(db).isPaused())
         assertEquals("reserved-id", db.instances().list("engine-a").single().cloneId)
-        assertEquals(5, db.openHelper.writableDatabase.version)
+        assertEquals(6, db.openHelper.writableDatabase.version)
     }
 
     @Test fun unknownSchemaDoesNotDestructivelyRecreateTheDatabase() = background {
@@ -244,7 +292,7 @@ class StorageIntegrationTest {
         context.openOrCreateDatabase(name, Context.MODE_PRIVATE, null).use { raw ->
             raw.execSQL("CREATE TABLE retained(value TEXT NOT NULL)")
             raw.execSQL("INSERT INTO retained VALUES ('must survive')")
-            raw.version = 6
+            raw.version = 7
         }
         db = FonesiDatabase.open(context, name)
         assertThrows(IllegalStateException::class.java) { db.tasks().list() }

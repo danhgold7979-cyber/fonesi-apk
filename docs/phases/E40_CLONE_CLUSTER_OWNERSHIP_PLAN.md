@@ -1,6 +1,10 @@
 # E40 — Clone metadata ↔ private APK cluster ownership (plan before code)
 
-Date: 2026-10-29. Repository: `danhgold7979-cyber/fonesi-apk`. Continue on `phase/e21-android-split-code-proof-20261028`; keep `main` unchanged.
+Date: 2026-10-29. Repository: `danhgold7979-cyber/fonesi-apk`. Implement on the dedicated branch `phase/e40-clone-cluster-ownership-20261029`, based on `phase/e21-android-split-code-proof-20261028@1da1a1ea42c5f44c95bf9a3b0778d5bba0a23162`; keep both the parent branch and `main` unchanged.
+
+## Branch isolation and scope boundary
+
+E40 has its own stacked feature branch and Draft PR targeting the existing cumulative E21 branch. Do not add unrelated E41+ work to this branch. Keep the parent E21 branch/PR #12 and `main` unchanged. The branch is split by coherent acceptance boundary, not by creating one branch per file.
 
 ## Product-roadmap alignment
 
@@ -16,6 +20,10 @@ E39 passed its cloud/candidate CI gate at workflow [#40803931491](https://github
 4. Integrate clone deletion with ownership: only after the engine reports the clone absent, delete clone metadata and release the matching `CLONE` reference in one Room transaction. If metadata and owner references disagree, preserve the metadata and surface an error. Other owner types (update/review/rollback) remain untouched.
 5. Add regression coverage for migration 5→6, preserving old rows, valid association, duplicate association, switching generation, wrong package, missing clone, inconsistent reference state, stale delete token, and reference release only after provider deletion confirmation.
 6. Run source plan/audit checks, all core/APK/app tests, cloud and opt-in candidate builds, lint, signature/permission audits and the E40 architecture boundary checks. Commit generated Room schema 6 only after CI exports it and its shape matches the entity/migration.
+
+## Additional pre-code safety audit (E40 deletion path)
+
+The initial deletion integration calls the provider first and only discovers a pre-existing inconsistent CLONE reference in the later Room transaction. That retains metadata after failure but may already have removed the provider-side clone. Before irreversible provider deletion, while the existing operation lock is held, preflight the launch token and the exact zero-or-one matching CLONE reference. After readback confirms provider absence, repeat the same validation within the atomic metadata/reference deletion transaction. A corrupt or ambiguous owner must prevent the provider deletion attempt. Test this with a realistic CloneEngine double whose stored clone remains present on inconsistent owner input. This is a safety correction to step 4, not authorization to delete private APKs.
 
 ## Safety constraints
 

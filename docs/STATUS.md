@@ -1,3 +1,15 @@
+# Fonesi APK — E40 technical PASS / Phase 3 still unfinished (29/10/2026)
+
+**Repository:** [danhgold7979-cyber/fonesi-apk](https://github.com/danhgold7979-cyber/fonesi-apk). **Branch:** `phase/e40-clone-cluster-ownership-20261029`, [Draft PR #13](https://github.com/danhgold7979-cyber/fonesi-apk/pull/13), based on the cumulative E21 branch. `main@c055df600f87ee9ddf0cd5d6bfc67d80d145e79d` remains unchanged.
+
+**Product Phase 3, roadmap steps 13–16. E40 technical milestone: PASS** on exact code-and-schema SHA `a3cf9ec199de7d1c5ec66e105d525a1175554e1c` — [E40 Actions #40837064438](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40837064438) **SUCCESS**. All source audits, cloud and opt-in candidate tests/build/lint, permission/signature APK audits and split-disabled/destructive-GC checks passed. Each gate has **118 core + 44 APK runtime + 187 Android/Robolectric = 349 tests**, 0 failures/errors/skips. This report-only commit requires its own exact-HEAD CI rerun; [current E40 workflow results](https://github.com/danhgold7979-cyber/fonesi-apk/actions/workflows/e40-clone-cluster-ownership.yml) must be consulted before calling the reporting HEAD verified.
+
+**Room v6** generated schema is committed at `app/schemas/vn.fonesi.app.storage.FonesiDatabase/6.json` and matches the CI-generated artifact byte-for-byte (SHA-256 `5eba80cd1d64ac8e46a0aed5234c7967c0aa37d35e792427b9911130114bc52b`, Room identity hash `a9406cbe3dec557bfcc5e499c7ca381c`). E40 associates clone metadata with readback-verified private clusters, switches generations atomically, preflights CLONE references before provider deletion, and releases only a matching CLONE owner after provider-confirmed absence. See [E40 plan](phases/E40_CLONE_CLUSTER_OWNERSHIP_PLAN.md), [results](phases/E40_CLONE_CLUSTER_OWNERSHIP_RESULTS.md) and [execution plan](EXECUTION_PLAN.md).
+
+**Unmet product acceptance / no claim of Phase completion:** production third-party clones accepted **0**; `supportsSplits=false`, `importsSplitApks=false`, no real guest Activity, no UID/account isolation, no full split provider, no physical Samsung/other-device test, no release signing, no destructive cluster GC. Latest synthetic Android host-lifecycle proof remains E29. **Product completion remains the existing 28.00% weighted estimate (~30% rounded)**, not derived from number of tests, E milestones or commits. E40 is a storage/lifecycle technical PASS, not a finished virtual clone engine.
+
+---
+
 # Fonesi APK — E40 in progress; E39 CI verified (29/10/2026)
 
 **Repository:** [danhgold7979-cyber/fonesi-apk](https://github.com/danhgold7979-cyber/fonesi-apk)  

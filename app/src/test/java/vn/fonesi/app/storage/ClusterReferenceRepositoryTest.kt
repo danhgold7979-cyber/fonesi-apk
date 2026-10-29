@@ -60,7 +60,7 @@ class ClusterReferenceRepositoryTest {
         }
     }
 
-    @Test fun migration4To5PreservesExistingRowsAndCreatesEmptyReferenceTable() = runBlocking {
+    @Test fun migration4To6PreservesExistingRowsAndCreatesEmptyReferenceTable() = runBlocking {
         val context = ApplicationProvider.getApplicationContext<Context>()
         val name = "migration-4-5-${UUID.randomUUID()}.db"
         val file = context.getDatabasePath(name)
@@ -94,15 +94,84 @@ class ClusterReferenceRepositoryTest {
             assertEquals(1, withContext(Dispatchers.IO) { migrated.tasks().list().size })
             assertEquals(1, withContext(Dispatchers.IO) { migrated.instances().list("engine-a").size })
             assertTrue(withContext(Dispatchers.IO) { migrated.clusterReferences().list().isEmpty() })
+            assertEquals(null, withContext(Dispatchers.IO) { migrated.clones().list().single().clusterId })
             val version = withContext(Dispatchers.IO) {
                 migrated.openHelper.readableDatabase.query("PRAGMA user_version").use { cursor ->
                     assertTrue(cursor.moveToFirst()); cursor.getInt(0)
                 }
             }
-            assertEquals(5, version)
+            assertEquals(6, version)
         } finally {
             withContext(Dispatchers.IO) { migrated.close() }
             context.deleteDatabase(name)
         }
     }
+    @Test fun migration5To6AddsNullableClusterIdAndPreservesExistingRowsAndReferences() = runBlocking {
+        val context = ApplicationProvider.getApplicationContext<Context>()
+        val name = "migration-5-6-" + UUID.randomUUID() + ".db"
+        val file = context.getDatabasePath(name)
+        file.parentFile?.mkdirs()
+        val resource = checkNotNull(javaClass.classLoader!!.getResourceAsStream(
+            "vn.fonesi.app.storage.FonesiDatabase/5.json"))
+        val schema = org.json.JSONObject(resource.bufferedReader().use { it.readText() }).getJSONObject("database")
+        val token = UUID.randomUUID().toString()
+        val clusterId = UUID.randomUUID().toString()
+        val raw = withContext(Dispatchers.IO) { SQLiteDatabase.openOrCreateDatabase(file, null) }
+        try {
+            val entities = schema.getJSONArray("entities")
+            for (i in 0 until entities.length()) {
+                val entity = entities.getJSONObject(i)
+                val table = entity.getString("tableName")
+                val placeholder = "$" + "{TABLE_NAME}"
+                raw.execSQL(entity.getString("createSql").replace(placeholder, table))
+                val indexes = entity.optJSONArray("indices")
+                if (indexes != null) for (j in 0 until indexes.length()) {
+                    raw.execSQL(indexes.getJSONObject(j).getString("createSql").replace(placeholder, table))
+                }
+            }
+            val setup = schema.getJSONArray("setupQueries")
+            for (i in 0 until setup.length()) raw.execSQL(setup.getString(i))
+            raw.execSQL(
+                "INSERT INTO clone_metadata (engineKey, cloneId, packageName, label, groupName, createdAt, changedAt, launchToken, accentKey, badgeText) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                arrayOf("engine-a", "persist-id", "test.social", "Giữ nguyên", "Nhóm", 11, 12, token, "purple", "🛒"),
+            )
+            raw.execSQL(
+                "INSERT INTO cluster_references (clusterId, ownerType, ownerId, engineKey, createdAtEpochMs) VALUES (?, ?, ?, ?, ?)",
+                arrayOf(clusterId, ClusterOwnerType.UPDATE_TASK.name, "task-1", "engine-a", 123L),
+            )
+            raw.execSQL(
+                "INSERT INTO update_tasks (sequence, taskId, packageName, state, revision, activeKey, payload) VALUES (1, 'task-1', 'test.social', 'QUEUED', 0, NULL, '{}')",
+            )
+            raw.execSQL("INSERT INTO queue_control (id, paused) VALUES (1, 1)")
+            raw.execSQL(
+                "INSERT INTO engine_instances (sequence, cloneId, engineKey, packageName, state, launchPending) VALUES (1, 'persist-id', 'engine-a', 'test.social', 'READY', 0)",
+            )
+            raw.version = 5
+        } finally {
+            withContext(Dispatchers.IO) { raw.close() }
+        }
+
+        val migrated = withContext(Dispatchers.IO) { FonesiDatabase.open(context, name) }
+        try {
+            val clone = withContext(Dispatchers.IO) { migrated.clones().find("engine-a", "persist-id") }
+            assertEquals(token, clone?.launchToken)
+            assertEquals("Giữ nguyên", clone?.label)
+            assertEquals("purple", clone?.accentKey)
+            assertEquals("🛒", clone?.badgeText)
+            assertEquals(null, clone?.clusterId)
+            assertEquals(setOf(clusterId), withContext(Dispatchers.IO) {
+                migrated.clusterReferences().list().map { it.clusterId }.toSet()
+            })
+            assertEquals(1, withContext(Dispatchers.IO) { migrated.tasks().list().size })
+            assertTrue(withContext(Dispatchers.IO) { RoomUpdateTaskStore(migrated).isPaused() })
+            assertEquals("persist-id", withContext(Dispatchers.IO) {
+                migrated.instances().list("engine-a").single().cloneId
+            })
+            assertEquals(6, withContext(Dispatchers.IO) { migrated.openHelper.writableDatabase.version })
+        } finally {
+            withContext(Dispatchers.IO) { migrated.close() }
+            context.deleteDatabase(name)
+        }
+    }
+
 }
