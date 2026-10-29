@@ -43,7 +43,9 @@ class UpdateRunner(
             recoverLocked()
             if (store.isPaused()) return@use RunResult.Paused
             if (engine.availability !is EngineAvailability.Ready) return@use RunResult.EngineUnavailable
-            val jobs = store.list()
+            // The journal/OS lock is shared, but only this engine owns its execution.
+            // Foreign same-package tasks must neither be scheduled nor veto local work.
+            val jobs = store.list().filter { it.engineKey == engineKey }
             val next = jobs.firstOrNull { candidate ->
                 candidate.state == TaskState.QUEUED && jobs.takeWhile { it.id != candidate.id }.none {
                     it.packageName == candidate.packageName && !it.state.terminal
@@ -66,7 +68,9 @@ class UpdateRunner(
     }
 
     private fun recoverLocked() {
-        for (old in store.list()) {
+        // Never rewrite a foreign engine's journal or discard its private snapshot.
+        // Filter before any legacy-source policy, readback or recovery side effect.
+        for (old in store.list().filter { it.engineKey == engineKey }) {
             // E48: retained private images have no accepted legacy-engine recovery/readback.
             // Fail closed before discarding task snapshots or consulting the installed original.
             if (old.state in setOf(TaskState.PREPARING, TaskState.APPLYING,
