@@ -225,6 +225,57 @@ class StorageIntegrationTest {
         assertEquals("Nhãn mới", db.clones().find("engine-a", first.cloneId)?.label)
     }
 
+    @Test fun presentationWritesFailClosedWhileSharedOperationLockIsHeld() = background {
+        val engine = EngineDouble()
+        val live = CloneMetadataRepository(db, "engine-a", engine, operationLock()).create(source, "Original")
+        val offline = CloneMetadataRepository(db, "engine-a", UnavailableCloneEngine(), operationLock())
+        val before = checkNotNull(db.clones().find("engine-a", live.cloneId))
+        val lease = checkNotNull(operationLock().acquire())
+        try {
+            assertThrows(IllegalStateException::class.java) {
+                offline.rename(live.cloneId, "Blocked rename", "Group")
+            }
+            assertThrows(IllegalStateException::class.java) {
+                offline.restyle(live.cloneId, "purple", "🛒")
+            }
+            assertEquals(before, db.clones().find("engine-a", live.cloneId))
+        } finally {
+            lease.close()
+        }
+        offline.rename(live.cloneId, "Renamed offline", "Group")
+        offline.restyle(live.cloneId, "purple", "🛒")
+        reopen()
+        val saved = checkNotNull(db.clones().find("engine-a", live.cloneId))
+        assertEquals("Renamed offline", saved.label)
+        assertEquals("Group", saved.groupName)
+        assertEquals("purple", saved.accentKey)
+        assertEquals("🛒", saved.badgeText)
+        assertEquals(before.launchToken, saved.launchToken)
+    }
+
+    @Test fun presentationFailureReleasesOperationLockWithoutChangingOtherEngine() = background {
+        val first = CloneMetadataRepository(db, "engine-a", EngineDouble(), operationLock()).create(source, "A")
+        val second = CloneMetadataRepository(db, "engine-b", EngineDouble(), operationLock()).create(source, "B")
+        val offline = CloneMetadataRepository(db, "engine-a", UnavailableCloneEngine(), operationLock())
+        assertThrows(IllegalStateException::class.java) {
+            offline.rename("missing-clone", "Unknown", null)
+        }
+        // Engine doubles may generate the same clone ID in distinct namespaces.
+        // Use a foreign-only saved ID to test the namespace predicate independently.
+        val foreignOnly = CloneMetadataRow("engine-b", UUID.randomUUID().toString(),
+            source.packageName, "Foreign only", null, 1L, 1L)
+        db.clones().insert(foreignOnly)
+        assertThrows(IllegalStateException::class.java) {
+            offline.restyle(foreignOnly.cloneId, "blue", null)
+        }
+        offline.restyle(first.cloneId, "blue", null)
+        assertEquals("B", db.clones().find("engine-b", second.cloneId)?.label)
+        assertEquals("teal", db.clones().find("engine-b", second.cloneId)?.accentKey)
+        assertEquals("blue", db.clones().find("engine-a", first.cloneId)?.accentKey)
+        // A rejected database mutation must not keep the shared OS lease held.
+        assertNotNull(operationLock().acquire()?.also { it.close() })
+    }
+
     @Test fun validatedCloneStyleSurvivesReopenWithoutChangingSdkOrOtherEngine() = background {
         val first = CloneMetadataRepository(db, "engine-a", EngineDouble(), operationLock()).create(source, "A")
         val other = CloneMetadataRepository(db, "engine-b", EngineDouble(), operationLock()).create(source, "B")

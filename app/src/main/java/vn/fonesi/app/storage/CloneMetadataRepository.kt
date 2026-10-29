@@ -35,17 +35,29 @@ class CloneMetadataRepository(
 
     fun rename(id: String, label: String, group: String?) {
         val normalized = normalize(label, group)
-        check(db.clones().rename(engineKey, id, normalized.first, normalized.second, clock()) == 1) {
-            "Saved clone metadata does not exist"
+        mutatePresentation {
+            check(db.clones().rename(engineKey, id, normalized.first, normalized.second, clock()) == 1) {
+                "Saved clone metadata does not exist"
+            }
         }
     }
 
-    /** Offline-safe presentation setting; does not call the SDK or mutate guest account data. */
+    /** Offline-safe presentation setting; never initializes or mutates the guest SDK. */
     fun restyle(id: String, accentKey: String, badgeText: String?) {
         val normalized = CloneStylePolicy.normalize(accentKey, badgeText)
-        check(db.clones().restyle(engineKey, id, normalized.accentKey, normalized.badgeText, clock()) == 1) {
-            "Saved clone metadata does not exist"
+        mutatePresentation {
+            check(db.clones().restyle(engineKey, id, normalized.accentKey, normalized.badgeText, clock()) == 1) {
+                "Saved clone metadata does not exist"
+            }
         }
+    }
+
+    /** Presentation writers cooperate with stop/create/delete under the shared OS queue lock. */
+    private fun mutatePresentation(action: () -> Unit) {
+        val lease = checkNotNull(operationLock.acquire()) {
+            "Another clone operation is in progress; presentation metadata remains unchanged"
+        }
+        lease.use { action() }
     }
 
     fun delete(id: String, expectedToken: String? = null) {
