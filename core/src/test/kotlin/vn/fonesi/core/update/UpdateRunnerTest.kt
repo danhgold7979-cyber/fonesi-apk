@@ -16,6 +16,30 @@ class UpdateRunnerTest {
     private fun fixture() = QueueFixture(temporary.newFolder().toPath())
     private fun RunResult.task() = (this as RunResult.Processed).task
 
+    @Test fun `retained private task cannot use original catalog or run engine`() {
+        val f = fixture()
+        val retained = f.queue.enqueue("test-engine",
+            listOf(UpdateTarget(checkNotNull(f.source), listOf("a"))),
+            UpdateScope.PER_CLONE, retainedSource = true).single()
+        assertTrue(retained.retainedSource)
+        assertEquals(RunResult.PolicyBlocked, f.runner().runNext())
+        assertEquals(TaskState.QUEUED, f.store.list().single().state)
+        assertEquals(0, f.engine.calls)
+        assertFalse(Files.exists(f.root.resolve("snapshots").resolve(retained.id)))
+    }
+
+    @Test fun `host source authority exception fails closed before catalog and engine`() {
+        val f = fixture()
+        f.enqueue()
+        val runner = UpdateRunner("test-engine", f.engine, f.store,
+            SourceCatalog { error("Original source catalog must not be touched") },
+            f.snapshotter, FileQueueLock(f.root.resolve("guarded-queue.lock")),
+            allowLegacySource = { throw IllegalStateException("Corrupt Room owner state") })
+        assertEquals(RunResult.PolicyBlocked, runner.runNext())
+        assertEquals(TaskState.QUEUED, f.store.list().single().state)
+        assertEquals(0, f.engine.calls)
+    }
+
     @Test fun `applies prepared files and verifies readback rather than trusting a receipt`() {
         val f = fixture(); val job = f.enqueue()
         f.engine.beforeApply = {

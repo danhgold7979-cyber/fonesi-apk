@@ -75,8 +75,9 @@ class UpdateTaskClusterOwnershipRepositoryTest {
         // E41 explicitly tests the separate post-journal API; E42 tests atomic default behavior.
         val store = RoomUpdateTaskStore(db, atomicOwnerTransitions = false)
         withContextBlocking {
-            val preparing = task.move(TaskState.PREPARING, 11L)
-            assertTrue(store.replace(task, preparing))
+            val current = TaskCodec.decode(checkNotNull(db.tasks().find(task.id)))
+            val preparing = current.move(TaskState.PREPARING, 11L)
+            assertTrue(store.replace(current, preparing))
             val applying = preparing.move(TaskState.APPLYING, 12L,
                 affectedIds = listOf("clone-1"), fingerprint = "f".repeat(64))
             assertTrue(store.replace(preparing, applying))
@@ -97,7 +98,8 @@ class UpdateTaskClusterOwnershipRepositoryTest {
             db.close()
             db = FonesiDatabase.open(context, dbName)
         }
-        assertEquals(job, withContextBlocking { RoomUpdateTaskStore(db).list().single() })
+        assertEquals(job.copy(retainedSource = true),
+            withContextBlocking { RoomUpdateTaskStore(db).list().single() })
         assertEquals(listOf(verified.id), withContextBlocking {
             db.clusterReferences().forOwner(ClusterOwnerType.UPDATE_TASK.name, job.id, engine).map { it.clusterId }
         })
@@ -230,8 +232,9 @@ class UpdateTaskClusterOwnershipRepositoryTest {
             withContextBlocking { repository.releaseAfterTerminal(engine, job.id) }
         }
         withContextBlocking {
+            val current = TaskCodec.decode(checkNotNull(db.tasks().find(job.id)))
             assertTrue(RoomUpdateTaskStore(db, atomicOwnerTransitions = false)
-                .replace(job, job.move(TaskState.CANCELLED, 20L)))
+                .replace(current, current.move(TaskState.CANCELLED, 20L)))
         }
         assertTrue(withContextBlocking { repository.releaseAfterTerminal(engine, job.id) })
         assertFalse(withContextBlocking { repository.releaseAfterTerminal(engine, job.id) })
@@ -275,8 +278,9 @@ class UpdateTaskClusterOwnershipRepositoryTest {
             repository.associateReadBackVerified(engine, job.id, verified)
         })
         withContextBlocking {
+            val current = TaskCodec.decode(checkNotNull(db.tasks().find(job.id)))
             assertTrue(RoomUpdateTaskStore(db, atomicOwnerTransitions = false)
-                .replace(job, job.move(TaskState.CANCELLED, 20L)))
+                .replace(current, current.move(TaskState.CANCELLED, 20L)))
             db.openHelper.writableDatabase.execSQL(
                 "CREATE TRIGGER e41_block_release BEFORE DELETE ON cluster_references " +
                     "WHEN OLD.ownerType = 'UPDATE_TASK' BEGIN SELECT RAISE(ABORT, 'synthetic refusal'); END",
@@ -298,6 +302,36 @@ class UpdateTaskClusterOwnershipRepositoryTest {
         assertEquals(TaskState.CANCELLED, withContextBlocking {
             RoomUpdateTaskStore(db).list().single().state
         })
+    }
+
+    @Test fun ownerAcquisitionWritesDurableSourceMarkerAndSqlAbortRollsBothBack() {
+        val job = task()
+        val verified = cluster()
+        val repository = UpdateTaskClusterOwnershipRepository(db)
+        withContextBlocking {
+            db.openHelper.writableDatabase.execSQL(
+                "CREATE TRIGGER e44_block_marker BEFORE UPDATE OF payload ON update_tasks " +
+                    "BEGIN SELECT RAISE(ABORT, 'synthetic retained-source marker failure'); END",
+            )
+        }
+        try {
+            assertThrows(Exception::class.java) {
+                withContextBlocking { repository.associateReadBackVerified(engine, job.id, verified) }
+            }
+        } finally {
+            withContextBlocking { db.openHelper.writableDatabase.execSQL("DROP TRIGGER e44_block_marker") }
+        }
+        assertFalse(withContextBlocking {
+            TaskCodec.decode(checkNotNull(db.tasks().find(job.id))).retainedSource
+        })
+        assertTrue(withContextBlocking {
+            db.clusterReferences().forOwner(ClusterOwnerType.UPDATE_TASK.name, job.id, engine).isEmpty()
+        })
+        assertTrue(withContextBlocking { repository.associateReadBackVerified(engine, job.id, verified) })
+        assertTrue(withContextBlocking {
+            TaskCodec.decode(checkNotNull(db.tasks().find(job.id))).retainedSource
+        })
+        assertFalse(withContextBlocking { repository.associateReadBackVerified(engine, job.id, verified) })
     }
 
     private fun <T> withContextBlocking(block: () -> T): T =

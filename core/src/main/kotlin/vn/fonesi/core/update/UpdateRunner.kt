@@ -34,6 +34,7 @@ class UpdateRunner(
     private val lock: QueueLock,
     private val mayApply: () -> Boolean = { true },
     private val clock: () -> Long = System::currentTimeMillis,
+    private val allowLegacySource: (UpdateTask) -> Boolean = { true },
 ) : UpdateExecution {
     override fun runNext(): RunResult {
         if (!mayApply()) return RunResult.PolicyBlocked
@@ -50,6 +51,9 @@ class UpdateRunner(
                     it.packageName == candidate.packageName && it.state == TaskState.REVIEW_REQUIRED
                 }
             } ?: return@use RunResult.Idle
+            // A private retained cluster has no validated product update adapter.
+            // Block it before the original installed-app SourceCatalog can be consulted.
+            if (!mayUseLegacySource(next)) return@use RunResult.PolicyBlocked
             process(next)
         }
     }
@@ -103,7 +107,9 @@ class UpdateRunner(
                 cleanup = false // Already cleaned or intentionally retained for review.
                 return RunResult.Processed(current, cleanupPending = !clean)
             }
-            if (!mayApply()) return finish(TaskState.DEFERRED, TaskIssue.EXECUTION_POLICY)
+            if (!mayApply() || !mayUseLegacySource(current)) {
+                return finish(TaskState.DEFERRED, TaskIssue.EXECUTION_POLICY)
+            }
             if (current.engineKey != engineKey) return finish(TaskState.DEFERRED, TaskIssue.ENGINE_CHANGED)
             val available = engine.availability as? EngineAvailability.Ready
                 ?: return finish(TaskState.DEFERRED, TaskIssue.ENGINE_UNAVAILABLE)
@@ -143,7 +149,9 @@ class UpdateRunner(
             if (last.targets.isEmpty()) return finish(TaskState.SUCCEEDED, completion = CompletionKind.ALREADY_CURRENT)
             if (last.targets.size != 1) return finish(TaskState.FAILED, TaskIssue.SCOPE_CHANGED)
             val target = last.targets.single()
-            if (!mayApply()) return finish(TaskState.DEFERRED, TaskIssue.EXECUTION_POLICY)
+            if (!mayApply() || !mayUseLegacySource(current)) {
+                return finish(TaskState.DEFERRED, TaskIssue.EXECUTION_POLICY)
+            }
             val beforeApply = current.move(TaskState.APPLYING, clock(), affectedIds = target.affectedCloneIds,
                 fingerprint = snapshot.fingerprint)
             if (!store.replace(current, beforeApply, requireUnpaused = true)) {
@@ -175,6 +183,10 @@ class UpdateRunner(
             if (cleanup) runCatching { snapshots.discard(current.id) }
         }
     }
+
+    /** Fail closed for marked/private retained sources and every uncertain host readback. */
+    private fun mayUseLegacySource(task: UpdateTask): Boolean =
+        !task.retainedSource && runCatching { allowLegacySource(task) }.getOrDefault(false)
 
     private fun verified(task: UpdateTask, clones: List<CloneRecord>): Boolean {
         if (task.affectedIds.isEmpty() || task.snapshotFingerprint == null) return false
