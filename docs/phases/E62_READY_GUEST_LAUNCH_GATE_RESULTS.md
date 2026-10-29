@@ -10,7 +10,7 @@ Date: 2026-10-29. Exact repo: `danhgold7979-cyber/fonesi-apk`. Technical E62, or
 
 ## Acceptance
 
-**E62 CI PENDING**; no PASS claim until successful exact-source workflow receipts are available. Core test doubles and signed APK builds do not prove third-party guest execution.
+**E62 technical PASS** on exact code/test SHA `505fc58f864532e0cff8d815d77287cd0f161974`: [GitHub Actions #40889192439](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40889192439) **SUCCESS**, exact-source checkout, E40–E62 audits, pinned cloud/candidate tests/build/lint, APK signature/permissions and no split/provider/GC checks. The original E62 results-only report commit is not the code SHA and needs its own CI. Core test doubles and signed APK builds do not prove third-party guest execution.
 
 ## Persistent blockers
 

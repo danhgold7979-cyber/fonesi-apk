@@ -1,3 +1,15 @@
+# Fonesi APK — E63 technical PASS; Product Phase 3 remains incomplete (29/10/2026)
+
+**Repository:** [danhgold7979-cyber/fonesi-apk](https://github.com/danhgold7979-cyber/fonesi-apk). **Branch:** `phase/e63-ready-shared-guest-mutations-20261029`, stacked [Draft PR #37](https://github.com/danhgold7979-cyber/fonesi-apk/pull/37) on [E62 Draft PR #36](https://github.com/danhgold7979-cyber/fonesi-apk/pull/36); `main@c055df600f87ee9ddf0cd5d6bfc67d80d145e79d` unmerged.
+
+**Product roadmap:** original Phase 3 steps 13–16, with shared update safety in Phase 4 steps 17–20. **E63 technical PASS** at exact code/test SHA `bbaf4bbb4765033306d8a84619ab245d16e18513`: [GitHub Actions #40894087779](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40894087779) **SUCCESS**, verified exact checkout, E40–E63 source audits, **467 tests per cloud/candidate gate**, builds, lint, APK signatures/permissions and no split/provider/GC activation. [Test-only artifact #12906503636](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40894087779/artifacts/12906503636). E62 verified HEAD `505fc58f864532e0cff8d815d77287cd0f161974` also passed [CI #40889192439](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40889192439).
+
+**Actual code:** Shared APK create/update now rejects an interrupted, native-backed RESERVED peer until confirmed READY, before any new private source snapshot, SDK import or shared update. Three JVM regressions cover RESERVED-only create/update and mixed READY/RESERVED scope. [E63 plan](phases/E63_READY_SHARED_MUTATIONS_PLAN.md) | [verified results](phases/E63_READY_SHARED_MUTATIONS_RESULTS.md). This subsequent reporting commit needs its own CI to be called verified.
+
+**Product readiness:** **28.00% weighted**, 0 accepted real third-party clone apps. Full split provider, guest Android Activity/Service/Provider, UID/account isolation, Samsung and other phone/session testing and release signing remain unaccepted. Keep Draft; no merge, release or 100% claim.
+
+---
+
 # Fonesi APK — E61 technical PASS; Product Phase 3 incomplete (29/10/2026)
 
 **Repo:** [danhgold7979-cyber/fonesi-apk](https://github.com/danhgold7979-cyber/fonesi-apk). **Branch:** `phase/e61-guest-stop-identity-continuity-20261029`, [Draft PR #35](https://github.com/danhgold7979-cyber/fonesi-apk/pull/35), stacked on E60 [Draft PR #34](https://github.com/danhgold7979-cyber/fonesi-apk/pull/34). `main@c055df600f87ee9ddf0cd5d6bfc67d80d145e79d` unchanged.
