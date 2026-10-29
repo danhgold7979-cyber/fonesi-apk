@@ -2,7 +2,7 @@
 
 Ứng dụng Android dự kiến quản lý nhiều bản clone của các ứng dụng trên điện thoại, ưu tiên mạng xã hội, không yêu cầu root.
 
-**Trạng thái mới nhất (29/10/2026):** E42 đạt cổng CI (366 test trong mỗi bản cloud/candidate; [workflow #40841923812](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40841923812)). E41 và E40 cũng đã có bằng chứng CI. E42 làm nguyên tử hóa cập nhật trạng thái journal Room và tham chiếu giữ APK, không chứng minh engine có thể chạy app bên thứ ba/nhập split/cách ly tài khoản. Mức hoàn thiện theo rubric là **28%** (~30% làm tròn), không lấy số E để tính.
+**Trạng thái mới nhất (29/10/2026):** E43 đã PASS cloud/candidate CI trên source `0579d7ebee2ef829347d77d6b3169255f1d8e92c`, **374 test mỗi gate** ([workflow #40843854486](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40843854486)). E43 nguyên tử hóa việc đưa nguồn APK private đã xác minh vào queue và ghi UPDATE_TASK reference, nhưng chưa nối vào engine chạy app bên thứ ba. Split import, UID/tài khoản độc lập và Samsung chưa nghiệm thu. Tiến độ theo rubric sản phẩm **28%**, không lấy số E làm phần trăm.
 
 Kế hoạch sản phẩm và các điều kiện kỹ thuật nằm trong [docs/PLAN.md](docs/PLAN.md).
 
