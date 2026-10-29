@@ -1,6 +1,5 @@
 package vn.fonesi.app.storage
 
-import androidx.room.withTransaction
 import vn.fonesi.apk.ClusterOwnerType
 import vn.fonesi.apk.PrivateApkCluster
 import vn.fonesi.apk.PrivateApkStore
