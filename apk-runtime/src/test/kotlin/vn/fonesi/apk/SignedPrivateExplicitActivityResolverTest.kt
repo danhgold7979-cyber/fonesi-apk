@@ -183,6 +183,34 @@ class SignedPrivateExplicitActivityResolverTest {
         assertEquals("$pkg.AliasTarget", select(signed, "PublicAlias").targetActivityName)
     }
 
+    @Test fun signedBaseApplicationProcessBlocksExplicitActivityForEveryCaller() {
+        val signed = manifest("catalog-app-process")
+        assertEquals(":remote", signed.applicationProcessName)
+        assertNull(signed.applicationPermission)
+        val activity = signed.components.single()
+        assertEquals("$pkg.AppProcessActivity", activity.className)
+        assertNull("Activity declares no own process; Application default must still block", activity.processName)
+        assertEquals(true, activity.exported)
+        assertEquals(true, activity.enabled)
+        for (caller in ExplicitActivityCaller.values()) {
+            assertThrows(IllegalArgumentException::class.java) {
+                select(signed, "AppProcessActivity", caller)
+            }
+        }
+        val ordinary = manifest("catalog-public")
+        assertNull(ordinary.applicationProcessName)
+        assertEquals("$pkg.PublicActivity", select(ordinary, "PublicActivity").targetActivityName)
+    }
+
+    @Test fun signedFeatureApplicationProcessCannotOverrideBaseProcessPolicy() {
+        val cluster = store.publish(InstalledSource(pkg, 1L, signers(), listOf(
+            apk("catalog-public").path, apk("catalog-split-app-process").path
+        )), 34)
+        assertThrows(IllegalArgumentException::class.java) {
+            PrivateApkComponentCatalog.inspect(store, cluster.id, 34)
+        }
+    }
+
     @Test fun featureActivityCanOnlyBeResolvedFromItsVerifiedSignedSplit() {
         val signed = manifest("catalog-public", "catalog-public-feature", "catalog-config")
         val selection = select(signed, "FeatureActivity")
