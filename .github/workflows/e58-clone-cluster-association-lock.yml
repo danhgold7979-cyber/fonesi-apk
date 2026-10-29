@@ -111,6 +111,12 @@ jobs:
     steps:
       - name: Checkout exact E58 source
         uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - name: Verify exact source SHA (not synthetic PR merge commit)
+        run: |
+          test "$(git rev-parse HEAD)" = "${{ github.event.pull_request.head.sha || github.sha }}"
+          echo "PASS: validated exact E58 source SHA $(git rev-parse HEAD)"
       - name: Set up Python 3.12
         uses: actions/setup-python@v5
         with:
