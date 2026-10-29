@@ -15,7 +15,7 @@ E57 reporting [CI #40871698660](https://github.com/danhgold7979-cyber/fonesi-apk
 
 ## Exact-source acceptance
 
-**E58 is NOT YET PASS.** The final implementation SHA, exact GitHub Actions success, test counts and artifact receipts must be added only after the matching cloud/candidate gate completes. Never infer runtime compatibility from these tests.
+**E58 technical PASS** on exact checked-out code/test SHA `07fc3262eb78f9bc1b4fa27069cbce596ad6b244` — [GitHub Actions #40881081227](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40881081227) **SUCCESS**, [test-only artifact #12900163664](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40881081227/artifacts/12900163664). Explicit SHA check verified checkout of the branch head rather than GitHub's synthetic PR merge commit. `./scripts/check.sh` (cloud) and `./scripts/check.sh --with-engine-candidate` both succeeded with **449 tests per gate**: core **140**, APK runtime **44**, Android/Robolectric **265**; **0 failures, 0 errors, 0 skipped**. Pinned toolchain, build/lint, APK signatures/permissions, E40–E58 source safety, and split-disabled/no-provider/no-GC guards passed. CI receipts `cloud-verification.json` and `candidate-verification.json` were inspected from the generated artifact. This is technical source acceptance, not guest runtime or product phase acceptance.
 
 ## Still unaccepted
 
