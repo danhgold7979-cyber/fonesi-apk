@@ -1,5 +1,10 @@
 # Kế hoạch thực thi và đối chiếu yêu cầu
 
+## E51 — reverse original/private-source enqueue collision guard (pre-code, 29/10/2026)
+
+Branch `phase/e51-retained-enqueue-original-source-conflict-20261029` based on E50 code `37ff68f4cd51582cababccaa01bfc77b505f9ea3`, pending parent CI #40851899007 at plan creation. [E51 plan](phases/E51_RETAINED_ENQUEUE_ORIGINAL_SOURCE_CONFLICT_PLAN.md) for original product Phase 4 steps 17–20: prevent E43/E44 readback-retained enqueuer from inserting a private source when another active same-engine/package unmarked/original source task of a different dedup/version exists; enforce inside existing atomic Room task+owner transaction, preserve legitimate separately retained per-clone tasks and terminal history. Fail closed, native SQLite batch rollback tests, full cloud/candidate gates; 28.00% weighted progress and 0 accepted real apps.
+
+
 ## E50 — preview private-source authority conflict (pre-code, 29/10/2026)
 
 Branch `phase/e50-preview-private-source-authority-20261029` from E49 integration source `23ea57d65fd562d5cc611040e2e8791f6462779c`, with parent CI #40851203055 pending at plan creation. Original product Phase 4 steps 17–20. [Detailed E50 plan](phases/E50_PREVIEW_PRIVATE_SOURCE_AUTHORITY_PLAN.md): display durable private-source conflict as an explicit blocked reason in update preview, filter unsafe original-app targets without altering E47 atomic confirm, native SQLite stale-preview/legacy/owner regressions, pinned cloud/candidate workflow, no provider/split/GC. Weighted 28%, 0 real apps accepted.
