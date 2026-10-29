@@ -100,6 +100,32 @@ class PrivateGuestActivityClassPreflightTest {
         }
     }
 
+    @Test fun publicZeroArgumentConstructorIsInspectedButNeverInvoked() {
+        ConstructorSideEffectForTest.count = 0
+        val type = ConstructorSideEffectActivityForTest::class.java
+        val loaded = PrivateGuestActivityClassPreflight.requireMatches(
+            selection(type), type, ownedLoader, activityBase)
+        assertSame(type, loaded)
+        assertEquals(0, ConstructorSideEffectForTest.count)
+    }
+
+    @Test fun parameterizedOnlyPrivateAndProtectedConstructorsAreRejected() {
+        val bad = listOf(
+            ParameterizedOnlyActivityForTest::class.java,
+            PrivateConstructorActivityForTest::class.java,
+            ProtectedConstructorActivityForTest::class.java,
+        )
+        bad.forEach { type ->
+            assertThrows(IllegalArgumentException::class.java) {
+                PrivateGuestActivityClassPreflight.requireMatches(
+                    selection(type), type, ownedLoader, activityBase)
+            }
+        }
+        val valid = PublicNoArgAndParameterizedActivityForTest::class.java
+        assertSame(valid, PrivateGuestActivityClassPreflight.requireMatches(
+            selection(valid), valid, ownedLoader, activityBase))
+    }
+
     @Test fun realSignedPrivateManifestWithoutDexIsNotAnExecutableGuestActivity() {
         // The aapt2/apksigner fixture declares an allowed Activity but has no classes.dex.
         // Manifest authorization alone cannot be accepted as an Android guest runtime.
@@ -131,4 +157,15 @@ class UnrelatedPrivateComponentForTest
 class ActivityOuterForTest {
     inner class InnerActivity : ExpectedActivityBaseForTest()
     class StaticActivity : ExpectedActivityBaseForTest()
+}
+
+object ConstructorSideEffectForTest { var count: Int = 0 }
+class ConstructorSideEffectActivityForTest : ExpectedActivityBaseForTest() {
+    init { ConstructorSideEffectForTest.count++ }
+}
+class ParameterizedOnlyActivityForTest(value: String) : ExpectedActivityBaseForTest()
+class PrivateConstructorActivityForTest private constructor() : ExpectedActivityBaseForTest()
+class ProtectedConstructorActivityForTest protected constructor() : ExpectedActivityBaseForTest()
+class PublicNoArgAndParameterizedActivityForTest() : ExpectedActivityBaseForTest() {
+    constructor(value: String) : this()
 }
