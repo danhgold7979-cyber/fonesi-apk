@@ -1,3 +1,13 @@
+# Fonesi APK — E70 technical PASS; Product Phase 1 engine acceptance remains blocked (29/10/2026)
+
+**Repository:** [danhgold7979-cyber/fonesi-apk](https://github.com/danhgold7979-cyber/fonesi-apk). Branch `phase/e70-signed-explicit-activity-selection-20261029`, [Draft PR #44](https://github.com/danhgold7979-cyber/fonesi-apk/pull/44) stacked on E69; `main@c055df600f87ee9ddf0cd5d6bfc67d80d145e79d` unchanged.
+
+Original **Product Phase 1 steps 7–8**, preparing Phase 3 step 15. **E70 technical PASS** on code/test SHA `469b5aa567344154622c099a73351b6ae60494d9`: [CI #40910681708](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40910681708) **SUCCESS**, **503 tests per cloud/candidate gate**, E40–E70 audits, signed APK fixture tests, pinned cloud/candidate build/lint/signature/permission checks, opt-in source-engine AAR, and no split/provider/GC activation. [Test-only artifact #12914911137](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40910681708/artifacts/12914911137).
+
+The source-built loader now exposes read-only explicit signed PRIVATE Activity/alias selection, enforced exported/enabled, Application permission/enabled and signed split scope. [Plan](phases/E70_SIGNED_EXPLICIT_ACTIVITY_SELECTION_PLAN.md) | [results](phases/E70_SIGNED_EXPLICIT_ACTIVITY_SELECTION_RESULTS.md). A follow-up documentation HEAD requires independent CI. No runtime guest Activity, process/UID/account isolation or full split import is accepted. Weighted product **28.00%**, **0 accepted real third-party clones**; leave Draft and `main` unchanged.
+
+---
+
 # Fonesi APK — E67 technical PASS; Product Phase 3/4 acceptance still open (29/10/2026)
 
 **Repository:** [danhgold7979-cyber/fonesi-apk](https://github.com/danhgold7979-cyber/fonesi-apk). **Branch:** `phase/e67-create-preinstall-peer-guard-20261029`, stacked [Draft PR #41](https://github.com/danhgold7979-cyber/fonesi-apk/pull/41) on E66 [Draft PR #40](https://github.com/danhgold7979-cyber/fonesi-apk/pull/40). `main@c055df600f87ee9ddf0cd5d6bfc67d80d145e79d` unchanged.

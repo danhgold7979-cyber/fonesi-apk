@@ -1,5 +1,11 @@
 # Fonesi APK — conservative product completion estimate
 
+Date 2026-10-29. **Latest verified technical milestone E70 PASS** at exact source `469b5aa567344154622c099a73351b6ae60494d9`, [CI #40910681708](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40910681708) **SUCCESS** with **503 tests per cloud/candidate gate**, signed binary manifest selections, Android build/lint/APK signature/permission checks, source-native AAR and E40–E70 audits. This is metadata-only technical readiness, **not** guest runtime or account acceptance. Weighted product readiness **28.00%**, 0 real third-party clones accepted.
+
+## E70 explicit signed Activity selector is not production guest lifecycle
+
+Verified PRIVATE binary manifest Activity/alias requests may now be selected by exact name after conservative exported/enabled and base Application permission checks; no host component registration, actual guest Android Activity start, independent UID/account/session, or production split provider is implemented. [Results](phases/E70_SIGNED_EXPLICIT_ACTIVITY_SELECTION_RESULTS.md). The original weighted product rubric remains unchanged.
+
 Date: 2026-10-29. **Latest verified technical milestone E67 PASS** at exact code/test SHA `2d631994601594e7848e3ab0c2662f8fa5af0204`: [CI #40900943479](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40900943479) **SUCCESS**, **486 cloud/candidate tests per gate**, E40–E67 audits, build/lint/signatures/permission checks. E66 code and its reporting HEAD passed [CI #40899947204](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40899947204) and [CI #40901211794](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40901211794) separately. These are fail-closed technical gates, NOT real Android guest/session/account acceptance. **Weighted product readiness 28.00%**, **0 accepted real third-party clone apps**.
 
 ## E67 guest create pre-install recheck does not establish real guest execution
@@ -91,7 +97,7 @@ The dimension estimates and weights are heuristic judgments anchored in docs/STA
 
 ## Distinct acceptance counters
 
-- Latest verified technical milestone: **E67 PASS**, exact source `2d631994601594e7848e3ab0c2662f8fa5af0204`, [CI #40900943479](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40900943479), 486 tests per cloud/candidate gate. E66 code/report commits separately passed CI. Neither establishes real guest/app/account/device acceptance.
+- Latest verified technical milestone: **E70 PASS** at code SHA `469b5aa567344154622c099a73351b6ae60494d9` [CI #40910681708](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40910681708); 503 tests per cloud/candidate gate. Real third-party app/phone/account acceptance remains zero.
 - Production clone of real required social/e-commerce app: **0 applications accepted**.
 - Real Samsung ARM64 / non-Samsung phone acceptance: **not executed**.
 - Full 8-phase/32-step product completion: **not achieved**. Product Phase 1/2 still lacks a fully verified engine and real-device/account isolation acceptance.

@@ -1,5 +1,9 @@
 # Kế hoạch thực thi và đối chiếu yêu cầu
 
+## E70 — technical PASS on exact signed private Activity selector source (29/10/2026)
+
+Original Product **Phase 1 steps 7–8**, preparing Phase 3 step 15. Implementation SHA `469b5aa567344154622c099a73351b6ae60494d9` [CI #40910681708](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40910681708) **SUCCESS**, 503 cloud/candidate tests per gate, signed manifest fixture tests, pinned build/lint/SDK/APK signatures/permissions, source-engine AAR and E40–E70 audits. Read-only explicit Activity/alias selector checks signed package identity, exported/enabled and inherited Application permission policy, no actual guest launch. [E70 results](phases/E70_SIGNED_EXPLICIT_ACTIVITY_SELECTION_RESULTS.md), [Draft PR #44](https://github.com/danhgold7979-cyber/fonesi-apk/pull/44). Reporting SHA needs separate exact-head CI. Weighted 28.00%, 0 real guest/account/phone acceptance.
+
 ## E70 — signed Application-level permission/enable inheritance amendment (pre-code, 29/10/2026)
 
 During review of E70 signed explicit Activity resolution, found that Application-level `android:permission` and `android:enabled=false` must also be enforced. Before production code, extend E68 signed PRIVATE catalog to preserve base Application permission/enable and reject split-side redefinitions; deny all Activity selection where application-level permission mediation is missing or Application disabled. Add two real signed APK fixture regressions, strengthen source audit and retain E40–E70 exact-source cloud/candidate/source AAR acceptance. [Amended E70 plan](phases/E70_SIGNED_EXPLICIT_ACTIVITY_SELECTION_PLAN.md). E69 verified code `44d9ca97` passed [CI #40908213615](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40908213615); product 28.00%, no accepted real guest clones.
