@@ -237,6 +237,66 @@ class UpdateTaskClusterOwnershipRepositoryTest {
             withContextBlocking { db.clusterReferences().forCluster(verified.id).map { it.ownerType }.toSet() })
     }
 
+    @Test fun conflictingReviewGenerationNeverReleasesQueuedSource() {
+        val job = task()
+        val sourceCluster = cluster()
+        val wrongReview = cluster()
+        val repository = UpdateTaskClusterOwnershipRepository(db)
+        assertTrue(withContextBlocking {
+            repository.associateReadBackVerified(engine, job.id, sourceCluster)
+        })
+        advanceToReview(job)
+        withContextBlocking {
+            db.clusterReferences().insert(ref(wrongReview.id, ClusterOwnerType.REVIEW_REQUIRED, job.id))
+        }
+        assertThrows(IllegalStateException::class.java) {
+            withContextBlocking { repository.promoteAfterReview(engine, job.id) }
+        }
+        assertEquals(listOf(sourceCluster.id), withContextBlocking {
+            db.clusterReferences().forOwner(ClusterOwnerType.UPDATE_TASK.name, job.id, engine)
+                .map { it.clusterId }
+        })
+        assertEquals(listOf(wrongReview.id), withContextBlocking {
+            db.clusterReferences().forOwner(ClusterOwnerType.REVIEW_REQUIRED.name, job.id, engine)
+                .map { it.clusterId }
+        })
+        assertEquals(TaskState.REVIEW_REQUIRED, withContextBlocking {
+            RoomUpdateTaskStore(db).list().single().state
+        })
+    }
+
+    @Test fun terminalReleaseSqlFailureRollsBackAndRetainsSource() {
+        val job = task()
+        val verified = cluster()
+        val repository = UpdateTaskClusterOwnershipRepository(db)
+        assertTrue(withContextBlocking {
+            repository.associateReadBackVerified(engine, job.id, verified)
+        })
+        withContextBlocking {
+            assertTrue(RoomUpdateTaskStore(db).replace(job, job.move(TaskState.CANCELLED, 20L)))
+            db.openHelper.writableDatabase.execSQL(
+                "CREATE TRIGGER e41_block_release BEFORE DELETE ON cluster_references " +
+                    "WHEN OLD.ownerType = 'UPDATE_TASK' BEGIN SELECT RAISE(ABORT, 'synthetic refusal'); END",
+            )
+        }
+        try {
+            assertThrows(Exception::class.java) {
+                withContextBlocking { repository.releaseAfterTerminal(engine, job.id) }
+            }
+        } finally {
+            withContextBlocking {
+                db.openHelper.writableDatabase.execSQL("DROP TRIGGER e41_block_release")
+            }
+        }
+        assertEquals(listOf(verified.id), withContextBlocking {
+            db.clusterReferences().forOwner(ClusterOwnerType.UPDATE_TASK.name, job.id, engine)
+                .map { it.clusterId }
+        })
+        assertEquals(TaskState.CANCELLED, withContextBlocking {
+            RoomUpdateTaskStore(db).list().single().state
+        })
+    }
+
     private fun <T> withContextBlocking(block: () -> T): T =
         runBlocking { withContext(Dispatchers.IO) { block() } }
 }
