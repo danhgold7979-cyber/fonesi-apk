@@ -87,7 +87,7 @@ class ClusterReferenceRepositoryTest {
         try {
             assertEquals(1, withContext(Dispatchers.IO) { migrated.clones().list().size })
             assertEquals(1, withContext(Dispatchers.IO) { migrated.tasks().list().size })
-            assertEquals(1, withContext(Dispatchers.IO) { migrated.instances().list().size })
+            assertEquals(1, withContext(Dispatchers.IO) { migrated.instances().list("engine-a").size })
             assertTrue(withContext(Dispatchers.IO) { migrated.clusterReferences().list().isEmpty() })
             val version = withContext(Dispatchers.IO) {
                 migrated.openHelper.readableDatabase.query("PRAGMA user_version").use { cursor ->
