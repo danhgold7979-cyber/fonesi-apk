@@ -1,5 +1,10 @@
 # Kế hoạch thực thi và đối chiếu yêu cầu
 
+## E41 — verified technical result (2026-10-29)
+
+Exact code SHA `d8c0a44584f1821e5ce91fa7a6a9f8875c0783ff`: [E41 cloud/candidate Actions #40840049529](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40840049529) **SUCCESS**, 358 tests per gate per CI logs. [Detailed E41 results](phases/E41_UPDATE_TASK_CLUSTER_OWNERSHIP_RESULTS.md). The Room owner API is explicit and not wired into production UpdateRunner; no claim of real app updates/account isolation. Product Phase 4 remains incomplete. Subsequent work needs its own pre-code plan.
+
+
 ## E41 — update-task/private-cluster ownership retention (pre-code plan, 29/10/2026)
 
 Branch `phase/e41-update-task-cluster-ownership-20261029` starts at E40 verified reporting SHA `dc5aea86a01aee0594ad70cbae6367f6332e2596`; [E40 cloud/candidate CI #40838110200](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40838110200) passed on that exact SHA. Align Phase 4 steps 17–20 without changing the original eight-Phase roadmap. Review [E41 detailed plan](phases/E41_UPDATE_TASK_CLUSTER_OWNERSHIP_PLAN.md) before each code change.

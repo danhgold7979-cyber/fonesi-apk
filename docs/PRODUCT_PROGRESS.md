@@ -1,6 +1,6 @@
 # Fonesi APK — conservative product completion estimate
 
-Date: 2026-10-29. **Latest fully verified technical slice: E40 PASS** at code-and-generated-schema source `a3cf9ec199de7d1c5ec66e105d525a1175554e1c` — [E40 workflow #40837064438](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40837064438) successful. Both cloud and opt-in candidate gates passed with **349 tests per gate** (118 core, 44 APK runtime, 187 Android/Robolectric; 0 failures/errors/skips) plus build/lint/signature/permissions and single-APK/split-disabled audits. Room schema v6 was reviewed and committed exactly; it enables safe metadata/CLONE owner associations, not real guest account isolation. This is a decision-support estimate, not measured product progress. The report-only HEAD requires its own CI check; do not extrapolate the prior source run to a changed code SHA.
+Date: 2026-10-29. **Latest verified technical slice: E41 PASS (source `d8c0a44584f1821e5ce91fa7a6a9f8875c0783ff`, [CI #40840049529](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40840049529), 358 cloud/candidate tests each)**. E41 is Room-only reference retention for update tasks and unknown outcomes; it is not integrated production update execution. The original weighted score remains 28.00%. Historical baseline: **E40 PASS** at code-and-generated-schema source `a3cf9ec199de7d1c5ec66e105d525a1175554e1c` — [E40 workflow #40837064438](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40837064438) successful. Both cloud and opt-in candidate gates passed with **349 tests per gate** (118 core, 44 APK runtime, 187 Android/Robolectric; 0 failures/errors/skips) plus build/lint/signature/permissions and single-APK/split-disabled audits. Room schema v6 was reviewed and committed exactly; it enables safe metadata/CLONE owner associations, not real guest account isolation. This is a decision-support estimate, not measured product progress. The report-only HEAD requires its own CI check; do not extrapolate the prior source run to a changed code SHA.
 
 ## E40 acceptance boundary
 
@@ -8,7 +8,7 @@ E40 belongs to **Phase 3 steps 13–16**, not a new product Phase. This mileston
 
 ## E41 update-task reference work is not product acceptance
 
-E41 on `phase/e41-update-task-cluster-ownership-20261029` is under code/CI evaluation for Phase 4 steps 17–20. It introduces explicit durable Room UPDATE_TASK/REVIEW_REQUIRED reference-retention APIs, **not** a production update runner or tested real guest session. E40 remains the latest verified technical PASS ([CI #40838110200](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40838110200)). The product estimate stays **28.00%**, and physical-phone/account/split-provider gates remain open.
+E41 on `phase/e41-update-task-cluster-ownership-20261029` has passed bounded code/CI gates for Phase 4 steps 17–20. It introduces explicit durable Room UPDATE_TASK/REVIEW_REQUIRED reference-retention APIs, **not** a production update runner or tested real guest session. E41 is the latest verified technical PASS on its code SHA; E40 also passed ([CI #40838110200](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40838110200)). The product estimate stays **28.00%**, and physical-phone/account/split-provider gates remain open.
 
 ## Product score (weighted engineering estimate)
 
@@ -27,7 +27,7 @@ The dimension estimates and weights are heuristic judgments anchored in docs/STA
 
 ## Distinct acceptance counters
 
-- Latest fully verified technical milestone: **E40 PASS** (Room v6 clone/CLONE owner association and safe deletion; cloud/candidate gates at workflow #40837064438). E39 Room v5 reference registry also passed at workflow #40803931491. Latest synthetic Android host-lifecycle milestone: **E29 PASS**. E24 host Activity attached a View from signed private synthetic DEX; E25 parsed a private signed synthetic component manifest; E29 bound the component record to a UUID/hash/signer-bound dispatch ticket. None registers/launches a real guest Activity.
+- Latest fully verified technical milestone: **E41 PASS** ([CI #40840049529](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40840049529)); E40 also **PASS** (Room v6 clone/CLONE owner association and safe deletion; cloud/candidate gates at workflow #40837064438). E39 Room v5 reference registry also passed at workflow #40803931491. Latest synthetic Android host-lifecycle milestone: **E29 PASS**. E24 host Activity attached a View from signed private synthetic DEX; E25 parsed a private signed synthetic component manifest; E29 bound the component record to a UUID/hash/signer-bound dispatch ticket. None registers/launches a real guest Activity.
 - Production clone of real required social/e-commerce app: **0 applications accepted**.
 - Real Samsung ARM64 / non-Samsung phone acceptance: **not executed**.
 - Full 8-phase/32-step product completion: **not achieved**. Product Phase 1/2 still lacks a fully verified engine and real-device/account isolation acceptance.
