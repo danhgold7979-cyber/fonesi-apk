@@ -1,3 +1,25 @@
+# Fonesi APK — E69 technical PASS; Product Phase 1 guest engine remains incomplete (29/10/2026)
+
+**Repository:** [danhgold7979-cyber/fonesi-apk](https://github.com/danhgold7979-cyber/fonesi-apk); branch `phase/e69-source-loader-signed-component-readback-20261029`, [Draft PR #43](https://github.com/danhgold7979-cyber/fonesi-apk/pull/43) stacked on E68 [Draft PR #42](https://github.com/danhgold7979-cyber/fonesi-apk/pull/42); `main@c055df600f87ee9ddf0cd5d6bfc67d80d145e79d` untouched.
+
+**Product roadmap:** original **Phase 1 steps 7–8**, preparing Phase 3 guest lifecycle; not Product Phase 69. **E69 technical PASS** on exact source SHA `44d9ca97e092bb8f4c8fb5b7e87d84680d60e73e`: [CI #40908213615](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40908213615) **SUCCESS**, E40–E69 audits, **492 tests each cloud/candidate gate**, pinned build/lint/signature/permissions, native host libc routing, source-built ARM64 AAR/ELF 16KB/JNI and signed E69 source component tests. [Test-only artifact #12912583203](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40908213615/artifacts/12912583203). Parent E68 implementation and reporting SHAs passed separately [#40904953294](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40904953294) and [#40906774402](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40906774402).
+
+**Implementation:** `GuestCodeLoader` now binds E68 signed PRIVATE base/feature/config component inventory to its exact code/resource/native image and revalidates at end; code also closes an inherited API28 lint violation with explicit SDK guard. [Plan](phases/E69_SOURCE_LOADER_SIGNED_COMPONENT_READBACK_PLAN.md) | [results](phases/E69_SOURCE_LOADER_SIGNED_COMPONENT_READBACK_RESULTS.md). This combined reporting SHA must itself pass CI to be independently verified.
+
+**Weighted product readiness: 28.00%, 0 real third-party clone apps accepted.** Production split import, real guest Activity/Service/Provider, independent Android UID/account sessions, Samsung/other-phone social app test and release signing are not accepted. Keep all PRs Draft, no merge or production release.
+
+---
+
+# Fonesi APK — E68 technical PASS, Product Phase 1/3 still incomplete (29/10/2026)
+
+**Repo:** [danhgold7979-cyber/fonesi-apk](https://github.com/danhgold7979-cyber/fonesi-apk); branch `phase/e68-private-signed-component-catalog-20261029`, [Draft PR #42](https://github.com/danhgold7979-cyber/fonesi-apk/pull/42) stacked on E67. `main@c055df600f87ee9ddf0cd5d6bfc67d80d145e79d` unchanged.
+
+**Product Phase 1 steps 5–8** (engine metadata), with Phase 3 steps 13–16 dependency. **E68 technical PASS** at exact code/test SHA `26fdfbe57981a6bfef9672f4708b529710620ee8`: [CI #40904953294](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40904953294) **SUCCESS**, **492 tests per cloud/candidate gate**, E40–E68 audits and signed APK build/lint/permissions. [Test-only artifact #12912150591](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40904953294/artifacts/12912150591). [E68 plan](phases/E68_PRIVATE_SIGNED_COMPONENT_CATALOG_PLAN.md) / [results](phases/E68_PRIVATE_SIGNED_COMPONENT_CATALOG_RESULTS.md). This reporting SHA requires independent CI.
+
+**Code:** Generic signed PRIVATE base/feature/config component manifest inventory without original PackageManager fallback; no guest component launched or registered. **Weighted product readiness 28.00%**, 0 accepted real third-party clones. Full split provider, Activity/Service/Provider, UID/accounts, device/social apps and signing blocked. Keep Draft/no merge.
+
+---
+
 # Fonesi APK — E67 technical PASS; Product Phase 3/4 acceptance still open (29/10/2026)
 
 **Repository:** [danhgold7979-cyber/fonesi-apk](https://github.com/danhgold7979-cyber/fonesi-apk). **Branch:** `phase/e67-create-preinstall-peer-guard-20261029`, stacked [Draft PR #41](https://github.com/danhgold7979-cyber/fonesi-apk/pull/41) on E66 [Draft PR #40](https://github.com/danhgold7979-cyber/fonesi-apk/pull/40). `main@c055df600f87ee9ddf0cd5d6bfc67d80d145e79d` unchanged.
