@@ -179,6 +179,61 @@ class CloneClusterOwnershipRepositoryTest {
         assertEquals(1, withContextBlocking { db.clusterReferences().forCluster(cluster.id).size })
     }
 
+    @Test fun inconsistentMultipleCloneOwnersRejectSwitchAndDeleteWithoutLosingData() {
+        val old = cluster()
+        val conflict = cluster(version = 2L)
+        val replacement = cluster(version = 3L)
+        withContextBlocking { db.clones().insert(cloneRow()) }
+        val repository = CloneClusterOwnershipRepository(db)
+        assertTrue(withContextBlocking { repository.associateReadBackVerified(engine, cloneId, old) })
+        withContextBlocking {
+            db.clusterReferences().insert(reference(conflict.id, ClusterOwnerType.CLONE, cloneId))
+            db.clusterReferences().insert(reference(conflict.id, ClusterOwnerType.REVIEW_REQUIRED, "task-review"))
+        }
+
+        assertThrows(IllegalStateException::class.java) {
+            withContextBlocking { repository.associateReadBackVerified(engine, cloneId, replacement) }
+        }
+        assertThrows(IllegalStateException::class.java) {
+            withContextBlocking { repository.deleteMetadataAfterProviderConfirmed(engine, cloneId, token) }
+        }
+
+        assertEquals(old.id, withContextBlocking { db.clones().find(engine, cloneId)?.clusterId })
+        assertEquals(setOf(old.id, conflict.id), withContextBlocking {
+            db.clusterReferences().forOwner(ClusterOwnerType.CLONE.name, cloneId, engine)
+                .map { it.clusterId }.toSet()
+        })
+        assertTrue(withContextBlocking {
+            db.clusterReferences().forCluster(replacement.id).isEmpty()
+        })
+        assertEquals(1, withContextBlocking {
+            db.clusterReferences().forCluster(conflict.id).count {
+                it.ownerType == ClusterOwnerType.REVIEW_REQUIRED.name
+            }
+        })
+    }
+
+    @Test fun committedAssociationSurvivesDatabaseReopenAndKeepsLaunchToken() {
+        val verified = cluster()
+        withContextBlocking { db.clones().insert(cloneRow()) }
+        val repository = CloneClusterOwnershipRepository(db)
+        assertTrue(withContextBlocking { repository.associateReadBackVerified(engine, cloneId, verified) })
+        withContextBlocking {
+            db.close()
+            db = FonesiDatabase.open(context, name)
+        }
+        val saved = withContextBlocking { db.clones().find(engine, cloneId) }
+        assertEquals(verified.id, saved?.clusterId)
+        assertEquals(token, saved?.launchToken)
+        assertEquals(listOf(verified.id), withContextBlocking {
+            db.clusterReferences().forOwner(ClusterOwnerType.CLONE.name, cloneId, engine)
+                .map { it.clusterId }
+        })
+        assertFalse(withContextBlocking {
+            CloneClusterOwnershipRepository(db).associateReadBackVerified(engine, cloneId, verified)
+        })
+    }
+
     private fun <T> withContextBlocking(block: () -> T): T =
         kotlinx.coroutines.runBlocking { withContext(Dispatchers.IO) { block() } }
 }
