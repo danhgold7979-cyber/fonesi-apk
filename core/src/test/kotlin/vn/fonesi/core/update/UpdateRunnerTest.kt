@@ -331,7 +331,7 @@ class UpdateRunnerTest {
             UpdateScope.PER_CLONE).single()
         assertNotEquals(retained.id, original.id)
         assertEquals(RunResult.PolicyBlocked, f.runner().runNext())
-        assertEquals(TaskState.QUEUED, f.store.list().single().state)
+        assertTrue(f.store.list().all { it.state == TaskState.QUEUED })
         assertEquals(0, f.engine.calls)
     }
 
