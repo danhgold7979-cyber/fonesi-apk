@@ -190,6 +190,29 @@ class StorageIntegrationTest {
             .map { it.clusterId })
     }
 
+    @Test fun providerFailurePreservesAssociatedMetadataAndOtherOwners() = background {
+        val engine = EngineDouble()
+        val repository = CloneMetadataRepository(db, "engine-a", engine, operationLock())
+        val saved = repository.create(source, "Existing clone")
+        val clusterId = UUID.randomUUID().toString()
+        check(db.clones().associateCluster("engine-a", saved.cloneId, saved.launchToken, clusterId, 10L) == 1)
+        db.clusterReferences().insert(ClusterReferenceRow(
+            clusterId, vn.fonesi.apk.ClusterOwnerType.CLONE.name, saved.cloneId, "engine-a", 10L,
+        ))
+        db.clusterReferences().insert(ClusterReferenceRow(
+            clusterId, vn.fonesi.apk.ClusterOwnerType.REVIEW_REQUIRED.name, "review-1", "engine-a", 11L,
+        ))
+
+        engine.leaveOnDelete = true
+        assertThrows(IllegalStateException::class.java) {
+            repository.delete(saved.cloneId, saved.launchToken)
+        }
+        assertEquals(clusterId, db.clones().find("engine-a", saved.cloneId)?.clusterId)
+        assertTrue(engine.records.any { it.id == saved.cloneId })
+        assertEquals(setOf(vn.fonesi.apk.ClusterOwnerType.CLONE.name, vn.fonesi.apk.ClusterOwnerType.REVIEW_REQUIRED.name),
+            db.clusterReferences().forCluster(clusterId).map { it.ownerType }.toSet())
+    }
+
     @Test fun namespacesAndOfflineRenamePreserveOtherEnginesMetadata() = background {
         val first = CloneMetadataRepository(db, "engine-a", EngineDouble(), operationLock()).create(source, "A")
         CloneMetadataRepository(db, "engine-b", EngineDouble(), operationLock()).create(source, "B")

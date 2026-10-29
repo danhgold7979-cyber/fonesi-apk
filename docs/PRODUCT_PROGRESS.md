@@ -2,6 +2,10 @@
 
 Date: 2026-10-29. **Latest fully verified technical slice: E39 PASS** — code SHA `07d582e09bce8e1d21249c79333767ba8efdb4f0`, [workflow #40803931491](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40803931491). Both cloud and opt-in candidate gates passed with 334 tests per gate, build/lint/APK audits and split-import guards. Generated Room schema v5 is reviewed and committed. E40 clone-metadata/cluster ownership integration is in progress and is not accepted yet. The last synthetic Android host-lifecycle proof remains E29; these storage gates do not prove a real guest Activity or account isolation. See [master roadmap](ROADMAP.md). This is a decision-support estimate, NOT measured product progress.
 
+## E40 current validation (2026-10-29)
+
+E40 belongs to **Phase 3, steps 13–16**, not a new product Phase. E40 code/source `b20e8313822fea14fc89604502727ea79a4207c8` passed [cloud and candidate CI #40835815869](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40835815869): 344 tests per gate, 0 failures/errors/skips. The generated Room schema v6 has been inspected; additional negative/recovery tests are awaiting final same-commit CI. E40 is **not accepted** until that gate succeeds. This storage reliability increment does not change the rubric below; product estimate remains **28.00% (~30%)** and 0 real third-party clone/account/device acceptance.
+
 ## Product score (weighted engineering estimate)
 
 The original requirements are **8 product phases / 32 steps**; technical E10–E29 milestones overlap those phases and MUST NOT be divided by milestone count to get product completion.

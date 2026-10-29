@@ -1,3 +1,16 @@
+# Fonesi APK — E40 Room v6 ownership integration: final CI gate required (29/10/2026)
+
+**Repository:** [danhgold7979-cyber/fonesi-apk](https://github.com/danhgold7979-cyber/fonesi-apk).
+**Branch:** `phase/e40-clone-cluster-ownership-20261029`, stacked [Draft PR #13](https://github.com/danhgold7979-cyber/fonesi-apk/pull/13) over the cumulative E21 branch. `main@c055df600f87ee9ddf0cd5d6bfc67d80d145e79d` remains unchanged.
+
+**Roadmap:** Phase 3 steps 13–16, with Phase 4 data-retention dependency. E40 adds Room v5→v6 nullable clone cluster ID; transactional clone/CLONE-reference association, generation switching, pre-provider-delete ownership preflight, and post-provider-confirmed atomic release. No provider split import, guest Activity, account isolation, cluster GC or release enablement.
+
+**Actual CI before the final acceptance tests/schema commit:** E40 code SHA `b20e8313822fea14fc89604502727ea79a4207c8`, [workflow #40835815869](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40835815869) **SUCCESS**: 344 tests in each cloud and opt-in candidate gate (118 core + 44 APK runtime + 182 Android/Robolectric), 0 failures/errors/skips; build/lint/permissions/signatures/split-disabled checks passed. Generated Room schema v6 was retrieved and reviewed (identity hash `a9406cbe3dec557bfcc5e499c7ca381c`).
+
+**E40 still pending formal PASS at this commit:** additional fail-closed regression cases and the generated v6 schema require a fresh CI SUCCESS on their exact commit; see [E40 results](phases/E40_CLONE_CLUSTER_OWNERSHIP_RESULTS.md). E39 is the most recent previously accepted milestone. Product readiness remains **28.00% (~30% rounded)** by [the fixed weighted rubric](PRODUCT_PROGRESS.md); production third-party clone acceptance remains **0 apps**. Real phone, account data and release gates remain open.
+
+---
+
 # Fonesi APK — E40 in progress; E39 CI verified (29/10/2026)
 
 **Repository:** [danhgold7979-cyber/fonesi-apk](https://github.com/danhgold7979-cyber/fonesi-apk)  

@@ -21,6 +21,7 @@ import vn.fonesi.apk.AuditedApkSet
 import vn.fonesi.apk.ClusterOwnerType
 import vn.fonesi.apk.ClusterReference
 import vn.fonesi.apk.PrivateApkCluster
+import vn.fonesi.apk.PrivateApkStore
 import java.io.File
 import java.security.MessageDigest
 import java.util.UUID
@@ -231,6 +232,64 @@ class CloneClusterOwnershipRepositoryTest {
         })
         assertFalse(withContextBlocking {
             CloneClusterOwnershipRepository(db).associateReadBackVerified(engine, cloneId, verified)
+        })
+    }
+
+    @Test fun unpublishedOrMalformedPrivateClusterIsRejectedBeforeRoomMutation() {
+        withContextBlocking { db.clones().insert(cloneRow()) }
+        val root = java.nio.file.Files.createTempDirectory("fonesi-e40-unpublished-")
+        try {
+            val store = PrivateApkStore(root)
+            val repository = CloneClusterOwnershipRepository(db)
+            assertThrows(IllegalArgumentException::class.java) {
+                withContextBlocking {
+                    repository.associate(engine, cloneId, store, UUID.randomUUID().toString(), 34)
+                }
+            }
+            assertThrows(IllegalArgumentException::class.java) {
+                withContextBlocking { repository.associate(engine, cloneId, store, "../escape", 34) }
+            }
+            assertNull(withContextBlocking { db.clones().find(engine, cloneId)?.clusterId })
+            assertTrue(withContextBlocking { db.clusterReferences().list().isEmpty() })
+        } finally {
+            java.nio.file.Files.deleteIfExists(root)
+        }
+    }
+
+    @Test fun wrongEngineOrCloneNamespaceCannotAcquirePrivateCluster() {
+        withContextBlocking { db.clones().insert(cloneRow()) }
+        val verified = cluster()
+        val repository = CloneClusterOwnershipRepository(db)
+        assertThrows(IllegalStateException::class.java) {
+            withContextBlocking { repository.associateReadBackVerified("engine-b", cloneId, verified) }
+        }
+        assertThrows(IllegalStateException::class.java) {
+            withContextBlocking { repository.associateReadBackVerified(engine, "missing-clone", verified) }
+        }
+        assertNull(withContextBlocking { db.clones().find(engine, cloneId)?.clusterId })
+        assertTrue(withContextBlocking { db.clusterReferences().list().isEmpty() })
+    }
+
+    @Test fun sqliteAbortDuringAssociationRollsBackNewOwnerReference() {
+        withContextBlocking { db.clones().insert(cloneRow()) }
+        val verified = cluster()
+        val repository = CloneClusterOwnershipRepository(db)
+        withContextBlocking {
+            db.openHelper.writableDatabase.execSQL(
+                "CREATE TRIGGER e40_abort_cluster_update BEFORE UPDATE OF clusterId ON clone_metadata " +
+                    "BEGIN SELECT RAISE(ABORT, 'synthetic SQLite failure'); END",
+            )
+        }
+        try {
+            assertThrows(Exception::class.java) {
+                withContextBlocking { repository.associateReadBackVerified(engine, cloneId, verified) }
+            }
+        } finally {
+            withContextBlocking { db.openHelper.writableDatabase.execSQL("DROP TRIGGER e40_abort_cluster_update") }
+        }
+        assertNull(withContextBlocking { db.clones().find(engine, cloneId)?.clusterId })
+        assertTrue(withContextBlocking {
+            db.clusterReferences().forOwner(ClusterOwnerType.CLONE.name, cloneId, engine).isEmpty()
         })
     }
 
