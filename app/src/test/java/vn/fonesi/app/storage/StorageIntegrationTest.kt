@@ -165,6 +165,31 @@ class StorageIntegrationTest {
         assertTrue(engine.records.any { it.id == b.cloneId })
     }
 
+    @Test fun inconsistentClusterOwnershipBlocksProviderDeletionBeforeGuestIsTouched() = background {
+        val engine = EngineDouble()
+        val repository = CloneMetadataRepository(db, "engine-a", engine, operationLock())
+        val saved = repository.create(source, "Protected clone")
+        val conflictingCluster = UUID.randomUUID().toString()
+        db.clusterReferences().insert(ClusterReferenceRow(
+            clusterId = conflictingCluster,
+            ownerType = vn.fonesi.apk.ClusterOwnerType.CLONE.name,
+            ownerId = saved.cloneId,
+            engineKey = "engine-a",
+            createdAtEpochMs = 5L,
+        ))
+
+        assertThrows(IllegalStateException::class.java) {
+            repository.delete(saved.cloneId, saved.launchToken)
+        }
+
+        // The mismatch must be detected before engine.delete(), not merely after it.
+        assertEquals(saved, db.clones().find("engine-a", saved.cloneId))
+        assertEquals(listOf(saved.cloneId), engine.records.map { it.id })
+        assertEquals(listOf(conflictingCluster), db.clusterReferences()
+            .forOwner(vn.fonesi.apk.ClusterOwnerType.CLONE.name, saved.cloneId, "engine-a")
+            .map { it.clusterId })
+    }
+
     @Test fun namespacesAndOfflineRenamePreserveOtherEnginesMetadata() = background {
         val first = CloneMetadataRepository(db, "engine-a", EngineDouble(), operationLock()).create(source, "A")
         CloneMetadataRepository(db, "engine-b", EngineDouble(), operationLock()).create(source, "B")
