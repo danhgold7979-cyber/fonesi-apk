@@ -73,10 +73,47 @@ class ManagedGuestEngineTest {
         val row = registry.list().single()
         backend.packages.remove(row.userId to row.packageName)
         assertThrows(IllegalStateException::class.java) { engine().stop(clone.id) }
-        assertEquals(1, backend.stopAttempts)
+        assertEquals(0, backend.stopAttempts) // Missing pre-stop identity cannot authorize SDK mutation.
         assertTrue(registry.list().single().launchPending)
         assertEquals(InstanceState.READY, registry.list().single().state)
         assertTrue(backend.uninstalls.isEmpty())
+    }
+
+    @Test fun corruptedNativeIdentityBeforeStopCannotInvokeSdkOrClearPending() {
+        val clone = engine().create(source, "A")
+        engine().launch(clone.id)
+        val row = registry.list().single()
+        backend.packages[row.userId to row.packageName] =
+            GuestPackage(row.packageName, -1L, source.signerDigests, false)
+        assertThrows(IllegalStateException::class.java) { engine().stop(clone.id) }
+        assertEquals(0, backend.stopAttempts)
+        assertTrue(registry.list().single().launchPending)
+    }
+
+    @Test fun changedNativeVersionAfterStopCannotClearPending() {
+        val clone = engine().create(source, "A")
+        engine().launch(clone.id)
+        backend.afterStop = { userId, packageName ->
+            val key = userId to packageName
+            backend.packages[key] = checkNotNull(backend.packages[key]).copy(version = source.versionCode + 1)
+        }
+        assertThrows(IllegalStateException::class.java) { engine().stop(clone.id) }
+        assertEquals(1, backend.stopAttempts)
+        assertTrue(registry.list().single().launchPending)
+        assertEquals(InstanceState.READY, registry.list().single().state)
+    }
+
+    @Test fun changedNativeSignersAfterStopCannotClearPending() {
+        val clone = engine().create(source, "A")
+        engine().launch(clone.id)
+        backend.afterStop = { userId, packageName ->
+            val key = userId to packageName
+            backend.packages[key] = checkNotNull(backend.packages[key]).copy(signers = setOf("different-signer"))
+        }
+        assertThrows(IllegalStateException::class.java) { engine().stop(clone.id) }
+        assertEquals(1, backend.stopAttempts)
+        assertTrue(registry.list().single().launchPending)
+        assertEquals(InstanceState.READY, registry.list().single().state)
     }
 
     @Test fun wrongPackageGuestReadbackCannotConfirmStopOrClearPending() {
@@ -287,6 +324,7 @@ private class BackendDouble : GuestBackend {
     var stopAttempts = 0
     var afterCreateUser: () -> Unit = {}
     var preflight: (InstalledSource) -> Unit = {}
+    var afterStop: (Int, String) -> Unit = { _, _ -> }
     override fun validateSource(source: InstalledSource) { preflight(source) }
     override fun users() = userIds.toSet()
     override fun createUser(userId: Int) { userIds += userId; afterCreateUser() }
@@ -298,6 +336,10 @@ private class BackendDouble : GuestBackend {
         check(!failAfterInstall)
     }
     override fun launch(userId: Int, packageName: String) { launchAttempts++; check(!failLaunch); launches += userId to packageName }
-    override fun stop(userId: Int, packageName: String) { stopAttempts++; if (!failStop) packages.computeIfPresent(userId to packageName) { _, old -> old.copy(running = false) } }
+    override fun stop(userId: Int, packageName: String) {
+        stopAttempts++
+        if (!failStop) packages.computeIfPresent(userId to packageName) { _, old -> old.copy(running = false) }
+        afterStop(userId, packageName)
+    }
     override fun uninstall(userId: Int, packageName: String) { uninstalls += userId to packageName; packages.remove(userId to packageName) }
 }
