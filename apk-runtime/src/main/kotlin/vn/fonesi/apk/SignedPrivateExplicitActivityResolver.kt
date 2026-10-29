@@ -56,6 +56,9 @@ object SignedPrivateExplicitActivityResolver {
         }
         // A declared guest process needs a real process allocator and Binder lifecycle
         // mediator. A signed manifest alone cannot authorize any host process mapping.
+        require(inventory.applicationProcessName == null) {
+            "Signed Application process requires unavailable guest process mediation"
+        }
         require(component.processName == null && target.processName == null) {
             "Explicit guest Activity process requires unavailable process mediation"
         }
