@@ -262,7 +262,8 @@ class StorageIntegrationTest {
         }
         // Engine doubles may generate the same clone ID in distinct namespaces.
         // Use a foreign-only saved ID to test the namespace predicate independently.
-        val foreignOnly = second.copy(cloneId = UUID.randomUUID().toString())
+        val foreignOnly = CloneMetadataRow("engine-b", UUID.randomUUID().toString(),
+            source.packageName, "Foreign only", null, 1L, 1L)
         db.clones().insert(foreignOnly)
         assertThrows(IllegalStateException::class.java) {
             offline.restyle(foreignOnly.cloneId, "blue", null)
