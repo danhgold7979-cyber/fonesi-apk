@@ -49,6 +49,13 @@ assert "GuestCodeLayout.read(" in loader and "allowGraphOnly = false" in read("e
 assert "fun inspect(store: PrivateApkStore" in catalog
 assert 'const val supportsSplits = false' in read("app/src/candidate/java/vn/fonesi/app/runtime/RuntimeBindings.kt")
 assert 'check(source.apkPaths.size == 1)' in read("app/src/candidate/java/vn/fonesi/app/runtime/SpaceCoreBackend.kt")
-assert "LoadedGuestCode" in loader and "Activity(" not in loader and "Application(" not in loader
+# Reject actual Android component dispatch/attachment, not PackageManager's
+# getResourcesForApplication() read-only API or documentation comments.
+code = "\n".join(line for line in loader.splitlines()
+                 if not line.lstrip().startswith(("*", "//", "/*", "*/")))
+assert "LoadedGuestCode" in loader
+for forbidden in ("startActivity(", "startService(", "bindService(", "onCreate(", "attachBaseContext(",
+                  "Class.forName(", "getLaunchIntentForPackage("):
+    assert forbidden not in code, "Unexpected guest component execution: " + forbidden
 print("PASS: E69 source loader and verified component catalog bind to same signed PRIVATE base/split code identity.")
 print("PASS: no guest component registration, isolated-split activation or SDK production split import.")
