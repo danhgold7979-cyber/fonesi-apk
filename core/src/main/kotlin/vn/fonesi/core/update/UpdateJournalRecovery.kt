@@ -14,7 +14,7 @@ data class JournalRecoveryResult(
 /**
  * Recovers only durable task metadata under the same OS queue lock used by foreground runners.
  *
- * PREPARING: clean its incomplete snapshot first, then CAS back to QUEUED.
+ * PREPARING: only legacy original sources with readback-safe authority may clean their\n * incomplete snapshot and CAS back to QUEUED; retained/private sources remain held.
  * APPLYING/VERIFYING: move to REVIEW_REQUIRED and retain the snapshot; never retry import.
  * REVIEW_REQUIRED and every other state are left unchanged.
  */

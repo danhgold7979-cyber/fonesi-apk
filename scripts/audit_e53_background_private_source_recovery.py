@@ -34,6 +34,9 @@ for t in (
     assert t in core_tests, "Missing E53 JVM regression: " + t
 assert "workerRetainsMarkedAndOwnerOnlyPreparingSourcesWhileResettingUnownedLegacy" in android_tests
 assert "TaskState.REVIEW_REQUIRED" in android_tests and "oldReviewOwner" in android_tests
-assert "Room v6" or "SourceCatalog"  # intentionally no provider API invocation in this audit
+assert "SourceCatalog { null }" in worker, "Worker must not discover an installed original-app source"
+assert "engine.update(" not in worker and "engine.launch(" not in worker
+assert "version = 6, exportSchema = true" in read("app/src/main/java/vn/fonesi/app/storage/FonesiDatabase.kt")
+assert "const val supportsSplits = false" in read("app/src/candidate/java/vn/fonesi/app/runtime/RuntimeBindings.kt")
 print("PASS: E53 background PREPARING recovery holds retained and E41-owned sources before snapshot discard.")
 print("PASS: unavailable Room owner authority remains retryable; legacy and unknown-outcome regressions required.")
