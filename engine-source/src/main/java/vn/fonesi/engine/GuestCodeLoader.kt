@@ -29,8 +29,7 @@ data class LoadedGuestCode(val clusterId: String, val packageName: String, val v
         className: String,
         caller: ExplicitActivityCaller,
     ): VerifiedPrivateActivitySelection {
-        check(componentInventory.clusterId == clusterId &&
-            componentInventory.packageName == packageName &&
+        check(componentInventory.clusterId == clusterId && componentInventory.packageName == packageName &&
             componentInventory.versionCode == version) {
             "Loaded private code and component manifest have different identity"
         }
