@@ -1,0 +1,20 @@
+# E66 — validate exact shared guest update scope at SDK dispatch (pre-code plan)
+
+Date: 2026-10-29. Repository `danhgold7979-cyber/fonesi-apk`, branch `phase/e66-shared-update-dispatch-revalidation-20261029` stacked on E65 reporting HEAD `7e46c5a5863e1b820a2fb221d32b365dd52689c3`, [Draft PR #39](https://github.com/danhgold7979-cyber/fonesi-apk/pull/39). E65 implementation code/test SHA `9393f288be8d311e3c2f4f65a989c022eda190fa` passed [CI #40897506047](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40897506047) with **475 tests per cloud/candidate gate**. E65 reporting HEAD CI [#40898925395](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40898925395) was in progress when planning; do not assume it passed. Original **Product Phase 4 steps 17–20**, with Phase 3 clone-ID/lifecycle dependencies. E66 is a technical increment, not Product Phase 66.
+
+## Observed source gap
+
+`ManagedGuestEngine.update` reads `sharedRecords`, validates target ID set, versions, signers and not-running status, then resolves the chosen native user. `mutationAllowed()` follows, but `backend.install` executes without revalidating the SDK records or durable guest row identities. The initial readback can become stale across foreground authorization or other external native activity. Version/signer/drift, new peer, now-running guest, or reassigned native user could cause an unsafe shared-code import. E63 READY-only peer gate protects only the earlier snapshot; E65 addresses deletion, not update.
+
+## Ordered implementation and exact test requirements
+
+1. Commit this detailed plan and the overall EXECUTION_PLAN entry **before code**. Recheck parent PR/head and exact E65 source/CI.
+2. Capture the original same-package `GuestInstance` scope (including native user IDs, READY lifecycle state, pending and package identity), and confirm that it covers exactly the current `CloneRecord` scope. Preserve existing shared code target-ID equality, version monotonicity, signer checks and stop/unknown outcome gate.
+3. **After foreground authorization and immediately before SDK install**, re-read same-package durable rows and all native guest records, requiring identical full row identity and `CloneRecord` identity, including exact versions/signers and not-running for each peer. Fail closed without SDK install if a peer becomes running, changes package/version/signers, appears/disappears, becomes RESERVED or changes native user ID. Preserve the selected first user and existing post-install all-peer verification; do not use original app metadata as guest readback or introduce fallback.
+4. Add focused JVM protocol regressions that inject native/registry changes during the authorization callback: a version change, signer change, a peer becoming running, a new RESERVED peer, and native-user reassignment. Verify no additional `backend.install` and no guest deletion; existing positive shared update continues passing. Do not alter existing assertions to mask failure.
+5. Add `scripts/audit_e66_shared_update_dispatch_revalidation.py` and exact-HEAD pinned E40–E66 cloud/candidate workflow with JVM/Robolectric test gates, build/lint, SDK identity, signing/permission checks and disabled split/provider/GC checks. Mark technical PASS only after CI **SUCCESS at exact source SHA**.
+6. Record verified code/test SHA, CI run and real test totals in E66 results and update STATUS/EXECUTION_PLAN/PRODUCT_PROGRESS. Reporting follow-up SHA requires independent CI. Open stacked Draft PR against E65, no merge to `main`.
+
+## Product acceptance unchanged
+
+This is an extra fail-closed gate for the current single-APK candidate, not a split-capable guest update provider or proof that social-app sessions survive updates. Candidate `supportsSplits=false`/`importsSplitApks=false`; no accepted guest Activity/Service/Provider, isolated Android UID/accounts, Samsung/non-Samsung phone tests or release signing. **Weighted product readiness 28.00%, 0 accepted real third-party clone apps**.

@@ -1,3 +1,15 @@
+# Fonesi APK — E66 technical PASS; Product Phase 4 shared update safety incomplete (29/10/2026)
+
+**Repository:** [danhgold7979-cyber/fonesi-apk](https://github.com/danhgold7979-cyber/fonesi-apk), branch `phase/e66-shared-update-dispatch-revalidation-20261029`, [Draft PR #40](https://github.com/danhgold7979-cyber/fonesi-apk/pull/40) stacked on E65. `main@c055df600f87ee9ddf0cd5d6bfc67d80d145e79d` unchanged.
+
+**Original roadmap:** Product **Phase 4 steps 17–20** and Phase 3 guest identity dependency. **E66 technical PASS** at exact code/test SHA `979ef76bb1b228b28841575f1cfa88d5778d5231`: [GitHub Actions #40899947204](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40899947204) **SUCCESS**. E40–E66 audits and **480 tests per cloud/candidate gate**, pinned SDK/JDK build/lint and signed APK permission checks succeeded; split/provider/GC remain inactive. [Test-only artifact #12909771288](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40899947204/artifacts/12909771288). E65 report `7e46c5a5` passed independent [CI #40898925395](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40898925395).
+
+**Source:** SDK shared package update checks every durable guest/user identity and exact native guest image (version/signers/stopped) immediately before install, after foreground authorization. Five JVM race tests and [E66 plan](phases/E66_SHARED_UPDATE_DISPATCH_REVALIDATION_PLAN.md) / [results](phases/E66_SHARED_UPDATE_DISPATCH_REVALIDATION_RESULTS.md). Report-only HEAD must itself pass CI.
+
+**Product readiness 28.00% weighted**, **0 accepted real clones**. Production split APK/guest Activity/service/provider/Android UID-account isolation, real phone/account/update retention, Samsung and signing remain unaccepted. No merge/release.
+
+---
+
 # Fonesi APK — E65 technical PASS; Product Phase 3 remains incomplete (29/10/2026)
 
 **Repository:** [danhgold7979-cyber/fonesi-apk](https://github.com/danhgold7979-cyber/fonesi-apk), branch `phase/e65-native-guest-delete-identity-20261029`, [Draft PR #39](https://github.com/danhgold7979-cyber/fonesi-apk/pull/39) stacked on E64 [Draft PR #38](https://github.com/danhgold7979-cyber/fonesi-apk/pull/38); `main@c055df600f87ee9ddf0cd5d6bfc67d80d145e79d` unchanged.
