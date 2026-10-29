@@ -12,8 +12,8 @@ audit73 = read("scripts/audit_e73_private_activity_bytecode_preflight.py")
 
 for required in (
     'private static final String SIGNED_ACTIVITY = GUEST_PACKAGE + ".PayloadActivity";',
-    '!"e29".equals(proofLevel) && !"e74".equals(proofLevel)',
-    'if ("e74".equals(proofLevel)) {',
+    '!"e29".equals(proofLevel) && !"e74".equals(proofLevel) && !"e77".equals(proofLevel)',
+    'if ("e74".equals(proofLevel) || "e77".equals(proofLevel)) {',
     "PrivateGuestActivityClassHandle activityProof = image.preflightExplicitActivityClass(",
     "SIGNED_ACTIVITY, ExplicitActivityCaller.TRUSTED_INTERNAL",
     "activityProof.getSelection().getClusterId().equals(localCluster.getId())",
@@ -22,14 +22,14 @@ for required in (
     "getClassLoader().loadClass(SIGNED_ACTIVITY)",
     "localStore.open(localCluster.getId(), Build.VERSION.SDK_INT)",
     "privateActivityClassVerified = true",
-    'if ("e74".equals(proofLevel))',
+    'if ("e74".equals(proofLevel) || "e77".equals(proofLevel))',
     'ProbeData.check(privateActivityClassVerified,',
     '.put("private_activity_class_preflight_verified", privateActivityClassVerified)',
     '.put("real_guest_activity_registered", false)',
     '.put("actual_guest_activity_attached", false)',
 ):
     assert required in probe, "E74 signed private Activity host probe missing: " + required
-segment = probe.split('if ("e74".equals(proofLevel)) {', 1)[1].split("int marker =", 1)[0]
+segment = probe.split('if ("e74".equals(proofLevel) || "e77".equals(proofLevel)) {', 1)[1].split("int marker =", 1)[0]
 assert segment.index("image.preflightExplicitActivityClass(") < segment.index("privateActivityClassVerified = true")
 for forbidden in ("startActivity(", "getLaunchIntentForPackage(", "Instrumentation.newActivity(",
                   "onCreate(", "new PayloadActivity("):
@@ -42,7 +42,7 @@ assert "Class.forName(selection.targetActivityName, false, privateLoader)" in re
 assert "PrivateGuestActivityClassPreflightTest" in audit73
 
 for required in (
-    '"e24", "e25", "e29", "e74"',
+    '"e24", "e25", "e29", "e74", "e77"',
     '"android_private_activity_class_preflight_verified": False',
     'report.get("private_activity_class_preflight_verified") is not True',
     '"private_activity_class_preflight_verified",',
