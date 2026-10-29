@@ -285,6 +285,55 @@ class UpdateRunnerTest {
         assertEquals(1, f.engine.calls)
     }
 
+    @Test fun `retained private head does not starve unrelated package work`() {
+        val f = fixture()
+        val retained = f.queue.enqueue("test-engine",
+            listOf(UpdateTarget(checkNotNull(f.source), listOf("a"))),
+            UpdateScope.PER_CLONE, retainedSource = true).single()
+        val otherSource = checkNotNull(f.source).copy(packageName = "org.example.other")
+        val unrelated = f.queue.enqueue("test-engine",
+            listOf(UpdateTarget(otherSource, listOf("other-clone"))),
+            UpdateScope.PER_CLONE).single()
+        val result = f.runner().runNext()
+        assertTrue(result is RunResult.Processed)
+        assertEquals(unrelated.id, (result as RunResult.Processed).task.id)
+        assertEquals(TaskState.QUEUED, f.store.list().single { it.id == retained.id }.state)
+        assertEquals(0, f.engine.calls)
+    }
+
+    @Test fun `owner only private head does not starve unrelated package work`() {
+        val f = fixture()
+        val privateTask = f.queue.enqueue("test-engine",
+            listOf(UpdateTarget(checkNotNull(f.source), listOf("a"))),
+            UpdateScope.PER_CLONE).single()
+        val otherSource = checkNotNull(f.source).copy(packageName = "org.example.other")
+        val unrelated = f.queue.enqueue("test-engine",
+            listOf(UpdateTarget(otherSource, listOf("other-clone"))),
+            UpdateScope.PER_CLONE).single()
+        val runner = UpdateRunner("test-engine", f.engine, f.store, f.catalog, f.snapshotter,
+            FileQueueLock(f.root.resolve("e54-owner-only-selection.lock")),
+            allowLegacySource = { it.packageName != privateTask.packageName })
+        val result = runner.runNext()
+        assertTrue(result is RunResult.Processed)
+        assertEquals(unrelated.id, (result as RunResult.Processed).task.id)
+        assertEquals(TaskState.QUEUED, f.store.list().single { it.id == privateTask.id }.state)
+        assertEquals(0, f.engine.calls)
+    }
+
+    @Test fun `same package original work cannot bypass protected predecessor`() {
+        val f = fixture()
+        val retained = f.queue.enqueue("test-engine",
+            listOf(UpdateTarget(checkNotNull(f.source), listOf("a"))),
+            UpdateScope.PER_CLONE, retainedSource = true).single()
+        val original = f.queue.enqueue("test-engine",
+            listOf(UpdateTarget(checkNotNull(f.source), listOf("a"))),
+            UpdateScope.PER_CLONE).single()
+        assertEquals(retained.id, original.id)
+        assertEquals(RunResult.PolicyBlocked, f.runner().runNext())
+        assertEquals(TaskState.QUEUED, f.store.list().single().state)
+        assertEquals(0, f.engine.calls)
+    }
+
     @Test fun `scope change is rejected before import`() {
         val f = fixture(); f.enqueue()
         f.engine.availability = EngineAvailability.Ready(UpdateScope.SHARED_PACKAGE)
