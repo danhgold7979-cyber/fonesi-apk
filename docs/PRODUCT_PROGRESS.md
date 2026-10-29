@@ -1,6 +1,10 @@
 # Fonesi APK — conservative product completion estimate
 
-Date: 2026-10-29. **Latest technical PASS E59**, exact code/test `7176ae9c8c9eaf92989ddef3e4882b06e3e9c367`: [CI #40883514023](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40883514023) **SUCCESS**, **453 tests per cloud/candidate gate** (140 core + 44 APK runtime + 269 Android/Robolectric), 0 failed/errors/skipped; SDK/build/lint/signature/permissions and E40–E59 audits passed. This is a lock-time clone-delete stale identity guard, **not an accepted guest runtime or product phase**. **Weighted product readiness remains 28.00% (~30% rounded)** with **0 accepted real third-party clones**.
+Date: 2026-10-29. **Latest accepted technical milestone E61 PASS** on source `2467c147d71f4f4d204a74628508023b7b2b14ab`: [GitHub Actions #40887119633](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40887119633) **SUCCESS** with exact-HEAD E40–E61 audits, cloud/candidate test/build/lint/signature/permission gates. E60 source passed CI #40885876272. This is only a guest-stop native identity-continuity guard, NOT real app/account acceptance. **Weighted product readiness remains 28.00% (~30% rounded)**, **0 accepted real third-party clones**.
+
+## E61 guest stop identity guard is not runtime acceptance
+
+A positive guest package readback is now required both before and after SDK stop; the post-stop version/signers must exactly match the pre-stop native guest image, in addition to an explicit not-running state. Missing/changed readback retains durable launch pending and does not automatically retry. The JVM protocol tests use synthetic backend doubles, not a physical Android guest session. [Results](phases/E61_GUEST_STOP_IDENTITY_CONTINUITY_RESULTS.md).
 
 ## E59 lock-time delete identity is not guest-lifecycle acceptance
 

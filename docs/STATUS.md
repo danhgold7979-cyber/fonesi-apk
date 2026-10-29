@@ -1,15 +1,15 @@
-# Fonesi APK — E59 technical PASS; Product Phase 3 still incomplete (29/10/2026)
+# Fonesi APK — E61 technical PASS; Product Phase 3 incomplete (29/10/2026)
 
-**Repository:** [danhgold7979-cyber/fonesi-apk](https://github.com/danhgold7979-cyber/fonesi-apk). **Branch:** `phase/e59-delete-locktime-identity-20261029`, [Draft PR #33](https://github.com/danhgold7979-cyber/fonesi-apk/pull/33) stacked on verified E58 [PR #32](https://github.com/danhgold7979-cyber/fonesi-apk/pull/32). `main@c055df600f87ee9ddf0cd5d6bfc67d80d145e79d` unchanged.
+**Repo:** [danhgold7979-cyber/fonesi-apk](https://github.com/danhgold7979-cyber/fonesi-apk). **Branch:** `phase/e61-guest-stop-identity-continuity-20261029`, [Draft PR #35](https://github.com/danhgold7979-cyber/fonesi-apk/pull/35), stacked on E60 [Draft PR #34](https://github.com/danhgold7979-cyber/fonesi-apk/pull/34). `main@c055df600f87ee9ddf0cd5d6bfc67d80d145e79d` unchanged.
 
-**Original roadmap:** **Product Phase 3 steps 14–16** (clone identity/lifecycle), technical **E59 PASS** on exact code/test SHA `7176ae9c8c9eaf92989ddef3e4882b06e3e9c367`, [GitHub Actions #40883514023](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40883514023) **SUCCESS**. Both cloud/candidate passed **453 tests** each (**core 140 + APK runtime 44 + Android/Robolectric 269**, **0 failures/errors/skips**). Pinned SDK, build/lint, APK signatures/permissions, E40–E59 audit and no split/provider/GC activation all succeeded. [Test-only artifact #12901682870](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40883514023/artifacts/12901682870).
+**Roadmap:** Original **Product Phase 3 steps 14–16**. **Technical E61 PASS** on exact source SHA `2467c147d71f4f4d204a74628508023b7b2b14ab`: [GitHub Actions #40887119633](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40887119633) **SUCCESS**. Exact-HEAD source check, all E40–E61 audits, pinned SDK, cloud and candidate tests/build/lint/signature/permissions and no provider/split/GC activation all passed. [Test-only artifact #12904011143](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40887119633/artifacts/12904011143). E60 parent code `635cc06fa491d06907609f438a073c8ca54ae460` independently passed [CI #40885876272](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40885876272).
 
-**Code:** `CloneMetadataRepository.delete` now compares the entire lock-time Room `CloneMetadataRow` to the pre-lock saved identity before calling the provider. Test-only deterministic lease interleavings prove that same-token presentation edits or cluster-generation changes preserve engine records, Room data and reference owners across reopen. Original success path, update journal barriers and provider-confirmed deletion checks remain intact. [E59 plan](phases/E59_DELETE_LOCKTIME_IDENTITY_PLAN.md), [results](phases/E59_DELETE_LOCKTIME_IDENTITY_RESULTS.md). This follow-up reporting SHA needs its own exact-source CI.
+**Code:** `ManagedGuestEngine.stop` now requires a positive valid native guest identity before dispatch and exact same package/version/signers plus stopped state afterward before clearing durable `launchPending`. Unknown or changed native records remain pending, with no blind retry. Added focused protocol regressions, stronger E60 audit and dedicated E61 workflow. [Plan](phases/E61_GUEST_STOP_IDENTITY_CONTINUITY_PLAN.md) | [Results](phases/E61_GUEST_STOP_IDENTITY_CONTINUITY_RESULTS.md). This reporting SHA must independently pass CI.
 
-**Product completion:** **28.00% weighted (~30% rounded)**, **0 accepted real third-party clones**; `supportsSplits=false`, `importsSplitApks=false`, no accepted true guest Activity, independent Android UID/account isolation, physical Samsung/social-app tests or release signing. Keep all PRs Draft; do not merge or ship as complete.
-
+**Weighted product readiness:** **28.00%** (~30% rounded), **0 accepted real third-party clone apps**. Production full-split import, guest Android Activity/Service/Provider, independent UID/account isolation, real social-app session/device tests and release signing remain unaccepted. Keep PR Draft; no main merge or release.
 
 ---
+
 
 # Fonesi APK — E55 technical PASS; Product Phase 4 remains incomplete (29/10/2026)
 

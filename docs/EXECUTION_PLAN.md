@@ -1,5 +1,9 @@
 # Kế hoạch thực thi và đối chiếu yêu cầu
 
+## E61 — technical PASS on exact SHA (29/10/2026)
+
+Original Product **Phase 3 steps 14–16**. Source `2467c147d71f4f4d204a74628508023b7b2b14ab` [CI #40887119633](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40887119633) **SUCCESS**: exact-head check, all E40–E61 audits, cloud/candidate tests/build/lint, APK signatures/permissions and split/provider/GC disabled. `ManagedGuestEngine.stop` now requires a valid pre-dispatch native guest readback and exact package/version/signers identity continuity in the explicit post-stop readback before clearing pending. Missing/mismatched results remain pending, no blind retry. E60 source `635cc06f` passed [CI #40885876272](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40885876272). [Detailed results](phases/E61_GUEST_STOP_IDENTITY_CONTINUITY_RESULTS.md) and [Draft PR #35](https://github.com/danhgold7979-cyber/fonesi-apk/pull/35). Product readiness 28.00%, 0 accepted real clones; reporting SHA requires independent CI.
+
 ## E61 — guest stop exact identity continuity (pre-code, 29/10/2026)
 
 Original **Product Phase 3 steps 14–16**. Technical E61 stacks on E60 source `635cc06fa491d06907609f438a073c8ca54ae460` with E60 CI [#40885876272](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40885876272) pending at planning. [E61 detailed pre-code plan](phases/E61_GUEST_STOP_IDENTITY_CONTINUITY_PLAN.md) documents an E60 residual risk: valid-but-different native guest version/signers after stop could falsely clear durable launch-pending. Require valid exact native package snapshot before stop and exact package/version/signers match on post-stop positive stopped readback, retain pending on uncertainty, add JVM regressions and E40–E61 full cloud/candidate CI. Product readiness **28.00%**, no accepted real third-party clones, no split/provider/GC activation.
