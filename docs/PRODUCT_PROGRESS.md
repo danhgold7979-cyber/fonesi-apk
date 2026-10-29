@@ -1,6 +1,10 @@
 # Fonesi APK — conservative product completion estimate
 
-Date: 2026-10-29. **Latest verified technical milestone E67 PASS** at exact code/test SHA `2d631994601594e7848e3ab0c2662f8fa5af0204`: [CI #40900943479](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40900943479) **SUCCESS**, **486 cloud/candidate tests per gate**, E40–E67 audits, build/lint/signatures/permission checks. E66 code and its reporting HEAD passed [CI #40899947204](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40899947204) and [CI #40901211794](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40901211794) separately. These are fail-closed technical gates, NOT real Android guest/session/account acceptance. **Weighted product readiness 28.00%**, **0 accepted real third-party clone apps**.
+Date: 2026-10-29. **Latest verified technical milestone E68 PASS** at `26fdfbe57981a6bfef9672f4708b529710620ee8`: [CI #40904953294](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40904953294) **SUCCESS**, 492 tests per cloud/candidate gate, signed APK/build/lint and E40–E68 safety audits. E67 reporting SHA passed [CI #40902513320](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40902513320). Metadata verification is not guest Activity execution/account acceptance. **Weighted readiness 28.00%, 0 real third-party apps accepted.**
+
+## E68 signed PRIVATE manifest catalog is not production engine acceptance
+
+Signed base/feature/config binary manifests are read-only inspected to enumerate component declarations, without launch, install, PackageManager source fallback, UID/account isolation or device testing. [E68 results](phases/E68_PRIVATE_SIGNED_COMPONENT_CATALOG_RESULTS.md). No change to weighted rubric.
 
 ## E67 guest create pre-install recheck does not establish real guest execution
 
@@ -91,7 +95,7 @@ The dimension estimates and weights are heuristic judgments anchored in docs/STA
 
 ## Distinct acceptance counters
 
-- Latest verified technical milestone: **E67 PASS**, exact source `2d631994601594e7848e3ab0c2662f8fa5af0204`, [CI #40900943479](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40900943479), 486 tests per cloud/candidate gate. E66 code/report commits separately passed CI. Neither establishes real guest/app/account/device acceptance.
+- Latest verified technical milestone: **E68 PASS**, `26fdfbe57981a6bfef9672f4708b529710620ee8` [CI #40904953294](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40904953294), 492 tests per gate. E67 code/report CI independently passed; real clone/account/device acceptance remains 0.
 - Production clone of real required social/e-commerce app: **0 applications accepted**.
 - Real Samsung ARM64 / non-Samsung phone acceptance: **not executed**.
 - Full 8-phase/32-step product completion: **not achieved**. Product Phase 1/2 still lacks a fully verified engine and real-device/account isolation acceptance.
