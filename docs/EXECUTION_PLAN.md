@@ -1,5 +1,10 @@
 # Kế hoạch thực thi và đối chiếu yêu cầu
 
+## E53 — fail-closed headless retained-source recovery (pre-code plan, 29/10/2026)
+
+Original Product Phase 4, steps 18–20; technical E53 branch `phase/e53-background-private-source-recovery-20261029` from E52 reporting HEAD `74492efde2357df3c1f8c1fbbae9b182ee320550`. E52 code [CI #40853790848](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40853790848) **PASS** (423 tests per gate); E52 documentation [CI #40855141141](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40855141141) was in_progress at E53 planning. [E53 detailed pre-code plan](phases/E53_BACKGROUND_PRIVATE_SOURCE_RECOVERY_PLAN.md): make WorkManager PREPARING recovery honor durable retained-source and E41 owner references before any snapshot discard/journal reset, fail closed on unreadable owner state; preserve legitimate legacy recovery and unknown-outcome review. JVM+Robolectric/native SQLite regressions, E40–E53 safety audit and exact-SHA cloud/candidate CI required before technical PASS. No provider/split/GC activation, 28% product, 0 real app acceptance.
+
+
 ## E52 — technical code PASS at exact SHA (29/10/2026)
 
 Implementation `59bf73522b3a86c1caca57af8613bb2e7b915b2b` [CI #40853790848](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40853790848) **SUCCESS** with **423 tests per cloud/candidate gate**, E40–E52 audits, Android SDK/native candidate, APK build/lint/signature/permissions PASS. [E52 results](phases/E52_ENGINE_SCOPED_QUEUE_RECOVERY_RESULTS.md). E51 parent source `4c7c3a24...` [CI #40853007668](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40853007668) also passed 419 tests per gate. Queue runner executes/recovers only matching engine task identity, leaving foreign journals and snapshots unchanged. **Phase 4 steps 18–20 remain unaccepted**; 28% product estimate, 0 third-party clones, no real provider/split/UID/account/phone proof. Reporting commit has new SHA, check its CI separately.
