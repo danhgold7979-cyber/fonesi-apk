@@ -1,5 +1,11 @@
 # Fonesi APK — conservative product completion estimate
 
+Date 2026-10-29. **Latest verified technical E74 BUILD/AUDIT PASS** at `8cee1ba5b1afefaa1df17d6dc01a90d283019f55` [CI #40917389636](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40917389636) **SUCCESS**: 510 tests per cloud/candidate gate, 8 E73 source JVM class owner tests, E40–E74 audits, source-native AAR and separate native Android host/payload build/lint/signed APK audit. E74 does NOT have an accepted Android runtime receipt. Weighted product completion **28.00%**, **0 real third-party clone apps accepted**.
+
+## E74 Android synthetic signed class probe is only build-verified
+
+A test-only host Activity can check the signed PRIVATE `PayloadActivity` class with a strict future device receipt protocol. CI builds and audits that APK but does not launch Android or a guest component; no independent OS UID/account or full split APK provider is accepted. [E74 results](phases/E74_SIGNED_PRIVATE_ACTIVITY_CLASS_PROBE_RESULTS.md). Rubric unchanged.
+
 Date 2026-10-29. **Latest verified technical milestone E73 PASS** at exact source `1297292cf1b3afad71edea9bf24504d15322d35f`: [CI #40916252411](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40916252411) **SUCCESS**, cloud/candidate 510 tests each and eight additional opt-in source-engine class-preflight JVM tests, E40–E73 audits and native AAR/build/lint/signature/permission checks. This bridges signed Activity metadata to a real PRIVATE bytecode class/type preflight only; it does **not** establish guest Activity execution or separate accounts. Weighted product readiness **28.00%**, **0 accepted real third-party clone applications**.
 
 ## E73 private Activity class preflight is not real guest execution
@@ -115,7 +121,7 @@ The dimension estimates and weights are heuristic judgments anchored in docs/STA
 
 ## Distinct acceptance counters
 
-- Latest verified technical milestone: **E73 PASS**, source `1297292cf1b3afad71edea9bf24504d15322d35f`, [CI #40916252411](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40916252411), 510 tests per cloud/candidate gate plus 8 opt-in source JVM protocol tests. 0 real guest app/phone/account acceptance.
+- Latest verified technical milestone: **E74 BUILD/AUDIT PASS** at code `8cee1ba5b1afefaa1df17d6dc01a90d283019f55`, [CI #40917389636](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40917389636), 510 cloud/candidate tests/gate, 8 E73 source JVM tests. Android runtime and third-party/UID/account/phone acceptance remain unverified.
 - Production clone of real required social/e-commerce app: **0 applications accepted**.
 - Real Samsung ARM64 / non-Samsung phone acceptance: **not executed**.
 - Full 8-phase/32-step product completion: **not achieved**. Product Phase 1/2 still lacks a fully verified engine and real-device/account isolation acceptance.

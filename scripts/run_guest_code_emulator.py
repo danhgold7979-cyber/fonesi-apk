@@ -60,7 +60,7 @@ def main():
     parser.add_argument("--source-commit", default="a9aa5a8d53b0c82eabcc071fd0e0fa19fdcc612c")
     parser.add_argument("--boot-timeout", type=int, default=480)
     parser.add_argument("--probe-timeout", type=int, default=180)
-    parser.add_argument("--proof-level", choices=("e11", "e12", "e13", "e14", "e15", "e16", "e17", "e21", "e22", "e23", "e24", "e25", "e29"), default="e11",
+    parser.add_argument("--proof-level", choices=("e11", "e12", "e13", "e14", "e15", "e16", "e17", "e21", "e22", "e23", "e24", "e25", "e29", "e74"), default="e11",
                         help="E13 additionally verifies independent synthetic native file/SQLite routes")
     args = parser.parse_args()
     if args.boot_timeout not in range(30, 601) or args.probe_timeout not in range(15, 301):
@@ -110,6 +110,7 @@ def main():
         "android_signed_private_hosted_view_lifecycle_verified": False,
         "android_signed_private_guest_component_manifest_verified": False,
         "android_synthetic_component_dispatch_verified": False,
+        "android_private_activity_class_preflight_verified": False,
         "android_production_clone_accepted": False,
         "android_third_party_component_executed": False,
         "social_apps_tested": False,
@@ -275,7 +276,7 @@ def main():
             if installed.returncode or "Success" not in installed.stdout:
                 raise RuntimeError("Synthetic APK install failed")
         evidence["android_apks_installed"] = True
-        if args.proof_level in ("e24", "e25", "e29"):
+        if args.proof_level in ("e24", "e25", "e29", "e74"):
             # AOSP first boot can deliver late display/locale configuration changes after
             # sys.boot_completed. Launching the lifecycle probe during that window destroys
             # the Activity before its private DEX worker finishes. Require four identical
@@ -329,7 +330,7 @@ def main():
             evidence["android_isolated_fixture_installed"] = True
         save()
 
-        if args.proof_level in ("e24", "e25", "e29"):
+        if args.proof_level in ("e24", "e25", "e29", "e74"):
             stage = "launch dedicated synthetic UI Activity with signed private View factory"
             expected_run_id = str(uuid.uuid4())
             started = device("shell", "am", "start", "-W", "-n",
@@ -377,7 +378,7 @@ def main():
         deadline = time.monotonic() + args.probe_timeout
         report = None
         while time.monotonic() < deadline:
-            if args.proof_level in ("e24", "e25", "e29"):
+            if args.proof_level in ("e24", "e25", "e29", "e74"):
                 raw = device("exec-out", "run-as", PROBE_PACKAGE, "cat",
                              "files/guest-ui-probe/" + expected_run_id + ".json",
                              timeout=12, check=False)
@@ -459,7 +460,7 @@ def main():
             time.sleep(2)
         if report is None:
             raise RuntimeError("No complete Android synthetic receipt before timeout")
-        if args.proof_level in ("e24", "e25", "e29"):
+        if args.proof_level in ("e24", "e25", "e29", "e74"):
             (reports / "synthetic-ui-receipt.json").write_text(json.dumps(report, indent=2) + "\n")
             expected_true = (
                 "complete", "passed", "real_host_activity_lifecycle_verified",
@@ -473,6 +474,12 @@ def main():
                 expected_true = expected_true + (
                     "private_component_manifest_verified", "synthetic_component_dispatch_verified",
                 )
+                expected_false = expected_false + (
+                    "real_guest_activity_registered", "production_clone_accepted",
+                    "third_party_component_executed",
+                )
+            if args.proof_level == "e74":
+                expected_true = expected_true + ("private_activity_class_preflight_verified",)
                 expected_false = expected_false + (
                     "real_guest_activity_registered", "production_clone_accepted",
                     "third_party_component_executed",
@@ -497,6 +504,8 @@ def main():
                 raise RuntimeError("E25 signed private component manifest preflight did not pass")
             if args.proof_level == "e29" and report.get("dispatch_ticket_private_apk_sha256") != args.expected_payload_sha256:
                 raise RuntimeError("E29 ticket did not bind the exact signed private payload SHA-256")
+            if args.proof_level == "e74" and report.get("private_activity_class_preflight_verified") is not True:
+                raise RuntimeError("E74 signed private Activity class was not proven by the private loader")
             if (report.get("lifecycle_transcript") != "CREATE,START,RESUME,PAUSE,STOP,DESTROY" or
                     report.get("process_name") != PROBE_PACKAGE + ":fonesi_guest_ui" or
                     report.get("api") != 34 or type(report.get("pid")) is not int or
@@ -518,6 +527,13 @@ def main():
                       "validated in an explicit internal host-Activity dispatch, then the existing "
                       "signed synthetic View lifecycle ran. No guest Activity was registered or "
                       "third-party component executed.", flush=True)
+            elif args.proof_level == "e74":
+                evidence["android_private_activity_class_preflight_verified"] = True
+                evidence["result"] = "PASS_E74_SIGNED_PRIVATE_ACTIVITY_CLASS_PREFLIGHT_ONLY"
+                print("PASS: Android synthetic host verified signed PRIVATE PayloadActivity "
+                      "class/type and exact PRIVATE DexClassLoader, then relayed the existing "
+                      "hosted View lifecycle. No guest Activity was attached/launched, "
+                      "and no separate OS UID or account was accepted.", flush=True)
             else:
                 evidence["result"] = "PASS_E24_SIGNED_SYNTHETIC_PRIVATE_VIEW_LIFECYCLE_RELAY_ONLY"
                 print("PASS: Android 34 hosted an attached View created by signed private "

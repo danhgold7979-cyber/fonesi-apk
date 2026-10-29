@@ -1,3 +1,13 @@
+# Fonesi APK — E74 technical BUILD/AUDIT PASS, Android runtime NOT VERIFIED (29/10/2026)
+
+**Repo:** [danhgold7979-cyber/fonesi-apk](https://github.com/danhgold7979-cyber/fonesi-apk). Branch `phase/e74-signed-private-activity-class-probe-20261029`, [Draft PR #48](https://github.com/danhgold7979-cyber/fonesi-apk/pull/48) stacked on E73. Main `c055df600f87ee9ddf0cd5d6bfc67d80d145e79d` unchanged.
+
+Original **Product Phase 1 steps 7–8**, serving Phase 3 step 15. **E74 technical build/audit PASS** on source SHA `8cee1ba5b1afefaa1df17d6dc01a90d283019f55` [CI #40917389636](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40917389636) **SUCCESS**, 510 tests per cloud/candidate gate, 8 source-engine JVM class tests, E40–E74 audits, signed fixtures, Android source AAR/JNI and opt-in host/payload APK assemble/lint/static audit. [Test-only artifact #12917297460](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40917389636/artifacts/12917297460). E73 source `1297292c` PASS [CI #40916252411](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40916252411).
+
+`e74` synthetic host probe is now wired for signed PRIVATE `PayloadActivity` class/type lookup but **did not execute on an Android emulator/phone in this CI**, and did not attach/start a guest Activity. [E74 plan](phases/E74_SIGNED_PRIVATE_ACTIVITY_CLASS_PROBE_PLAN.md) | [results](phases/E74_SIGNED_PRIVATE_ACTIVITY_CLASS_PROBE_RESULTS.md). This merge's report SHA needs independent CI. Weighted readiness **28.00%**, 0 real accepted third-party clone apps. Guest framework lifecycle/Binder/UID/account/split provider/physical phone/release signing are unaccepted. Keep Draft.
+
+---
+
 # Fonesi APK — E73 technical PASS, guest lifecycle still not accepted (29/10/2026)
 
 **Repository:** [danhgold7979-cyber/fonesi-apk](https://github.com/danhgold7979-cyber/fonesi-apk), branch `phase/e73-private-activity-bytecode-preflight-20261029`, [Draft PR #47](https://github.com/danhgold7979-cyber/fonesi-apk/pull/47) on E72 [Draft PR #46](https://github.com/danhgold7979-cyber/fonesi-apk/pull/46). `main@c055df600f87ee9ddf0cd5d6bfc67d80d145e79d` unchanged.
