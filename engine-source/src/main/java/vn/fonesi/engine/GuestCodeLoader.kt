@@ -13,13 +13,27 @@ import dalvik.system.DexClassLoader
 import vn.fonesi.apk.PrivateApkStore
 import vn.fonesi.apk.PrivateApkComponentCatalog
 import vn.fonesi.apk.VerifiedPrivateComponentInventory
+import vn.fonesi.apk.ExplicitActivityCaller
+import vn.fonesi.apk.VerifiedPrivateActivitySelection
+import vn.fonesi.apk.SignedPrivateExplicitActivityResolver
 import java.io.File
 import java.util.concurrent.atomic.AtomicBoolean
 
 /** Does not attach Application/Activity, provide a guest Context or virtualize Binder/components. */
 data class LoadedGuestCode(val clusterId: String, val packageName: String, val version: Long,
     val classLoader: ClassLoader, val resources: Resources,
-    val componentInventory: VerifiedPrivateComponentInventory)
+    val componentInventory: VerifiedPrivateComponentInventory) {
+    /** Read-only signed metadata selection. No Android Activity dispatch or permission mediation. */
+    fun selectExplicitActivity(
+        className: String,
+        caller: ExplicitActivityCaller,
+    ): VerifiedPrivateActivitySelection {
+        check(componentInventory.clusterId == clusterId && componentInventory.packageName == packageName) {
+            "Loaded private code and component manifest have different identity"
+        }
+        return SignedPrivateExplicitActivityResolver.select(componentInventory, packageName, className, caller)
+    }
+}
 
 /**
  * Opt-in code-image component. Resources cover private APK assets; custom resource classloader
