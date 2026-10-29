@@ -22,6 +22,8 @@ class UpdateJournalRecovery(
     private val store: UpdateTaskStore,
     private val snapshots: SourceSnapshotter,
     private val lock: QueueLock,
+    /** Only an original-app source with no retained Room ownership may lose its snapshot. */
+    private val allowPreparingCleanup: (UpdateTask) -> Boolean = { !it.retainedSource },
     private val clock: () -> Long = System::currentTimeMillis,
 ) {
     fun recover(): JournalRecoveryResult {
@@ -38,7 +40,18 @@ class UpdateJournalRecovery(
             for (old in store.list()) {
                 when (old.state) {
                     TaskState.PREPARING -> {
-                        // Do not advance durable state when cleanup fails. WorkManager may retry.
+                        // Background work has no guest/provider readback. A private retained source
+                        // (including older owner-only Room references) must remain immutable.
+                        // Never delete its snapshot or silently reset its durable journal.
+                        if (old.retainedSource) continue
+                        val allowCleanup = try {
+                            allowPreparingCleanup(old)
+                        } catch (_: Exception) {
+                            retryable = true // Owner registry unavailable: fail closed and recheck later.
+                            false
+                        }
+                        if (!allowCleanup) continue
+                        // Only a verified legacy original-source task can safely discard/requeue.
                         try {
                             snapshots.discard(old.id)
                         } catch (_: Exception) {

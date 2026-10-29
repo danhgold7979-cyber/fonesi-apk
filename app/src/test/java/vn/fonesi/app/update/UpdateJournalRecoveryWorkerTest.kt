@@ -12,6 +12,7 @@ import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
 import org.robolectric.annotation.SQLiteMode
+import vn.fonesi.app.storage.ClusterReferenceRow
 import vn.fonesi.app.storage.FonesiDatabase
 import vn.fonesi.app.storage.RoomUpdateTaskStore
 import vn.fonesi.core.UpdateScope
@@ -119,6 +120,65 @@ class UpdateJournalRecoveryWorkerTest {
         }
     }
 
+    @Test fun workerRetainsMarkedAndOwnerOnlyPreparingSourcesWhileResettingUnownedLegacy() {
+        val context = ApplicationProvider.getApplicationContext<Context>()
+        val io = Executors.newSingleThreadExecutor()
+        val suffix = UUID.randomUUID().toString()
+        val databaseName = "e53-authority-$suffix.db"
+        val root = File(context.filesDir, "e53-authority-$suffix/updates")
+        val snapshotRoot = File(root, "snapshots")
+        val db = onIo(io) { FonesiDatabase.open(context, databaseName) }
+        try {
+            val store = RoomUpdateTaskStore(db)
+            val (marked, oldUpdateOwner, oldReviewOwner, legacy, markedApplying) = onIo(io) {
+                val retained = seed(store, TaskState.PREPARING, retainedSource = true)
+                val updateOwner = seed(store, TaskState.PREPARING)
+                val reviewOwner = seed(store, TaskState.PREPARING)
+                val original = seed(store, TaskState.PREPARING)
+                val applying = seed(store, TaskState.APPLYING, retainedSource = true)
+                for ((task, type) in listOf(updateOwner to "UPDATE_TASK", reviewOwner to "REVIEW_REQUIRED")) {
+                    assertTrue(db.clusterReferences().insert(ClusterReferenceRow(
+                        UUID.randomUUID().toString(), type, task.id, task.engineKey, 10L)) > 0)
+                }
+                listOf(retained, updateOwner, reviewOwner, original, applying)
+            }
+            val all = listOf(marked, oldUpdateOwner, oldReviewOwner, legacy, markedApplying)
+            all.forEach { task ->
+                File(snapshotRoot, task.id).apply {
+                    mkdirs()
+                    File(this, "private-test-only.bin").writeText("Synthetic bytes, no guest or account")
+                }
+            }
+
+            val worker = TestListenableWorkerBuilder<UpdateJournalRecoveryWorker>(context).build()
+            val result = onIo(io) { worker.recoverJournal(db, root) }
+            assertTrue(result is ListenableWorker.Result.Success)
+            val current = onIo(io) { store.list().associateBy { it.id } }
+            for (task in listOf(marked, oldUpdateOwner, oldReviewOwner)) {
+                assertEquals("Private PREPARING journal must be unchanged", task, current.getValue(task.id))
+                assertTrue("Private snapshot must not be discarded", File(snapshotRoot, task.id).isDirectory)
+            }
+            assertEquals(TaskState.QUEUED, current.getValue(legacy.id).state)
+            assertFalse("Only unowned original snapshot is disposable", File(snapshotRoot, legacy.id).exists())
+            assertEquals(TaskState.REVIEW_REQUIRED, current.getValue(markedApplying.id).state)
+            assertEquals(TaskIssue.INTERRUPTED, current.getValue(markedApplying.id).issue)
+            assertTrue("Unknown private apply snapshot is still retained",
+                File(snapshotRoot, markedApplying.id).isDirectory)
+
+            val second = onIo(io) { worker.recoverJournal(db, root) }
+            assertTrue(second is ListenableWorker.Result.Success)
+            assertEquals(current, onIo(io) { store.list().associateBy { it.id } })
+            for (task in listOf(marked, oldUpdateOwner, oldReviewOwner, markedApplying)) {
+                assertTrue(File(snapshotRoot, task.id).isDirectory)
+            }
+        } finally {
+            onIo(io) { db.close() }
+            context.deleteDatabase(databaseName)
+            root.parentFile?.deleteRecursively()
+            io.shutdownNow()
+        }
+    }
+
     @Test fun workerRetriesWhenQueueLockIsHeld() {
         val context = ApplicationProvider.getApplicationContext<Context>()
         val io = Executors.newSingleThreadExecutor()
@@ -201,7 +261,7 @@ class UpdateJournalRecoveryWorkerTest {
     private fun <T> onIo(io: java.util.concurrent.ExecutorService, task: () -> T): T =
         io.submit(Callable(task)).get(30, TimeUnit.SECONDS)
 
-    private fun seed(store: RoomUpdateTaskStore, initial: TaskState): UpdateTask {
+    private fun seed(store: RoomUpdateTaskStore, initial: TaskState, retainedSource: Boolean = false): UpdateTask {
         val now = System.currentTimeMillis()
         val id = UUID.randomUUID().toString()
         val queued = UpdateTask(
@@ -214,6 +274,7 @@ class UpdateJournalRecoveryWorkerTest {
             scope = UpdateScope.PER_CLONE,
             dedupKey = "synthetic-dedup-$id",
             createdAt = now,
+            retainedSource = retainedSource,
         )
         store.insertOrGetActive(queued)
         var current = queued
