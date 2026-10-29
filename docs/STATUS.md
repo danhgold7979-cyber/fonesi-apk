@@ -1,3 +1,13 @@
+# Fonesi APK — E43 technical PASS / Phase 4 remains open (29/10/2026)
+
+**Repository:** [danhgold7979-cyber/fonesi-apk](https://github.com/danhgold7979-cyber/fonesi-apk); development branch `phase/e43-atomic-retained-enqueue-20261029`, [Draft PR #16](https://github.com/danhgold7979-cyber/fonesi-apk/pull/16) stacked on E42 Draft PR #15. `main@c055df600f87ee9ddf0cd5d6bfc67d80d145e79d` unchanged.
+
+**Roadmap:** Phase 4, steps 17–20. **E43 technical PASS on exact source `0579d7ebee2ef829347d77d6b3169255f1d8e92c`**, [CI #40843854486](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40843854486), SUCCESS: **374 tests in each cloud/candidate gate** (118 core + 44 APK runtime + 212 Android/Robolectric), 0 failures/errors/skips. Cloud/candidate APK build, lint, signatures, permissions and no-split/no-GC gates passed. [E43 results](phases/E43_ATOMIC_RETAINED_ENQUEUE_RESULTS.md) record validated artifact ID `12884695330` and debug APK checksums.
+
+**Code:** E43 adds explicit verified private-cluster task enqueue and durable UPDATE_TASK owner acquisition in one Room transaction; conflict/SQLite abort rolls back both. It is **not yet connected to the production update runner or user-facing flow**. No real guest Activity/UID account isolation, arbitrary split import or social app sessions have been accepted. Room remains v6, `supportsSplits=false`. **Product readiness 28.00% (~30% rounded)**, required real apps accepted **0**; product Phase 4 is not complete. Documentation follow-up commit must have a separate exact-SHA CI result.
+
+---
+
 # Fonesi APK — E42 technical PASS, Phase 4 still incomplete (29/10/2026)
 
 **Repository:** [danhgold7979-cyber/fonesi-apk](https://github.com/danhgold7979-cyber/fonesi-apk). **Development branch:** `phase/e42-atomic-journal-owner-transitions-20261029`, [Draft PR #15](https://github.com/danhgold7979-cyber/fonesi-apk/pull/15). `main@c055df600f87ee9ddf0cd5d6bfc67d80d145e79d` unchanged.

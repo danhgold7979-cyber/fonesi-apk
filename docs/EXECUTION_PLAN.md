@@ -1,5 +1,10 @@
 # Kế hoạch thực thi và đối chiếu yêu cầu
 
+## E43 — verified atomic private-source enqueue increment (29/10/2026)
+
+Exact tested SHA `0579d7ebee2ef829347d77d6b3169255f1d8e92c`, [CI #40843854486](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40843854486) **SUCCESS**: cloud and candidate **374 tests each**, 0 failures/errors/skips, build/lint/signature/permissions and single-APK/no-GC safety audits. [E43 detailed results](phases/E43_ATOMIC_RETAINED_ENQUEUE_RESULTS.md), [pre-code plan](phases/E43_ATOMIC_RETAINED_ENQUEUE_PLAN.md). Room v6 unchanged. Bounded storage-only technical PASS; Phase 4, production engine, real guest session and device acceptance still open.
+
+
 ## E43 — atomic verified private-cluster enqueue and UPDATE_TASK reference (pre-code, 29/10/2026)
 
 Branch `phase/e43-atomic-retained-enqueue-20261029`, stacked on E42 `1f13bfa70e12631baf650f4478e57244c7de168b`. Phase 4 steps 17–20. [E43 detailed plan](phases/E43_ATOMIC_RETAINED_ENQUEUE_PLAN.md). Steps: (1) readback a previously published, signed private cluster; (2) match exact requested package/version/signers and use only verified private APK paths; (3) atomically insert/get QUEUED task and acquire matching UPDATE_TASK Room reference; (4) reject conflicting owner/generation or in-progress task and roll back if SQLite insert fails; (5) regression tests including reopen/idempotence/unpublished IDs; (6) full cloud/candidate source/APK/CI acceptance at exact SHA. No invocation of actual guest engine, no split import, account/session proof, cluster deletion or product progress increase.
