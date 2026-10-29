@@ -217,6 +217,55 @@ class PrivateClusterRetainedEnqueuerTest {
         assertEquals(listOf(verified.id), refs(other))
     }
 
+    @Test fun olderOriginalVersionCannotBeShadowedByRetainedCluster(): Unit {
+        val verified = cluster()
+        val legacy = io {
+            UpdateQueue(RoomUpdateTaskStore(db)).enqueue(engineKey,
+                listOf(target(version = 3L)), UpdateScope.PER_CLONE).single()
+        }
+        assertFalse(legacy.retainedSource)
+        assertThrows(IllegalStateException::class.java) {
+            io { PrivateClusterRetainedEnqueuer(db).enqueueReadBackVerified(
+                engineKey, target(), UpdateScope.PER_CLONE, verified) }
+        }
+        assertEquals(listOf(legacy), io { RoomUpdateTaskStore(db).list() })
+        assertTrue(io { db.clusterReferences().list().isEmpty() })
+    }
+
+    @Test fun preMarkerTaskWithExistingOwnerCannotBeShadowedAcrossVersions(): Unit {
+        val verified = cluster()
+        val older = io {
+            UpdateQueue(RoomUpdateTaskStore(db)).enqueue(engineKey,
+                listOf(target(version = 3L)), UpdateScope.PER_CLONE).single()
+        }
+        val owner = UUID.randomUUID().toString()
+        assertTrue(io { db.clusterReferences().insert(ClusterReferenceRow(
+            owner, ClusterOwnerType.UPDATE_TASK.name, older.id, engineKey, 5L)) } > 0)
+        assertThrows(IllegalStateException::class.java) {
+            io { PrivateClusterRetainedEnqueuer(db).enqueueReadBackVerified(
+                engineKey, target(), UpdateScope.PER_CLONE, verified) }
+        }
+        assertEquals(listOf(older), io { RoomUpdateTaskStore(db).list() })
+        assertEquals(listOf(owner), refs(older))
+        assertTrue(io { db.clusterReferences().forCluster(verified.id).isEmpty() })
+    }
+
+    @Test fun terminalOriginalTaskDoesNotPreventNewVerifiedPrivateGeneration(): Unit {
+        val verified = cluster()
+        val original = io {
+            UpdateQueue(RoomUpdateTaskStore(db)).enqueue(engineKey,
+                listOf(target(version = 3L)), UpdateScope.PER_CLONE).single()
+        }
+        val terminal = original.move(TaskState.CANCELLED, System.currentTimeMillis())
+        assertTrue(io { RoomUpdateTaskStore(db).replace(original, terminal) })
+        val privateTask = io { PrivateClusterRetainedEnqueuer(db).enqueueReadBackVerified(
+            engineKey, target(), UpdateScope.PER_CLONE, verified) }
+        assertTrue(privateTask.retainedSource)
+        assertNotEquals(original.id, privateTask.id)
+        assertEquals(listOf(terminal, privateTask), io { RoomUpdateTaskStore(db).list() })
+        assertEquals(listOf(verified.id), refs(privateTask))
+    }
+
     @Test fun legacyAndRetainedRequestsCannotMergeAcrossSourceAuthorities() {
         val verified = cluster()
         val enqueuer = PrivateClusterRetainedEnqueuer(db)

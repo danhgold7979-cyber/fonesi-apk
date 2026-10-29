@@ -159,6 +159,27 @@ class PrivateClusterRetainedBatchEnqueuerTest {
         assertTrue(io { db.clusterReferences().list().isEmpty() })
     }
 
+    @Test fun originalSecondPackageWithDifferentVersionRollsBackNewPrivateBatch(): Unit {
+        val alpha = cluster("test.alpha")
+        val beta = cluster("test.beta")
+        val legacy = io {
+            UpdateQueue(RoomUpdateTaskStore(db)).enqueue(engineKey,
+                listOf(target("test.beta", version = 3L)), UpdateScope.SHARED_PACKAGE).single()
+        }
+        val writer = PrivateClusterRetainedEnqueuer(db)
+        assertThrows(IllegalStateException::class.java) {
+            io {
+                writer.enqueueBatchReadBackVerified(engineKey,
+                    listOf(target("test.alpha") to alpha, target("test.beta") to beta),
+                    UpdateScope.SHARED_PACKAGE)
+            }
+        }
+        assertEquals(listOf(legacy), queued())
+        assertTrue(io { db.clusterReferences().list().isEmpty() })
+        assertTrue(io { db.clusterReferences().forCluster(alpha.id).isEmpty() })
+        assertTrue(io { db.clusterReferences().forCluster(beta.id).isEmpty() })
+    }
+
     @Test fun duplicateDedupIdentityWithinBatchIsRejectedWithoutWrites() {
         val alpha = cluster("test.alpha")
         val anotherGeneration = cluster("test.alpha")
