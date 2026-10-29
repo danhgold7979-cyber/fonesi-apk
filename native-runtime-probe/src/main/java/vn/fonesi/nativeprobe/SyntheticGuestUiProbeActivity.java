@@ -22,8 +22,10 @@ import java.util.UUID;
 import org.json.JSONObject;
 import vn.fonesi.apk.PrivateApkCluster;
 import vn.fonesi.apk.PrivateApkStore;
+import vn.fonesi.apk.ExplicitActivityCaller;
 import vn.fonesi.engine.GuestCodeLoader;
 import vn.fonesi.engine.LoadedGuestCode;
+import vn.fonesi.engine.PrivateGuestActivityClassHandle;
 import vn.fonesi.engine.NativeRuntime;
 import vn.fonesi.engine.PrivateSyntheticComponentCatalog;
 import vn.fonesi.engine.SyntheticComponentDispatchTicket;
@@ -37,6 +39,7 @@ import vn.fonesi.engine.VerifiedPrivateSyntheticComponents;
 public final class SyntheticGuestUiProbeActivity extends Activity {
     private static final String GUEST_PACKAGE = "vn.fonesi.payload";
     private static final String ENTRY = GUEST_PACKAGE + ".SyntheticGuestScreen";
+    private static final String SIGNED_ACTIVITY = GUEST_PACKAGE + ".PayloadActivity";
     private static final String PREFIX = "FONESI-E24-PRIVATE-SCREEN:";
     private static final List<String> COMPLETE = Arrays.asList(
         "CREATE", "START", "RESUME", "PAUSE", "STOP", "DESTROY");
@@ -46,6 +49,8 @@ public final class SyntheticGuestUiProbeActivity extends Activity {
     private String challenge;
     private String proofLevel = "e24";
     private volatile boolean privateComponentCatalogVerified;
+    /** E74: class/type only, never an attached Android guest Activity. */
+    private volatile boolean privateActivityClassVerified;
     private volatile boolean syntheticComponentDispatchVerified;
     private volatile boolean dispatchOnly;
     private boolean dispatchReceiver;
@@ -77,7 +82,8 @@ public final class SyntheticGuestUiProbeActivity extends Activity {
             if (saved != null) throw new IllegalStateException("Synthetic screen cannot hot-restart");
             String requestedProof = getIntent().getStringExtra("proof_level");
             if (requestedProof != null) proofLevel = requestedProof;
-            if (!"e24".equals(proofLevel) && !"e25".equals(proofLevel) && !"e29".equals(proofLevel))
+            if (!"e24".equals(proofLevel) && !"e25".equals(proofLevel) &&
+                !"e29".equals(proofLevel) && !"e74".equals(proofLevel))
                 throw new IllegalArgumentException("Unsupported synthetic host screen proof");
             dispatchTicketJson = getIntent().getStringExtra("dispatch_ticket");
             if (dispatchTicketJson != null) {
@@ -222,6 +228,27 @@ public final class SyntheticGuestUiProbeActivity extends Activity {
                 .load(localCluster.getId());
             ProbeData.check(GUEST_PACKAGE.equals(image.getPackageName()),
                 "Signed private payload package mismatch");
+            if ("e74".equals(proofLevel)) {
+                stage = "e74_signed_private_activity_class_preflight";
+                preparationStage = stage;
+                PrivateGuestActivityClassHandle activityProof = image.preflightExplicitActivityClass(
+                    SIGNED_ACTIVITY, ExplicitActivityCaller.TRUSTED_INTERNAL);
+                ProbeData.check(activityProof.getSelection().getClusterId().equals(localCluster.getId()) &&
+                    activityProof.getSelection().getPackageName().equals(GUEST_PACKAGE) &&
+                    activityProof.getSelection().getTargetActivityName().equals(SIGNED_ACTIVITY) &&
+                    !activityProof.getSelection().getThroughAlias() &&
+                    activityProof.getActivityClass().getName().equals(SIGNED_ACTIVITY) &&
+                    activityProof.getActivityClass().getClassLoader() == image.getClassLoader() &&
+                    Activity.class.isAssignableFrom(activityProof.getActivityClass()),
+                    "Selected signed Activity bytecode was not defined by exact PRIVATE image");
+                try {
+                    getClassLoader().loadClass(SIGNED_ACTIVITY);
+                    throw new SecurityException("Signed private Activity class leaked into host classloader");
+                } catch (ClassNotFoundException expected) { /* No original/host package fallback. */ }
+                ProbeData.check(localStore.open(localCluster.getId(), Build.VERSION.SDK_INT)
+                    .equals(localCluster), "Private signed APK changed during Activity class preflight");
+                privateActivityClassVerified = true;
+            }
             int marker = image.getResources().getIdentifier(
                 "fonesi_guest_code_probe", "string", GUEST_PACKAGE);
             ProbeData.check(marker != 0 && "Fonesi signed private payload".equals(
@@ -346,6 +373,10 @@ public final class SyntheticGuestUiProbeActivity extends Activity {
                 if ("e29".equals(proofLevel))
                     ProbeData.check(syntheticComponentDispatchVerified,
                         "E29 private component dispatch ticket was not validated before private code load");
+                verificationStage = "final_e74_private_activity_class_preflight";
+                if ("e74".equals(proofLevel))
+                    ProbeData.check(privateActivityClassVerified,
+                        "E74 signed PRIVATE Activity class was not preflighted before hosted View");
                 verificationStage = "final_android_host_lifecycle";
                 ProbeData.check(COMPLETE.equals(androidEvents),
                     "Actual Android Activity lifecycle was incomplete");
@@ -371,6 +402,7 @@ public final class SyntheticGuestUiProbeActivity extends Activity {
                     .put("signed_private_resources_verified", true)
                     .put("signed_private_image_rechecked", true)
                     .put("private_component_manifest_verified", privateComponentCatalogVerified)
+                    .put("private_activity_class_preflight_verified", privateActivityClassVerified)
                     .put("synthetic_component_dispatch_verified", syntheticComponentDispatchVerified)
                     .put("dispatch_ticket_private_apk_sha256", dispatchTicketPrivateApkSha256)
                     .put("production_clone_accepted", false)
@@ -407,6 +439,7 @@ public final class SyntheticGuestUiProbeActivity extends Activity {
                 .put("private_class_verified", verifiedPrivateClass)
                 .put("private_resource_verified", verifiedPrivateResource)
                 .put("private_component_catalog_verified", privateComponentCatalogVerified)
+                .put("private_activity_class_preflight_verified", privateActivityClassVerified)
                 .put("synthetic_component_dispatch_verified", syntheticComponentDispatchVerified)
                 .put("dispatch_ticket_private_apk_sha256", dispatchTicketPrivateApkSha256)
                 .put("production_clone_accepted", false)
