@@ -40,7 +40,8 @@ class LocalServices private constructor(private val context: Application) {
         val catalog = AndroidSourceCatalog(packageManager)
         return UpdateRunner(engineKey, engine, tasks, catalog,
             FileSourceSnapshotter(root.resolve("snapshots"), catalog), operationLock(),
-            mayApply = { AccessBroker.get(context).hasForegroundAccess() && allowed() })
+            mayApply = { AccessBroker.get(context).hasForegroundAccess() && allowed() },
+            allowLegacySource = RoomLegacyUpdateSourcePolicy(database)::allows)
     }
 
     private val contextFiles = context.filesDir

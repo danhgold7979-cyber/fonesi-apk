@@ -304,6 +304,37 @@ class StorageIntegrationTest {
         }
     }
 
+    @Test fun retainedSourceMarkerIsStrictAndLegacySourcePolicyChecksOlderOwnerReferences(): Unit = background {
+        val job = UpdateTask.create("engine-a", UpdateTarget(source, listOf("clone-1")),
+            UpdateScope.PER_CLONE, 100L)
+        assertEquals(job, RoomUpdateTaskStore(db).insertOrGetActive(job))
+        val policy = RoomLegacyUpdateSourcePolicy(db)
+        assertTrue(policy.allows(job))
+        assertFalse(TaskCodec.decode(TaskCodec.row(job)).retainedSource)
+
+        val oldOwner = UUID.randomUUID().toString()
+        assertTrue(db.clusterReferences().insert(ClusterReferenceRow(
+            oldOwner, "UPDATE_TASK", job.id, "engine-a", 101L)) > 0)
+        assertFalse("Pre-E44 tasks with an existing owner cannot use the original catalog", policy.allows(job))
+        assertEquals(1, db.clusterReferences().delete(oldOwner, "UPDATE_TASK", job.id, "engine-a"))
+
+        val marked = job.copy(retainedSource = true)
+        val encoded = TaskCodec.row(marked)
+        assertTrue(db.tasks().replace(job.id, job.revision, job.state.name, encoded.state,
+            encoded.revision, encoded.activeKey, encoded.payload) == 1)
+        reopen()
+        assertEquals(marked, RoomUpdateTaskStore(db).list().single())
+        assertFalse(RoomLegacyUpdateSourcePolicy(db).allows(marked))
+        val corrupt = JSONObject(encoded.payload).put("retainedSource", "yes").toString()
+        assertThrows(IllegalArgumentException::class.java) {
+            TaskCodec.decode(encoded.copy(payload = corrupt))
+        }
+        assertThrows(IllegalArgumentException::class.java) {
+            marked.move(TaskState.CANCELLED, 102L).copy(retainedSource = false)
+                .requireSuccessorOf(marked)
+        }
+    }
+
     @Test fun unknownTaskEncodingFailsWithoutDeletingStoredRows() = background {
         val task = UpdateTask.create("engine-a", UpdateTarget(source, listOf("a")), UpdateScope.PER_CLONE, 1)
         val row = TaskCodec.row(task)

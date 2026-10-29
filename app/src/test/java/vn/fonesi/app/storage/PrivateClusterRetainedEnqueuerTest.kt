@@ -85,12 +85,14 @@ class PrivateClusterRetainedEnqueuerTest {
         }
         assertEquals(first.id, repeated.id)
         assertEquals(TaskState.QUEUED, first.state)
+        assertTrue(first.retainedSource)
         assertEquals(1, io { db.tasks().list().size })
         assertEquals(listOf(verified.id), refs(first))
         assertEquals(listOf("/untrusted-source.apk"), target().source.apkPaths)
         assertEquals(verified.source().packageName, first.packageName)
         io { db.close(); db = FonesiDatabase.open(context, dbName) }
         assertEquals(first, io { RoomUpdateTaskStore(db).list().single() })
+        assertTrue(io { RoomUpdateTaskStore(db).list().single().retainedSource })
         assertEquals(listOf(verified.id), refs(first))
     }
 
@@ -213,6 +215,33 @@ class PrivateClusterRetainedEnqueuerTest {
         assertEquals(2, io { db.tasks().list().size })
         assertEquals(listOf(verified.id), refs(own))
         assertEquals(listOf(verified.id), refs(other))
+    }
+
+    @Test fun legacyAndRetainedRequestsCannotMergeAcrossSourceAuthorities() {
+        val verified = cluster()
+        val enqueuer = PrivateClusterRetainedEnqueuer(db)
+        val legacy = io {
+            RoomUpdateTaskStore(db).insertOrGetActive(
+                UpdateTask.create(engineKey, target(), UpdateScope.PER_CLONE, 5L))
+        }
+        assertFalse(legacy.retainedSource)
+        assertThrows(IllegalStateException::class.java) {
+            io { enqueuer.enqueueReadBackVerified(engineKey, target(), UpdateScope.PER_CLONE, verified) }
+        }
+        assertEquals(legacy, io { RoomUpdateTaskStore(db).list().single() })
+        assertTrue(io { db.clusterReferences().list().isEmpty() })
+
+        val cancelled = legacy.move(TaskState.CANCELLED, 6L)
+        assertTrue(io { RoomUpdateTaskStore(db).replace(legacy, cancelled) })
+        val retained = io {
+            enqueuer.enqueueReadBackVerified(engineKey, target(), UpdateScope.PER_CLONE, verified)
+        }
+        assertTrue(retained.retainedSource)
+        assertThrows(IllegalStateException::class.java) {
+            io { UpdateQueue(RoomUpdateTaskStore(db)).enqueue(engineKey,
+                listOf(target()), UpdateScope.PER_CLONE) }
+        }
+        assertEquals(listOf(verified.id), refs(retained))
     }
 
     private fun <T> io(block: () -> T): T = runBlocking {

@@ -7,8 +7,16 @@ class UpdateQueue(
     private val store: UpdateTaskStore,
     private val clock: () -> Long = System::currentTimeMillis,
 ) {
-    fun enqueue(engineKey: String, targets: List<UpdateTarget>, scope: UpdateScope): List<UpdateTask> =
-        targets.map { store.insertOrGetActive(UpdateTask.create(engineKey, it, scope, clock())) }
+    fun enqueue(
+        engineKey: String,
+        targets: List<UpdateTarget>,
+        scope: UpdateScope,
+        retainedSource: Boolean = false,
+    ): List<UpdateTask> =
+        targets.map {
+            store.insertOrGetActive(UpdateTask.create(engineKey, it, scope, clock())
+                .copy(retainedSource = retainedSource))
+        }
 
     fun pause() = store.setPaused(true)
     fun resume() = store.setPaused(false)

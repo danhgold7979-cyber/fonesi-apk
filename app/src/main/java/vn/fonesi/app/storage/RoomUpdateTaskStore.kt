@@ -22,13 +22,23 @@ class RoomUpdateTaskStore(
 
     override fun insertOrGetActive(task: UpdateTask): UpdateTask = db.runInTransaction(Callable {
         require(task.state == TaskState.QUEUED && task.revision == 0L)
-        db.tasks().findActive(task.dedupKey)?.let { return@Callable TaskCodec.decode(it) }
+        db.tasks().findActive(task.dedupKey)?.let {
+            return@Callable sameSourceAuthority(TaskCodec.decode(it), task)
+        }
         val inserted = db.tasks().insert(TaskCodec.row(task))
         if (inserted == -1L) {
-            return@Callable TaskCodec.decode(checkNotNull(db.tasks().findActive(task.dedupKey)))
+            return@Callable sameSourceAuthority(
+                TaskCodec.decode(checkNotNull(db.tasks().findActive(task.dedupKey))), task)
         }
         task
     })
+
+    private fun sameSourceAuthority(existing: UpdateTask, incoming: UpdateTask): UpdateTask {
+        check(existing.retainedSource == incoming.retainedSource) {
+            "Retained private-source and original-source requests cannot deduplicate together"
+        }
+        return existing
+    }
 
     override fun replace(expected: UpdateTask, replacement: UpdateTask, requireUnpaused: Boolean): Boolean =
         db.runInTransaction(Callable {

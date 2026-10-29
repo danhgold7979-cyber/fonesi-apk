@@ -1,5 +1,10 @@
 # Kế hoạch thực thi và đối chiếu yêu cầu
 
+## E44 — durable retained-source execution quarantine (plan before code, 29/10/2026)
+
+Branch `phase/e44-durable-retained-source-quarantine-20261029` based on E43 documentation commit `785cb956ce3f193c8e5f1b05dfc569470522b265`, product Phase 4 steps 17–20. [Full E44 pre-code plan](phases/E44_DURABLE_RETAINED_SOURCE_GUARD_PLAN.md). Add a persisted `retainedSource` authority marker to existing task JSON, preserve through journal transitions and refuse conflicting dedup; have E41/E43 owner acquisition mark it atomically. Block marked tasks in `UpdateRunner` before legacy source catalog/provider execution; wire `LocalServices` to also reject pre-marker tasks with Room owner refs. Test marker/reopen/rollback, legacy compatibility, blocked external engine calls and checked failures, then run full exact-source cloud/candidate GitHub Actions. Do not enable private split execution, imported APK fallback, account/UID isolation or destructive storage collection. Product readiness remains 28.00%.
+
+
 ## E43 — verified atomic private-source enqueue increment (29/10/2026)
 
 Exact tested SHA `0579d7ebee2ef829347d77d6b3169255f1d8e92c`, [CI #40843854486](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40843854486) **SUCCESS**: cloud and candidate **374 tests each**, 0 failures/errors/skips, build/lint/signature/permissions and single-APK/no-GC safety audits. [E43 detailed results](phases/E43_ATOMIC_RETAINED_ENQUEUE_RESULTS.md), [pre-code plan](phases/E43_ATOMIC_RETAINED_ENQUEUE_PLAN.md). Room v6 unchanged. Bounded storage-only technical PASS; Phase 4, production engine, real guest session and device acceptance still open.
