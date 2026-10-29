@@ -1,5 +1,9 @@
 # Kế hoạch thực thi và đối chiếu yêu cầu
 
+## E66 — exact source technical PASS (29/10/2026)
+
+Original Product **Phase 4 steps 17–20**. E66 code/test source `979ef76bb1b228b28841575f1cfa88d5778d5231` passed [CI #40899947204](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40899947204) **SUCCESS**, **480 tests per cloud/candidate gate**, E40–E66 audits, pinned build/lint/signed APK/permission checks. Rechecks full Room guest identity, versions/signers/running and shared scope after foreground authorization before SDK install. Five JVM interleavings; [E66 results](phases/E66_SHARED_UPDATE_DISPATCH_REVALIDATION_RESULTS.md), [Draft PR #40](https://github.com/danhgold7979-cyber/fonesi-apk/pull/40). E65 code/report SHAs passed CI separately. This reporting SHA requires own CI. Product still **28.00% weighted**, 0 real accepted apps.
+
 ## E66 — shared update native identity revalidation (pre-code, 29/10/2026)
 
 Original **Product Phase 4 steps 17–20** with Phase 3 guest lifecycle dependency. E66 branch `phase/e66-shared-update-dispatch-revalidation-20261029` from E65 report HEAD `7e46c5a5863e1b820a2fb221d32b365dd52689c3`; E65 source `9393f288` [CI #40897506047](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40897506047) **SUCCESS** (475 tests/cloud and candidate). E65 reporting SHA [CI #40898925395](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40898925395) pending at plan. [Detailed E66 pre-code plan](phases/E66_SHARED_UPDATE_DISPATCH_REVALIDATION_PLAN.md): recheck full durable guest ID/user/scope and native records (version/signers/stopped) after foreground authorization **before** SDK shared-code import; fail closed on drift/new/RESERVED peer without install. Add JVM interleaving tests, E66 audit, pinned exact-source E40–E66 cloud/candidate build/lint/APK gates. Product 28.00%, 0 accepted real apps; split import, guest account isolation, real-phone acceptance and release signing remain open.

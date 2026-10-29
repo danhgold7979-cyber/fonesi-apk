@@ -1,6 +1,10 @@
 # Fonesi APK — conservative product completion estimate
 
-Date: 2026-10-29. **Latest verified technical milestone E65 PASS** at exact code/test SHA `9393f288be8d311e3c2f4f65a989c022eda190fa`, [CI #40897506047](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40897506047) **SUCCESS** with **475 tests per cloud/candidate gate**, E40–E65 audits, pinned build/lint/signatures/permissions. E64 code `a54c034d` passed [CI #40895219310](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40895219310) (470 tests/gate), E63 `bbaf4bbb` passed [CI #40894087779](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40894087779) (467 tests/gate). These are bounded safety gates, not app/account/phone acceptance. **Weighted product readiness remains 28.00%**, **0 accepted real third-party clones**.
+Date: 2026-10-29. **Latest verified technical milestone E66 PASS**, exact code SHA `979ef76bb1b228b28841575f1cfa88d5778d5231` [CI #40899947204](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40899947204) **SUCCESS**, **480 tests per cloud/candidate gate** and E40–E66 audits/build/lint/signature/permission checks. E65 report source independently passed [CI #40898925395](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40898925395). These are safety increments, not real social app/account acceptance. **Weighted product 28.00%, 0 real third-party clones accepted**.
+
+## E66 native shared update recheck is not a full guest provider
+
+Revalidating guest IDs/native user/version/signers/not-running state before SDK shared update prevents stale-image import in JVM protocol tests, but does not enable full split APK import, confirm guest Activity/UID/account separation or prove session preservation on a real phone. [E66 results](phases/E66_SHARED_UPDATE_DISPATCH_REVALIDATION_RESULTS.md). The weighted readiness rubric remains unchanged.
 
 ## E65 native guest delete guard does not establish real guest retention
 
@@ -83,7 +87,7 @@ The dimension estimates and weights are heuristic judgments anchored in docs/STA
 
 ## Distinct acceptance counters
 
-- Latest verified technical milestone: **E65 PASS**, code source `9393f288be8d311e3c2f4f65a989c022eda190fa`, [CI #40897506047](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40897506047) **475 tests per cloud/candidate gate**. E64 and E63 code/report SHAs independently passed CI; 0 real guest/social-app/phone acceptance.
+- Latest verified technical milestone: **E66 PASS** at source `979ef76bb1b228b28841575f1cfa88d5778d5231`, [CI #40899947204](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40899947204), 480 tests per cloud/candidate gate. Parent E65 implementation/report SHAs also passed. None proves runtime guest app/account/phone acceptance.
 - Production clone of real required social/e-commerce app: **0 applications accepted**.
 - Real Samsung ARM64 / non-Samsung phone acceptance: **not executed**.
 - Full 8-phase/32-step product completion: **not achieved**. Product Phase 1/2 still lacks a fully verified engine and real-device/account isolation acceptance.
