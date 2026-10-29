@@ -73,7 +73,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: fonesi-e53-background-private-source-recovery-v1
+  group: fonesi-e54-unblocked-queue-work-selection-v1
   cancel-in-progress: true
 
 jobs:
@@ -85,7 +85,7 @@ jobs:
       ANDROID_HOME: /tmp/fonesi-tools/android-sdk
       ANDROID_SDK_ROOT: /tmp/fonesi-tools/android-sdk
     steps:
-      - name: Checkout exact E53 source
+      - name: Checkout exact E54 source
         uses: actions/checkout@v4
       - name: Set up Python 3.12
         uses: actions/setup-python@v5
