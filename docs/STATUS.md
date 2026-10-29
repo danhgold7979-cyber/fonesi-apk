@@ -1,3 +1,15 @@
+# Fonesi APK — E72 technical PASS; Product Phase 1 engine acceptance still incomplete (29/10/2026)
+
+**Repository:** [danhgold7979-cyber/fonesi-apk](https://github.com/danhgold7979-cyber/fonesi-apk); branch `phase/e72-signed-app-process-inheritance-20261029`, stacked [Draft PR #46](https://github.com/danhgold7979-cyber/fonesi-apk/pull/46) on E71 [Draft PR #45](https://github.com/danhgold7979-cyber/fonesi-apk/pull/45), E70 [Draft PR #44](https://github.com/danhgold7979-cyber/fonesi-apk/pull/44). `main@c055df600f87ee9ddf0cd5d6bfc67d80d145e79d` unchanged.
+
+**Roadmap:** original **Product Phase 1 steps 7–8**, with Phase 3 step 15 dependency. **E72 technical PASS** at exact source/test SHA `1b8c5a7e803fcb7832d790d8614d1c92c219953d`: [CI #40912239445](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40912239445) **SUCCESS**. **510 tests per cloud/candidate gate**, signed binary manifest fixtures, E40–E72 audits, build/lint, SDK/APK signatures/permissions, opt-in source-engine native AAR and no split/provider/GC activation. [Test-only artifact #12914827167](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40912239445/artifacts/12914827167). E71 `c1d825bb` [CI #40911242212](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40911242212) passed with 506 tests/gate; E70 `469b5aa5` [CI #40910681708](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40910681708) passed with 503 tests/gate.
+
+**Implementation:** The signed PRIVATE base Application process is retained in the component inventory; explicit Activity selection is denied when the Application requires unsupported guest process mediation, and split APK process overrides are rejected. Two signed fixtures and four JVM regressions. [E72 plan](phases/E72_SIGNED_APP_PROCESS_INHERITANCE_PLAN.md) | [results](phases/E72_SIGNED_APP_PROCESS_INHERITANCE_RESULTS.md). Reporting/integration HEAD is a new SHA requiring independent CI.
+
+**Weighted product readiness 28.00%, 0 accepted real third-party clones.** Runtime guest Android Activity/Service/Provider, complete split provider, independent UID/account, Samsung/social-app device testing and release signing are not accepted. Keep Draft, `main` unchanged.
+
+---
+
 # Fonesi APK — E71 technical PASS; original Product Phase 1 still incomplete (29/10/2026)
 
 **Repository:** [danhgold7979-cyber/fonesi-apk](https://github.com/danhgold7979-cyber/fonesi-apk); branch `phase/e71-signed-activity-process-safety-20261029`, stacked [Draft PR #45](https://github.com/danhgold7979-cyber/fonesi-apk/pull/45) on E70 [Draft PR #44](https://github.com/danhgold7979-cyber/fonesi-apk/pull/44). `main@c055df600f87ee9ddf0cd5d6bfc67d80d145e79d` unchanged.

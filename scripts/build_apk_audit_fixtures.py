@@ -145,6 +145,16 @@ def main():
         '<application android:hasCode="false" android:enabled="false">'
         '<activity android:name=".AppDisabledActivity" android:exported="true" android:enabled="true" />'
         '</application>'))
+    # E72: cryptographically signed manifests with inherited Application process.
+    # These are offline APK fixtures only; none is a working guest or host Activity.
+    apk("catalog-app-process", application=(
+        '<application android:hasCode="false" android:process=":remote">'
+        '<activity android:name=".AppProcessActivity" android:exported="true" android:enabled="true" />'
+        '</application>'))
+    apk("catalog-split-app-process", split="feature.process", feature=True, application=(
+        '<application android:hasCode="false" android:process=":splitGuest">'
+        '<activity android:name=".ProcessInjectedActivity" android:exported="true" android:enabled="true" />'
+        '</application>'))
     apk("catalog-split-app-permission", split="feature.overrides", feature=True, application=(
         '<application android:hasCode="false" android:permission="vn.fonesi.fixture.ACCESS">'
         '<activity android:name=".InjectedActivity" android:exported="true" android:enabled="true" />'
