@@ -1,0 +1,339 @@
+name: E75 signed PRIVATE Activity constructor preflight safety gate
+
+on:
+  push:
+    branches:
+      - phase/e75-activity-constructor-preflight-20261030
+    paths:
+      - ".github/workflows/e75-activity-constructor-preflight.yml"
+      - ".github/workflows/e74-signed-private-activity-class-probe.yml"
+      - ".github/workflows/e73-private-activity-bytecode-preflight.yml"
+      - ".github/workflows/e72-signed-app-process-inheritance.yml"
+      - ".github/workflows/e71-signed-activity-process-safety.yml"
+      - ".github/workflows/e70-signed-explicit-activity-selection.yml"
+      - ".github/workflows/e69-source-loader-signed-component-readback.yml"
+      - "apk-runtime/src/main/kotlin/vn/fonesi/apk/SignedPrivateExplicitActivityResolver.kt"
+      - "apk-runtime/src/test/kotlin/vn/fonesi/apk/SignedPrivateExplicitActivityResolverTest.kt"
+      - ".github/workflows/e68-private-signed-component-catalog.yml"
+      - "engine-source/src/main/java/vn/fonesi/engine/GuestCodeLoader.kt"
+      - "engine-source/src/main/java/vn/fonesi/engine/PrivateGuestActivityClassPreflight.kt"
+      - "engine-source/src/test/java/vn/fonesi/engine/PrivateGuestActivityClassPreflightTest.kt"
+      - "engine-source/src/main/java/vn/fonesi/engine/PrivateGuestComponentPreflight.kt"
+      - "engine-source/src/test/java/vn/fonesi/engine/PrivateGuestComponentPreflightTest.kt"
+      - "scripts/prepare_source_engine.py"
+      - ".github/workflows/e67-create-preinstall-peer-guard.yml"
+      - "apk-runtime/src/main/kotlin/vn/fonesi/apk/PrivateApkComponentCatalog.kt"
+      - "apk-runtime/src/test/kotlin/vn/fonesi/apk/PrivateApkComponentCatalogTest.kt"
+      - "scripts/build_apk_audit_fixtures.py"
+      - ".github/workflows/e66-shared-update-dispatch.yml"
+      - ".github/workflows/e65-native-guest-delete-identity.yml"
+      - ".github/workflows/e64-unknown-guest-launch-retry.yml"
+      - ".github/workflows/e63-ready-shared-mutations.yml"
+      - ".github/workflows/e62-ready-guest-launch-gate.yml"
+      - ".github/workflows/e59-delete-locktime-identity.yml"
+      - ".github/workflows/e58-clone-cluster-association-lock.yml"
+      - ".github/workflows/e57-clone-presentation-operation-lock.yml"
+      - ".github/workflows/e49-source-authority-gates-integration.yml"
+      - ".github/workflows/e51-retained-enqueue-original-conflict.yml"
+      - "scripts/audit_e51_retained_enqueue_original_conflict.py"
+      - "scripts/audit_e52_engine_scoped_queue_recovery.py"
+      - "scripts/audit_e53_background_private_source_recovery.py"
+      - "scripts/audit_e54_unblocked_queue_selection.py"
+      - "scripts/audit_e55_engine_scoped_queue_controls.py"
+      - "core/src/main/kotlin/vn/fonesi/core/update/UpdateJournalRecovery.kt"
+      - "core/src/test/kotlin/vn/fonesi/core/update/UpdateJournalRecoveryTest.kt"
+      - "app/src/main/java/vn/fonesi/app/update/UpdateJournalRecoveryWorker.kt"
+      - "app/src/test/java/vn/fonesi/app/update/UpdateJournalRecoveryWorkerTest.kt"
+      - "docs/phases/E53_BACKGROUND_PRIVATE_SOURCE_RECOVERY_PLAN.md"
+      - "docs/phases/E53_BACKGROUND_PRIVATE_SOURCE_RECOVERY_RESULTS.md"
+      - "docs/phases/E54_UNBLOCKED_QUEUE_WORK_SELECTION_PLAN.md"
+      - "docs/phases/E54_UNBLOCKED_QUEUE_WORK_SELECTION_RESULTS.md"
+      - "docs/phases/E55_ENGINE_SCOPED_QUEUE_CONTROLS_PLAN.md"
+      - "docs/phases/E55_ENGINE_SCOPED_QUEUE_CONTROLS_RESULTS.md"
+      - "docs/phases/E56_STOP_CLONE_IDENTITY_REVALIDATION_PLAN.md"
+      - "docs/phases/E57_CLONE_PRESENTATION_OPERATION_LOCK_PLAN.md"
+      - "docs/phases/E56_STOP_CLONE_IDENTITY_REVALIDATION_RESULTS.md"
+      - "docs/phases/E57_CLONE_PRESENTATION_OPERATION_LOCK_RESULTS.md"
+      - "docs/phases/E58_CLONE_CLUSTER_ASSOCIATION_LOCK_PLAN.md"
+      - "docs/phases/E58_CLONE_CLUSTER_ASSOCIATION_LOCK_RESULTS.md"
+      - "docs/phases/E59_DELETE_LOCKTIME_IDENTITY_PLAN.md"
+      - "docs/phases/E59_DELETE_LOCKTIME_IDENTITY_RESULTS.md"
+      - "docs/phases/E60_POSITIVE_GUEST_STOP_READBACK_PLAN.md"
+      - "docs/phases/E61_GUEST_STOP_IDENTITY_CONTINUITY_PLAN.md"
+      - "docs/phases/E62_READY_GUEST_LAUNCH_GATE_PLAN.md"
+      - "docs/phases/E60_POSITIVE_GUEST_STOP_READBACK_RESULTS.md"
+      - "docs/phases/E61_GUEST_STOP_IDENTITY_CONTINUITY_RESULTS.md"
+      - "docs/phases/E62_READY_GUEST_LAUNCH_GATE_RESULTS.md"
+      - "docs/phases/E63_READY_SHARED_MUTATIONS_PLAN.md"
+      - "docs/phases/E63_READY_SHARED_MUTATIONS_RESULTS.md"
+      - "docs/phases/E64_UNKNOWN_GUEST_LAUNCH_RETRY_PLAN.md"
+      - "docs/phases/E64_UNKNOWN_GUEST_LAUNCH_RETRY_RESULTS.md"
+      - "docs/phases/E65_NATIVE_GUEST_DELETE_IDENTITY_PLAN.md"
+      - "docs/phases/E65_NATIVE_GUEST_DELETE_IDENTITY_RESULTS.md"
+      - "docs/phases/E66_SHARED_UPDATE_DISPATCH_REVALIDATION_PLAN.md"
+      - "docs/phases/E66_SHARED_UPDATE_DISPATCH_REVALIDATION_RESULTS.md"
+      - "docs/phases/E67_CREATE_PREINSTALL_PEER_GUARD_PLAN.md"
+      - "docs/phases/E67_CREATE_PREINSTALL_PEER_GUARD_RESULTS.md"
+      - "docs/phases/E68_PRIVATE_SIGNED_COMPONENT_CATALOG_PLAN.md"
+      - "docs/phases/E68_PRIVATE_SIGNED_COMPONENT_CATALOG_RESULTS.md"
+      - "docs/phases/E69_SOURCE_LOADER_SIGNED_COMPONENT_READBACK_PLAN.md"
+      - "docs/phases/E69_SOURCE_LOADER_SIGNED_COMPONENT_READBACK_RESULTS.md"
+      - "docs/phases/E70_SIGNED_EXPLICIT_ACTIVITY_SELECTION_PLAN.md"
+      - "docs/phases/E71_SIGNED_ACTIVITY_PROCESS_SAFETY_PLAN.md"
+      - "docs/phases/E72_SIGNED_APP_PROCESS_INHERITANCE_PLAN.md"
+      - "docs/phases/E70_SIGNED_EXPLICIT_ACTIVITY_SELECTION_RESULTS.md"
+      - "docs/phases/E71_SIGNED_ACTIVITY_PROCESS_SAFETY_RESULTS.md"
+      - "docs/phases/E72_SIGNED_APP_PROCESS_INHERITANCE_RESULTS.md"
+      - "docs/phases/E73_PRIVATE_ACTIVITY_BYTECODE_PREFLIGHT_PLAN.md"
+      - "docs/phases/E73_PRIVATE_ACTIVITY_BYTECODE_PREFLIGHT_RESULTS.md"
+      - "docs/phases/E74_SIGNED_PRIVATE_ACTIVITY_CLASS_PROBE_PLAN.md"
+      - "docs/phases/E74_SIGNED_PRIVATE_ACTIVITY_CLASS_PROBE_RESULTS.md"
+      - "docs/phases/E75_ACTIVITY_CONSTRUCTOR_PREFLIGHT_PLAN.md"
+      - "docs/phases/E75_ACTIVITY_CONSTRUCTOR_PREFLIGHT_RESULTS.md"
+      - "app/src/main/java/vn/fonesi/app/storage/CloneMetadataRepository.kt"
+      - "app/src/main/java/vn/fonesi/app/storage/CloneClusterOwnershipRepository.kt"
+      - "app/src/main/java/vn/fonesi/app/storage/CloneStopIdentityGuard.kt"
+      - "app/src/test/java/vn/fonesi/app/storage/CloneStopIdentityGuardTest.kt"
+      - "scripts/audit_e56_stop_identity_revalidation.py"
+      - "scripts/audit_e57_clone_presentation_lock.py"
+      - "scripts/audit_e58_clone_cluster_association_lock.py"
+      - "scripts/audit_e59_delete_locktime_identity.py"
+      - "scripts/audit_e60_positive_guest_stop_readback.py"
+      - "scripts/audit_e61_guest_stop_identity_continuity.py"
+      - "scripts/audit_e62_ready_guest_launch_gate.py"
+      - "scripts/audit_e63_ready_shared_mutations.py"
+      - "scripts/audit_e64_unknown_guest_launch_retry.py"
+      - "scripts/audit_e65_native_guest_delete_identity.py"
+      - "scripts/audit_e66_shared_update_dispatch_revalidation.py"
+      - "scripts/audit_e67_create_preinstall_peer_guard.py"
+      - "scripts/audit_e68_private_signed_component_catalog.py"
+      - "scripts/audit_e69_source_loader_signed_component_readback.py"
+      - "scripts/audit_e70_signed_explicit_activity_selection.py"
+      - "scripts/audit_e71_signed_activity_process_safety.py"
+      - "scripts/audit_e72_signed_app_process_inheritance.py"
+      - "scripts/audit_e73_private_activity_bytecode_preflight.py"
+      - "scripts/audit_e74_private_activity_class_probe.py"
+      - "scripts/audit_e75_activity_constructor_preflight.py"
+      - "scripts/run_guest_code_emulator.py"
+      - "scripts/run_native_probe.py"
+      - "native-runtime-probe/src/main/java/vn/fonesi/nativeprobe/SyntheticGuestUiProbeActivity.java"
+      - "native-runtime-probe/src/main/AndroidManifest.xml"
+      - "probe-payload/src/main/AndroidManifest.xml"
+      - "probe-payload/src/main/java/vn/fonesi/payload/PayloadActivity.kt"
+      - "core/src/test/kotlin/vn/fonesi/core/update/UpdateQueueNamespaceTest.kt"
+      - "core/src/test/kotlin/vn/fonesi/core/update/ExecutionPolicyTest.kt"
+      - "app/src/main/java/vn/fonesi/app/AppsViewModel.kt"
+      - "app/src/main/java/vn/fonesi/app/MainActivity.kt"
+      - "app/src/main/java/vn/fonesi/app/ManagementCards.kt"
+      - "app/src/test/java/vn/fonesi/app/storage/EngineScopedQueueControlTest.kt"
+      - "docs/phases/E51_RETAINED_ENQUEUE_ORIGINAL_SOURCE_CONFLICT_PLAN.md"
+      - "docs/phases/E52_ENGINE_SCOPED_QUEUE_RECOVERY_PLAN.md"
+      - "docs/phases/E51_RETAINED_ENQUEUE_ORIGINAL_SOURCE_CONFLICT_RESULTS.md"
+      - "docs/phases/E52_ENGINE_SCOPED_QUEUE_RECOVERY_RESULTS.md"
+      - "app/src/main/java/vn/fonesi/app/storage/PrivateClusterRetainedEnqueuer.kt"
+      - "app/src/main/java/vn/fonesi/app/storage/UpdateTaskClusterOwnershipRepository.kt"
+      - "app/src/main/java/vn/fonesi/app/storage/RoomUpdateTaskStore.kt"
+      - "app/src/main/java/vn/fonesi/app/storage/FonesiDatabase.kt"
+      - "app/src/test/java/vn/fonesi/app/storage/PrivateClusterRetainedEnqueuerTest.kt"
+      - "app/src/test/java/vn/fonesi/app/storage/PrivateClusterRetainedBatchEnqueuerTest.kt"
+      - "scripts/audit_e49_source_authority_gates_integration.py"
+      - "scripts/audit_e48_retained_recovery_quarantine.py"
+      - "scripts/audit_e46_foreground_source_authority.py"
+      - "scripts/audit_e47_original_source_confirmation.py"
+      - "app/src/main/java/vn/fonesi/app/update/ForegroundAutoUpdater.kt"
+      - "app/src/test/java/vn/fonesi/app/update/ForegroundAutoUpdaterTest.kt"
+      - "core/src/main/kotlin/vn/fonesi/core/ManagedGuestEngine.kt"
+      - "core/src/test/kotlin/vn/fonesi/core/ManagedGuestEngineTest.kt"
+      - "core/src/main/kotlin/vn/fonesi/core/UpdatePlanner.kt"
+      - "app/src/main/java/vn/fonesi/app/update/UpdatePreviewDialog.kt"
+      - "scripts/audit_e50_preview_private_source_authority.py"
+      - "docs/phases/E50_PREVIEW_PRIVATE_SOURCE_AUTHORITY_PLAN.md"
+      - "docs/phases/E50_PREVIEW_PRIVATE_SOURCE_AUTHORITY_RESULTS.md"
+      - "app/src/main/java/vn/fonesi/app/update/UpdateRequestService.kt"
+      - "app/src/test/java/vn/fonesi/app/update/UpdateRequestServiceTest.kt"
+      - "scripts/audit_e45_retained_batch_source_quarantine.py"
+      - "scripts/audit_e44_atomic_batch_retained_enqueue.py"
+      - "scripts/audit_e44_retained_source_quarantine.py"
+      - "core/src/main/kotlin/vn/fonesi/core/update/UpdateRunner.kt"
+      - "core/src/main/kotlin/vn/fonesi/core/update/UpdateQueue.kt"
+      - "core/src/main/kotlin/vn/fonesi/core/update/UpdateTask.kt"
+      - "app/src/main/java/vn/fonesi/app/storage/RoomLegacyUpdateSourcePolicy.kt"
+      - "app/src/main/java/vn/fonesi/app/storage/TaskCodec.kt"
+      - "app/src/main/java/vn/fonesi/app/storage/LocalServices.kt"
+      - "app/src/test/java/vn/fonesi/app/storage/StorageIntegrationTest.kt"
+      - "app/src/test/java/vn/fonesi/app/storage/CloneClusterOwnershipRepositoryTest.kt"
+      - "core/src/test/kotlin/vn/fonesi/core/update/UpdateRunnerTest.kt"
+      - "scripts/audit_e43_atomic_retained_enqueue.py"
+      - "scripts/audit_e42_atomic_owner_transitions.py"
+      - "scripts/audit_e41_update_task_cluster_ownership.py"
+      - "scripts/audit_e40_clone_cluster_ownership.py"
+      - "docs/phases/E49_SOURCE_AUTHORITY_GATES_INTEGRATION_PLAN.md"
+      - "docs/phases/E49_SOURCE_AUTHORITY_GATES_INTEGRATION_RESULTS.md"
+      - "docs/STATUS.md"
+      - "docs/PRODUCT_PROGRESS.md"
+      - "docs/EXECUTION_PLAN.md"
+      - "scripts/check.sh"
+  pull_request:
+    branches:
+      - phase/e74-signed-private-activity-class-probe-20261029
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: fonesi-e75-activity-constructor-preflight-v1
+  cancel-in-progress: true
+
+jobs:
+  verified-source-queue:
+    runs-on: ubuntu-latest
+    timeout-minutes: 70
+    env:
+      FONESI_TOOLS_DIR: /tmp/fonesi-tools
+      ANDROID_HOME: /tmp/fonesi-tools/android-sdk
+      ANDROID_SDK_ROOT: /tmp/fonesi-tools/android-sdk
+    steps:
+      - name: Checkout exact E75 source
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - name: Verify exact E75 source SHA (not synthetic PR merge commit)
+        run: |
+          test "$(git rev-parse HEAD)" = "${{ github.event.pull_request.head.sha || github.sha }}"
+          echo "PASS: validated exact E75 source SHA $(git rev-parse HEAD)"
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Audit E40-E75 Activity constructor, classloader and synthetic probe safety
+        run: |
+          python3 -m py_compile scripts/audit_e40_clone_cluster_ownership.py scripts/audit_e41_update_task_cluster_ownership.py scripts/audit_e42_atomic_owner_transitions.py scripts/audit_e43_atomic_retained_enqueue.py scripts/audit_e44_atomic_batch_retained_enqueue.py scripts/audit_e44_retained_source_quarantine.py scripts/audit_e45_retained_batch_source_quarantine.py scripts/audit_e46_foreground_source_authority.py scripts/audit_e47_original_source_confirmation.py scripts/audit_e48_retained_recovery_quarantine.py scripts/audit_e49_source_authority_gates_integration.py scripts/audit_e50_preview_private_source_authority.py scripts/audit_e51_retained_enqueue_original_conflict.py scripts/audit_e52_engine_scoped_queue_recovery.py scripts/audit_e53_background_private_source_recovery.py scripts/audit_e54_unblocked_queue_selection.py scripts/audit_e55_engine_scoped_queue_controls.py scripts/audit_e56_stop_identity_revalidation.py scripts/audit_e57_clone_presentation_lock.py scripts/audit_e58_clone_cluster_association_lock.py scripts/audit_e59_delete_locktime_identity.py scripts/audit_e60_positive_guest_stop_readback.py scripts/audit_e61_guest_stop_identity_continuity.py scripts/audit_e62_ready_guest_launch_gate.py scripts/audit_e63_ready_shared_mutations.py scripts/audit_e64_unknown_guest_launch_retry.py scripts/audit_e65_native_guest_delete_identity.py scripts/audit_e66_shared_update_dispatch_revalidation.py scripts/audit_e67_create_preinstall_peer_guard.py scripts/audit_e68_private_signed_component_catalog.py scripts/audit_e69_source_loader_signed_component_readback.py scripts/audit_e70_signed_explicit_activity_selection.py scripts/audit_e71_signed_activity_process_safety.py scripts/audit_e72_signed_app_process_inheritance.py scripts/audit_e73_private_activity_bytecode_preflight.py scripts/audit_e74_private_activity_class_probe.py scripts/audit_e75_activity_constructor_preflight.py scripts/run_guest_code_emulator.py scripts/run_native_probe.py scripts/verify_main_build.py scripts/verify_candidate_build.py
+          python3 scripts/audit_e40_clone_cluster_ownership.py
+          python3 scripts/audit_e41_update_task_cluster_ownership.py
+          python3 scripts/audit_e42_atomic_owner_transitions.py
+          python3 scripts/audit_e43_atomic_retained_enqueue.py
+          python3 scripts/audit_e44_atomic_batch_retained_enqueue.py
+          python3 scripts/audit_e44_retained_source_quarantine.py
+          python3 scripts/audit_e45_retained_batch_source_quarantine.py
+          python3 scripts/audit_e46_foreground_source_authority.py
+          python3 scripts/audit_e47_original_source_confirmation.py
+          python3 scripts/audit_e48_retained_recovery_quarantine.py
+          python3 scripts/audit_e49_source_authority_gates_integration.py
+          python3 scripts/audit_e50_preview_private_source_authority.py
+          python3 scripts/audit_e51_retained_enqueue_original_conflict.py
+          python3 scripts/audit_e52_engine_scoped_queue_recovery.py
+          python3 scripts/audit_e53_background_private_source_recovery.py
+          python3 scripts/audit_e54_unblocked_queue_selection.py
+          python3 scripts/audit_e55_engine_scoped_queue_controls.py
+          python3 scripts/audit_e56_stop_identity_revalidation.py
+          python3 scripts/audit_e57_clone_presentation_lock.py
+          python3 scripts/audit_e58_clone_cluster_association_lock.py
+          python3 scripts/audit_e59_delete_locktime_identity.py
+          python3 scripts/audit_e60_positive_guest_stop_readback.py
+          python3 scripts/audit_e61_guest_stop_identity_continuity.py
+          python3 scripts/audit_e62_ready_guest_launch_gate.py
+          python3 scripts/audit_e63_ready_shared_mutations.py
+          python3 scripts/audit_e64_unknown_guest_launch_retry.py
+          python3 scripts/audit_e65_native_guest_delete_identity.py
+          python3 scripts/audit_e66_shared_update_dispatch_revalidation.py
+          python3 scripts/audit_e67_create_preinstall_peer_guard.py
+          python3 scripts/audit_e68_private_signed_component_catalog.py
+          python3 scripts/audit_e69_source_loader_signed_component_readback.py
+          python3 scripts/audit_e70_signed_explicit_activity_selection.py
+          python3 scripts/audit_e71_signed_activity_process_safety.py
+          python3 scripts/audit_e72_signed_app_process_inheritance.py
+          python3 scripts/audit_e73_private_activity_bytecode_preflight.py
+          python3 scripts/audit_e74_private_activity_class_probe.py
+          python3 scripts/audit_e75_activity_constructor_preflight.py
+      - name: Bootstrap pinned Android SDK36 Gradle and JDK21
+        run: python3 scripts/bootstrap_android.py --accept-sdk-license
+      - name: Cloud signed APK fixture tests lint APK audit for E75
+        run: ./scripts/check.sh
+      - name: Verify E75 signed Activity constructor regressions executed
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import xml.etree.ElementTree as ET
+          files = list(Path("apk-runtime/build/test-results/test").glob("*SignedPrivateExplicitActivityResolverTest.xml"))
+          assert files, "E71 signed Activity selection tests did not execute"
+          xml = ET.parse(files[0]).getroot()
+          assert int(xml.get("tests", "0")) >= 16
+          catalog = list(Path("apk-runtime/build/test-results/test").glob("*PrivateApkComponentCatalogTest.xml"))
+          assert catalog, "E72 signed base/split catalog tests did not execute"
+          cat_result = ET.parse(catalog[0]).getroot()
+          assert int(cat_result.get("tests", "0")) >= 8
+          assert all(int(cat_result.get(item, "0")) == 0 for item in ("failures", "errors", "skipped"))
+          assert all(int(xml.get(x, "0")) == 0 for x in ("failures", "errors", "skipped"))
+          print("PASS: signed PRIVATE Activity selection verified with real binary APK fixtures")
+          PY
+      - name: Candidate SDK and signed APK audit for E75
+        run: ./scripts/check.sh --with-engine-candidate
+      - name: Build and test source AAR and Activity constructor preflight for E75
+        run: |
+          python3 scripts/prepare_source_engine.py --install-tools
+          python3 scripts/check_source_engine.py
+          python3 - <<'PY'
+          from pathlib import Path
+          import xml.etree.ElementTree as ET
+          root = Path("engine-source/build/test-results/testDebugUnitTest")
+          matches = list(root.glob("*PrivateGuestComponentPreflightTest.xml"))
+          assert matches, "E69 signed component source JVM suite did not run"
+          result = ET.parse(matches[0]).getroot()
+          assert int(result.get("tests", "0")) >= 6
+          assert all(int(result.get(item, "0")) == 0 for item in ("failures", "errors", "skipped"))
+          print("PASS: E69 source-engine signed component regressions were actually executed")
+          class_tests = list(root.glob("*PrivateGuestActivityClassPreflightTest.xml"))
+          assert class_tests, "E73 private Activity bytecode class JVM regressions did not execute"
+          classes = ET.parse(class_tests[0]).getroot()
+          assert int(classes.get("tests", "0")) >= 8, "E73 private class suite is incomplete"
+          assert all(int(classes.get(key, "0")) == 0 for key in ("failures", "errors", "skipped"))
+          print("PASS: E73 private Activity class owner/type regressions actually executed")
+          PY
+      - name: Build opt-in signed synthetic Android probe and payload APKs (no device execution)
+        run: |
+          ./scripts/gradle.sh -PincludeNativeRuntimeProbe=true -PsourceEngineAbi=x86_64 :native-runtime-probe:assembleDebug :native-runtime-probe:lintDebug --console=plain
+          ./scripts/gradle.sh -PincludeEngineProbe=true :probe-payload:assembleDebug :probe-payload:lintDebug --console=plain
+          python3 scripts/run_native_probe.py --audit-only
+          python3 - <<'PY'
+          from pathlib import Path
+          import xml.etree.ElementTree as ET
+          for module in ("native-runtime-probe", "probe-payload"):
+              path = Path(module) / "build/reports/lint-results-debug.xml"
+              assert path.is_file(), "Missing synthetic probe lint report: " + str(path)
+              issues = ET.parse(path).getroot().findall("issue")
+              assert not any(i.get("severity") in ("Error", "Fatal") for i in issues)
+          print("PASS: signed synthetic Android host/payload APKs built and linted; NOT Android execution")
+          PY
+      - name: Verify E75 inspects constructors only, without guest Activity instantiation
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          backend = Path("app/src/candidate/java/vn/fonesi/app/runtime/SpaceCoreBackend.kt").read_text()
+          runtime = Path("app/src/candidate/java/vn/fonesi/app/runtime/RuntimeBindings.kt").read_text()
+          queue = Path("app/src/main/java/vn/fonesi/app/storage/PrivateClusterRetainedEnqueuer.kt").read_text()
+          assert "check(source.apkPaths.size == 1)" in backend
+          assert "const val supportsSplits = false" in runtime
+          for forbidden in ("engine.update(", "engine.launch(", "fun collectGarbage(", "fun deleteCluster(", "Files.delete("):
+              assert forbidden not in queue
+          print("PASS: E75 does not activate provider, enable split or delete clusters")
+          PY
+      - name: Upload E75 generated schema and sanitized test receipts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: fonesi-E75-activity-constructor-preflight-TEST-ONLY
+          path: |
+            app/schemas/vn.fonesi.app.storage.FonesiDatabase/6.json
+            app/build/reports/cloud-verification.json
+            app/build/reports/candidate-verification.json
+            app/build/test-results/testDebugUnitTest/TEST-*.xml
+            apk-runtime/build/test-results/test/TEST-*.xml
+            core/build/test-results/test/TEST-*.xml
+            engine-source/build/test-results/testDebugUnitTest/TEST-*.xml
+            engine-source/build/reports/source-engine-verification.json
+            native-runtime-probe/build/reports/runtime/native-probe-static.json
+            native-runtime-probe/build/reports/lint-results-debug.xml
+            probe-payload/build/reports/lint-results-debug.xml
+          if-no-files-found: warn
+          retention-days: 7
