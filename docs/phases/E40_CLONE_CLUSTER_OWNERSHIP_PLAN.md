@@ -1,6 +1,10 @@
 # E40 — Clone metadata ↔ private APK cluster ownership (plan before code)
 
-Date: 2026-10-29. Repository: `danhgold7979-cyber/fonesi-apk`. Continue on `phase/e21-android-split-code-proof-20261028`; keep `main` unchanged.
+Date: 2026-10-29. Repository: `danhgold7979-cyber/fonesi-apk`. Implement on the dedicated branch `phase/e40-clone-cluster-ownership-20261029`, based on `phase/e21-android-split-code-proof-20261028@1da1a1ea42c5f44c95bf9a3b0778d5bba0a23162`; keep both the parent branch and `main` unchanged.
+
+## Branch isolation and scope boundary
+
+E40 has its own stacked feature branch and Draft PR targeting the existing cumulative E21 branch. Do not add unrelated E41+ work to this branch. Keep the parent E21 branch/PR #12 and `main` unchanged. The branch is split by coherent acceptance boundary, not by creating one branch per file.
 
 ## Product-roadmap alignment
 
