@@ -2,7 +2,7 @@
 
 ## E40 — integrate Room clone metadata with private APK cluster ownership (plan before code)
 
-Repository: `danhgold7979-cyber/fonesi-apk`; branch `phase/e21-android-split-code-proof-20261028`; starting HEAD `1ddef332ce2a53e68448627b3165202f87149307`.
+Repository: `danhgold7979-cyber/fonesi-apk`; dedicated branch `phase/e40-clone-cluster-ownership-20261029`; parent branch `phase/e21-android-split-code-proof-20261028`; starting parent HEAD `1da1a1ea42c5f44c95bf9a3b0778d5bba0a23162`.
 Product alignment: Phase 3, roadmap steps 13–16 (stable clone identity/lifecycle), with Phase 4 storage-retention dependency. E39 is accepted only for its own Room v5 ownership registry: workflow [#40803931491](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40803931491) passed cloud and candidate gates on source `07d582e09bce8e1d21249c79333767ba8efdb4f0`, 334 tests in each gate. This does not make E40 pass.
 
 ### Pre-code audit and implementation sequence
