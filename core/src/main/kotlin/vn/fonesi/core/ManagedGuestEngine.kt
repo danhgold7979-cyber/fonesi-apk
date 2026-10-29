@@ -145,16 +145,27 @@ class ManagedGuestEngine(
         ready()
         val row = instance(cloneId)
         mutationAllowed()
+        // The SDK may return a different package generation with the same package name.
+        // Capture a valid native identity before dispatch, not original-app metadata.
+        val beforeStop = checkNotNull(backend.inspect(row.userId, row.packageName)) {
+            "Guest stop has no pre-dispatch native package identity; reconciliation required"
+        }
+        check(beforeStop.packageName == row.packageName &&
+            beforeStop.version >= 0 && beforeStop.signers.isNotEmpty()) {
+            "Guest stop pre-dispatch package identity is invalid"
+        }
+        mutationAllowed()
         backend.stop(row.userId, row.packageName)
-        // A missing guest is an unknown stop outcome, never evidence that the existing
-        // clone stopped. Keep launchPending durable until an exact native readback.
+        // A missing/changed guest is an unknown stop outcome, not proof of success.
+        // Never clear launchPending until the exact same native guest image is stopped.
         val observed = checkNotNull(backend.inspect(row.userId, row.packageName)) {
             "Guest stop has no native package readback; reconciliation required"
         }
-        check(observed.packageName == row.packageName &&
-            observed.version >= 0 && observed.signers.isNotEmpty() &&
+        check(observed.packageName == beforeStop.packageName &&
+            observed.version == beforeStop.version &&
+            observed.signers == beforeStop.signers &&
             !observed.running) {
-            "Guest stop identity or stopped state not verified"
+            "Guest stop identity continuity or stopped state not verified"
         }
         registry.pending(row.id, false)
     }
