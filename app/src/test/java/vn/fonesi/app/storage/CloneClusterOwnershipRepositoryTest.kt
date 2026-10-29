@@ -97,10 +97,10 @@ class CloneClusterOwnershipRepositoryTest {
         withContextBlocking { db.clusterReferences().insert(taskRef) }
         val repository = CloneClusterOwnershipRepository(db) { 100L }
 
-        assertTrue(repository.associateReadBackVerified(engine, cloneId, old))
-        assertFalse(repository.associateReadBackVerified(engine, cloneId, old))
+        assertTrue(withContextBlocking { repository.associateReadBackVerified(engine, cloneId, old) })
+        assertFalse(withContextBlocking { repository.associateReadBackVerified(engine, cloneId, old) })
         assertEquals(old.id, withContextBlocking { db.clones().find(engine, cloneId)?.clusterId })
-        assertTrue(repository.associateReadBackVerified(engine, cloneId, next))
+        assertTrue(withContextBlocking { repository.associateReadBackVerified(engine, cloneId, next) })
 
         assertEquals(next.id, withContextBlocking { db.clones().find(engine, cloneId)?.clusterId })
         val refs = withContextBlocking {
@@ -116,12 +116,12 @@ class CloneClusterOwnershipRepositoryTest {
         val cluster = cluster()
         withContextBlocking { db.clones().insert(cloneRow()) }
         val repository = CloneClusterOwnershipRepository(db) { 200L }
-        assertTrue(repository.associateReadBackVerified(engine, cloneId, cluster))
+        assertTrue(withContextBlocking { repository.associateReadBackVerified(engine, cloneId, cluster) })
         withContextBlocking {
             db.clusterReferences().insert(reference(cluster.id, ClusterOwnerType.ROLLBACK, "rollback-1", 201L))
         }
 
-        repository.deleteMetadataAfterProviderConfirmed(engine, cloneId, token)
+        withContextBlocking { repository.deleteMetadataAfterProviderConfirmed(engine, cloneId, token) }
 
         assertNull(withContextBlocking { db.clones().find(engine, cloneId) })
         assertEquals(
@@ -134,10 +134,10 @@ class CloneClusterOwnershipRepositoryTest {
         val cluster = cluster()
         withContextBlocking { db.clones().insert(cloneRow()) }
         val repository = CloneClusterOwnershipRepository(db)
-        repository.associateReadBackVerified(engine, cloneId, cluster)
+        withContextBlocking { repository.associateReadBackVerified(engine, cloneId, cluster) }
 
         assertThrows(IllegalStateException::class.java) {
-            repository.deleteMetadataAfterProviderConfirmed(engine, cloneId, "stale-token")
+            withContextBlocking { repository.deleteMetadataAfterProviderConfirmed(engine, cloneId, "stale-token") }
         }
 
         assertEquals(cluster.id, withContextBlocking { db.clones().find(engine, cloneId)?.clusterId })
@@ -150,13 +150,13 @@ class CloneClusterOwnershipRepositoryTest {
         val cluster = cluster()
         val repository = CloneClusterOwnershipRepository(db)
         assertThrows(IllegalStateException::class.java) {
-            repository.associateReadBackVerified(engine, cloneId, cluster)
+            withContextBlocking { repository.associateReadBackVerified(engine, cloneId, cluster) }
         }
         withContextBlocking { db.clones().insert(cloneRow()) }
         val wrongPackageBase = cluster.apks.base.copy(packageName = "another.package")
         val wrongPackage = PrivateApkCluster(cluster.id, AuditedApkSet(wrongPackageBase, emptyList()))
         assertThrows(IllegalStateException::class.java) {
-            repository.associateReadBackVerified(engine, cloneId, wrongPackage)
+            withContextBlocking { repository.associateReadBackVerified(engine, cloneId, wrongPackage) }
         }
         assertTrue(withContextBlocking { db.clusterReferences().list().isEmpty() })
         assertNull(withContextBlocking { db.clones().find(engine, cloneId)?.clusterId })
@@ -170,10 +170,10 @@ class CloneClusterOwnershipRepositoryTest {
         }
         val repository = CloneClusterOwnershipRepository(db)
         assertThrows(IllegalStateException::class.java) {
-            repository.associateReadBackVerified(engine, cloneId, cluster)
+            withContextBlocking { repository.associateReadBackVerified(engine, cloneId, cluster) }
         }
         assertThrows(IllegalStateException::class.java) {
-            repository.deleteMetadataAfterProviderConfirmed(engine, cloneId, token)
+            withContextBlocking { repository.deleteMetadataAfterProviderConfirmed(engine, cloneId, token) }
         }
         assertNull(withContextBlocking { db.clones().find(engine, cloneId)?.clusterId })
         assertEquals(1, withContextBlocking { db.clusterReferences().forCluster(cluster.id).size })
