@@ -64,7 +64,13 @@ class CloneMetadataRepository(
         val saved = checkNotNull(db.clones().find(engineKey, id))
         mutateEngine(saved.packageName) {
             require(engine.availability is EngineAvailability.Ready) { "Engine chưa sẵn sàng" }
-            check(db.clones().find(engineKey, id)?.launchToken == saved.launchToken) { "Clone metadata changed" }
+            // E59: a rename, restyle or new APK generation may preserve launchToken.
+            // Revalidate the entire saved identity after acquiring the same OS lease as
+            // those writers, before issuing any irreversible provider-side deletion.
+            val current = checkNotNull(db.clones().find(engineKey, id)) {
+                "Clone metadata disappeared before deletion"
+            }
+            check(current == saved) { "Clone metadata changed before deletion; retry required" }
             check(expectedToken == null || saved.launchToken == expectedToken) { "Stale delete request" }
             // Fail closed before any irreversible provider mutation if owner state is corrupt.
             val ownership = CloneClusterOwnershipRepository(db, operationLock, clock)
