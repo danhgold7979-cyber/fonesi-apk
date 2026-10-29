@@ -72,7 +72,8 @@ class UpdateTaskClusterOwnershipRepositoryTest {
         ClusterReferenceRow(clusterId, owner.name, taskId, idEngine, 20L)
 
     private fun advanceToReview(task: UpdateTask) {
-        val store = RoomUpdateTaskStore(db)
+        // E41 explicitly tests the separate post-journal API; E42 tests atomic default behavior.
+        val store = RoomUpdateTaskStore(db, atomicOwnerTransitions = false)
         withContextBlocking {
             val preparing = task.move(TaskState.PREPARING, 11L)
             assertTrue(store.replace(task, preparing))
@@ -229,7 +230,8 @@ class UpdateTaskClusterOwnershipRepositoryTest {
             withContextBlocking { repository.releaseAfterTerminal(engine, job.id) }
         }
         withContextBlocking {
-            assertTrue(RoomUpdateTaskStore(db).replace(job, job.move(TaskState.CANCELLED, 20L)))
+            assertTrue(RoomUpdateTaskStore(db, atomicOwnerTransitions = false)
+                .replace(job, job.move(TaskState.CANCELLED, 20L)))
         }
         assertTrue(withContextBlocking { repository.releaseAfterTerminal(engine, job.id) })
         assertFalse(withContextBlocking { repository.releaseAfterTerminal(engine, job.id) })
@@ -273,7 +275,8 @@ class UpdateTaskClusterOwnershipRepositoryTest {
             repository.associateReadBackVerified(engine, job.id, verified)
         })
         withContextBlocking {
-            assertTrue(RoomUpdateTaskStore(db).replace(job, job.move(TaskState.CANCELLED, 20L)))
+            assertTrue(RoomUpdateTaskStore(db, atomicOwnerTransitions = false)
+                .replace(job, job.move(TaskState.CANCELLED, 20L)))
             db.openHelper.writableDatabase.execSQL(
                 "CREATE TRIGGER e41_block_release BEFORE DELETE ON cluster_references " +
                     "WHEN OLD.ownerType = 'UPDATE_TASK' BEGIN SELECT RAISE(ABORT, 'synthetic refusal'); END",

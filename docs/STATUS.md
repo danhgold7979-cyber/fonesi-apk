@@ -1,3 +1,15 @@
+# Fonesi APK — E42 technical PASS, Phase 4 still incomplete (29/10/2026)
+
+**Repository:** [danhgold7979-cyber/fonesi-apk](https://github.com/danhgold7979-cyber/fonesi-apk). **Development branch:** `phase/e42-atomic-journal-owner-transitions-20261029`, [Draft PR #15](https://github.com/danhgold7979-cyber/fonesi-apk/pull/15). `main@c055df600f87ee9ddf0cd5d6bfc67d80d145e79d` unchanged.
+
+**Product roadmap:** Phase 4, steps 17–20. **E42 passed on exact code SHA `7f749ae4e54f01c23f11772430a992a050be36c0`**: [CI #40841923812](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40841923812) SUCCESS, 366 tests in each cloud/candidate gate (118 core + 44 APK runtime + 204 Android/Robolectric), 0 failures/errors/skips. Build, lint, signing, permissions and no-split/no-GC source audits passed. [E42 results](phases/E42_ATOMIC_JOURNAL_OWNER_TRANSITIONS_RESULTS.md) and pre-code [plan](phases/E42_ATOMIC_JOURNAL_OWNER_TRANSITIONS_PLAN.md).
+
+**Code:** Room update journal and previously verified `UPDATE_TASK` ownership now transition atomically to review/terminal retention states on successful CAS; SQLite failure rolls the journal marker back rather than producing partial ownership. Legacy unassociated tasks do not create fake clusters. Room schema stays v6.
+
+**Still blocked:** production guest engine/Activity, split APK import, independent UID/account isolation, real third-party social-app session updates, Samsung/other device acceptance, release signing. **Product estimated 28.00% (~30% rounded), 0 real apps accepted.** This is a technical storage reliability gate, *not* Phase 4 or product acceptance. The report-only commit's new HEAD needs its own CI verification.
+
+---
+
 # Fonesi APK — E41 technical CI PASS / Phase 4 not accepted (29/10/2026)
 
 **Repository:** [danhgold7979-cyber/fonesi-apk](https://github.com/danhgold7979-cyber/fonesi-apk); branch `phase/e41-update-task-cluster-ownership-20261029`, [Draft PR #14](https://github.com/danhgold7979-cyber/fonesi-apk/pull/14).
