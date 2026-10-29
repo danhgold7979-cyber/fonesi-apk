@@ -1,6 +1,10 @@
 # Fonesi APK — conservative product completion estimate
 
-Date: 2026-10-29. **Latest accepted technical milestone E61 PASS** on source `2467c147d71f4f4d204a74628508023b7b2b14ab`: [GitHub Actions #40887119633](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40887119633) **SUCCESS** with exact-HEAD E40–E61 audits, cloud/candidate test/build/lint/signature/permission gates. E60 source passed CI #40885876272. This is only a guest-stop native identity-continuity guard, NOT real app/account acceptance. **Weighted product readiness remains 28.00% (~30% rounded)**, **0 accepted real third-party clones**.
+Date: 2026-10-29. **Latest verified technical milestone E63 PASS** on code/test SHA `bbaf4bbb4765033306d8a84619ab245d16e18513`, [CI #40894087779](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40894087779) **SUCCESS** with 467 tests per cloud/candidate gate, E40–E63 audits, build/lint/signatures/permission checks. E62 source also passed [CI #40889192439](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40889192439). These are bounded technical proofs, not account/device/app acceptance. **Product readiness 28.00% (~30% rounded)**, **0 accepted real third-party clones**.
+
+## E63 shared READY peer guard is not split-provider or account acceptance
+
+Native-backed RESERVED entries from interrupted creation can no longer authorize new shared-code clone create/update until confirmed READY, with JVM regressions for mixed peers and source guard audit. This does not add an independent guest Android Activity, split-capable production SDK, UID/account proof or phone acceptance. [E63 results](phases/E63_READY_SHARED_MUTATIONS_RESULTS.md). The rubric below remains unchanged.
 
 ## E61 guest stop identity guard is not runtime acceptance
 
@@ -71,7 +75,7 @@ The dimension estimates and weights are heuristic judgments anchored in docs/STA
 
 ## Distinct acceptance counters
 
-- Latest verified technical milestone: **E53 PASS** [CI #40855911991](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40855911991) on code source `76ab8d3ac991f92f8d2a21b5c4fff3d51b45e3b9`, **427 tests in each cloud/candidate gate**. E52 [CI #40853790848](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40853790848) and reporting [#40855141141](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40855141141) passed separately. E29 remains the latest synthetic Android host lifecycle proof; 0 real social-app clones accepted.
+- Latest verified technical milestone: **E63 PASS** [CI #40894087779](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40894087779), code SHA `bbaf4bbb4765033306d8a84619ab245d16e18513`, **467 tests per cloud/candidate gate**, not physical guest acceptance. Previous E62 [CI #40889192439](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40889192439) also succeeded.
 - Production clone of real required social/e-commerce app: **0 applications accepted**.
 - Real Samsung ARM64 / non-Samsung phone acceptance: **not executed**.
 - Full 8-phase/32-step product completion: **not achieved**. Product Phase 1/2 still lacks a fully verified engine and real-device/account isolation acceptance.
