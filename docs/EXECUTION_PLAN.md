@@ -1,5 +1,10 @@
 # Kế hoạch thực thi và đối chiếu yêu cầu
 
+## E48 — recovery-time retained source quarantine pre-code plan (29/10/2026)
+
+Branch `phase/e48-retained-recovery-quarantine-20261029` starts from E45 report HEAD `3da43261747f28f49c86356cb79afb42699f6e3d`, source E45 [CI #40848683404](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40848683404) PASS, 390 cloud/candidate tests each. E46/E47 are distinct parallel technical branches; do not mix their results. [E48 detailed plan](phases/E48_RETAINED_RECOVERY_QUARANTINE_PLAN.md). Original product Phase 4 steps 18–20: guard `UpdateRunner.recoverLocked` with existing fail-closed retained-source authority before legacy engine version readback or snapshot deletion. Denied APPLYING/VERIFYING → REVIEW_REQUIRED with immutable marker; denied PREPARING/REVIEW_REQUIRED remain held; legitimate legacy recovery unchanged. Add negative JVM tests and pinned E48 cloud/candidate audits. No product % increase from storage/routing reliability: 28.00%, zero real clones.
+
+
 ## E45 — bounded technical integration PASS (29/10/2026)
 
 Source `64e0a285da84360e3fdea57135367d5b9bd6f8b5` [GitHub Actions #40848683404](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40848683404) **SUCCESS**: 390 tests per cloud/candidate gate, build/lint/signed APK permission checks and E40–E45 audits. [Full E45 results](phases/E45_RETAINED_BATCH_SOURCE_QUARANTINE_RESULTS.md). E45 preserves E44 batch atomicity plus source-authority no-fallback guard; existing Room v6, single-APK candidate and no destructive GC remain. This does not prove private-source execution, full split provider or account isolation. Next: E46 recovery-time retained-source fail-closed proof; separate pre-code plan required. Product 28.00%, zero real clones.
