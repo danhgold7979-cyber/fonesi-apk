@@ -126,6 +126,30 @@ class PrivateGuestActivityClassPreflightTest {
             selection(valid), valid, ownedLoader, activityBase))
     }
 
+    @Test fun successfulPreflightDoesNotRunGuestStaticInitializer() {
+        GuestStaticInitializationSentinel.count = 0
+        val type = Class.forName(
+            StaticInitializerActivityForTest::class.java.name, false, ownedLoader)
+        assertEquals(0, GuestStaticInitializationSentinel.count)
+        val selected = selection(type)
+        val checked = PrivateGuestActivityClassPreflight.requireMatches(
+            selected, type, ownedLoader, activityBase)
+        assertSame(type, checked)
+        assertEquals("Preflight must not initialize the guest class", 0, GuestStaticInitializationSentinel.count)
+    }
+
+    @Test fun constructorShapeFailureDoesNotRunGuestStaticInitializer() {
+        GuestStaticInitializationSentinel.count = 0
+        val type = Class.forName(
+            StaticInitializerPrivateConstructorForTest::class.java.name, false, ownedLoader)
+        assertEquals(0, GuestStaticInitializationSentinel.count)
+        assertThrows(IllegalArgumentException::class.java) {
+            PrivateGuestActivityClassPreflight.requireMatches(
+                selection(type), type, ownedLoader, activityBase)
+        }
+        assertEquals("Failed preflight must not initialize the guest class", 0, GuestStaticInitializationSentinel.count)
+    }
+
     @Test fun realSignedPrivateManifestWithoutDexIsNotAnExecutableGuestActivity() {
         // The aapt2/apksigner fixture declares an allowed Activity but has no classes.dex.
         // Manifest authorization alone cannot be accepted as an Android guest runtime.
@@ -168,4 +192,18 @@ class PrivateConstructorActivityForTest private constructor() : ExpectedActivity
 class ProtectedConstructorActivityForTest protected constructor() : ExpectedActivityBaseForTest()
 class PublicNoArgAndParameterizedActivityForTest() : ExpectedActivityBaseForTest() {
     constructor(value: String) : this()
+}
+
+object GuestStaticInitializationSentinel { var count: Int = 0 }
+
+class StaticInitializerActivityForTest : ExpectedActivityBaseForTest() {
+    companion object {
+        init { GuestStaticInitializationSentinel.count++ }
+    }
+}
+
+class StaticInitializerPrivateConstructorForTest private constructor() : ExpectedActivityBaseForTest() {
+    companion object {
+        init { GuestStaticInitializationSentinel.count++ }
+    }
 }
