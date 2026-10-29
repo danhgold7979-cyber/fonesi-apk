@@ -1,5 +1,11 @@
 # Fonesi APK — conservative product completion estimate
 
+Date 2026-10-29. **Latest bounded technical milestone E50 PASS**, [CI #40851899007](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40851899007) SUCCESS on code SHA `37ff68f4cd51582cababccaa01bfc77b505f9ea3`, **415 tests each cloud/candidate**, build/lint/signature/permissions and E40–E50 audits. Its advisory update preview now blocks original-app targets of active private sources without defeating E47 atomic confirm; this is NOT a tested third-party guest app, split import or independent account. Weighted product rubric remains **28.00%** and real app acceptance **0**. E49 integration also passed [CI #40851203055](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40851203055), 407/gate.
+
+## E50 preview safeguard is not full Phase 4 product acceptance
+
+New `UpdateBlockReason.PRIVATE_SOURCE_ACTIVE` filters unsafe original-source target groups and `UpdatePreviewDialog` explains a retained/private source in Vietnamese. Four native-SQLite regression methods test active marked/old owner references, unrelated package consent, stale preview invalidation and terminal source history. No migration (Room v6), no provider launch, no split enablement or GC. Product and phone/device acceptance gates remain open.
+
 Date: 2026-10-29. **Latest accepted technical milestone: E45 PASS** on exact code SHA `64e0a285da84360e3fdea57135367d5b9bd6f8b5`, [CI #40848683404](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40848683404). Both cloud and candidate passed **390 tests per gate**, 0 failed tests, build/lint/signature/permission and E40–E45 source audits. Technical E45 combines batch-atomic verified private-source ownership and durable `retainedSource` original-app fallback quarantine; no real guest app, account or phone proof. Weighted engineering estimate remains **28.00% (~30% rounded)** and accepted production social/e-commerce clones remain zero.
 
 ## E45 integration is not Phase 4 acceptance

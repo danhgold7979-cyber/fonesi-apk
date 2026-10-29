@@ -1,3 +1,13 @@
+# Fonesi APK — E50 preview source-authority technical PASS; Phase 4 incomplete (29/10/2026)
+
+**Repository** [danhgold7979-cyber/fonesi-apk](https://github.com/danhgold7979-cyber/fonesi-apk), **branch** `phase/e50-preview-private-source-authority-20261029`, [Draft PR #24](https://github.com/danhgold7979-cyber/fonesi-apk/pull/24) stacked on E49 Draft PR #23; `main@c055df600f87ee9ddf0cd5d6bfc67d80d145e79d` unchanged.
+
+**Original roadmap** Phase 4, steps 17–20. **E50 PASS on implementation `37ff68f4cd51582cababccaa01bfc77b505f9ea3`**: [CI #40851899007](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40851899007) **SUCCESS**, **415 tests per cloud/candidate gate**, build/lint/signed APK/permissions, E40–E50 source audits and split-disabled/non-GC controls. [E50 plan](phases/E50_PREVIEW_PRIVATE_SOURCE_AUTHORITY_PLAN.md); [verified results](phases/E50_PREVIEW_PRIVATE_SOURCE_AUTHORITY_RESULTS.md).
+
+**Implemented:** update preview no longer shows an unsafe original-app target as eligible while an active retained/private-source task is owned; the Vietnamese dialog now explains the source conflict, and unrelated packages remain actionable. Atomic confirm is still required to close owner races. E49 integration ([CI #40851203055](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40851203055), 407 per gate) also passed. This does NOT implement a real guest Activity, arbitrary split provider, independent account runtime, device acceptance or release. **Weighted score 28.00%; accepted real apps 0**. Keep Draft; report-only HEAD needs separate exact-SHA CI.
+
+---
+
 # Fonesi APK — E45 bounded technical PASS, Phase 4 incomplete (29/10/2026)
 
 **Repository:** [danhgold7979-cyber/fonesi-apk](https://github.com/danhgold7979-cyber/fonesi-apk). **Development branch:** `phase/e45-retained-batch-source-quarantine-20261029`, [Draft PR #19](https://github.com/danhgold7979-cyber/fonesi-apk/pull/19) stacked on E44 batch Draft #17, with separately verified E44 source quarantine Draft #18. `main@c055df600f87ee9ddf0cd5d6bfc67d80d145e79d` unchanged.

@@ -1,5 +1,10 @@
 # Kế hoạch thực thi và đối chiếu yêu cầu
 
+## E50 — exact-source cloud/candidate technical PASS (29/10/2026)
+
+Implementation `37ff68f4cd51582cababccaa01bfc77b505f9ea3`, [CI #40851899007](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40851899007) SUCCESS (**415 tests per gate**, build/lint/signature/permissions and E40–E50/Room/no-split/no-GC audits). [E50 results](phases/E50_PREVIEW_PRIVATE_SOURCE_AUTHORITY_RESULTS.md). Private retained source conflicts are explicit UI preview blockers and removed from original-app eligible target groups; E47 confirm CAS remains. E49 parent technical integration also passed [CI #40851203055](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40851203055) with 407/gate. Original Phase 4 steps 17–20 remain open, weighted 28.00%, zero accepted real apps.
+
+
 ## E50 — preview private-source authority conflict (pre-code, 29/10/2026)
 
 Branch `phase/e50-preview-private-source-authority-20261029` from E49 integration source `23ea57d65fd562d5cc611040e2e8791f6462779c`, with parent CI #40851203055 pending at plan creation. Original product Phase 4 steps 17–20. [Detailed E50 plan](phases/E50_PREVIEW_PRIVATE_SOURCE_AUTHORITY_PLAN.md): display durable private-source conflict as an explicit blocked reason in update preview, filter unsafe original-app targets without altering E47 atomic confirm, native SQLite stale-preview/legacy/owner regressions, pinned cloud/candidate workflow, no provider/split/GC. Weighted 28%, 0 real apps accepted.
