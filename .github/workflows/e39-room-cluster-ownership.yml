@@ -9,6 +9,7 @@ on:
       - "app/src/main/java/vn/fonesi/app/storage/FonesiDatabase.kt"
       - "app/src/main/java/vn/fonesi/app/storage/ClusterReferenceRepository.kt"
       - "app/src/test/java/vn/fonesi/app/storage/ClusterReferenceRepositoryTest.kt"
+      - "app/src/test/java/vn/fonesi/app/storage/StorageIntegrationTest.kt"
       - "app/schemas/vn.fonesi.app.storage.FonesiDatabase/**"
       - "apk-runtime/src/main/kotlin/vn/fonesi/apk/PrivateApkClusterReferenceLedger.kt"
       - "apk-runtime/src/test/kotlin/vn/fonesi/apk/PrivateApkStoreTest.kt"
