@@ -6,6 +6,10 @@ Date: 2026-10-29. **Latest fully verified technical slice: E40 PASS** at code-an
 
 E40 belongs to **Phase 3 steps 13–16**, not a new product Phase. This milestone has passed its exact-source CI gates on `a3cf9ec`, including Room v5→v6 migration, clone/cluster owner consistency, safe failure/rollback tests and APK safety audits. It does not activate the stored APK into a production guest engine, import splits, prove separate accounts, pass physical phone checks or complete the product's phase. The weighted score below remains **28.00% (~30%)**; zero required real apps are accepted.
 
+## E41 update-task reference work is not product acceptance
+
+E41 on `phase/e41-update-task-cluster-ownership-20261029` is under code/CI evaluation for Phase 4 steps 17–20. It introduces explicit durable Room UPDATE_TASK/REVIEW_REQUIRED reference-retention APIs, **not** a production update runner or tested real guest session. E40 remains the latest verified technical PASS ([CI #40838110200](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40838110200)). The product estimate stays **28.00%**, and physical-phone/account/split-provider gates remain open.
+
 ## Product score (weighted engineering estimate)
 
 The original requirements are **8 product phases / 32 steps**; technical E10–E29 milestones overlap those phases and MUST NOT be divided by milestone count to get product completion.

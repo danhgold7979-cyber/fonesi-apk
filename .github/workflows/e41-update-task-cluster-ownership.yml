@@ -1,0 +1,87 @@
+name: E41 Durable update task private-cluster ownership
+
+on:
+  push:
+    branches:
+      - phase/e41-update-task-cluster-ownership-20261029
+    paths:
+      - ".github/workflows/e41-update-task-cluster-ownership.yml"
+      - "app/src/main/java/vn/fonesi/app/storage/UpdateTaskClusterOwnershipRepository.kt"
+      - "app/src/test/java/vn/fonesi/app/storage/UpdateTaskClusterOwnershipRepositoryTest.kt"
+      - "app/src/main/java/vn/fonesi/app/storage/RoomUpdateTaskStore.kt"
+      - "app/src/main/java/vn/fonesi/app/storage/TaskCodec.kt"
+      - "app/src/main/java/vn/fonesi/app/storage/FonesiDatabase.kt"
+      - "app/src/main/java/vn/fonesi/app/storage/CloneClusterOwnershipRepository.kt"
+      - "app/schemas/vn.fonesi.app.storage.FonesiDatabase/**"
+      - "scripts/audit_e41_update_task_cluster_ownership.py"
+      - "scripts/audit_e40_clone_cluster_ownership.py"
+      - "docs/phases/E41_UPDATE_TASK_CLUSTER_OWNERSHIP_PLAN.md"
+      - "docs/phases/E41_UPDATE_TASK_CLUSTER_OWNERSHIP_RESULTS.md"
+      - "docs/STATUS.md"
+      - "docs/PRODUCT_PROGRESS.md"
+      - "docs/EXECUTION_PLAN.md"
+      - "scripts/check.sh"
+      - "scripts/verify_main_build.py"
+      - "scripts/verify_candidate_build.py"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: fonesi-e41-update-task-cluster-owners-v1
+  cancel-in-progress: true
+
+jobs:
+  task-cluster-ownership:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      FONESI_TOOLS_DIR: /tmp/fonesi-tools
+      ANDROID_HOME: /tmp/fonesi-tools/android-sdk
+      ANDROID_SDK_ROOT: /tmp/fonesi-tools/android-sdk
+    steps:
+      - name: Checkout exact E41 source
+        uses: actions/checkout@v4
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Audit E40 and E41 ownership safety and scripts
+        run: |
+          python3 -m py_compile scripts/audit_e40_clone_cluster_ownership.py scripts/audit_e41_update_task_cluster_ownership.py scripts/verify_main_build.py scripts/verify_candidate_build.py
+          python3 scripts/audit_e40_clone_cluster_ownership.py
+          python3 scripts/audit_e41_update_task_cluster_ownership.py
+      - name: Bootstrap pinned Android SDK36 and JDK21
+        run: python3 scripts/bootstrap_android.py --accept-sdk-license
+      - name: Build test lint audit cloud and Room E41 journal owner
+        run: ./scripts/check.sh
+      - name: Build audit opt-in candidate without activating unsupported features
+        run: ./scripts/check.sh --with-engine-candidate
+      - name: Verify no split import, runtime launch or cluster deletion is enabled
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          backend = Path("app/src/candidate/java/vn/fonesi/app/runtime/SpaceCoreBackend.kt").read_text()
+          runtime = Path("app/src/candidate/java/vn/fonesi/app/runtime/RuntimeBindings.kt").read_text()
+          ownership = Path("app/src/main/java/vn/fonesi/app/storage/UpdateTaskClusterOwnershipRepository.kt").read_text()
+          assert "check(source.apkPaths.size == 1)" in backend
+          assert "const val supportsSplits = false" in runtime
+          for forbidden in ("fun collectGarbage(", "fun deleteCluster(", "engine.update(", "engine.launch("):
+              assert forbidden not in ownership
+          print("PASS: E41 is Room source-retention only; candidate split import and GC remain disabled.")
+          PY
+      - name: Upload E41 schema and sanitized test receipts only
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: fonesi-E41-update-task-cluster-owner-TEST-ONLY
+          path: |
+            app/schemas/vn.fonesi.app.storage.FonesiDatabase/6.json
+            app/build/reports/cloud-verification.json
+            app/build/reports/candidate-verification.json
+            app/build/test-results/testDebugUnitTest/TEST-*.xml
+            apk-runtime/build/test-results/test/TEST-*.xml
+            core/build/test-results/test/TEST-*.xml
+          if-no-files-found: warn
+          retention-days: 7

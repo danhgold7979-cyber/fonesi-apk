@@ -1,3 +1,15 @@
+# Fonesi APK — E41 update-task private-cluster ownership under CI (29/10/2026)
+
+**Repository:** [danhgold7979-cyber/fonesi-apk](https://github.com/danhgold7979-cyber/fonesi-apk), branch `phase/e41-update-task-cluster-ownership-20261029`. This is a **technical E41 increment under original Phase 4 steps 17–20**, not a ninth product Phase or a finished update engine.
+
+**Baseline:** E40 technical PASS on exact source and reporting SHA `dc5aea86a01aee0594ad70cbae6367f6332e2596` — [E40 CI #40838110200](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40838110200) SUCCESS, 349 tests per cloud/candidate gate and no errors/skips. `main` remains at `c055df600f87ee9ddf0cd5d6bfc67d80d145e79d`. E40 Draft PR #13 stays unchanged.
+
+**E41 current status: CODE COMMITTED, CI NOT YET ACCEPTED.** Pre-code [plan](phases/E41_UPDATE_TASK_CLUSTER_OWNERSHIP_PLAN.md) and [execution sequence](EXECUTION_PLAN.md) are recorded. New Room-only `UpdateTaskClusterOwnershipRepository` requires private-cluster readback, matches task identity/source, acquires UPDATE_TASK ownership idempotently, promotes unknown outcomes to REVIEW_REQUIRED, and releases task ownership only after terminal journal state. Tests and dedicated E41 cloud/candidate workflow must pass on the exact source SHA; no E41 PASS claim from writing code.
+
+**Safety:** Room schema remains v6; no APK publication/install/launch, private-file deletion/GC, split import, UID/account isolation, real app update session proof or release acceptance. Product readiness unchanged at **28.00% (~30% rounded)** and **0** real third-party clones accepted.
+
+---
+
 # Fonesi APK — E40 technical PASS / Phase 3 still unfinished (29/10/2026)
 
 **Repository:** [danhgold7979-cyber/fonesi-apk](https://github.com/danhgold7979-cyber/fonesi-apk). **Branch:** `phase/e40-clone-cluster-ownership-20261029`, [Draft PR #13](https://github.com/danhgold7979-cyber/fonesi-apk/pull/13), based on the cumulative E21 branch. `main@c055df600f87ee9ddf0cd5d6bfc67d80d145e79d` remains unchanged.
