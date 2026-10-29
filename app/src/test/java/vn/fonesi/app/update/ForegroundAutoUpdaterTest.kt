@@ -139,7 +139,7 @@ class ForegroundAutoUpdaterTest {
 
         assertEquals(retained, tasks.list().first { it.id == retained.id })
         assertEquals(TaskState.QUEUED, tasks.list().first { it.id == retained.id }.state)
-        assertEquals(0, engine.updates) // The original catalog must not bypass retained source authority.
+        assertEquals(1, engine.updates) // Unrelated original-source work may proceed; retained alpha must not run.
     }
 
     @Test fun preMarkerPrivateOwnerTypesAreNotCancelledByOriginalAppPreview(): Unit = background {
