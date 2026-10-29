@@ -7,6 +7,7 @@ enum class UpdateBlockReason {
     SIGNER_REVIEW_REQUIRED, NEWER_CLONE_VERSION, IN_USE_OR_UNKNOWN,
     SOURCE_UNSUPPORTED,
     INCOMPLETE_GROUP,
+    PRIVATE_SOURCE_ACTIVE,
 }
 
 data class UpdateBlock(val requestedCloneId: String, val reason: UpdateBlockReason)
