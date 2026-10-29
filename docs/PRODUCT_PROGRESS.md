@@ -1,6 +1,10 @@
 # Fonesi APK — conservative product completion estimate
 
-Date: 2026-10-29. **Latest accepted technical milestone: E52 PASS** at exact code SHA `59bf73522b3a86c1caca57af8613bb2e7b915b2b`: [GitHub Actions #40853790848](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40853790848) **SUCCESS** with **423 tests per cloud/candidate gate**, build/lint/SDK/signature/permission and E40–E52 audits. E51 original/private-source collision fix separately passed [CI #40853007668](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40853007668), 419 tests each gate. This is a journal/queue isolation improvement, not accepted third-party guest execution or account separation. Product weighted estimate stays **28.00% (~30% rounded)**; **0** real third-party apps accepted.
+Date: 2026-10-29. **Latest accepted technical milestone E53 PASS**, exact code SHA `76ab8d3ac991f92f8d2a21b5c4fff3d51b45e3b9`: [GitHub Actions #40855911991](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40855911991) **SUCCESS**, **427 tests in each cloud/candidate gate**, build/lint/SDK/signature/permission and E40–E53 audits. E52 code and reporting SHA both passed their own CI; E51 parent passed. E53 protects background snapshots for retained/private Room owners; it is not new end-user clone functionality. **Weighted product readiness stays 28.00% (~30% rounded)**, real accepted third-party clones **0**.
+
+## E53 WorkManager private-source preservation does not complete Phase 4
+
+The headless worker now refuses to delete a retained/private PREPARING snapshot or reset its journal without legacy-original authority. Source ownership checks include pre-marker UPDATE_TASK and REVIEW_REQUIRED references and fail closed on read errors, while unowned legacy PREPARING still requeues and unknown APPLYING/VERIFYING stays review-only. Three JVM and one native SQLite multi-scenario test were added; see [E53 results](phases/E53_BACKGROUND_PRIVATE_SOURCE_RECOVERY_RESULTS.md). No full split provider, guest Activity, independent UID/account session or phone test was accepted.
 
 ## E52 namespace-scoped queue/recovery is not Phase 4 acceptance
 
@@ -47,7 +51,7 @@ The dimension estimates and weights are heuristic judgments anchored in docs/STA
 
 ## Distinct acceptance counters
 
-- Latest verified technical milestone: **E52 PASS** [CI #40853790848](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40853790848), exact code source `59bf73522b3a86c1caca57af8613bb2e7b915b2b`, 423 tests per cloud/candidate gate. E51 private-enqueue safety also **PASS** [CI #40853007668](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40853007668), 419 each. E29 remains the latest synthetic Android host lifecycle proof; no guest Activity/UID or social-app account acceptance.
+- Latest verified technical milestone: **E53 PASS** [CI #40855911991](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40855911991) on code source `76ab8d3ac991f92f8d2a21b5c4fff3d51b45e3b9`, **427 tests in each cloud/candidate gate**. E52 [CI #40853790848](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40853790848) and reporting [#40855141141](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40855141141) passed separately. E29 remains the latest synthetic Android host lifecycle proof; 0 real social-app clones accepted.
 - Production clone of real required social/e-commerce app: **0 applications accepted**.
 - Real Samsung ARM64 / non-Samsung phone acceptance: **not executed**.
 - Full 8-phase/32-step product completion: **not achieved**. Product Phase 1/2 still lacks a fully verified engine and real-device/account isolation acceptance.
