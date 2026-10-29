@@ -57,6 +57,49 @@ class ManagedGuestEngineTest {
         assertNull(engine().listClones().single().running)
         assertEquals(1, backend.launchAttempts)
     }
+    @Test fun pendingUnknownLaunchCannotDispatchTwiceBeforeVerifiedStop() {
+        val clone = engine().create(source, "A")
+        engine().launch(clone.id)
+        assertTrue(registry.list().single().launchPending)
+        assertNull(engine().listClones().single().running)
+        assertThrows(IllegalStateException::class.java) { engine().launch(clone.id) }
+        assertTrue(registry.list().single().launchPending)
+        assertEquals(1, backend.launchAttempts)
+        assertEquals(1, backend.launches.size)
+        engine().stop(clone.id) // Only exact positive stopped readback clears pending.
+        assertFalse(registry.list().single().launchPending)
+        engine().launch(clone.id)
+        assertEquals(2, backend.launchAttempts)
+        assertTrue(registry.list().single().launchPending)
+    }
+    @Test fun failedLaunchCannotBeBlindlyRetriedAcrossEngineRecreation() {
+        val clone = engine().create(source, "A")
+        backend.failLaunch = true
+        assertThrows(IllegalStateException::class.java) { engine().launch(clone.id) }
+        backend.failLaunch = false
+        assertThrows(IllegalStateException::class.java) { engine().launch(clone.id) }
+        assertEquals(1, backend.launchAttempts)
+        assertTrue(registry.list().single().launchPending)
+        assertTrue(backend.launches.isEmpty())
+        engine().stop(clone.id)
+        engine().launch(clone.id)
+        assertEquals(2, backend.launchAttempts)
+        assertEquals(listOf(registry.list().single().userId to source.packageName), backend.launches)
+    }
+    @Test fun positiveRunningReadbackResolvesUnknownAndAllowsReopenOfSameNativeGuest() {
+        val clone = engine().create(source, "A")
+        engine().launch(clone.id)
+        val row = registry.list().single()
+        backend.packages[row.userId to row.packageName] =
+            GuestPackage(row.packageName, source.versionCode, source.signerDigests, true)
+        engine().launch(clone.id)
+        assertEquals(2, backend.launchAttempts)
+        assertEquals(listOf(row.userId to row.packageName, row.userId to row.packageName), backend.launches)
+        assertTrue(registry.list().single().launchPending)
+        assertEquals(true, engine().listClones().single().running)
+        assertFalse(registry.list().single().launchPending)
+    }
+
     @Test fun reservedNativePackageReadbackCannotAuthorizeLaunch() {
         backend.failAfterInstall = true
         assertThrows(IllegalStateException::class.java) { engine().create(source, "Unconfirmed") }
