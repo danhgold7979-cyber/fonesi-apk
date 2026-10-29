@@ -199,7 +199,7 @@ class StorageIntegrationTest {
         assertEquals("🛒", saved.badgeText)
     }
 
-    @Test fun v3DatabaseMigratesToV5KeepingCloneTokenQueueAndEngineReservation() = background {
+    @Test fun v3DatabaseMigratesToV6KeepingCloneTokenQueueAndEngineReservation() = background {
         db.close()
         context.deleteDatabase(name) // Fresh test DB may not have materialized a file yet.
         val resource = checkNotNull(javaClass.classLoader!!.getResourceAsStream(
@@ -236,7 +236,7 @@ class StorageIntegrationTest {
         assertNull(row.badgeText)
         assertTrue(RoomUpdateTaskStore(db).isPaused())
         assertEquals("reserved-id", db.instances().list("engine-a").single().cloneId)
-        assertEquals(5, db.openHelper.writableDatabase.version)
+        assertEquals(6, db.openHelper.writableDatabase.version)
     }
 
     @Test fun unknownSchemaDoesNotDestructivelyRecreateTheDatabase() = background {
@@ -244,7 +244,7 @@ class StorageIntegrationTest {
         context.openOrCreateDatabase(name, Context.MODE_PRIVATE, null).use { raw ->
             raw.execSQL("CREATE TABLE retained(value TEXT NOT NULL)")
             raw.execSQL("INSERT INTO retained VALUES ('must survive')")
-            raw.version = 6
+            raw.version = 7
         }
         db = FonesiDatabase.open(context, name)
         assertThrows(IllegalStateException::class.java) { db.tasks().list() }
