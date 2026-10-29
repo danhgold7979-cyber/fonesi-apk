@@ -1,7 +1,10 @@
 # Fonesi APK — conservative product completion estimate
 
-Date: 2026-10-29. **Latest verified technical increment E57 PASS**, source `abd18c118e3e42fe8415142d3799caefc7cf1f08`: [Actions #40870539313](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40870539313) **SUCCESS** for both cloud/candidate tests, builds, lint, signatures, permissions and E40–E57 audits. **Product remains 28.00% weighted (~30% rounded), 0 accepted real third-party clones.** E57 serializes offline metadata rename/style with clone stop but cannot establish guest runtime, account isolation or device acceptance.
+Date: 2026-10-29. **Latest technical PASS E58** on exact source `07fc3262eb78f9bc1b4fa27069cbce596ad6b244`, [GitHub Actions #40881081227](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40881081227) **SUCCESS**: **449 tests per cloud and candidate gate**, each 140 core + 44 APK runtime + 265 Android/Robolectric, 0 failures/errors/skips, pinned build/lint, signatures/permissions and E40–E58 audits. This locks CLONE private APK association against cooperating clone stop/metadata mutations; it does **not** activate a production guest engine. **Weighted product readiness stays 28.00% (~30% rounded); 0 accepted real third-party clone apps.**
 
+## E58 association lock does not complete guest or device acceptance
+
+The public `CloneClusterOwnershipRepository.associate` now requires the same caller-supplied OS operation lease and holds it through signed `PrivateApkStore.open` readback and the atomic Room CLONE owner/metadata switch. The internal SQLite test seam is similarly protected. E58 retains split import disabled and does not create, launch, update or delete any guest app through this path; actual app/account/phone acceptance remains open. See [E58 results](phases/E58_CLONE_CLUSTER_ASSOCIATION_LOCK_RESULTS.md).
 
 ## E56 lock-time stop identity is not guest lifecycle acceptance
 

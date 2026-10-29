@@ -3,6 +3,7 @@ package vn.fonesi.app.storage
 import vn.fonesi.apk.ClusterOwnerType
 import vn.fonesi.apk.PrivateApkCluster
 import vn.fonesi.apk.PrivateApkStore
+import vn.fonesi.core.update.QueueLock
 import java.util.UUID
 import java.util.concurrent.Callable
 
@@ -15,6 +16,8 @@ import java.util.concurrent.Callable
  */
 class CloneClusterOwnershipRepository(
     private val db: FonesiDatabase,
+    /** Must be the same OS operation lock as clone stop, metadata edits and queue execution. */
+    private val operationLock: QueueLock,
     private val clock: () -> Long = System::currentTimeMillis,
 ) {
     /**
@@ -28,19 +31,40 @@ class CloneClusterOwnershipRepository(
         clusterId: String,
         platformApi: Int,
     ): Boolean {
+        requireOwnerIdentity(engineKey, cloneId)
         requireCanonicalUuid(clusterId)
-        val verified = store.open(clusterId, platformApi)
-        check(verified.id == clusterId) { "Private store returned a different cluster ID" }
-        return associateReadBackVerified(engineKey, cloneId, verified)
+        // Own the same OS lease as stop BEFORE reading the private APK store. The verified
+        // cluster and its Room ownership must be one uninterrupted critical section.
+        return withAssociationLock {
+            val verified = store.open(clusterId, platformApi)
+            check(verified.id == clusterId) { "Private store returned a different cluster ID" }
+            associateReadBackVerifiedLocked(engineKey, cloneId, verified)
+        }
     }
 
-    /** Package-visible test seam; production callers should use associate() to force store readback. */
+    /** Package-visible test seam only. Still takes the OS lease; never bypass source authority. */
     internal fun associateReadBackVerified(
         engineKey: String,
         cloneId: String,
         cluster: PrivateApkCluster,
     ): Boolean {
         requireOwnerIdentity(engineKey, cloneId)
+        return withAssociationLock { associateReadBackVerifiedLocked(engineKey, cloneId, cluster) }
+    }
+
+    private fun <T> withAssociationLock(action: () -> T): T {
+        val lease = checkNotNull(operationLock.acquire()) {
+            "Another clone operation is in progress; private cluster ownership remains unchanged"
+        }
+        return lease.use { action() }
+    }
+
+    /** Call only while owning withAssociationLock; keeps all owner/metadata changes atomic. */
+    private fun associateReadBackVerifiedLocked(
+        engineKey: String,
+        cloneId: String,
+        cluster: PrivateApkCluster,
+    ): Boolean {
         validateCluster(cluster)
         return db.runInTransaction(Callable {
             val clone = checkNotNull(db.clones().find(engineKey, cloneId)) {
@@ -90,6 +114,9 @@ class CloneClusterOwnershipRepository(
     }
 
     /**
+     * Do not reacquire operationLock here: the delete caller already holds it throughout provider
+     * dispatch and final readback. An overlapping association must fail while it is held.
+     *
      * Under the caller's engine-operation lock, reject inconsistent persisted ownership BEFORE
      * attempting any provider-side deletion. The final transaction checks the same invariant again.
      */

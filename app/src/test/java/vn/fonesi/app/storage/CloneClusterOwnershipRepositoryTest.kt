@@ -22,9 +22,13 @@ import vn.fonesi.apk.ClusterOwnerType
 import vn.fonesi.apk.ClusterReference
 import vn.fonesi.apk.PrivateApkCluster
 import vn.fonesi.apk.PrivateApkStore
+import vn.fonesi.core.update.FileQueueLock
 import java.io.File
 import java.security.MessageDigest
 import java.util.UUID
+import java.util.concurrent.CountDownLatch
+import java.util.concurrent.Executors
+import java.util.concurrent.TimeUnit
 
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [34], manifest = Config.NONE)
@@ -38,6 +42,9 @@ class CloneClusterOwnershipRepositoryTest {
     private val packageName = "test.social"
     private val token = "launch-token-1"
     private val temporaryFiles = mutableListOf<File>()
+    // Same file-backed OS lock as the clone lifecycle. Never use an always-granted fake.
+    private fun operationLock() =
+        FileQueueLock(context.filesDir.toPath().resolve("e58-cluster-owner.lock"))
 
     @Before fun setUp() {
         context = ApplicationProvider.getApplicationContext()
@@ -96,7 +103,7 @@ class CloneClusterOwnershipRepositoryTest {
         withContextBlocking { db.clones().insert(cloneRow()) }
         val taskRef = reference(old.id, ClusterOwnerType.UPDATE_TASK, "task-1", 10L)
         withContextBlocking { db.clusterReferences().insert(taskRef) }
-        val repository = CloneClusterOwnershipRepository(db) { 100L }
+        val repository = CloneClusterOwnershipRepository(db, operationLock()) { 100L }
 
         assertTrue(withContextBlocking { repository.associateReadBackVerified(engine, cloneId, old) })
         assertFalse(withContextBlocking { repository.associateReadBackVerified(engine, cloneId, old) })
@@ -116,7 +123,7 @@ class CloneClusterOwnershipRepositoryTest {
     @Test fun providerConfirmedDeleteAtomicallyRemovesMetadataAndOnlyCloneOwner() {
         val cluster = cluster()
         withContextBlocking { db.clones().insert(cloneRow()) }
-        val repository = CloneClusterOwnershipRepository(db) { 200L }
+        val repository = CloneClusterOwnershipRepository(db, operationLock()) { 200L }
         assertTrue(withContextBlocking { repository.associateReadBackVerified(engine, cloneId, cluster) })
         withContextBlocking {
             db.clusterReferences().insert(reference(cluster.id, ClusterOwnerType.ROLLBACK, "rollback-1", 201L))
@@ -134,7 +141,7 @@ class CloneClusterOwnershipRepositoryTest {
     @Test fun staleDeleteTokenPreservesMetadataAndReference() {
         val cluster = cluster()
         withContextBlocking { db.clones().insert(cloneRow()) }
-        val repository = CloneClusterOwnershipRepository(db)
+        val repository = CloneClusterOwnershipRepository(db, operationLock())
         withContextBlocking { repository.associateReadBackVerified(engine, cloneId, cluster) }
 
         assertThrows(IllegalStateException::class.java) {
@@ -149,7 +156,7 @@ class CloneClusterOwnershipRepositoryTest {
 
     @Test fun missingCloneOrPackageMismatchCannotAcquireReference() {
         val cluster = cluster()
-        val repository = CloneClusterOwnershipRepository(db)
+        val repository = CloneClusterOwnershipRepository(db, operationLock())
         assertThrows(IllegalStateException::class.java) {
             withContextBlocking { repository.associateReadBackVerified(engine, cloneId, cluster) }
         }
@@ -169,7 +176,7 @@ class CloneClusterOwnershipRepositoryTest {
             db.clones().insert(cloneRow())
             db.clusterReferences().insert(reference(cluster.id, ClusterOwnerType.CLONE, cloneId))
         }
-        val repository = CloneClusterOwnershipRepository(db)
+        val repository = CloneClusterOwnershipRepository(db, operationLock())
         assertThrows(IllegalStateException::class.java) {
             withContextBlocking { repository.associateReadBackVerified(engine, cloneId, cluster) }
         }
@@ -185,7 +192,7 @@ class CloneClusterOwnershipRepositoryTest {
         val conflict = cluster(version = 2L)
         val replacement = cluster(version = 3L)
         withContextBlocking { db.clones().insert(cloneRow()) }
-        val repository = CloneClusterOwnershipRepository(db)
+        val repository = CloneClusterOwnershipRepository(db, operationLock())
         assertTrue(withContextBlocking { repository.associateReadBackVerified(engine, cloneId, old) })
         withContextBlocking {
             db.clusterReferences().insert(reference(conflict.id, ClusterOwnerType.CLONE, cloneId))
@@ -217,7 +224,7 @@ class CloneClusterOwnershipRepositoryTest {
     @Test fun committedAssociationSurvivesDatabaseReopenAndKeepsLaunchToken() {
         val verified = cluster()
         withContextBlocking { db.clones().insert(cloneRow()) }
-        val repository = CloneClusterOwnershipRepository(db)
+        val repository = CloneClusterOwnershipRepository(db, operationLock())
         assertTrue(withContextBlocking { repository.associateReadBackVerified(engine, cloneId, verified) })
         withContextBlocking {
             db.close()
@@ -231,8 +238,117 @@ class CloneClusterOwnershipRepositoryTest {
                 .map { it.clusterId }
         })
         assertFalse(withContextBlocking {
-            CloneClusterOwnershipRepository(db).associateReadBackVerified(engine, cloneId, verified)
+            CloneClusterOwnershipRepository(db, operationLock()).associateReadBackVerified(engine, cloneId, verified)
         })
+    }
+
+    @Test fun heldStopLeaseRejectsAssociationWithoutChangingMetadataOrReferences() {
+        val verified = cluster()
+        withContextBlocking { db.clones().insert(cloneRow()) }
+        val repository = CloneClusterOwnershipRepository(db, operationLock())
+        val before = withContextBlocking { db.clones().find(engine, cloneId) }
+        val held = checkNotNull(operationLock().acquire())
+        try {
+            assertThrows(IllegalStateException::class.java) {
+                withContextBlocking { repository.associateReadBackVerified(engine, cloneId, verified) }
+            }
+            assertEquals(before, withContextBlocking { db.clones().find(engine, cloneId) })
+            assertTrue(withContextBlocking { db.clusterReferences().list().isEmpty() })
+        } finally {
+            held.close()
+        }
+        assertTrue(withContextBlocking { repository.associateReadBackVerified(engine, cloneId, verified) })
+        assertEquals(verified.id, withContextBlocking { db.clones().find(engine, cloneId)?.clusterId })
+        assertEquals(token, withContextBlocking { db.clones().find(engine, cloneId)?.launchToken })
+        assertEquals(listOf(verified.id), withContextBlocking {
+            db.clusterReferences().forOwner(ClusterOwnerType.CLONE.name, cloneId, engine).map { it.clusterId }
+        })
+    }
+
+    @Test fun publicAssociationChecksOperationLeaseBeforeUnpublishedPrivateStoreReadback() {
+        withContextBlocking { db.clones().insert(cloneRow()) }
+        val root = java.nio.file.Files.createTempDirectory("fonesi-e58-unpublished-")
+        val store = PrivateApkStore(root)
+        val repository = CloneClusterOwnershipRepository(db, operationLock())
+        val unpublished = UUID.randomUUID().toString()
+        try {
+            val held = checkNotNull(operationLock().acquire())
+            try {
+                // With a held stop lock the refusal must precede private-store I/O.
+                assertThrows(IllegalStateException::class.java) {
+                    withContextBlocking { repository.associate(engine, cloneId, store, unpublished, 34) }
+                }
+            } finally {
+                held.close()
+            }
+            assertThrows(IllegalArgumentException::class.java) {
+                withContextBlocking { repository.associate(engine, cloneId, store, unpublished, 34) }
+            }
+            assertNull(withContextBlocking { db.clones().find(engine, cloneId)?.clusterId })
+            assertTrue(withContextBlocking { db.clusterReferences().list().isEmpty() })
+        } finally {
+            java.nio.file.Files.deleteIfExists(root)
+        }
+    }
+
+    @Test fun validationFailureReleasesLeaseAndGenerationSwitchPreservesOtherOwners() {
+        withContextBlocking { db.clones().insert(cloneRow()) }
+        val repository = CloneClusterOwnershipRepository(db, operationLock()) { 300L }
+        val old = cluster()
+        val next = cluster(version = 2L)
+        val invalid = PrivateApkCluster(
+            UUID.randomUUID().toString(),
+            AuditedApkSet(old.apks.base.copy(packageName = "another.package"), emptyList()),
+        )
+        assertThrows(IllegalStateException::class.java) {
+            withContextBlocking { repository.associateReadBackVerified(engine, cloneId, invalid) }
+        }
+        checkNotNull(operationLock().acquire()).close() // Failed validation released the lease.
+        assertTrue(withContextBlocking { repository.associateReadBackVerified(engine, cloneId, old) })
+        withContextBlocking {
+            db.clusterReferences().insert(reference(old.id, ClusterOwnerType.UPDATE_TASK, "update-1", 301L))
+            db.clusterReferences().insert(reference(old.id, ClusterOwnerType.REVIEW_REQUIRED, "review-1", 302L))
+            db.clusterReferences().insert(reference(old.id, ClusterOwnerType.ROLLBACK, "rollback-1", 303L))
+        }
+        assertTrue(withContextBlocking { repository.associateReadBackVerified(engine, cloneId, next) })
+        assertEquals(next.id, withContextBlocking { db.clones().find(engine, cloneId)?.clusterId })
+        assertEquals(token, withContextBlocking { db.clones().find(engine, cloneId)?.launchToken })
+        assertEquals(setOf(ClusterOwnerType.UPDATE_TASK.name, ClusterOwnerType.REVIEW_REQUIRED.name,
+            ClusterOwnerType.ROLLBACK.name), withContextBlocking {
+            db.clusterReferences().forCluster(old.id).map { it.ownerType }.toSet()
+        })
+        assertEquals(listOf(ClusterOwnerType.CLONE.name), withContextBlocking {
+            db.clusterReferences().forCluster(next.id).map { it.ownerType }
+        })
+    }
+
+    @Test fun concurrentStopCriticalSectionRefusesAssociationUntilLeaseReleased() {
+        withContextBlocking { db.clones().insert(cloneRow()) }
+        val verified = cluster()
+        val repository = CloneClusterOwnershipRepository(db, operationLock())
+        val leaseHeld = CountDownLatch(1)
+        val releaseStop = CountDownLatch(1)
+        val executor = Executors.newSingleThreadExecutor()
+        val stop = executor.submit {
+            checkNotNull(operationLock().acquire()).use {
+                leaseHeld.countDown()
+                check(releaseStop.await(10, TimeUnit.SECONDS)) { "Synthetic stop lease timed out" }
+            }
+        }
+        try {
+            assertTrue(leaseHeld.await(10, TimeUnit.SECONDS))
+            assertThrows(IllegalStateException::class.java) {
+                withContextBlocking { repository.associateReadBackVerified(engine, cloneId, verified) }
+            }
+            assertNull(withContextBlocking { db.clones().find(engine, cloneId)?.clusterId })
+            assertTrue(withContextBlocking { db.clusterReferences().list().isEmpty() })
+        } finally {
+            releaseStop.countDown()
+            stop.get(15, TimeUnit.SECONDS)
+            executor.shutdownNow()
+        }
+        assertTrue(withContextBlocking { repository.associateReadBackVerified(engine, cloneId, verified) })
+        assertEquals(verified.id, withContextBlocking { db.clones().find(engine, cloneId)?.clusterId })
     }
 
     @Test fun unpublishedOrMalformedPrivateClusterIsRejectedBeforeRoomMutation() {
@@ -240,7 +356,7 @@ class CloneClusterOwnershipRepositoryTest {
         val root = java.nio.file.Files.createTempDirectory("fonesi-e40-unpublished-")
         try {
             val store = PrivateApkStore(root)
-            val repository = CloneClusterOwnershipRepository(db)
+            val repository = CloneClusterOwnershipRepository(db, operationLock())
             assertThrows(IllegalArgumentException::class.java) {
                 withContextBlocking {
                     repository.associate(engine, cloneId, store, UUID.randomUUID().toString(), 34)
@@ -259,7 +375,7 @@ class CloneClusterOwnershipRepositoryTest {
     @Test fun wrongEngineOrCloneNamespaceCannotAcquirePrivateCluster() {
         withContextBlocking { db.clones().insert(cloneRow()) }
         val verified = cluster()
-        val repository = CloneClusterOwnershipRepository(db)
+        val repository = CloneClusterOwnershipRepository(db, operationLock())
         assertThrows(IllegalStateException::class.java) {
             withContextBlocking { repository.associateReadBackVerified("engine-b", cloneId, verified) }
         }
@@ -273,7 +389,7 @@ class CloneClusterOwnershipRepositoryTest {
     @Test fun sqliteAbortDuringAssociationRollsBackNewOwnerReference() {
         withContextBlocking { db.clones().insert(cloneRow()) }
         val verified = cluster()
-        val repository = CloneClusterOwnershipRepository(db)
+        val repository = CloneClusterOwnershipRepository(db, operationLock())
         withContextBlocking {
             db.openHelper.writableDatabase.execSQL(
                 "CREATE TRIGGER e40_abort_cluster_update BEFORE UPDATE OF clusterId ON clone_metadata " +

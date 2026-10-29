@@ -1,0 +1,179 @@
+name: E58 Private cluster association lock safety gate
+
+on:
+  push:
+    branches:
+      - phase/e58-clone-cluster-association-lock-20261029
+    paths:
+      - ".github/workflows/e58-clone-cluster-association-lock.yml"
+      - ".github/workflows/e57-clone-presentation-operation-lock.yml"
+      - ".github/workflows/e49-source-authority-gates-integration.yml"
+      - ".github/workflows/e51-retained-enqueue-original-conflict.yml"
+      - "scripts/audit_e51_retained_enqueue_original_conflict.py"
+      - "scripts/audit_e52_engine_scoped_queue_recovery.py"
+      - "scripts/audit_e53_background_private_source_recovery.py"
+      - "scripts/audit_e54_unblocked_queue_selection.py"
+      - "scripts/audit_e55_engine_scoped_queue_controls.py"
+      - "core/src/main/kotlin/vn/fonesi/core/update/UpdateJournalRecovery.kt"
+      - "core/src/test/kotlin/vn/fonesi/core/update/UpdateJournalRecoveryTest.kt"
+      - "app/src/main/java/vn/fonesi/app/update/UpdateJournalRecoveryWorker.kt"
+      - "app/src/test/java/vn/fonesi/app/update/UpdateJournalRecoveryWorkerTest.kt"
+      - "docs/phases/E53_BACKGROUND_PRIVATE_SOURCE_RECOVERY_PLAN.md"
+      - "docs/phases/E53_BACKGROUND_PRIVATE_SOURCE_RECOVERY_RESULTS.md"
+      - "docs/phases/E54_UNBLOCKED_QUEUE_WORK_SELECTION_PLAN.md"
+      - "docs/phases/E54_UNBLOCKED_QUEUE_WORK_SELECTION_RESULTS.md"
+      - "docs/phases/E55_ENGINE_SCOPED_QUEUE_CONTROLS_PLAN.md"
+      - "docs/phases/E55_ENGINE_SCOPED_QUEUE_CONTROLS_RESULTS.md"
+      - "docs/phases/E56_STOP_CLONE_IDENTITY_REVALIDATION_PLAN.md"
+      - "docs/phases/E57_CLONE_PRESENTATION_OPERATION_LOCK_PLAN.md"
+      - "docs/phases/E56_STOP_CLONE_IDENTITY_REVALIDATION_RESULTS.md"
+      - "docs/phases/E57_CLONE_PRESENTATION_OPERATION_LOCK_RESULTS.md"
+      - "docs/phases/E58_CLONE_CLUSTER_ASSOCIATION_LOCK_PLAN.md"
+      - "docs/phases/E58_CLONE_CLUSTER_ASSOCIATION_LOCK_RESULTS.md"
+      - "app/src/main/java/vn/fonesi/app/storage/CloneMetadataRepository.kt"
+      - "app/src/main/java/vn/fonesi/app/storage/CloneClusterOwnershipRepository.kt"
+      - "app/src/main/java/vn/fonesi/app/storage/CloneStopIdentityGuard.kt"
+      - "app/src/test/java/vn/fonesi/app/storage/CloneStopIdentityGuardTest.kt"
+      - "scripts/audit_e56_stop_identity_revalidation.py"
+      - "scripts/audit_e57_clone_presentation_lock.py"
+      - "scripts/audit_e58_clone_cluster_association_lock.py"
+      - "core/src/test/kotlin/vn/fonesi/core/update/UpdateQueueNamespaceTest.kt"
+      - "core/src/test/kotlin/vn/fonesi/core/update/ExecutionPolicyTest.kt"
+      - "app/src/main/java/vn/fonesi/app/AppsViewModel.kt"
+      - "app/src/main/java/vn/fonesi/app/MainActivity.kt"
+      - "app/src/main/java/vn/fonesi/app/ManagementCards.kt"
+      - "app/src/test/java/vn/fonesi/app/storage/EngineScopedQueueControlTest.kt"
+      - "docs/phases/E51_RETAINED_ENQUEUE_ORIGINAL_SOURCE_CONFLICT_PLAN.md"
+      - "docs/phases/E52_ENGINE_SCOPED_QUEUE_RECOVERY_PLAN.md"
+      - "docs/phases/E51_RETAINED_ENQUEUE_ORIGINAL_SOURCE_CONFLICT_RESULTS.md"
+      - "docs/phases/E52_ENGINE_SCOPED_QUEUE_RECOVERY_RESULTS.md"
+      - "app/src/main/java/vn/fonesi/app/storage/PrivateClusterRetainedEnqueuer.kt"
+      - "app/src/main/java/vn/fonesi/app/storage/UpdateTaskClusterOwnershipRepository.kt"
+      - "app/src/main/java/vn/fonesi/app/storage/RoomUpdateTaskStore.kt"
+      - "app/src/main/java/vn/fonesi/app/storage/FonesiDatabase.kt"
+      - "app/src/test/java/vn/fonesi/app/storage/PrivateClusterRetainedEnqueuerTest.kt"
+      - "app/src/test/java/vn/fonesi/app/storage/PrivateClusterRetainedBatchEnqueuerTest.kt"
+      - "scripts/audit_e49_source_authority_gates_integration.py"
+      - "scripts/audit_e48_retained_recovery_quarantine.py"
+      - "scripts/audit_e46_foreground_source_authority.py"
+      - "scripts/audit_e47_original_source_confirmation.py"
+      - "app/src/main/java/vn/fonesi/app/update/ForegroundAutoUpdater.kt"
+      - "app/src/test/java/vn/fonesi/app/update/ForegroundAutoUpdaterTest.kt"
+      - "core/src/main/kotlin/vn/fonesi/core/UpdatePlanner.kt"
+      - "app/src/main/java/vn/fonesi/app/update/UpdatePreviewDialog.kt"
+      - "scripts/audit_e50_preview_private_source_authority.py"
+      - "docs/phases/E50_PREVIEW_PRIVATE_SOURCE_AUTHORITY_PLAN.md"
+      - "docs/phases/E50_PREVIEW_PRIVATE_SOURCE_AUTHORITY_RESULTS.md"
+      - "app/src/main/java/vn/fonesi/app/update/UpdateRequestService.kt"
+      - "app/src/test/java/vn/fonesi/app/update/UpdateRequestServiceTest.kt"
+      - "scripts/audit_e45_retained_batch_source_quarantine.py"
+      - "scripts/audit_e44_atomic_batch_retained_enqueue.py"
+      - "scripts/audit_e44_retained_source_quarantine.py"
+      - "core/src/main/kotlin/vn/fonesi/core/update/UpdateRunner.kt"
+      - "core/src/main/kotlin/vn/fonesi/core/update/UpdateQueue.kt"
+      - "core/src/main/kotlin/vn/fonesi/core/update/UpdateTask.kt"
+      - "app/src/main/java/vn/fonesi/app/storage/RoomLegacyUpdateSourcePolicy.kt"
+      - "app/src/main/java/vn/fonesi/app/storage/TaskCodec.kt"
+      - "app/src/main/java/vn/fonesi/app/storage/LocalServices.kt"
+      - "app/src/test/java/vn/fonesi/app/storage/StorageIntegrationTest.kt"
+      - "app/src/test/java/vn/fonesi/app/storage/CloneClusterOwnershipRepositoryTest.kt"
+      - "core/src/test/kotlin/vn/fonesi/core/update/UpdateRunnerTest.kt"
+      - "scripts/audit_e43_atomic_retained_enqueue.py"
+      - "scripts/audit_e42_atomic_owner_transitions.py"
+      - "scripts/audit_e41_update_task_cluster_ownership.py"
+      - "scripts/audit_e40_clone_cluster_ownership.py"
+      - "docs/phases/E49_SOURCE_AUTHORITY_GATES_INTEGRATION_PLAN.md"
+      - "docs/phases/E49_SOURCE_AUTHORITY_GATES_INTEGRATION_RESULTS.md"
+      - "docs/STATUS.md"
+      - "docs/PRODUCT_PROGRESS.md"
+      - "docs/EXECUTION_PLAN.md"
+      - "scripts/check.sh"
+  pull_request:
+    branches:
+      - phase/e57-clone-presentation-operation-lock-20261029
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: fonesi-e58-clone-cluster-association-lock-v1
+  cancel-in-progress: true
+
+jobs:
+  verified-source-queue:
+    runs-on: ubuntu-latest
+    timeout-minutes: 50
+    env:
+      FONESI_TOOLS_DIR: /tmp/fonesi-tools
+      ANDROID_HOME: /tmp/fonesi-tools/android-sdk
+      ANDROID_SDK_ROOT: /tmp/fonesi-tools/android-sdk
+    steps:
+      - name: Checkout exact E58 source
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - name: Verify exact source SHA (not synthetic PR merge commit)
+        run: |
+          test "$(git rev-parse HEAD)" = "${{ github.event.pull_request.head.sha || github.sha }}"
+          echo "PASS: validated exact E58 source SHA $(git rev-parse HEAD)"
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Audit E40-E58 private CLONE ownership, stop and retained-source safety
+        run: |
+          python3 -m py_compile scripts/audit_e40_clone_cluster_ownership.py scripts/audit_e41_update_task_cluster_ownership.py scripts/audit_e42_atomic_owner_transitions.py scripts/audit_e43_atomic_retained_enqueue.py scripts/audit_e44_atomic_batch_retained_enqueue.py scripts/audit_e44_retained_source_quarantine.py scripts/audit_e45_retained_batch_source_quarantine.py scripts/audit_e46_foreground_source_authority.py scripts/audit_e47_original_source_confirmation.py scripts/audit_e48_retained_recovery_quarantine.py scripts/audit_e49_source_authority_gates_integration.py scripts/audit_e50_preview_private_source_authority.py scripts/audit_e51_retained_enqueue_original_conflict.py scripts/audit_e52_engine_scoped_queue_recovery.py scripts/audit_e53_background_private_source_recovery.py scripts/audit_e54_unblocked_queue_selection.py scripts/audit_e55_engine_scoped_queue_controls.py scripts/audit_e56_stop_identity_revalidation.py scripts/audit_e57_clone_presentation_lock.py scripts/audit_e58_clone_cluster_association_lock.py scripts/verify_main_build.py scripts/verify_candidate_build.py
+          python3 scripts/audit_e40_clone_cluster_ownership.py
+          python3 scripts/audit_e41_update_task_cluster_ownership.py
+          python3 scripts/audit_e42_atomic_owner_transitions.py
+          python3 scripts/audit_e43_atomic_retained_enqueue.py
+          python3 scripts/audit_e44_atomic_batch_retained_enqueue.py
+          python3 scripts/audit_e44_retained_source_quarantine.py
+          python3 scripts/audit_e45_retained_batch_source_quarantine.py
+          python3 scripts/audit_e46_foreground_source_authority.py
+          python3 scripts/audit_e47_original_source_confirmation.py
+          python3 scripts/audit_e48_retained_recovery_quarantine.py
+          python3 scripts/audit_e49_source_authority_gates_integration.py
+          python3 scripts/audit_e50_preview_private_source_authority.py
+          python3 scripts/audit_e51_retained_enqueue_original_conflict.py
+          python3 scripts/audit_e52_engine_scoped_queue_recovery.py
+          python3 scripts/audit_e53_background_private_source_recovery.py
+          python3 scripts/audit_e54_unblocked_queue_selection.py
+          python3 scripts/audit_e55_engine_scoped_queue_controls.py
+          python3 scripts/audit_e56_stop_identity_revalidation.py
+          python3 scripts/audit_e57_clone_presentation_lock.py
+          python3 scripts/audit_e58_clone_cluster_association_lock.py
+      - name: Bootstrap pinned Android SDK36 Gradle and JDK21
+        run: python3 scripts/bootstrap_android.py --accept-sdk-license
+      - name: Cloud tests lint signature and APK audit for E58
+        run: ./scripts/check.sh
+      - name: Candidate tests lint source SDK and signed APK audit for E58
+        run: ./scripts/check.sh --with-engine-candidate
+      - name: Verify E58 is not provider activation split import or garbage collection
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          backend = Path("app/src/candidate/java/vn/fonesi/app/runtime/SpaceCoreBackend.kt").read_text()
+          runtime = Path("app/src/candidate/java/vn/fonesi/app/runtime/RuntimeBindings.kt").read_text()
+          queue = Path("app/src/main/java/vn/fonesi/app/storage/PrivateClusterRetainedEnqueuer.kt").read_text()
+          assert "check(source.apkPaths.size == 1)" in backend
+          assert "const val supportsSplits = false" in runtime
+          for forbidden in ("engine.update(", "engine.launch(", "fun collectGarbage(", "fun deleteCluster(", "Files.delete("):
+              assert forbidden not in queue
+          print("PASS: E58 does not activate provider, enable split or delete clusters")
+          PY
+      - name: Upload E58 generated schema and sanitized test receipts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: fonesi-E58-cluster-association-lock-TEST-ONLY
+          path: |
+            app/schemas/vn.fonesi.app.storage.FonesiDatabase/6.json
+            app/build/reports/cloud-verification.json
+            app/build/reports/candidate-verification.json
+            app/build/test-results/testDebugUnitTest/TEST-*.xml
+            apk-runtime/build/test-results/test/TEST-*.xml
+            core/build/test-results/test/TEST-*.xml
+          if-no-files-found: warn
+          retention-days: 7
