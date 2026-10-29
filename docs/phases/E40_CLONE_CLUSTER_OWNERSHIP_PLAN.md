@@ -21,6 +21,10 @@ E39 passed its cloud/candidate CI gate at workflow [#40803931491](https://github
 5. Add regression coverage for migration 5→6, preserving old rows, valid association, duplicate association, switching generation, wrong package, missing clone, inconsistent reference state, stale delete token, and reference release only after provider deletion confirmation.
 6. Run source plan/audit checks, all core/APK/app tests, cloud and opt-in candidate builds, lint, signature/permission audits and the E40 architecture boundary checks. Commit generated Room schema 6 only after CI exports it and its shape matches the entity/migration.
 
+## Additional pre-code safety audit (E40 deletion path)
+
+The initial deletion integration calls the provider first and only discovers a pre-existing inconsistent CLONE reference in the later Room transaction. That retains metadata after failure but may already have removed the provider-side clone. Before irreversible provider deletion, while the existing operation lock is held, preflight the launch token and the exact zero-or-one matching CLONE reference. After readback confirms provider absence, repeat the same validation within the atomic metadata/reference deletion transaction. A corrupt or ambiguous owner must prevent the provider deletion attempt. Test this with a realistic CloneEngine double whose stored clone remains present on inconsistent owner input. This is a safety correction to step 4, not authorization to delete private APKs.
+
 ## Safety constraints
 
 - Do not publish or activate clusters automatically from this increment; callers must pass a `PrivateApkCluster` returned by a successful `PrivateApkStore.publish/open` readback.
