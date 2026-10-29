@@ -1,5 +1,10 @@
 # Kế hoạch thực thi và đối chiếu yêu cầu
 
+## E57 — verified code SHA (29/10/2026)
+
+Original **Product Phase 3 steps 14–16** plus **Phase 6 step 25**. E57 `abd18c118e3e42fe8415142d3799caefc7cf1f08` [CI #40870539313](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40870539313) **SUCCESS** across all E40–E57 audits, pinned cloud/candidate build/test/lint/signature/permission gates, and no-split/provider/GC checks. Offline clone rename and restyle now take the same OS lock as E56 stop and release it on failures; SQLite regressions cover lock contention, namespace and durable readback. [Detailed results](phases/E57_CLONE_PRESENTATION_OPERATION_LOCK_RESULTS.md), [Draft PR #31](https://github.com/danhgold7979-cyber/fonesi-apk/pull/31). Weighted product completion remains **28.00%**, 0 accepted real third-party clones; report HEAD must pass its own CI.
+
+
 ## E57 — serialized offline clone presentation writes (pre-code, 29/10/2026)
 
 Original **Product Phase 3 steps 14–16** and **Phase 6 step 25**. Branch `phase/e57-clone-presentation-operation-lock-20261029` from E56 reporting HEAD `5f8dbd2991f31cb9ba7ea3c8d6831c230d86d400`, [Draft PR #30](https://github.com/danhgold7979-cyber/fonesi-apk/pull/30), with E56 code `add204f2...` [CI #40867094635](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40867094635) PASS (**441 tests/cloud/candidate gate**); E56 report CI #40868129725 was pending at planning. [E57 pre-code plan](phases/E57_CLONE_PRESENTATION_OPERATION_LOCK_PLAN.md): `CloneMetadataRepository.rename/restyle` must acquire shared `operationLock` to coordinate with E56 stop, without requiring engine readiness or weakening namespace/Room checks. Add native SQLite lock contention/persistence regressions; full pinned E40–E57 cloud/candidate CI before technical PASS. This does not serialize uncoordinated cluster-association writes; product remains 28%, 0 real app acceptance.
