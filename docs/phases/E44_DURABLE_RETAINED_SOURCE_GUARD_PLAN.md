@@ -1,0 +1,23 @@
+# E44 — Durable retained-source marker and no-fallback update execution guard (plan before code)
+
+Date: 2026-10-29. Repository: `danhgold7979-cyber/fonesi-apk`. Dedicated branch: `phase/e44-durable-retained-source-quarantine-20261029`, stacked on E43 report-only SHA `785cb956ce3f193c8e5f1b05dfc569470522b265`. E43 code SHA `0579d7ebee2ef829347d77d6b3169255f1d8e92c` passed [cloud/candidate CI #40843854486](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40843854486), **374 tests in each gate**, zero failures/skips. E43 reporting SHA has its own pending CI. Never merge `main` or confuse technical E44 with an extra product Phase.
+
+## Original roadmap and risk
+
+**Product Phase 4, steps 17–20**, with engine/provider dependency on Phase 1/2. E43's public `PrivateClusterRetainedEnqueuer` atomically queues a verified private-cluster source and its Room owner. But the existing production `UpdateRunner` still looks up the *currently installed original app* via `SourceCatalog` when executing any queued task; it does not have a tested full private-cluster source adapter. If a retained task is processed by this legacy path, it can ignore the intended private cluster or use an unverified original-source fallback. E44 must **block that**, not claim new engine support.
+
+Existing persisted E41 rows could also have UPDATE_TASK references without an explicit durable task-source marker. E44 must check both the marker **and** existing Room owner references to avoid unsafe execution after an app upgrade.
+
+## Implementation sequence and acceptance
+
+1. Add an optional `retainedSource: Boolean = false` to `UpdateTask`, preserved by state transitions and enforced as immutable in `requireSuccessorOf`. Encode it in `TaskCodec` only when true to avoid rewriting legacy rows; decode a missing field as false, reject malformed explicitly-present values. **No Room schema change** (v6).
+2. Extend `UpdateQueue.enqueue` with an optional `retainedSource=false` argument. E43's verified `PrivateClusterRetainedEnqueuer` sets true for new private tasks. `RoomUpdateTaskStore.insertOrGetActive` rejects any dedup collision between a retained task and an unmarked legacy task. Never silently merge their source-authority semantics.
+3. E41's explicit public private-cluster `associate` and internal verified association mark the existing QUEUED task's persisted payload `retainedSource=true` **in the same Room transaction** as its owner reference, including idempotent repeated association. A failed marker write must roll back the new owner. Preserve package/version/signer/state/engine checks and readback requirements.
+4. Add a core `UpdateRunner` source-authority gate that returns `RunResult.PolicyBlocked` **before reading the original SourceCatalog or calling the engine** for a marked retained task. Support a host-injected fail-closed predicate for unmarked legacy tasks; any exception/uncertainty denies, without deleting, failing or promoting their durable task. Wire `LocalServices.runner` to reject tasks that still have UPDATE_TASK or REVIEW_REQUIRED Room owner refs even if they predate the marker. Other legacy tasks retain their existing path and tests.
+5. Add focused core and Room native-SQLite tests for marked and legacy owner-only tasks; DB reopen retaining marker and owners; dedup conflicts across retained/unmarked; tampered journal flag not accepted; stale state successor cannot erase marker; owner acquisition SQL rollback also rolls back marker; policy predicate failure/exception does not call catalog/snapshot/engine; ordinary legacy task continues. Test-only source fixtures are not arbitrary signed guest-app execution.
+6. Add E44 source boundary audit and dedicated cloud/candidate GitHub Actions workflow. Full pinned JDK21/SDK36 build/test/lint/signature/permission/ABI/no-split/no-GC tests on exactly one code SHA, with sanitized receipts and unchanged Room v6 schema. Keep Draft PR; only accept E44 after all required gates succeed.
+7. Record exact code/CI/branch after test. No automatic private source imports, splits, account/UID isolation, real third-party update/session proof, physical Samsung test, APK release signing or destructive cluster GC. Product weighted estimate remains **28.00%**.
+
+## Security constraints
+
+The retained marker is an execution **deny**, not an execution capability. Do not replace `SourceCatalog` with original-app paths for retained tasks, do not convert a marker failure into an engine retry, do not drop a reference to make CI pass, and never turn storage test fixtures into a claim of a functional clone runtime. Preserve full product-roadmap acceptance criteria and existing historical data.

@@ -1,5 +1,15 @@
 # Kế hoạch thực thi và đối chiếu yêu cầu
 
+## E45 — bounded technical integration PASS (29/10/2026)
+
+Source `64e0a285da84360e3fdea57135367d5b9bd6f8b5` [GitHub Actions #40848683404](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40848683404) **SUCCESS**: 390 tests per cloud/candidate gate, build/lint/signed APK permission checks and E40–E45 audits. [Full E45 results](phases/E45_RETAINED_BATCH_SOURCE_QUARANTINE_RESULTS.md). E45 preserves E44 batch atomicity plus source-authority no-fallback guard; existing Room v6, single-APK candidate and no destructive GC remain. This does not prove private-source execution, full split provider or account isolation. Next: E46 recovery-time retained-source fail-closed proof; separate pre-code plan required. Product 28.00%, zero real clones.
+
+
+## E45 — pre-code integration of verified batch and durable source quarantine (29/10/2026)
+
+Branch `phase/e45-retained-batch-source-quarantine-20261029` starts at E44 verified report HEAD `cd2089568bbc20d886ff0f16ca218c0d872df7e6`; E44 separate Draft PR #18 remains independently tested and unmerged. Original product Phase 4, steps 17–20. [E45 detailed plan](phases/E45_RETAINED_BATCH_SOURCE_QUARANTINE_PLAN.md): import durable private-source marker and fail-closed UpdateRunner original-source policy from the separate branch without losing E44 atomic batch readback/queue retention, add cross-feature Room/native-SQLite tests, run all source audits and cloud/candidate signed APK gates before marking E45 PASS. Room v6, `supportsSplits=false`, unchanged product 28%/0 real apps.
+
+
 ## E44 — bounded cloud/candidate technical PASS (29/10/2026)
 
 Exact tested source `9d7270b207a6dd82e50befa484850c5360bd740f`: [E44 CI #40845568917](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40845568917) **SUCCESS**, **382 tests per cloud/candidate gate**, build/lint/signature/permissions and E40–E44 audits passed. [Verified E44 results](phases/E44_ATOMIC_BATCH_RETAINED_ENQUEUE_RESULTS.md). The public opt-in batch API verifies all signed private clusters before one all-or-nothing Room task/owner transaction; it does not connect to UI/provider, change Room schema, enable split import or prove account isolation. Product estimate remains 28.00%; 0 accepted real app clones. A report-only follow-up HEAD must independently pass CI.

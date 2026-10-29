@@ -16,6 +16,8 @@ internal object TaskCodec {
         put("issue", task.issue?.name ?: JSONObject.NULL)
         put("completion", task.completion?.name ?: JSONObject.NULL)
         put("createdAt", task.createdAt); put("changedAt", task.changedAt)
+        // Legacy format-1 rows remain unchanged when no private-cluster source is retained.
+        if (task.retainedSource) put("retainedSource", true)
     }.toString()
 
     fun decode(row: UpdateTaskRow): UpdateTask {
@@ -25,6 +27,11 @@ internal object TaskCodec {
             (0 until array.length()).map { array.getString(it) }
         }
         fun optional(key: String): String? = if (json.isNull(key)) null else json.getString(key)
+        val retainedSource = if (!json.has("retainedSource")) false else {
+            val value = json.get("retainedSource")
+            require(value is Boolean) { "Invalid persisted retained source marker" }
+            value
+        }
         val task = UpdateTask(
             id = json.getString("id"), engineKey = json.getString("engineKey"),
             packageName = json.getString("packageName"), cloneIds = strings("cloneIds"),
@@ -35,6 +42,7 @@ internal object TaskCodec {
             issue = optional("issue")?.let(TaskIssue::valueOf),
             completion = optional("completion")?.let(CompletionKind::valueOf),
             createdAt = json.getLong("createdAt"), changedAt = json.getLong("changedAt"),
+            retainedSource = retainedSource,
         )
         require(task.id == row.taskId && task.packageName == row.packageName && task.revision == row.revision && task.state.name == row.state)
         require(row.activeKey == if (task.state.terminal) null else task.dedupKey)

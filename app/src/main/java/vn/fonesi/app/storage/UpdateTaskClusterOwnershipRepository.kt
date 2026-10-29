@@ -58,6 +58,7 @@ class UpdateTaskClusterOwnershipRepository(
                 check(refs.single().clusterId == cluster.id) {
                     "Task already owns a different cluster; refusing silent generation replacement"
                 }
+                markRetainedSource(task)
                 return@Callable false
             }
             val now = clock()
@@ -65,8 +66,20 @@ class UpdateTaskClusterOwnershipRepository(
             check(db.clusterReferences().insert(ClusterReferenceRow(
                 cluster.id, type, taskId, engineKey, now,
             )) != -1L) { "Duplicate UPDATE_TASK owner unexpectedly inserted" }
+            // Source authority marker and Room owner reference commit/roll back together.
+            markRetainedSource(task)
             true
         })
+    }
+
+    /** Do not change state/revision: this is an atomic authority annotation of a QUEUED task. */
+    private fun markRetainedSource(task: UpdateTask) {
+        if (task.retainedSource) return
+        val row = TaskCodec.row(task.copy(retainedSource = true))
+        check(db.tasks().replace(task.id, task.revision, task.state.name, row.state,
+            row.revision, row.activeKey, row.payload) == 1) {
+            "Cannot persist retained source marker alongside its owner"
+        }
     }
 
     /** Review state must be durably committed before promoting the source to a review hold. */
