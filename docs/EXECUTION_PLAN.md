@@ -1,5 +1,10 @@
 # Kế hoạch thực thi và đối chiếu yêu cầu
 
+## E42 — accepted technical journal/reference increment (29/10/2026)
+
+Exact tested source `7f749ae4e54f01c23f11772430a992a050be36c0`, [CI #40841923812](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40841923812) **SUCCESS**: cloud/candidate 366 tests each, 0 failed/error/skipped; build/lint/signature/permission/no-split/no-GC audits passed. [E42 results](phases/E42_ATOMIC_JOURNAL_OWNER_TRANSITIONS_RESULTS.md), [pre-code plan](phases/E42_ATOMIC_JOURNAL_OWNER_TRANSITIONS_PLAN.md). This closes only the bounded E42 technical acceptance; Phase 4/guest engine/phone/account acceptance remain open. Read the subsequent report-only commit's exact-HEAD CI before treating it as tested.
+
+
 ## E42 — atomic journal/retained-cluster transitions (plan before code; 29/10/2026)
 
 Branch `phase/e42-atomic-journal-owner-transitions-20261029` stacks on E41; Phase 4 roadmap steps 17–20. [Detailed E42 pre-code plan](phases/E42_ATOMIC_JOURNAL_OWNER_TRANSITIONS_PLAN.md). Scope: make successful Room update-task state CAS transfer/release an existing E41 UPDATE_TASK source reference in the **same transaction** when entering REVIEW_REQUIRED/terminal states, without changing existing unsnapshotted tasks or invoking the provider. Existing E41 explicit-method test paths remain independently verified. Test stale CAS, SQLite aborts, no-ref legacy, conflicting generations, other-owner retention and DB reopen. Full pinned cloud/candidate CI and no-split/no-GC audit required on exact HEAD before PASS. Product completion remains 28.00%.
