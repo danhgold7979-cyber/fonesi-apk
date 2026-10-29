@@ -1,5 +1,10 @@
 # Kế hoạch thực thi và đối chiếu yêu cầu
 
+## E52 — technical code PASS at exact SHA (29/10/2026)
+
+Implementation `59bf73522b3a86c1caca57af8613bb2e7b915b2b` [CI #40853790848](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40853790848) **SUCCESS** with **423 tests per cloud/candidate gate**, E40–E52 audits, Android SDK/native candidate, APK build/lint/signature/permissions PASS. [E52 results](phases/E52_ENGINE_SCOPED_QUEUE_RECOVERY_RESULTS.md). E51 parent source `4c7c3a24...` [CI #40853007668](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40853007668) also passed 419 tests per gate. Queue runner executes/recovers only matching engine task identity, leaving foreign journals and snapshots unchanged. **Phase 4 steps 18–20 remain unaccepted**; 28% product estimate, 0 third-party clones, no real provider/split/UID/account/phone proof. Reporting commit has new SHA, check its CI separately.
+
+
 ## E52 — engine-scoped queue execution and recovery (pre-code, 29/10/2026)
 
 Technical E52 is a bounded safety slice under **Product Phase 4, steps 18–20**. Stack on E51 retained-source collision source `4c7c3a24e7201278d4fc5ce72120c881d21ddf40`, [Draft PR #25](https://github.com/danhgold7979-cyber/fonesi-apk/pull/25), whose [CI #40853007668](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40853007668) was pending when planning; do not assume parent PASS. [E52 detailed pre-code plan](phases/E52_ENGINE_SCOPED_QUEUE_RECOVERY_PLAN.md) scopes shared-journal execution/recovery to one `engineKey`, preserving other engines' same-package queued/review/unknown tasks and snapshots; adds JVM regressions, static safety audit, E40–E52 suite and exact SHA cloud/candidate gates. Room v6/no-split/no-provider/no-GC; product 28.00% and no real guest/app-account acceptance. The unmerged E51 preliminary runner-prototype branch is superseded by this correctly stacked E52 implementation; do not merge both.

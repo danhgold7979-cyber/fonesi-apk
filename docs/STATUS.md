@@ -1,3 +1,15 @@
+# Fonesi APK — E52 technical PASS / Product Phase 4 incomplete (29/10/2026)
+
+**Repository:** [danhgold7979-cyber/fonesi-apk](https://github.com/danhgold7979-cyber/fonesi-apk). **Development:** `phase/e52-engine-scoped-queue-recovery-20261029`, [Draft PR #26](https://github.com/danhgold7979-cyber/fonesi-apk/pull/26) stacked on [E51 Draft PR #25](https://github.com/danhgold7979-cyber/fonesi-apk/pull/25). `main` remains `c055df600f87ee9ddf0cd5d6bfc67d80d145e79d`, unmerged.
+
+**Original product Phase 4, steps 18–20. E52 technical PASS** at exact code source `59bf73522b3a86c1caca57af8613bb2e7b915b2b`: [CI #40853790848](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40853790848) ended **SUCCESS**, **423 tests each cloud/candidate gate**, all pinned build/lint/signature/permission/SDK and E40–E52 audits PASS, [test-only artifact #12889195111](https://github.com/danhgold7979-cyber/fonesi-apk/actions/artifacts/12889195111). E51 parent `4c7c3a24e7201278d4fc5ce72120c881d21ddf40` also PASS at [CI #40853007668](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40853007668), **419 tests each gate**. [E52 plan](phases/E52_ENGINE_SCOPED_QUEUE_RECOVERY_PLAN.md), [results](phases/E52_ENGINE_SCOPED_QUEUE_RECOVERY_RESULTS.md).
+
+**Code:** `UpdateRunner` filters durable journal work by `engineKey` before scheduling and recovery, preventing another engine's QUEUED/REVIEW_REQUIRED task from blocking the local runner and preventing foreign snapshot/journal mutation. Five JVM regressions, source audit and dedicated pinned workflow. Earlier duplicate-number prototype `phase/e51-engine-scoped-queue-recovery-20261029` is superseded and must not be merged.
+
+**Product acceptance still open:** 28.00% weighted estimate (~30% rounded); **0** accepted real third-party clones. Room v6, `supportsSplits=false`, `importsSplitApks=false`, no actual guest Activity/full-split provider/UID or account isolation, real update/phone testing or release APK. Keep PR Draft. This follow-up documentation commit has a new HEAD and must pass its own exact-SHA CI separately.
+
+---
+
 # Fonesi APK — E45 bounded technical PASS, Phase 4 incomplete (29/10/2026)
 
 **Repository:** [danhgold7979-cyber/fonesi-apk](https://github.com/danhgold7979-cyber/fonesi-apk). **Development branch:** `phase/e45-retained-batch-source-quarantine-20261029`, [Draft PR #19](https://github.com/danhgold7979-cyber/fonesi-apk/pull/19) stacked on E44 batch Draft #17, with separately verified E44 source quarantine Draft #18. `main@c055df600f87ee9ddf0cd5d6bfc67d80d145e79d` unchanged.
