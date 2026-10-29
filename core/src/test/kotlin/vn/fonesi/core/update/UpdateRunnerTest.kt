@@ -325,10 +325,11 @@ class UpdateRunnerTest {
         val retained = f.queue.enqueue("test-engine",
             listOf(UpdateTarget(checkNotNull(f.source), listOf("a"))),
             UpdateScope.PER_CLONE, retainedSource = true).single()
+        val nextVersion = checkNotNull(f.source).copy(versionCode = checkNotNull(f.source).versionCode + 1)
         val original = f.queue.enqueue("test-engine",
-            listOf(UpdateTarget(checkNotNull(f.source), listOf("a"))),
+            listOf(UpdateTarget(nextVersion, listOf("a"))),
             UpdateScope.PER_CLONE).single()
-        assertEquals(retained.id, original.id)
+        assertNotEquals(retained.id, original.id)
         assertEquals(RunResult.PolicyBlocked, f.runner().runNext())
         assertEquals(TaskState.QUEUED, f.store.list().single().state)
         assertEquals(0, f.engine.calls)
