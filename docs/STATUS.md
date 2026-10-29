@@ -1,3 +1,21 @@
+# Fonesi APK — E67 technical PASS; Product Phase 3/4 acceptance still open (29/10/2026)
+
+**Repository:** [danhgold7979-cyber/fonesi-apk](https://github.com/danhgold7979-cyber/fonesi-apk). **Branch:** `phase/e67-create-preinstall-peer-guard-20261029`, stacked [Draft PR #41](https://github.com/danhgold7979-cyber/fonesi-apk/pull/41) on E66 [Draft PR #40](https://github.com/danhgold7979-cyber/fonesi-apk/pull/40). `main@c055df600f87ee9ddf0cd5d6bfc67d80d145e79d` unchanged.
+
+**Product roadmap:** original **Phase 3 steps 13–16** and shared-code safety dependency **Phase 4 steps 17–20**. **E67 technical PASS** at exact source SHA `2d631994601594e7848e3ab0c2662f8fa5af0204`: [CI #40900943479](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40900943479) **SUCCESS**, **486 tests per cloud/candidate gate**, E40–E67 audits, pinned SDK/JDK, build/lint/APK signature/permissions and no split/provider/GC activation. [Test-only artifact #12909418608](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40900943479/artifacts/12909418608). Parent E66 code `979ef76b` [CI #40899947204](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40899947204) and report `654f25c8909d627a306e2eec28b75611d0b34b75` [CI #40901211794](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40901211794) both passed independently.
+
+**Implementation:** A new guest's frozen source, native-user reservation/package absence and all existing READY peer versions/signers/stopped state are checked again after native user creation but before shared APK install. Six JVM race regressions. [E67 plan](phases/E67_CREATE_PREINSTALL_PEER_GUARD_PLAN.md) | [results](phases/E67_CREATE_PREINSTALL_PEER_GUARD_RESULTS.md). This reporting/integration commit is a new SHA requiring its own CI.
+
+**Weighted product readiness 28.00%, 0 accepted real third-party clones**. Full split import, guest Activity/Service/Provider, independent Android UID/account isolation, real Samsung/other-device social app sessions and release signing remain unmet. No `main` merge, no release.
+
+---
+
+# E66 — exact-source technical PASS for shared guest updates (29/10/2026)
+
+Source `979ef76bb1b228b28841575f1cfa88d5778d5231` [CI #40899947204](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40899947204) **SUCCESS**, 480 cloud/candidate tests per gate; reporting HEAD `654f25c8909d627a306e2eec28b75611d0b34b75` [CI #40901211794](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40901211794) also succeeded. Phase 4 steps 17–20: revalidate complete guest/native update scope just before SDK install. [Results](phases/E66_SHARED_UPDATE_DISPATCH_REVALIDATION_RESULTS.md); no split provider, real guest/account/phone/release acceptance.
+
+---
+
 # Fonesi APK — E65 technical PASS; Product Phase 3 remains incomplete (29/10/2026)
 
 **Repository:** [danhgold7979-cyber/fonesi-apk](https://github.com/danhgold7979-cyber/fonesi-apk), branch `phase/e65-native-guest-delete-identity-20261029`, [Draft PR #39](https://github.com/danhgold7979-cyber/fonesi-apk/pull/39) stacked on E64 [Draft PR #38](https://github.com/danhgold7979-cyber/fonesi-apk/pull/38); `main@c055df600f87ee9ddf0cd5d6bfc67d80d145e79d` unchanged.
