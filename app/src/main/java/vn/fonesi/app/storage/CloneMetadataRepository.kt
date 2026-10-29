@@ -67,7 +67,7 @@ class CloneMetadataRepository(
             check(db.clones().find(engineKey, id)?.launchToken == saved.launchToken) { "Clone metadata changed" }
             check(expectedToken == null || saved.launchToken == expectedToken) { "Stale delete request" }
             // Fail closed before any irreversible provider mutation if owner state is corrupt.
-            val ownership = CloneClusterOwnershipRepository(db, clock)
+            val ownership = CloneClusterOwnershipRepository(db, operationLock, clock)
             ownership.preflightDeletion(engineKey, id, saved.launchToken)
             val records = engine.listClones()
             check(records.map { it.id }.distinct().size == records.size) { "Ambiguous engine IDs" }
