@@ -5,6 +5,7 @@ on:
     branches:
       - phase/e54-unblocked-queue-work-selection-20261029
     paths:
+      - ".github/workflows/e54-unblocked-queue-work-selection.yml"
       - ".github/workflows/e49-source-authority-gates-integration.yml"
       - ".github/workflows/e51-retained-enqueue-original-conflict.yml"
       - "scripts/audit_e51_retained_enqueue_original_conflict.py"
