@@ -60,11 +60,15 @@ def main():
     parser.add_argument("--source-commit", default="a9aa5a8d53b0c82eabcc071fd0e0fa19fdcc612c")
     parser.add_argument("--boot-timeout", type=int, default=480)
     parser.add_argument("--probe-timeout", type=int, default=180)
+    parser.add_argument("--allow-software-emulation", action="store_true",
+                        help="E77-only bounded fallback when GitHub has no KVM; never guest Activity execution")
     parser.add_argument("--proof-level", choices=("e11", "e12", "e13", "e14", "e15", "e16", "e17", "e21", "e22", "e23", "e24", "e25", "e29", "e74", "e77"), default="e11",
                         help="E13 additionally verifies independent synthetic native file/SQLite routes")
     args = parser.parse_args()
     if args.boot_timeout not in range(30, 601) or args.probe_timeout not in range(15, 301):
         parser.error("Timeout out of bounded range")
+    if args.allow_software_emulation and args.proof_level != "e77":
+        parser.error("Software-emulation fallback is restricted to E77 metadata preflight")
     for digest in (args.expected_probe_sha256, args.expected_payload_sha256):
         if re.fullmatch(r"[0-9a-f]{64}", digest) is None:
             parser.error("Expected SHA-256 must be 64 lowercase hexadecimal characters")
@@ -210,10 +214,14 @@ def main():
         image_path = sdk.joinpath(*SDK_IMAGE.split(";"), "system.img")
         if not adb.is_file() or not emulator_binary.is_file() or not image_path.is_file():
             raise RuntimeError("Pinned emulator, AOSP image or adb is missing")
-        if not (Path("/dev/kvm").exists() and os.access("/dev/kvm", os.R_OK | os.W_OK)):
+        has_kvm = Path("/dev/kvm").exists() and os.access("/dev/kvm", os.R_OK | os.W_OK)
+        if not has_kvm and not (args.proof_level == "e77" and args.allow_software_emulation):
             evidence["result"] = "BLOCKED"
             raise RuntimeError("GitHub runner has no accessible KVM; Android boot not attempted")
-        evidence["emulator_acceleration"] = "KVM"
+        # Keep older proof levels fail-closed without KVM. E77 can run only its
+        # bounded metadata preflight on QEMU software emulation; it never claims
+        # guest Activity execution or physical-device compatibility.
+        evidence["emulator_acceleration"] = "KVM" if has_kvm else "software"
 
         stage = "create isolated emulator"
         avd = "fonesi_e11_" + attempt.split("-")[0]
@@ -234,7 +242,7 @@ def main():
         process = subprocess.Popen(
             [str(emulator_binary), "-avd", avd, "-port", str(port),
              "-no-window", "-no-audio", "-no-boot-anim", "-no-snapshot", "-no-metrics",
-             "-accel", "on", "-gpu", "swiftshader_indirect", "-memory", "2048",
+             "-accel", "on" if evidence["emulator_acceleration"] == "KVM" else "off", "-gpu", "swiftshader_indirect", "-memory", "2048",
              "-cores", "2", "-skin", "480x800", "-dpi-device", "240"],
             env=env, stdout=output_log, stderr=subprocess.STDOUT, start_new_session=True,
         )
