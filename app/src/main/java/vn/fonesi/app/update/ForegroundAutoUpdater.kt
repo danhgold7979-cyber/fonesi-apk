@@ -3,6 +3,7 @@ package vn.fonesi.app.update
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import vn.fonesi.app.storage.FonesiDatabase
+import vn.fonesi.app.storage.RoomLegacyUpdateSourcePolicy
 import vn.fonesi.core.update.*
 
 data class AutoUpdateState(val running: Boolean = false, val mode: AutoUpdateMode = AutoUpdateMode.OFF,
@@ -20,6 +21,7 @@ class ForegroundAutoUpdater(
     private val foregroundAccess: () -> Boolean,
     private val runner: () -> UpdateExecution,
 ) {
+    private val originalSourcePolicy = RoomLegacyUpdateSourcePolicy(db)
     private val mutable = MutableStateFlow(AutoUpdateState())
     val state = mutable.asStateFlow()
     fun check() {
@@ -59,6 +61,12 @@ class ForegroundAutoUpdater(
         }
     }
     private fun allowed() = foregroundAccess() && policy.read().mode == AutoUpdateMode.APPLY_WHILE_OPEN
+
+    /** Original-app previews must never mutate a task with private retained source authority.
+     *  Old pre-marker E41 owner references and unreadable Room state also fail closed.
+     */
+    private fun mayReconcileOriginalSource(task: UpdateTask): Boolean =
+        runCatching { originalSourcePolicy.allows(task) }.getOrDefault(false)
     private fun reconcileSafeQueuedWork(preview: UpdatePreview) {
         val lease = checkNotNull(operationLock.acquire())
         lease.use {
@@ -66,6 +74,7 @@ class ForegroundAutoUpdater(
                 check(allowed() && !tasks.isPaused())
                 for (job in tasks.list()) {
                     if (job.engineKey != engineKey || job.state !in setOf(TaskState.QUEUED, TaskState.DEFERRED)) continue
+                    if (!mayReconcileOriginalSource(job)) continue
                     val source = preview.sources[job.packageName] ?: continue
                     if (job.versionCode != source.versionCode || job.signerDigests != source.signerDigests || job.scope != preview.availability.updateScope) {
                         check(tasks.replace(job, job.move(TaskState.CANCELLED, System.currentTimeMillis(), TaskIssue.SUPERSEDED_SOURCE), requireUnpaused = true))
@@ -83,6 +92,7 @@ class ForegroundAutoUpdater(
                 for (job in tasks.list()) {
                     if (job.engineKey != engineKey || job.state != TaskState.DEFERRED || job.issue !in setOf(
                             TaskIssue.EXECUTION_POLICY, TaskIssue.CLONE_BUSY, TaskIssue.PAUSED, TaskIssue.ENGINE_UNAVAILABLE)) continue
+                    if (!mayReconcileOriginalSource(job)) continue
                     preview.plan.targets.singleOrNull { it.source.packageName == job.packageName &&
                         it.source.versionCode == job.versionCode && it.source.signerDigests == job.signerDigests &&
                         it.affectedCloneIds.containsAll(job.cloneIds) } ?: continue
