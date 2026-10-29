@@ -44,6 +44,71 @@ class UpdateRequestServiceTest {
     }
     @After fun close() { background { db.close() }; context.deleteDatabase(name); io.shutdownNow() }
 
+    @Test fun activeRetainedMarkerBlocksDifferentOriginalVersionBeforeQueueMutation(): Unit = background {
+        val preview = service().preview(listOf(rows[0].launchToken))
+        val oldPrivate = sources.getValue("test.alpha").copy(versionCode = 1L)
+        val retained = UpdateQueue(tasks).enqueue("engine",
+            listOf(UpdateTarget(oldPrivate, listOf("a", "b"))), UpdateScope.SHARED_PACKAGE,
+            retainedSource = true).single()
+        val before = tasks.list()
+        assertThrows(IllegalStateException::class.java) { service().confirm(preview) }
+        assertEquals(before, tasks.list())
+        assertEquals(retained, tasks.list().single())
+        assertEquals(0, engine.mutations)
+    }
+
+    @Test fun preMarkerOwnerReferencesBlockOriginalSourceConsent(): Unit = background {
+        val ownerCases = listOf("UPDATE_TASK" to rows[0], "REVIEW_REQUIRED" to rows[2])
+        for ((ownerType, row) in ownerCases) {
+            val preview = service().preview(listOf(row.launchToken))
+            val oldSource = sources.getValue(row.packageName).copy(versionCode = 1L)
+            val task = UpdateQueue(tasks).enqueue("engine",
+                listOf(UpdateTarget(oldSource, listOf(row.cloneId))), UpdateScope.SHARED_PACKAGE).single()
+            assertFalse(task.retainedSource)
+            val id = UUID.randomUUID().toString()
+            assertTrue(db.clusterReferences().insert(ClusterReferenceRow(
+                id, ownerType, task.id, "engine", 10L)) > 0)
+            val before = tasks.list()
+            assertThrows(IllegalStateException::class.java) { service().confirm(preview) }
+            assertEquals(before, tasks.list())
+            assertEquals(listOf(id), db.clusterReferences().forOwner(ownerType, task.id, "engine").map { it.clusterId })
+        }
+        assertEquals(2, tasks.list().size)
+        assertEquals(0, engine.mutations)
+    }
+
+    @Test fun mixedPrivateAndOriginalGroupConsentIsAllOrNothing(): Unit = background {
+        val preview = service().preview(listOf(rows[0].launchToken, rows[2].launchToken))
+        val oldPrivate = sources.getValue("test.alpha").copy(versionCode = 1L)
+        val privateTask = UpdateQueue(tasks).enqueue("engine",
+            listOf(UpdateTarget(oldPrivate, listOf("a", "b"))), UpdateScope.SHARED_PACKAGE,
+            retainedSource = true).single()
+        assertThrows(IllegalStateException::class.java) { service().confirm(preview) }
+        assertEquals(listOf(privateTask), tasks.list()) // No beta task inserted before the conflict.
+        assertEquals(0, engine.mutations)
+    }
+
+    @Test fun unrelatedPrivateSourceAndUnownedLegacyWorkStillAllowConsent(): Unit = background {
+        val oldPrivate = sources.getValue("test.alpha").copy(versionCode = 1L)
+        val privateTask = UpdateQueue(tasks).enqueue("engine",
+            listOf(UpdateTarget(oldPrivate, listOf("a", "b"))), UpdateScope.SHARED_PACKAGE,
+            retainedSource = true).single()
+        val betaPreview = service().preview(listOf(rows[2].launchToken))
+        val betaTask = service().confirm(betaPreview).single()
+        assertEquals("test.beta", betaTask.packageName)
+        assertFalse(betaTask.retainedSource)
+        assertEquals(privateTask, tasks.list().first { it.id == privateTask.id })
+
+        // An active *unowned legacy* older-version task does not become private by inference.
+        val oldBeta = sources.getValue("test.beta").copy(versionCode = 1L)
+        val legacy = UpdateQueue(tasks).enqueue("engine",
+            listOf(UpdateTarget(oldBeta, listOf("c"))), UpdateScope.SHARED_PACKAGE).single()
+        assertFalse(legacy.retainedSource)
+        assertEquals(betaTask.id, service().confirm(betaPreview).single().id)
+        assertEquals(3, tasks.list().size)
+        assertEquals(0, engine.mutations)
+    }
+
     @Test fun previewShowsUnselectedSharedPeersWithoutEnqueueOrNativeMutation(): Unit = background {
         val preview = service().preview(listOf(rows[0].launchToken))
         assertEquals(setOf("a", "b"), preview.plan.targets.single().affectedCloneIds.toSet())
