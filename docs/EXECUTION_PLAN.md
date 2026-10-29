@@ -1,5 +1,10 @@
 # Kế hoạch thực thi và đối chiếu yêu cầu
 
+## E51 — engine-scoped queue execution and recovery (pre-code, 29/10/2026)
+
+Technical E51 belongs to the original **Product Phase 4, steps 18–20**. Branch `phase/e51-engine-scoped-queue-recovery-20261029` starts from E50 code `37ff68f4cd51582cababccaa01bfc77b505f9ea3` ([same-source E50 CI #40851899007](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40851899007) SUCCESS). [E51 detailed plan](phases/E51_ENGINE_SCOPED_QUEUE_RECOVERY_PLAN.md): ensure `UpdateRunner` only schedules/recovers `engineKey`-matching durable tasks, never rewrites or discards snapshots for another engine, and never lets another engine's same-package journal block local tasks. Update incorrect foreign-task test, add cross-engine JVM negative cases, source audit and exact-source cloud/candidate workflow. No provider/split/GC; product 28%, zero real apps. **Code and CI still pending at plan creation.**
+
+
 ## E50 — preview private-source authority conflict (pre-code, 29/10/2026)
 
 Branch `phase/e50-preview-private-source-authority-20261029` from E49 integration source `23ea57d65fd562d5cc611040e2e8791f6462779c`, with parent CI #40851203055 pending at plan creation. Original product Phase 4 steps 17–20. [Detailed E50 plan](phases/E50_PREVIEW_PRIVATE_SOURCE_AUTHORITY_PLAN.md): display durable private-source conflict as an explicit blocked reason in update preview, filter unsafe original-app targets without altering E47 atomic confirm, native SQLite stale-preview/legacy/owner regressions, pinned cloud/candidate workflow, no provider/split/GC. Weighted 28%, 0 real apps accepted.
