@@ -1,5 +1,12 @@
 # Kế hoạch thực thi và đối chiếu yêu cầu
 
+## E41 — update-task/private-cluster ownership retention (pre-code plan, 29/10/2026)
+
+Branch `phase/e41-update-task-cluster-ownership-20261029` starts at E40 verified reporting SHA `dc5aea86a01aee0594ad70cbae6367f6332e2596`; [E40 cloud/candidate CI #40838110200](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40838110200) passed on that exact SHA. Align Phase 4 steps 17–20 without changing the original eight-Phase roadmap. Review [E41 detailed plan](phases/E41_UPDATE_TASK_CLUSTER_OWNERSHIP_PLAN.md) before each code change.
+
+Sequence: (1) validate existing task+state+immutable signing/package/version and readback-verified private cluster; (2) acquire exactly one owner-scoped UPDATE_TASK ref transactionally/idempotently; (3) promote an unknown-outcome journal to durable REVIEW_REQUIRED hold before releasing UPDATE_TASK; (4) release only UPDATE_TASK refs after terminal journal state, retaining unrelated CLONE/REVIEW_REQUIRED/ROLLBACK refs; (5) test rollback/reopen/ambiguous-owner/invalid readback; (6) full cloud/candidate CI on same SHA; (7) document exact evidence. No automatic linking to engine updater, APK publication, deletion/GC, split import, UID/account claims, or product percentage increase in E41.
+
+
 ## E40 — integrate Room clone metadata with private APK cluster ownership (plan before code)
 
 **Accepted technical source:** E40 code+schema `a3cf9ec199de7d1c5ec66e105d525a1175554e1c` passed [same-source cloud/candidate CI #40837064438](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40837064438), 349 tests per gate, zero failures/errors/skips. See [E40 results](phases/E40_CLONE_CLUSTER_OWNERSHIP_RESULTS.md) and [product progress rubric](PRODUCT_PROGRESS.md). Storage-only technical PASS, not Phase 3 production acceptance. The report-only commit's new HEAD requires its own CI verification.
