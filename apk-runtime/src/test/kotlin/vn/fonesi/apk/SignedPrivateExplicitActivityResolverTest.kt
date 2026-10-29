@@ -109,6 +109,41 @@ class SignedPrivateExplicitActivityResolverTest {
         }
     }
 
+    @Test fun inheritedSignedApplicationPermissionBlocksActivityWithoutPermissionBroker() {
+        val signed = manifest("catalog-app-protected")
+        assertEquals("vn.fonesi.fixture.ACCESS", signed.applicationPermission)
+        assertNull(signed.applicationEnabled)
+        assertNull(signed.components.single().permission)
+        for (caller in ExplicitActivityCaller.values()) {
+            assertThrows(IllegalArgumentException::class.java) {
+                select(signed, "AppProtectedActivity", caller)
+            }
+        }
+    }
+
+    @Test fun disabledSignedApplicationBlocksEvenExplicitlyEnabledPublicActivity() {
+        val signed = manifest("catalog-app-disabled")
+        assertEquals(false, signed.applicationEnabled)
+        assertNull(signed.applicationPermission)
+        val activity = signed.components.single()
+        assertEquals(true, activity.enabled)
+        assertEquals(true, activity.exported)
+        for (caller in ExplicitActivityCaller.values()) {
+            assertThrows(IllegalArgumentException::class.java) {
+                select(signed, "AppDisabledActivity", caller)
+            }
+        }
+    }
+
+    @Test fun featureSplitCannotOverrideBaseApplicationPermissionPolicy() {
+        val cluster = store.publish(InstalledSource(pkg, 1L, signers(), listOf(
+            apk("catalog-public").path, apk("catalog-split-app-permission").path
+        )), 34)
+        assertThrows(IllegalArgumentException::class.java) {
+            PrivateApkComponentCatalog.inspect(store, cluster.id, 34)
+        }
+    }
+
     @Test fun featureActivityCanOnlyBeResolvedFromItsVerifiedSignedSplit() {
         val signed = manifest("catalog-public", "catalog-public-feature", "catalog-config")
         val selection = select(signed, "FeatureActivity")

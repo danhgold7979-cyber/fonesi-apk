@@ -136,6 +136,19 @@ def main():
         'android:enabled="true" android:exported="true" />'
         '<service android:name=".NotActivity" android:exported="true" android:enabled="true" />'
         '</application>'))
+    # E70 inherited Application authorization is distinct from Activity attributes.
+    apk("catalog-app-protected", application=(
+        '<application android:hasCode="false" android:permission="vn.fonesi.fixture.ACCESS">'
+        '<activity android:name=".AppProtectedActivity" android:exported="true" android:enabled="true" />'
+        '</application>'))
+    apk("catalog-app-disabled", application=(
+        '<application android:hasCode="false" android:enabled="false">'
+        '<activity android:name=".AppDisabledActivity" android:exported="true" android:enabled="true" />'
+        '</application>'))
+    apk("catalog-split-app-permission", split="feature.overrides", feature=True, application=(
+        '<application android:hasCode="false" android:permission="vn.fonesi.fixture.ACCESS">'
+        '<activity android:name=".InjectedActivity" android:exported="true" android:enabled="true" />'
+        '</application>'))
     apk("catalog-public-feature", split="feature.public", feature=True, application=(
         '<application android:hasCode="false">'
         '<activity android:name=".FeatureActivity" android:enabled="true" android:exported="true" />'

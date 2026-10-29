@@ -48,13 +48,17 @@ object SignedPrivateExplicitActivityResolver {
                 it.className == component.aliasTarget && it.kind == PrivateComponentKind.ACTIVITY
             } ?: throw IllegalArgumentException("Signed Activity-alias target is absent")
         } else component
+        require(inventory.applicationEnabled != false) {
+            "Disabled signed Application cannot authorize guest Activity selection"
+        }
         require(component.enabled != false && target.enabled != false) {
             "Disabled signed guest Activity or alias cannot be selected"
         }
         // This static selector has NO Android permission broker. Never authorize protected
         // components by assuming the host, its UID or a future guest possesses permissions.
-        require(component.permission == null && target.permission == null) {
-            "Permission-protected guest Activity needs Android permission mediation"
+        require(inventory.applicationPermission == null &&
+            component.permission == null && target.permission == null) {
+            "Permission-protected signed Application or Activity needs Android permission mediation"
         }
         if (caller == ExplicitActivityCaller.EXTERNAL_UNTRUSTED) {
             require(component.exported == true && component.enabled == true &&

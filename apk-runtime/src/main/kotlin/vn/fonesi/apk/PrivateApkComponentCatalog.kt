@@ -36,6 +36,10 @@ data class VerifiedPrivateComponentInventory(
     val splitNames: List<String>,
     val applicationClass: String?,
     val components: List<VerifiedPrivateComponent>,
+    /** Base Application permission can govern component access even when an Activity has none. */
+    val applicationPermission: String? = null,
+    /** Null means not explicitly declared; false always prevents component selection. */
+    val applicationEnabled: Boolean? = null,
 )
 
 /**
@@ -68,8 +72,10 @@ object PrivateApkComponentCatalog {
                 (manifest.components.isEmpty() && manifest.applicationClass == null)) {
                 "Configuration APK declares executable components"
             }
-            require(member.splitName == null || manifest.applicationClass == null) {
-                "Split APK cannot redefine the base Application"
+            require(member.splitName == null ||
+                (manifest.applicationClass == null && manifest.applicationPermission == null &&
+                    manifest.applicationEnabled == null)) {
+                "Split APK cannot redefine the base Application authorization"
             }
             manifest
         }
@@ -92,10 +98,16 @@ object PrivateApkComponentCatalog {
             signed.id, signed.clusterDigest, base.packageName, base.version,
             base.signers.toSet(), signed.apks.splits.map { checkNotNull(it.splitName) }.sorted(),
             parsed.first().applicationClass, all.toList(),
+            parsed.first().applicationPermission, parsed.first().applicationEnabled,
         )
     }
 
-    private data class Parsed(val applicationClass: String?, val components: List<VerifiedPrivateComponent>)
+    private data class Parsed(
+        val applicationClass: String?,
+        val components: List<VerifiedPrivateComponent>,
+        val applicationPermission: String?,
+        val applicationEnabled: Boolean?,
+    )
 
     private fun parseBinaryManifest(file: File, expectedPackage: String, splitName: String?): Parsed {
         val binary = ZipFile(file).use { zip ->
@@ -121,6 +133,8 @@ object PrivateApkComponentCatalog {
         var manifestSeen = false
         var applicationSeen = false
         var appClass: String? = null
+        var appPermission: String? = null
+        var appEnabled: Boolean? = null
         val components = mutableListOf<VerifiedPrivateComponent>()
         while (parser.next() != AndroidBinXmlParser.EVENT_END_DOCUMENT) {
             if (parser.eventType != AndroidBinXmlParser.EVENT_START_ELEMENT) continue
@@ -167,6 +181,8 @@ object PrivateApkComponentCatalog {
                     require(manifestSeen && !applicationSeen) { "Duplicate/misplaced Application" }
                     applicationSeen = true
                     appClass = string("name")?.let(::className)
+                    appPermission = optionalText(string("permission"), "application permission")
+                    appEnabled = declaredBoolean("enabled")
                 }
                 tag in KINDS -> {
                     require(applicationSeen && parser.depth == 3) { "Misplaced executable component" }
@@ -205,6 +221,6 @@ object PrivateApkComponentCatalog {
             }
         }
         require(manifestSeen && applicationSeen) { "Signed APK manifest lacks an Application" }
-        return Parsed(appClass, components)
+        return Parsed(appClass, components, appPermission, appEnabled)
     }
 }
