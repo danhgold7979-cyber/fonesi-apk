@@ -2,7 +2,7 @@
 
 Ứng dụng Android dự kiến quản lý nhiều bản clone của các ứng dụng trên điện thoại, ưu tiên mạng xã hội, không yêu cầu root.
 
-**Trạng thái mới nhất (29/10/2026):** E52 đã **PASS kiểm thử kỹ thuật** ở commit `59bf73522b3a86c1caca57af8613bb2e7b915b2b` ([CI #40853790848](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40853790848)) với **423 test mỗi gate cloud/candidate**, build/lint/chữ ký/quyền APK và audit đạt. E52 cô lập queue/recovery theo engine; [biên bản E52](docs/phases/E52_ENGINE_SCOPED_QUEUE_RECOVERY_RESULTS.md). Chưa có engine clone sản phẩm chạy guest Activity, split APK đầy đủ, UID/tài khoản độc lập hoặc thử trên Samsung. **Ứng dụng hoàn thiện 28.00% theo rubric**, clone app thực nghiệm thu **0**; PR #26 vẫn Draft, `main` chưa merge.
+**Trạng thái mới nhất (29/10/2026):** E53 đã **PASS kỹ thuật** trên commit `76ab8d3ac991f92f8d2a21b5c4fff3d51b45e3b9` ([CI #40855911991](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40855911991)) với **427 test mỗi gate cloud/candidate**, build/lint/chữ ký/quyền APK và audit đầy đủ đạt. E53 ngăn phục hồi nền xóa nguồn APK private và viết lại journal khi nguồn còn được giữ bởi Room/cờ retained; [biên bản E53](docs/phases/E53_BACKGROUND_PRIVATE_SOURCE_RECOVERY_RESULTS.md). Không có bằng chứng runtime cho guest Activity, full split APK, UID/tài khoản độc lập, Samsung hoặc ứng dụng clone thực. **Sản phẩm 28.00% theo rubric**, **0** clone app thật nghiệm thu, PR #27 Draft và `main` chưa merge.
 
 Kế hoạch sản phẩm và các điều kiện kỹ thuật nằm trong [docs/PLAN.md](docs/PLAN.md).
 

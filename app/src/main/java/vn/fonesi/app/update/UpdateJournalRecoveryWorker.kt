@@ -7,6 +7,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import vn.fonesi.app.storage.FonesiDatabase
 import vn.fonesi.app.storage.RoomUpdateTaskStore
+import vn.fonesi.app.storage.RoomLegacyUpdateSourcePolicy
 import vn.fonesi.core.update.FileQueueLock
 import vn.fonesi.core.update.FileSourceSnapshotter
 import vn.fonesi.core.update.SourceCatalog
@@ -50,6 +51,7 @@ open class UpdateJournalRecoveryWorker(
                 tasks,
                 snapshots,
                 FileQueueLock(updatesPath.resolve("queue.lock")),
+                allowPreparingCleanup = RoomLegacyUpdateSourcePolicy(database)::allows,
             ).recover()
             if (!result.lockAcquired || result.retryable) Result.retry() else Result.success()
         } catch (_: Exception) {

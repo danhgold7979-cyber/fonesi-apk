@@ -4,14 +4,17 @@ import org.junit.Assert.*
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
+import vn.fonesi.core.UpdateScope
+import vn.fonesi.core.UpdateTarget
 import java.nio.file.Files
 
 class UpdateJournalRecoveryTest {
     @get:Rule val temporary = TemporaryFolder()
     private fun fixture() = QueueFixture(temporary.newFolder().toPath())
     private fun recovery(f: QueueFixture, snapshots: SourceSnapshotter = f.snapshotter,
-        lock: QueueLock = FileQueueLock(f.root.resolve("queue.lock"))) =
-        UpdateJournalRecovery(f.store, snapshots, lock) { 500L }
+        lock: QueueLock = FileQueueLock(f.root.resolve("queue.lock")),
+        allowPreparingCleanup: (UpdateTask) -> Boolean = { !it.retainedSource }) =
+        UpdateJournalRecovery(f.store, snapshots, lock, allowPreparingCleanup) { 500L }
 
     private fun preparingWithSnapshot(f: QueueFixture): UpdateTask {
         val queued = f.enqueue()
@@ -29,6 +32,49 @@ class UpdateJournalRecoveryTest {
             affectedIds = preparing.cloneIds, fingerprint = snapshot.fingerprint)
         assertTrue(f.store.replace(preparing, applying))
         return applying
+    }
+
+    @Test fun retainedPreparingSnapshotIsHeldWithoutAskingLegacyOwnerPolicy() {
+        val f = fixture()
+        val queued = f.queue.enqueue("test-engine",
+            listOf(UpdateTarget(checkNotNull(f.source), listOf("a"))),
+            UpdateScope.PER_CLONE, retainedSource = true).single()
+        val preparing = queued.move(TaskState.PREPARING, 901L)
+        assertTrue(f.store.replace(queued, preparing))
+        f.files.prepare(queued.id, checkNotNull(f.source))
+        val snapshot = f.root.resolve("snapshots").resolve(queued.id)
+        val result = recovery(f, allowPreparingCleanup = {
+            error("Retained source must be held before external owner-policy lookup")
+        }).recover()
+        assertTrue(result.lockAcquired)
+        assertFalse(result.retryable)
+        assertEquals(0, result.preparingRequeued)
+        assertEquals(preparing, f.store.list().single())
+        assertTrue(Files.exists(snapshot))
+    }
+
+    @Test fun legacyOwnerPreparingSnapshotIsHeldWhenOriginalSourceIsDenied() {
+        val f = fixture()
+        val preparing = preparingWithSnapshot(f)
+        val result = recovery(f, allowPreparingCleanup = { false }).recover()
+        assertTrue(result.lockAcquired)
+        assertFalse(result.retryable)
+        assertEquals(0, result.preparingRequeued)
+        assertEquals(preparing, f.store.list().single())
+        assertTrue(Files.exists(f.root.resolve("snapshots").resolve(preparing.id)))
+    }
+
+    @Test fun unreadablePreparingSourceAuthorityRetainsSnapshotAndRequestsRetry() {
+        val f = fixture()
+        val preparing = preparingWithSnapshot(f)
+        val result = recovery(f, allowPreparingCleanup = {
+            throw IllegalStateException("Synthetic unreadable owner registry")
+        }).recover()
+        assertTrue(result.lockAcquired)
+        assertTrue(result.retryable)
+        assertEquals(0, result.preparingRequeued)
+        assertEquals(preparing, f.store.list().single())
+        assertTrue(Files.exists(f.root.resolve("snapshots").resolve(preparing.id)))
     }
 
     @Test fun preparingRecoveryDeletesIncompleteSnapshotThenRequeuesWithClearedMarkers() {
