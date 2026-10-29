@@ -1,8 +1,16 @@
 # Kế hoạch thực thi và đối chiếu yêu cầu
 
+## E74 — technical BUILD/AUDIT PASS, Android synthetic class-probe mode (29/10/2026)
+
+Original **Product Phase 1 steps 7–8** and Phase 3 step 15. Code SHA `8cee1ba5b1afefaa1df17d6dc01a90d283019f55` [CI #40917389636](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40917389636) **SUCCESS** with 510 cloud/candidate tests/gate, E73 source JVM suite, E40–E74 audits, source ARM64 AAR, signed host/payload APK build/lint/audit-only. Opt-in E74 probe checks signed PRIVATE `PayloadActivity` classloader identity and reports only host-Activity synthetic receipt; **Android device runtime never ran in CI**. [Detailed results](phases/E74_SIGNED_PRIVATE_ACTIVITY_CLASS_PROBE_RESULTS.md), [Draft PR #48](https://github.com/danhgold7979-cyber/fonesi-apk/pull/48). Parent E73 source CI #40916252411 PASS; E73 reporting CI #40917685335 independent. Report SHA requires new CI; weighted product **28.00%**, 0 accepted apps.
+
 ## E74 — controlled signed PRIVATE Activity class Android probe mode (pre-code 29/10/2026)
 
 Original **Product Phase 1 steps 7–8** preparing Phase 3 step 15. Branch `phase/e74-signed-private-activity-class-probe-20261029` from E73 source `1297292cf1b3afad71edea9bf24504d15322d35f`, [E73 Draft PR #47](https://github.com/danhgold7979-cyber/fonesi-apk/pull/47); E73 exact-source [CI #40916252411](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40916252411) pending at plan time, no PASS claim. [E74 plan](phases/E74_SIGNED_PRIVATE_ACTIVITY_CLASS_PROBE_PLAN.md) adds opt-in `e74` synthetic Android host probe mode: verify that `PayloadActivity` declared by independently signed PRIVATE APK is a class defined by its private DexClassLoader, without instantiating/attaching/launching guest Activity. Strict result marker and exact run/ABI/APK checks in owned emulator runner. Add E40–E74 cloud/candidate + source/native probe build/lint/audit CI and report separate Android runtime **NOT VERIFIED** while no physical/emulated device result exists. Weighted 28.00%, 0 real clones accepted, no full-split provider or accounts.
+
+## E73 — technical PASS on actual PRIVATE Activity class ownership preflight (29/10/2026)
+
+Original **Product Phase 1 steps 7–8** preparing Phase 3 step 15. Implementation SHA `1297292cf1b3afad71edea9bf24504d15322d35f` [CI #40916252411](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40916252411) **SUCCESS**, cloud/candidate 510 tests per gate, 8 additional source-engine JVM preflight regressions, exact-SHA E40–E73 audits, native AAR build/lint/APK signature/permission checks. Missing/private-vs-host class and non-Activity/abstract/inner class cases fail closed before lifecycle. [Results](phases/E73_PRIVATE_ACTIVITY_BYTECODE_PREFLIGHT_RESULTS.md), [Draft PR #47](https://github.com/danhgold7979-cyber/fonesi-apk/pull/47). E72 reporting SHA `2de47d2f` independently passed [CI #40914107680](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40914107680). This E73 reporting SHA requires new CI. No guest Activity or account/device acceptance; weighted **28.00%**, 0 real apps.
 
 ## E73 — private signed Activity class preflight (pre-code 29/10/2026)
 

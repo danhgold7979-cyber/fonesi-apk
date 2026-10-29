@@ -1,5 +1,17 @@
 # Fonesi APK — conservative product completion estimate
 
+Date 2026-10-29. **Latest verified technical E74 BUILD/AUDIT PASS** at `8cee1ba5b1afefaa1df17d6dc01a90d283019f55` [CI #40917389636](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40917389636) **SUCCESS**: 510 tests per cloud/candidate gate, 8 E73 source JVM class owner tests, E40–E74 audits, source-native AAR and separate native Android host/payload build/lint/signed APK audit. E74 does NOT have an accepted Android runtime receipt. Weighted product completion **28.00%**, **0 real third-party clone apps accepted**.
+
+## E74 Android synthetic signed class probe is only build-verified
+
+A test-only host Activity can check the signed PRIVATE `PayloadActivity` class with a strict future device receipt protocol. CI builds and audits that APK but does not launch Android or a guest component; no independent OS UID/account or full split APK provider is accepted. [E74 results](phases/E74_SIGNED_PRIVATE_ACTIVITY_CLASS_PROBE_RESULTS.md). Rubric unchanged.
+
+Date 2026-10-29. **Latest verified technical milestone E73 PASS** at exact source `1297292cf1b3afad71edea9bf24504d15322d35f`: [CI #40916252411](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40916252411) **SUCCESS**, cloud/candidate 510 tests each and eight additional opt-in source-engine class-preflight JVM tests, E40–E73 audits and native AAR/build/lint/signature/permission checks. This bridges signed Activity metadata to a real PRIVATE bytecode class/type preflight only; it does **not** establish guest Activity execution or separate accounts. Weighted product readiness **28.00%**, **0 accepted real third-party clone applications**.
+
+## E73 private Activity class preflight is not real guest execution
+
+The opt-in source loader now checks a signed selected Activity class exists and was defined by the private DexClassLoader, is public, concrete and an Activity subtype; missing private DEX, host parent delegation or invalid classes are denied. Neither JVM tests nor Android AAR builds prove an attached guest Activity, separate UID or session. [Results](phases/E73_PRIVATE_ACTIVITY_BYTECODE_PREFLIGHT_RESULTS.md). Rubric unchanged.
+
 Date: 2026-10-29. **Latest verified technical milestone E72 PASS** at exact source SHA `1b8c5a7e803fcb7832d790d8614d1c92c219953d`: [CI #40912239445](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40912239445) **SUCCESS**, **510 tests per cloud/candidate gate**, signed binary manifest fixtures, build/lint/APK signatures/permissions and source AAR. E71 source `c1d825bb` [CI #40911242212](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40911242212) passed 506 tests/gate; E70 source `469b5aa5` [CI #40910681708](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40910681708) passed 503 tests/gate. These remain **metadata-only safety guards**, not Android guest runtime/account acceptance. **Weighted product readiness 28.00%, 0 real accepted third-party clone apps**.
 
 ## E72 inherited signed Application process guard is not runtime guest execution
@@ -109,7 +121,7 @@ The dimension estimates and weights are heuristic judgments anchored in docs/STA
 
 ## Distinct acceptance counters
 
-- Latest verified technical milestone: **E72 PASS** at code SHA `1b8c5a7e803fcb7832d790d8614d1c92c219953d`, [CI #40912239445](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40912239445), 510 tests per cloud/candidate gate. E70/E71 source SHAs also passed independently. No accepted real guest app/account/device.
+- Latest verified technical milestone: **E74 BUILD/AUDIT PASS** at code `8cee1ba5b1afefaa1df17d6dc01a90d283019f55`, [CI #40917389636](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40917389636), 510 cloud/candidate tests/gate, 8 E73 source JVM tests. Android runtime and third-party/UID/account/phone acceptance remain unverified.
 - Production clone of real required social/e-commerce app: **0 applications accepted**.
 - Real Samsung ARM64 / non-Samsung phone acceptance: **not executed**.
 - Full 8-phase/32-step product completion: **not achieved**. Product Phase 1/2 still lacks a fully verified engine and real-device/account isolation acceptance.
