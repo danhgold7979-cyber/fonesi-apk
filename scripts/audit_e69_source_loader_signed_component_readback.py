@@ -45,6 +45,10 @@ for name in (
     "modifiedPrivateApkFailsVerificationInsteadOfUsingOriginalCode",
 ):
     assert name in tests, "E69 signed private package regression missing: " + name
+api_guard = read("engine-source/src/main/java/vn/fonesi/engine/IsolatedSplitCodeProbeLoader.kt")
+assert "if (Build.VERSION.SDK_INT < Build.VERSION_CODES.P)" in api_guard
+assert api_guard.index("if (Build.VERSION.SDK_INT < Build.VERSION_CODES.P)") < api_guard.index("Application.getProcessName()")
+assert '@Suppress("NewApi")' not in api_guard and '@SuppressLint("NewApi")' not in api_guard
 assert "GuestCodeLayout.read(" in loader and "allowGraphOnly = false" in read("engine-source/src/main/java/vn/fonesi/engine/GuestCodeLayout.kt")
 assert "fun inspect(store: PrivateApkStore" in catalog
 assert 'const val supportsSplits = false' in read("app/src/candidate/java/vn/fonesi/app/runtime/RuntimeBindings.kt")
