@@ -334,10 +334,11 @@ jobs:
             --apk-dir . \
             --reports app/build/reports/e77-emulator \
             --proof-level e77 \
+            --allow-software-emulation \
             --expected-probe-sha256 "$PROBE_SHA256" \
             --expected-payload-sha256 "$PAYLOAD_SHA256" \
             --source-commit "$(git rev-parse HEAD)" \
-            --boot-timeout 480 --probe-timeout 180
+            --boot-timeout 600 --probe-timeout 180
           python3 - <<'PY'
           import json
           from pathlib import Path
@@ -349,6 +350,7 @@ jobs:
           receipt = json.loads(receipt_path.read_text())
           assert evidence.get("result") == "PASS_E77_SIGNED_PRIVATE_ACTIVITY_CONSTRUCTOR_PREFLIGHT_ONLY"
           assert evidence.get("android_boot_verified") is True
+          assert evidence.get("emulator_acceleration") in ("KVM", "software")
           assert evidence.get("android_apks_installed") is True
           assert evidence.get("android_private_activity_class_preflight_verified") is True
           assert evidence.get("android_private_activity_constructor_preflight_verified") is True
