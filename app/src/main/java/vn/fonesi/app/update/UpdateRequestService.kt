@@ -85,9 +85,27 @@ class UpdateRequestService(
             if (observed?.packageName != saved.packageName) listOfNotNull(saved.packageName, observed?.packageName) else emptyList()
         }.toSet() else emptySet()
         val held = rows.filter { it.packageName in incomplete }.map { it.cloneId }.toSet()
-        val plan = originalPlan.copy(targets = originalPlan.targets.filterNot { it.source.packageName in incomplete },
-            alreadyCurrent = originalPlan.alreadyCurrent.filterNot { it in held },
-            blocked = originalPlan.blocked + (held - originalPlan.blocked.map { it.requestedCloneId }.toSet()).map { UpdateBlock(it, UpdateBlockReason.INCOMPLETE_GROUP) })
+
+        // Preview is advisory, but cannot advertise original-app updates for active private
+        // source authorities. E47 rechecks within the confirm transaction to close races.
+        // Any unreadable queue/reference fails closed instead of displaying an unsafe target.
+        val packages = rows.map { it.packageName }.toSet()
+        val privatePackages = tasks.list().asSequence()
+            .filter { it.engineKey == engineKey && it.packageName in packages && !it.state.terminal }
+            .filterNot { originalSourcePolicy.allows(it) }
+            .map { it.packageName }.toSet()
+        val privateIds = rows.filter { it.packageName in privatePackages }.map { it.cloneId }.toSet()
+        val unavailable = held + privateIds
+        val incompleteBlocks = (held - privateIds).filterNot { id ->
+            originalPlan.blocked.any { it.requestedCloneId == id }
+        }.map { UpdateBlock(it, UpdateBlockReason.INCOMPLETE_GROUP) }
+        val privateBlocks = rows.filter { it.cloneId in privateIds }
+            .map { UpdateBlock(it.cloneId, UpdateBlockReason.PRIVATE_SOURCE_ACTIVE) }
+        val plan = originalPlan.copy(
+            targets = originalPlan.targets.filterNot { it.source.packageName in incomplete || it.source.packageName in privatePackages },
+            alreadyCurrent = originalPlan.alreadyCurrent.filterNot { it in unavailable },
+            blocked = originalPlan.blocked.filterNot { it.requestedCloneId in privateIds } + incompleteBlocks + privateBlocks,
+        )
         check(authorized() && engine.availability == available)
         return UpdatePreview(UUID.randomUUID().toString(), engineKey, available, rows.toList(), sources.toMap(), plan,
             metadata.filter { byId[it.cloneId]?.packageName == it.packageName }.associate { it.cloneId to it.label })

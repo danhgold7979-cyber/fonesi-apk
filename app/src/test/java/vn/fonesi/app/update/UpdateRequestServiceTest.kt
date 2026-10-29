@@ -109,6 +109,71 @@ class UpdateRequestServiceTest {
         assertEquals(0, engine.mutations)
     }
 
+    @Test fun previewShowsPrivateSourceAsBlockedAndStillOffersOtherPackage(): Unit = background {
+        val original = sources.getValue("test.alpha").copy(versionCode = 1L)
+        val retained = UpdateQueue(tasks).enqueue("engine",
+            listOf(UpdateTarget(original, listOf("a", "b"))), UpdateScope.SHARED_PACKAGE,
+            retainedSource = true).single()
+
+        val preview = service().preview(listOf(rows[0].launchToken, rows[2].launchToken))
+        assertEquals(listOf("test.beta"), preview.plan.targets.map { it.source.packageName })
+        assertEquals(UpdateBlock("a", UpdateBlockReason.PRIVATE_SOURCE_ACTIVE), preview.plan.blocked.single())
+        assertTrue(preview.plan.alreadyCurrent.isEmpty())
+        val unrelated = service().confirm(preview).single()
+        assertEquals("test.beta", unrelated.packageName)
+        assertEquals(retained, tasks.list().first { it.id == retained.id })
+        assertEquals(0, engine.mutations)
+    }
+
+    @Test fun previewFlagsPreMarkerUpdateAndReviewOwnersWithoutMutatingThem(): Unit = background {
+        val protected = listOf(
+            Triple("test.alpha", listOf("a", "b"), "UPDATE_TASK"),
+            Triple("test.beta", listOf("c"), "REVIEW_REQUIRED"),
+        ).map { (pkg, ids, ownerType) ->
+            val oldSource = sources.getValue(pkg).copy(versionCode = 1L)
+            val job = UpdateQueue(tasks).enqueue("engine",
+                listOf(UpdateTarget(oldSource, ids)), UpdateScope.SHARED_PACKAGE).single()
+            assertFalse(job.retainedSource)
+            val cluster = UUID.randomUUID().toString()
+            assertTrue(db.clusterReferences().insert(ClusterReferenceRow(
+                cluster, ownerType, job.id, "engine", 100L)) > 0)
+            job
+        }
+        val before = tasks.list()
+        val preview = service().preview(listOf(rows[0].launchToken, rows[2].launchToken))
+        assertTrue(preview.plan.targets.isEmpty())
+        assertEquals(setOf("a", "c"), preview.plan.blocked.map { it.requestedCloneId }.toSet())
+        assertTrue(preview.plan.blocked.all { it.reason == UpdateBlockReason.PRIVATE_SOURCE_ACTIVE })
+        assertEquals(before, tasks.list())
+        assertEquals(2, db.clusterReferences().list().size)
+        assertTrue(protected.all { task -> tasks.list().first { it.id == task.id } == task })
+    }
+
+    @Test fun privateSourceAppearingAfterPreviewInvalidatesOriginalConsent(): Unit = background {
+        val preview = service().preview(listOf(rows[0].launchToken))
+        val original = sources.getValue("test.alpha").copy(versionCode = 1L)
+        val retained = UpdateQueue(tasks).enqueue("engine",
+            listOf(UpdateTarget(original, listOf("a", "b"))), UpdateScope.SHARED_PACKAGE,
+            retainedSource = true).single()
+        assertThrows(UpdatePreviewChangedException::class.java) { service().confirm(preview) }
+        assertEquals(listOf(retained), tasks.list())
+        assertEquals(0, engine.mutations)
+    }
+
+    @Test fun terminalRetainedSourceNoLongerBlocksNewPreview(): Unit = background {
+        val oldSource = sources.getValue("test.alpha").copy(versionCode = 1L)
+        val privateTask = UpdateQueue(tasks).enqueue("engine",
+            listOf(UpdateTarget(oldSource, listOf("a", "b"))), UpdateScope.SHARED_PACKAGE,
+            retainedSource = true).single()
+        assertTrue(tasks.replace(privateTask, privateTask.move(TaskState.CANCELLED, System.currentTimeMillis())))
+        val preview = service().preview(listOf(rows[0].launchToken))
+        assertEquals("test.alpha", preview.plan.targets.single().source.packageName)
+        assertTrue(preview.plan.blocked.isEmpty())
+        val next = service().confirm(preview).single()
+        assertFalse(next.retainedSource)
+        assertNotEquals(privateTask.id, next.id)
+    }
+
     @Test fun previewShowsUnselectedSharedPeersWithoutEnqueueOrNativeMutation(): Unit = background {
         val preview = service().preview(listOf(rows[0].launchToken))
         assertEquals(setOf("a", "b"), preview.plan.targets.single().affectedCloneIds.toSet())

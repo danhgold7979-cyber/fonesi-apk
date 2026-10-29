@@ -47,4 +47,5 @@ private fun UpdateBlockReason.label() = when (this) {
     UpdateBlockReason.IN_USE_OR_UNKNOWN -> "Có bản liên quan đang chạy hoặc chưa rõ trạng thái."
     UpdateBlockReason.SOURCE_UNSUPPORTED -> "Engine hiện tại chưa nhập được bộ split APK."
     UpdateBlockReason.INCOMPLETE_GROUP -> "Chưa đọc lại đầy đủ các bản liên quan trong nhóm; cần đối chiếu trước khi cập nhật."
+    UpdateBlockReason.PRIVATE_SOURCE_ACTIVE -> "Đang có tác vụ cập nhật giữ nguồn APK riêng; không được xếp cập nhật từ ứng dụng gốc cho nhóm này."
 }
