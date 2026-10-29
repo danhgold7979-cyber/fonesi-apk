@@ -90,6 +90,27 @@ class CloneClusterOwnershipRepository(
     }
 
     /**
+     * Under the caller's engine-operation lock, reject inconsistent persisted ownership BEFORE
+     * attempting any provider-side deletion. The final transaction checks the same invariant again.
+     */
+    fun preflightDeletion(
+        engineKey: String,
+        cloneId: String,
+        expectedLaunchToken: String,
+    ) {
+        requireOwnerIdentity(engineKey, cloneId)
+        require(expectedLaunchToken.isNotBlank())
+        db.runInTransaction(Callable {
+            val clone = checkNotNull(db.clones().find(engineKey, cloneId)) {
+                "Clone metadata disappeared before deletion preflight"
+            }
+            check(clone.launchToken == expectedLaunchToken) { "Stale delete request" }
+            checkCloneReferences(clone)
+            Unit
+        })
+    }
+
+    /**
      * Call only after the provider has confirmed the clone is absent. Metadata and its CLONE
      * reference are removed atomically; other owners and the private APK bytes are never touched.
      */
@@ -106,16 +127,7 @@ class CloneClusterOwnershipRepository(
             }
             check(clone.launchToken == expectedLaunchToken) { "Stale delete request" }
 
-            val ownerType = ClusterOwnerType.CLONE.name
-            val existing = db.clusterReferences().forOwner(ownerType, cloneId, engineKey)
-            when (val currentId = clone.clusterId) {
-                null -> check(existing.isEmpty()) {
-                    "Clone without cluster ID still has CLONE references; preserving metadata"
-                }
-                else -> check(existing.size == 1 && existing.single().clusterId == currentId) {
-                    "Clone metadata and CLONE references disagree; preserving metadata"
-                }
-            }
+            val ownerType = checkCloneReferences(clone)
 
             check(db.clones().delete(engineKey, cloneId) == 1) {
                 "Clone metadata could not be deleted atomically"
@@ -127,6 +139,20 @@ class CloneClusterOwnershipRepository(
             }
             Unit
         })
+    }
+
+    private fun checkCloneReferences(clone: CloneMetadataRow): String {
+        val ownerType = ClusterOwnerType.CLONE.name
+        val existing = db.clusterReferences().forOwner(ownerType, clone.cloneId, clone.engineKey)
+        when (val currentId = clone.clusterId) {
+            null -> check(existing.isEmpty()) {
+                "Clone without cluster ID still has CLONE references; preserving metadata"
+            }
+            else -> check(existing.size == 1 && existing.single().clusterId == currentId) {
+                "Clone metadata and CLONE references disagree; preserving metadata"
+            }
+        }
+        return ownerType
     }
 
     private fun validateCluster(cluster: PrivateApkCluster) {
