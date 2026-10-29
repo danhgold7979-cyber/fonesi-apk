@@ -205,6 +205,9 @@ class ManagedGuestEngine(
     /** Missing native readback is an uncertain peer, never permission to shrink shared scope. */
     private fun sharedRecords(packageName: String): List<CloneRecord> = active().filter { it.packageName == packageName }.map { row ->
         check(row.state != InstanceState.DELETING) { "A shared peer still needs deletion reconciliation" }
+        // Native APK readback is not proof that an interrupted RESERVED import
+        // completed. Never mutate shared package code until every peer is READY.
+        check(row.state == InstanceState.READY) { "A shared peer is not confirmed READY" }
         checkNotNull(record(row)) { "A shared peer cannot be read back" }
     }
 
