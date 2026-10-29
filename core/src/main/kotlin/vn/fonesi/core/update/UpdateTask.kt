@@ -49,6 +49,8 @@ data class UpdateTask(
     val completion: CompletionKind? = null,
     val createdAt: Long,
     val changedAt: Long = createdAt,
+    /** Durable no-fallback source authority marker, not permission to launch guest code. */
+    val retainedSource: Boolean = false,
 ) {
     fun move(
         state: TaskState,
@@ -71,7 +73,8 @@ data class UpdateTask(
         require(previous.state.canMoveTo(state) && revision == previous.revision + 1)
         require(id == previous.id && engineKey == previous.engineKey && packageName == previous.packageName &&
             cloneIds == previous.cloneIds && versionCode == previous.versionCode && signerDigests == previous.signerDigests &&
-            scope == previous.scope && dedupKey == previous.dedupKey && createdAt == previous.createdAt)
+            scope == previous.scope && dedupKey == previous.dedupKey && createdAt == previous.createdAt &&
+            retainedSource == previous.retainedSource)
         require((state == TaskState.SUCCEEDED) == (completion != null))
         if (state == TaskState.APPLYING) require(affectedIds.isNotEmpty() && !snapshotFingerprint.isNullOrBlank())
     }
