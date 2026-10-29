@@ -11,12 +11,15 @@ import android.system.Os
 import android.system.OsConstants
 import dalvik.system.DexClassLoader
 import vn.fonesi.apk.PrivateApkStore
+import vn.fonesi.apk.PrivateApkComponentCatalog
+import vn.fonesi.apk.VerifiedPrivateComponentInventory
 import java.io.File
 import java.util.concurrent.atomic.AtomicBoolean
 
 /** Does not attach Application/Activity, provide a guest Context or virtualize Binder/components. */
 data class LoadedGuestCode(val clusterId: String, val packageName: String, val version: Long,
-    val classLoader: ClassLoader, val resources: Resources)
+    val classLoader: ClassLoader, val resources: Resources,
+    val componentInventory: VerifiedPrivateComponentInventory)
 
 /**
  * Opt-in code-image component. Resources cover private APK assets; custom resource classloader
@@ -33,6 +36,8 @@ class GuestCodeLoader(context: Context, private val apks: PrivateApkStore) {
         // Failed attempts deliberately keep attempted=true. No process-level hot swap or fallback.
         val owned = host.dataDir.canonicalFile
         val layout = GuestCodeLayout.read(apks, clusterId, Build.VERSION.SDK_INT, owned, host.packageName)
+        val components = PrivateGuestComponentPreflight.requireMatches(layout,
+            PrivateApkComponentCatalog.inspect(apks, clusterId, Build.VERSION.SDK_INT))
         val pageSize = Os.sysconf(OsConstants._SC_PAGESIZE).also { check(it in setOf(4096L, 16384L)) }.toInt()
         val abi = Build.SUPPORTED_64_BIT_ABIS.firstOrNull().also { check(it == "arm64-v8a" || it == "x86_64") }!!
         val nativeRoot = privateDirectory(File(host.noBackupFilesDir, "source-native"), owned)
@@ -55,8 +60,13 @@ class GuestCodeLoader(context: Context, private val apks: PrivateApkStore) {
         }
         val resources = host.packageManager.getResourcesForApplication(info)
         check(apks.open(clusterId, Build.VERSION.SDK_INT) == layout.cluster && preparer.verify(native)) { "Code image changed during loading" }
+        check(PrivateGuestComponentPreflight.requireMatches(layout,
+            PrivateApkComponentCatalog.inspect(apks, clusterId, Build.VERSION.SDK_INT)) == components) {
+            "Private component manifest changed during guest code preparation"
+        }
         check(NativeRuntime.state() == NativeRuntime.ENABLED)
-        return LoadedGuestCode(clusterId, info.packageName, layout.cluster.apks.base.version, loader, resources)
+        return LoadedGuestCode(clusterId, info.packageName, layout.cluster.apks.base.version,
+            loader, resources, components)
     }
 
     private fun privateDirectory(requested: File, owned: File): File {
