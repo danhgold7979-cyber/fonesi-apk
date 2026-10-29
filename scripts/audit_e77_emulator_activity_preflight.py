@@ -27,6 +27,8 @@ assert "preflightExplicitActivityClass(" in loader
 for required in (
     "python3 scripts/prepare_native_emulator.py --install --image aosp34",
     "--proof-level e77",
+    "--allow-software-emulation",
+    "--boot-timeout 600",
     "--source-commit",
     "--expected-probe-sha256",
     "--expected-payload-sha256",
@@ -38,6 +40,8 @@ for required in (
     assert required in workflow, "E77 workflow is not strict enough: " + required
 assert "run_native_probe.py --audit-only" in workflow, "Static audit retained, but emulator must also execute"
 assert workflow.index("python3 scripts/prepare_native_emulator.py --install --image aosp34") < workflow.index("--proof-level e77")
+assert "if not has_kvm and not (args.proof_level == \"e77\" and args.allow_software_emulation)" in runner
+assert "args.allow_software_emulation and args.proof_level != \"e77\"" in runner
 assert "const val supportsSplits = false" in read("app/src/candidate/java/vn/fonesi/app/runtime/RuntimeBindings.kt")
 print("PASS: E77 workflow requires a booted AOSP API 34 emulator and an exact-source/hash-bound constructor-preflight receipt.")
 print("PASS: receipt explicitly denies guest Activity attach/launch, third-party execution and production clone acceptance.")
