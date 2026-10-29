@@ -1,3 +1,15 @@
+# Fonesi APK — E55 technical PASS; Product Phase 4 remains incomplete (29/10/2026)
+
+**Repository:** [danhgold7979-cyber/fonesi-apk](https://github.com/danhgold7979-cyber/fonesi-apk). **Branch:** `phase/e55-engine-scoped-queue-controls-20261029`, [Draft PR #29](https://github.com/danhgold7979-cyber/fonesi-apk/pull/29) stacked on verified E54 [Draft PR #28](https://github.com/danhgold7979-cyber/fonesi-apk/pull/28). `main@c055df600f87ee9ddf0cd5d6bfc67d80d145e79d` remains unchanged.
+
+**Original roadmap:** **Product Phase 4, steps 18–20**. Technical **E55 PASS** at exact code/test SHA `19455ad0aa1b4b5cdf6867b3248bd5819f0fda34`: [GitHub Actions #40864637583](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40864637583) **SUCCESS**. Both cloud and candidate each passed **436 tests**, with zero reported test failures; pinned SDK, build, lint, signed APK/permissions, E40–E55 audits and no split/provider/GC activation checks all succeeded. [Test-only artifact #12892284829](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40864637583/artifacts/12892284829).
+
+**E55 code:** `UpdateQueue.cancel(engineKey, taskId)` and `retryDeferred(engineKey, taskId)` now refuse cross-engine journal mutations before CAS. The ViewModel passes `services.engineKey`; foreign-engine tasks remain visible for history but cancel/retry actions are disabled. JVM tests cover foreign QUEUED/DEFERRED, active/unknown states, blank identity and local success. Native SQLite reopen test proves foreign private UPDATE_TASK references and journals survive a rejected cancellation/retry. [Plan](phases/E55_ENGINE_SCOPED_QUEUE_CONTROLS_PLAN.md) and [results](phases/E55_ENGINE_SCOPED_QUEUE_CONTROLS_RESULTS.md).
+
+**Product acceptance:** **28.00%** weighted (~30% rounded), **0** accepted real third-party clone apps. Full split import, guest Android Activity/Service/Provider, kernel UID/account isolation, third-party sessions/updates, Samsung/other-device testing and release signing remain unverified. Keep E55 Draft, no main merge or production release. This follow-up reporting SHA requires its own exact-source CI before claiming that SHA is verified.
+
+---
+
 # Fonesi APK — E54 technical PASS; Product Phase 4 remains incomplete (29/10/2026)
 
 **Repository:** [danhgold7979-cyber/fonesi-apk](https://github.com/danhgold7979-cyber/fonesi-apk). **Development branch:** `phase/e54-unblocked-queue-work-selection-20261029`, [Draft PR #28](https://github.com/danhgold7979-cyber/fonesi-apk/pull/28) stacked on E53. `main@c055df600f87ee9ddf0cd5d6bfc67d80d145e79d` remains unchanged.

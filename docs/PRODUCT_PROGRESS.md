@@ -1,6 +1,10 @@
 # Fonesi APK — conservative product completion estimate
 
-Date: 2026-10-29. **Latest accepted technical milestone E54 PASS**, exact tested source SHA `6b03fbca63d0e4bc83e96296f568e9aad13eec51`: [GitHub Actions #40861102493](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40861102493) **SUCCESS**; E40–E54 audits, cloud/candidate tests, build/lint, SDK/signature/permission and split/provider/GC guards passed. Product readiness remains **28.00% (~30% rounded)**, with **0** accepted real third-party clones. E52 code and reporting SHA both passed their own CI; E51 parent passed. E53 protects background snapshots for retained/private Room owners; it is not new end-user clone functionality. **Weighted product readiness stays 28.00% (~30% rounded)**, real accepted third-party clones **0**.
+Date: 2026-10-29. **Latest accepted technical milestone E55 PASS**, source `19455ad0aa1b4b5cdf6867b3248bd5819f0fda34`: [GitHub Actions #40864637583](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40864637583) **SUCCESS**, **436 tests per gate cloud/candidate**, pinned build/lint/APK signature/permission and E40–E55 audits. E54 reporting HEAD `7d5983ef...` also independently passed CI #40863753893. **Weighted product readiness remains 28.00% (~30% rounded)** with **0** accepted real third-party clone apps; this is queue namespace safety, not engine/account/product acceptance.
+
+## E55 engine-scoped queue controls do not prove app cloning
+
+The shared Room journal can hold tasks for old and current engine namespaces. E55 enforces an explicit expected engine identity before a queued task can be cancelled or a deferred task retried; it also renders foreign engine history read-only in the UI. Native SQLite reopen testing checks that foreign tasks and retained UPDATE_TASK references remain intact. [E55 results](phases/E55_ENGINE_SCOPED_QUEUE_CONTROLS_RESULTS.md). This does not add a validated private-source guest update provider, independent Android Activity/UID/account isolation, full split import or real phone/social-app evidence.
 
 ## E53 WorkManager private-source preservation does not complete Phase 4
 
