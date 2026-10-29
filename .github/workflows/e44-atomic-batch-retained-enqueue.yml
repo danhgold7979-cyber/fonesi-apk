@@ -1,0 +1,90 @@
+name: E44 Atomic multi-target private-cluster retained queue
+
+on:
+  push:
+    branches:
+      - phase/e44-atomic-batch-retained-enqueue-20261029
+    paths:
+      - ".github/workflows/e44-atomic-batch-retained-enqueue.yml"
+      - "app/src/main/java/vn/fonesi/app/storage/PrivateClusterRetainedEnqueuer.kt"
+      - "app/src/main/java/vn/fonesi/app/storage/UpdateTaskClusterOwnershipRepository.kt"
+      - "app/src/main/java/vn/fonesi/app/storage/RoomUpdateTaskStore.kt"
+      - "app/src/main/java/vn/fonesi/app/storage/FonesiDatabase.kt"
+      - "app/src/test/java/vn/fonesi/app/storage/PrivateClusterRetainedEnqueuerTest.kt"
+      - "app/src/test/java/vn/fonesi/app/storage/PrivateClusterRetainedBatchEnqueuerTest.kt"
+      - "scripts/audit_e44_atomic_batch_retained_enqueue.py"
+      - "scripts/audit_e43_atomic_retained_enqueue.py"
+      - "scripts/audit_e42_atomic_owner_transitions.py"
+      - "scripts/audit_e41_update_task_cluster_ownership.py"
+      - "scripts/audit_e40_clone_cluster_ownership.py"
+      - "docs/phases/E44_ATOMIC_BATCH_RETAINED_ENQUEUE_PLAN.md"
+      - "docs/phases/E44_ATOMIC_BATCH_RETAINED_ENQUEUE_RESULTS.md"
+      - "docs/STATUS.md"
+      - "docs/PRODUCT_PROGRESS.md"
+      - "docs/EXECUTION_PLAN.md"
+      - "scripts/check.sh"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: fonesi-e44-atomic-batch-retained-enqueue-v1
+  cancel-in-progress: true
+
+jobs:
+  verified-source-queue:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      FONESI_TOOLS_DIR: /tmp/fonesi-tools
+      ANDROID_HOME: /tmp/fonesi-tools/android-sdk
+      ANDROID_SDK_ROOT: /tmp/fonesi-tools/android-sdk
+    steps:
+      - name: Checkout exact E44 source
+        uses: actions/checkout@v4
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Audit E40-E44 Room private-source safety and scripts
+        run: |
+          python3 -m py_compile scripts/audit_e40_clone_cluster_ownership.py scripts/audit_e41_update_task_cluster_ownership.py scripts/audit_e42_atomic_owner_transitions.py scripts/audit_e43_atomic_retained_enqueue.py scripts/audit_e44_atomic_batch_retained_enqueue.py scripts/verify_main_build.py scripts/verify_candidate_build.py
+          python3 scripts/audit_e40_clone_cluster_ownership.py
+          python3 scripts/audit_e41_update_task_cluster_ownership.py
+          python3 scripts/audit_e42_atomic_owner_transitions.py
+          python3 scripts/audit_e43_atomic_retained_enqueue.py
+          python3 scripts/audit_e44_atomic_batch_retained_enqueue.py
+      - name: Bootstrap pinned Android SDK36 Gradle and JDK21
+        run: python3 scripts/bootstrap_android.py --accept-sdk-license
+      - name: Cloud tests lint signature and APK audit for E44
+        run: ./scripts/check.sh
+      - name: Candidate tests lint source SDK and signed APK audit
+        run: ./scripts/check.sh --with-engine-candidate
+      - name: Verify E44 is not provider activation split import or garbage collection
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          backend = Path("app/src/candidate/java/vn/fonesi/app/runtime/SpaceCoreBackend.kt").read_text()
+          runtime = Path("app/src/candidate/java/vn/fonesi/app/runtime/RuntimeBindings.kt").read_text()
+          queue = Path("app/src/main/java/vn/fonesi/app/storage/PrivateClusterRetainedEnqueuer.kt").read_text()
+          assert "check(source.apkPaths.size == 1)" in backend
+          assert "const val supportsSplits = false" in runtime
+          for forbidden in ("engine.update(", "engine.launch(", "fun collectGarbage(", "fun deleteCluster(", "Files.delete("):
+              assert forbidden not in queue
+          print("PASS: E44 does not activate provider, enable split or delete clusters")
+          PY
+      - name: Upload E44 generated schema and sanitized test receipts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: fonesi-E44-atomic-batch-retained-enqueue-TEST-ONLY
+          path: |
+            app/schemas/vn.fonesi.app.storage.FonesiDatabase/6.json
+            app/build/reports/cloud-verification.json
+            app/build/reports/candidate-verification.json
+            app/build/test-results/testDebugUnitTest/TEST-*.xml
+            apk-runtime/build/test-results/test/TEST-*.xml
+            core/build/test-results/test/TEST-*.xml
+          if-no-files-found: warn
+          retention-days: 7
