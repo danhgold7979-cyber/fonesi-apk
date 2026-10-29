@@ -23,7 +23,7 @@ for required in (
     "abstract fun clusterReferences(): ClusterReferenceDao",
 ):
     if required not in database:
-        raise SystemExit(f"Room v5 cluster ownership schema missing: {required}")
+        raise SystemExit(f"Room v6 cluster ownership schema missing: {required}")
 
 for required in (
     "class ClusterReferenceRepository(",
@@ -39,7 +39,7 @@ for required in (
 
 for required in (
     "referencesAreIdempotentOwnerScopedDurableAndReconciledWithoutDeletion",
-    "migration4To5PreservesExistingRowsAndCreatesEmptyReferenceTable",
+    "migration4To6PreservesExistingRowsAndCreatesEmptyReferenceTable",
 ):
     if required not in tests:
         raise SystemExit(f"Room cluster ownership test missing: {required}")
