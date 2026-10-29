@@ -19,7 +19,7 @@ def main():
     args = parser.parse_args()
     subprocess.run([sys.executable, str(ROOT / "scripts/generate_probe_manifest.py"), "--check"], check=True)
     root = ET.parse(ROOT / "engine-probe/src/main/AndroidManifest.xml").getroot()
-    kept = {"android.permission.INTERNET", "android.permission.ACCESS_NETWORK_STATE", "android.permission.CAMERA", "android.permission.RECORD_AUDIO",
+    kept = {"android.permission.INTERNET", "android.permission.ACCESS_NETWORK_STATE", "android.permission.CAMERA", "android.permission.RECORD_AUDIO", "android.permission.RECEIVE_BOOT_COMPLETED", "android.permission.WAKE_LOCK",
         "android.permission.USE_BIOMETRIC", "android.permission.USE_FINGERPRINT"}
     for item in list(root):
         if item.tag == "queries" or (item.tag == "uses-permission" and item.get(A + "name") in kept):

@@ -1,0 +1,20 @@
+# E22 — Android signed synthetic dependent feature split execution (plan before code)
+
+Date: 2026-10-28. Continue on the **same cumulative branch** `phase/e21-android-split-code-proof-20261028` to avoid proliferating phase branches. E21 branch-head CI [40654172452](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40654172452) passed for `280c6d8b9e02bfc73603960226a776e124ac0d3c`. E21 is only a two-member synthetic base+feature proof, not a production clone engine.
+
+## Master-roadmap reconciliation
+
+Reviewed `docs/ROADMAP.md` (8 phases/32 tasks), `docs/EXECUTION_PLAN.md`, `docs/STATUS.md`, E20 graph planner and signed-fixture tests, E21 loader, dedicated guest-named process, signed APK source verifier and AOSP34 emulator runner. The unresolved Phase 1/2/5 product gates are real Android guest component lifetime, package/Binder mediation, correct split graph, Play Services, account separation, ARM64 and real-device stability. An Android graph with a single feature parent does not demonstrate transitively dependent feature classloaders. E22 addresses **one narrow graph edge on Android**, not those other gates.
+
+## Implementation and test plan
+
+1. Generate a disposable **three-APK set** using the existing signed base + `feature.alpha` fixture and a new `feature.beta` synthetic feature that declares `<uses-split android:name="feature.alpha" />`. The beta method must actually call the alpha DEX method, not only return a static success token. Give beta an independent resource package ID and marker, pin all three SHA-256 values and use one short-lived disposable test signer. No real APK, account, credential or production signing key.
+2. Add a **test-only** Android loader restricted to `vn.fonesi.splitfixture`, exactly three signed members, version 1 and dedicated `:fonesi_guest_split` process. Use `PrivateApkStore.open` and `GuestSplitGraphPlanner` to require base→alpha→beta parentage; reject missing/extra members and any graph not exactly matching signed provenance. Construct base, alpha and beta `DexClassLoader` instances with the exact checked parent chain, verify class visibility/classloader ownership and invoke signed challenge responses. Verify base/alpha/beta resource marker progression from *private* APK paths only; no original installed app fallback.
+3. Preserve E21 with mode `e21` and add explicit `e22` mode to the same non-exported synthetic service and Activity. Exact source verifier must enforce only the expected split names; report stage on errors, pass only after native routing and private readback. No new exported service, permissions or component bypass.
+4. Extend the owned emulator runner with `--proof-level e22`, exact three APK hashes/fixture metadata, fresh KVM-backed Android 34 x86_64 AVD, `adb install-multiple` and three `pm path` entries. Require nonce-bound checked synthetic receipt with beta parent DEX execution and private beta resources, same process identity, no guest accounts/third-party components.
+5. Add an E22 GitHub Actions workflow to the **existing E21 branch**, with pinned SDK/native source and full core/APK/graph tests, probe compile/lint/permission audits, signed fixture generation, and actual emulator execution. Green is only `PASS_E22_SYNTHETIC_DEPENDENT_FEATURE_ONLY`. If any step fails, retain failure and fix the precise root cause rather than weakening assertions. Recheck E21 regression after changing shared test code.
+6. Commit evidence/results only once green CI exists, retaining all limitations in `docs/STATUS.md`.
+
+## Explicit exclusions and gates
+
+This is a **project-owned 3-member synthetic proof**, not arbitrary third-party Android package support. No config split graph/dynamic Play delivery, actual guest Application/Activity/Service/Provider, kernel UID separation, production SpaceCore split import, ARM64/Samsung, accounts, notifications, safe session updates or release signing. Keep `importsSplitApks=false`, `main` untouched, E21 draft PR open, and this technical work reviewable. Android 34 x86_64 pass does not certify any social-app login or product release.

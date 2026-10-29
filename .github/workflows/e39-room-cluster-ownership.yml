@@ -1,0 +1,83 @@
+name: E39 Room-backed cluster ownership and migration
+
+on:
+  push:
+    branches:
+      - phase/e21-android-split-code-proof-20261028
+    paths:
+      - ".github/workflows/e39-room-cluster-ownership.yml"
+      - "app/src/main/java/vn/fonesi/app/storage/FonesiDatabase.kt"
+      - "app/src/main/java/vn/fonesi/app/storage/ClusterReferenceRepository.kt"
+      - "app/src/test/java/vn/fonesi/app/storage/ClusterReferenceRepositoryTest.kt"
+      - "app/src/test/java/vn/fonesi/app/storage/StorageIntegrationTest.kt"
+      - "app/schemas/vn.fonesi.app.storage.FonesiDatabase/**"
+      - "apk-runtime/src/main/kotlin/vn/fonesi/apk/PrivateApkClusterReferenceLedger.kt"
+      - "apk-runtime/src/test/kotlin/vn/fonesi/apk/PrivateApkStoreTest.kt"
+      - "scripts/audit_cluster_references.py"
+      - "scripts/audit_room_cluster_references.py"
+      - "scripts/check.sh"
+      - "scripts/verify_main_build.py"
+      - "scripts/verify_candidate_build.py"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: fonesi-e39-room-cluster-ownership-v1
+  cancel-in-progress: true
+
+jobs:
+  room-cluster-ownership:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      FONESI_TOOLS_DIR: /tmp/fonesi-tools
+      ANDROID_HOME: /tmp/fonesi-tools/android-sdk
+      ANDROID_SDK_ROOT: /tmp/fonesi-tools/android-sdk
+    steps:
+      - name: Checkout exact cumulative E39 source
+        uses: actions/checkout@v4
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Audit Room ownership contract and compile audit scripts
+        run: |
+          python3 -m py_compile scripts/audit_cluster_references.py scripts/audit_room_cluster_references.py scripts/verify_main_build.py scripts/verify_candidate_build.py
+          python3 scripts/audit_cluster_references.py
+          python3 scripts/audit_room_cluster_references.py
+      - name: Bootstrap pinned Android SDK36 and JDK21
+        run: python3 scripts/bootstrap_android.py --accept-sdk-license
+      - name: Run Room migration, cluster ledger, APK auditor and cloud tests
+        run: ./scripts/check.sh
+      - name: Build and audit opt-in candidate separately
+        run: ./scripts/check.sh --with-engine-candidate
+      - name: Verify provider install and destructive-GC boundaries
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          backend = Path("app/src/candidate/java/vn/fonesi/app/runtime/SpaceCoreBackend.kt").read_text()
+          runtime = Path("app/src/candidate/java/vn/fonesi/app/runtime/RuntimeBindings.kt").read_text()
+          repo = Path("app/src/main/java/vn/fonesi/app/storage/ClusterReferenceRepository.kt").read_text()
+          ledger = Path("apk-runtime/src/main/kotlin/vn/fonesi/apk/PrivateApkClusterReferenceLedger.kt").read_text()
+          assert "check(source.apkPaths.size == 1)" in backend
+          assert "const val supportsSplits = false" in runtime
+          assert "fun collectGarbage(" not in repo
+          assert "fun collectGarbage(" not in ledger
+          print("PASS: Room ownership is report-only and does not enable split import or destructive collection.")
+          PY
+      - name: Upload generated Room schema and test-only receipts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: fonesi-E39-room-cluster-ownership-TEST-ONLY
+          path: |
+            app/schemas/vn.fonesi.app.storage.FonesiDatabase/5.json
+            app/build/reports/cloud-verification.json
+            app/build/reports/candidate-verification.json
+            app/build/test-results/testDebugUnitTest/TEST-*.xml
+            apk-runtime/build/test-results/test/TEST-*.xml
+            core/build/test-results/test/TEST-*.xml
+          if-no-files-found: warn
+          retention-days: 7

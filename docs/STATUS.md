@@ -1,3 +1,68 @@
+# Fonesi APK — E40 in progress; E39 CI verified (29/10/2026)
+
+**Repository:** [danhgold7979-cyber/fonesi-apk](https://github.com/danhgold7979-cyber/fonesi-apk)  
+**Product roadmap:** Phase 3, steps 13–16 (clone identity and lifecycle); Phase 3 is not accepted yet.  
+**Technical milestone:** E39 **PASS in cloud and candidate CI** on code source SHA `07d582e09bce8e1d21249c79333767ba8efdb4f0` — [workflow #40803931491](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40803931491). Core 118 + APK runtime 44 + Android/Robolectric 172 = **334 tests per gate**, with 0 failures/errors/skips. Build, lint, signature/permission and single-APK/split-disabled audits passed. The generated Room schema v5 was reviewed from the workflow artifact and is now committed as `app/schemas/vn.fonesi.app.storage.FonesiDatabase/5.json` (identity hash `dcf8872ce248771d576b6a200438241d`).
+
+**E40 — IN PROGRESS, not PASS.** Plan: [E40 clone/cluster ownership](phases/E40_CLONE_CLUSTER_OWNERSHIP_PLAN.md); detailed execution plan is at the top of [EXECUTION_PLAN.md](EXECUTION_PLAN.md). The current branch head before E40 code is `d24b1b1d515c454cf4767d5c84e1b1a61363c105`. Work is to add nullable clone metadata `clusterId`, a non-destructive Room 5→6 migration, transactional association/generation switching, and post-provider-confirmed metadata deletion/reference release. Tests and same-source cloud/candidate CI are still required.
+
+**Safety boundary:** E39 only provides a Room owner-reference registry; E40 must keep it consistent with clone metadata. No cluster deletion/garbage collection, automatic APK publication, split import, guest Activity registration, or account isolation is enabled or proven. Keep `supportsSplits=false`, `importsSplitApks=false`, `real_guest_activity_registered=false`, `kernel_uid_isolation=false`, and `production_clone_accepted=false`.
+
+**Product readiness:** **28.00% by the existing weighted heuristic (reported as ~30%)**, unchanged. Real third-party clone acceptance remains 0 apps. Device/account acceptance remains pending. The roadmap remains **8 product phases / 32 steps / 4 phone acceptance milestones**; E numbers are technical increments, not new product phases.
+
+`main@c055df600f87ee9ddf0cd5d6bfc67d80d145e79d` remains unchanged. [PR #12](https://github.com/danhgold7979-cyber/fonesi-apk/pull/12) remains open as Draft; do not merge this cumulative technical branch as a finished product.
+
+---
+
+# Fonesi APK — E25 component preflight PASS / E24 lifecycle race fixed (28/10/2026)
+
+**Latest verified technical source SHA:** `d911ee266a92a0c85ec368dbd8df77c0dba6af62`. All five technical CI workflows passed on this exact commit:
+- [E21 #40670347156](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40670347156) — **SUCCESS**
+- [E22 #40670346768](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40670346768) — **SUCCESS**
+- [E23 #40670346702](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40670346702) — **SUCCESS**
+- [E24 #40670346892](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40670346892) — **SUCCESS**
+- [E25 #40670346860](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40670346860) — **SUCCESS**
+
+The E24/E25 failure was diagnosed from actual Android receipts: AOSP34 changed Activity configuration while the test-only private loader was preparing. The runner now waits for stable display/locale values and the synthetic host handles expected configuration changes. Final receipts show the full lifecycle and an attached private View. See [E24 results](phases/E24_SYNTHETIC_SCREEN_RESULTS.md) and [E25 results](phases/E25_PRIVATE_COMPONENT_PREFLIGHT_RESULTS.md).
+
+**Product completion remains ~30% (heuristic 28.00%), not measured or release-ready.** E21–E25 are synthetic runtime tests, not real third-party clone acceptance. The actual guest Activity remains unregistered; process isolation remains same-UID; no social accounts/Samsung ARM64/release APK have passed. The production candidate remains single-APK with `importsSplitApks=false`. The product master plan remains **8 phases / 32 steps**; Phase 1/2 engine/device acceptance is still blocked. Next technical milestone: **E26**, safe durable journal recovery when Fonesi is closed, without background engine initialization or APK import. See [E26 plan](phases/E26_BACKGROUND_JOURNAL_RECOVERY_PLAN.md).
+
+`main@c055df600f87ee9ddf0cd5d6bfc67d80d145e79d` is unchanged. The cumulative source remains in Draft PR #12; do not merge it as a finished product.
+
+---
+
+# Fonesi APK — E24 signed synthetic Android screen proof PASS (28/10/2026)
+
+**Technical E24 PASS** on source `66cd3a1d79fdd505b852db15f6b6213f8d0681a5`: Android 34 host Activity displayed an attached View created from signed private project-owned DEX and relayed the entire CREATE→DESTROY transcript. [E24 CI #40660505892](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40660505892) **SUCCESS**. E21 [#40660505783](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40660505783), E22 [#40660505960](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40660505960), E23 [#40660505786](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40660505786) also **SUCCESS** at this exact code SHA. [E24 detailed results](phases/E24_SYNTHETIC_SCREEN_RESULTS.md).
+
+**NOT a real guest Activity registration or production virtualized package.** Same host UID, no third-party account, actual guest Activity/Service/Provider/PackageManager/Binder, Play Services, ARM64 Samsung, session update or release acceptance. SpaceCore candidate remains single APK, `importsSplitApks=false`. [Weighted product readiness](PRODUCT_PROGRESS.md) remains estimated **~30%**, and the original 8-phase/32-step roadmap is unfinished. Keep test-only PR in Draft; `main` unchanged.
+
+---
+
+# Fonesi APK — technical E23 PASS / product ~30% estimate (28/10/2026)
+
+**Verified technical milestone E23:** [Android 34 CI #40658194704](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40658194704) **SUCCESS** on code `e9be7c7cc211df80c27d7c811d1463244ab4e4db`: signed private 4-member base/alpha/beta/French-alpha-config APK, correct `configForSplit` attachment, dependent DEX execution and locale resource override. E21 [#40658194522](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40658194522) and E22 [#40658194520](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40658194520) regressions also **SUCCESS** on exactly the same code. [Detailed E23 results](phases/E23_SIGNED_CONFIG_SPLIT_RESULTS.md).
+
+**User application readiness: approximately 30% estimated, not measured or release-ready.** The [explicit weighted rubric](PRODUCT_PROGRESS.md) totals 28.00%, rounded for user communication; it does NOT advance for a synthetic Android proof alone. Mandatory real third-party clone/login and Samsung acceptance is **zero accepted**, not a working production feature. SpaceCore `0.5.0-candidate` still imports only a single APK under ARM64/API26–34/4 KB guard. Real guest lifecycle, multi-account safety, notifications, Play Services, signed release and device testing remain open. Main unchanged; technical work is in stacked Draft PR #12.
+
+---
+
+# Fonesi APK — E22 Android synthetic dependent-feature proof (28/10/2026)
+
+**E22 TECHNICAL CI PASS, NOT A COMPLETE PRODUCT:** [E22 Actions #40655822440](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40655822440) passed on exact source `1ec2b4d0271da1b5a9a77c00112b88086fe81a16`. On fresh AOSP34 x86_64, three project-owned signed private APKs (`base → feature.alpha → feature.beta`) were installed, audited, and exercised: beta bytecode really invoked alpha class through its parent `DexClassLoader`, and scoped resource markers resolved only from private base/alpha/beta paths. Strict SHA-256, UID/process receipt and no-account checks passed. [E21 regression #40655822472](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40655822472) also passed on the same source. [E22 results](phases/E22_DEPENDENT_ANDROID_SPLITS_RESULTS.md) record exact evidence.
+
+**Still NOT VERIFIED:** arbitrary third-party split/config APKs, real guest Android Application/Activity/Service/Provider, Play Services, accounts/sessions, strong UID isolation, Samsung ARM64, release signing, update persistence or production multi-account compatibility. The `0.5.0-candidate` SpaceCore provider still rejects split imports and the separate E22 probe remains test-only. `main@c055df6` is unchanged. The 8-phase/32-step master plan remains unfinished; keep the accumulated technical PR in Draft.
+
+---
+
+# Fonesi APK — E21 signed isolated synthetic split Android proof (28/10/2026)
+
+**E21 TECHNICAL GATE PASS, NOT PRODUCT COMPLETE:** [GitHub Actions 40653400751](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40653400751) ended **success** on source `2714148230815b90b57037e2aec0d4fa4a1271bc`. A new AOSP Android 34 x86_64 KVM emulator installed independently signed base + feature APKs from the project-owned fixture, executed separately loaded **private** DEX code, verified feature resources and immutable private readback. Source/APK tests, x86_64 probe compile/lint, exact permission/component audit and receipts also passed. [E21 results](phases/E21_SPLIT_ANDROID_RESULTS.md) document exact limits. 
+
+**NOT VERIFIED:** arbitrary real-world split APKs, Android guest Activity/Service/Provider lifecycle, Play Services, UID-level isolation, social app accounts, ARM64/Samsung or release packaging. `0.5.0-candidate` is still SpaceCore **single-APK ARM64/API26–34/4 KB**; no release product flag is enabled. `main@c055df6` is unchanged; E21 work is in [draft PR #12](https://github.com/danhgold7979-cyber/fonesi-apk/pull/12) stacked on E20. The project's 8-phase/32-step master roadmap is **not finished**.
+
+---
+
 # Fonesi APK — trạng thái tích hợp E19 (28/10/2026)
 
 **Master plan:** [8 phase / 32 bước](ROADMAP.md). Các mốc E10–E19 bên dưới là *lát cắt kỹ thuật* thuộc master plan, không có nghĩa toàn bộ 8 phase sản phẩm đã hoàn thành. Các thay đổi tích lũy có trên nhánh [phase/e19-clone-style-metadata-20261028](https://github.com/danhgold7979-cyber/fonesi-apk/tree/phase/e19-clone-style-metadata-20261028), kế thừa E18→E17→...→E10. `main@c055df6` chưa được merge/chỉnh bởi chuỗi này.

@@ -30,6 +30,7 @@ import vn.fonesi.app.configuration.*
 import androidx.activity.result.contract.ActivityResultContracts
 import android.content.Intent
 import vn.fonesi.app.update.UpdatePreviewDialog
+import vn.fonesi.app.update.UpdateJournalRecoveryScheduler
 import vn.fonesi.core.*
 import vn.fonesi.app.update.AutomaticUpdatesCard
 import androidx.lifecycle.Lifecycle
@@ -55,6 +56,14 @@ class MainActivity : LockedActivity() {
         setContent {
             val gate by access.state.collectAsStateWithLifecycle()
             AccessGate(gate, { authenticate(AuthPurpose.UNLOCK) }, { authenticate(AuthPurpose.UNLOCK, credentialOnly = true) }) {
+            LaunchedEffect(gate.unlocked) {
+                // SDK activation is allowed only while the manager is visible and access is unlocked.
+                // Background WorkManager recovery never calls RuntimeBindings.attach().
+                if (gate.unlocked) {
+                    UpdateJournalRecoveryScheduler.ensureScheduled(applicationContext)
+                    RuntimeBindings.attach(applicationContext)
+                }
+            }
             LaunchedEffect(Unit) { model.refresh() }
             LaunchedEffect(Unit) {
                 lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
@@ -152,7 +161,30 @@ private fun FonesiScreen(state: AppsState, management: ManagementState, runtime:
                     Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                         Text(if (RuntimeBindings.candidate) "Bản thử tích hợp engine · chưa nghiệm thu" else "Bản cloud · không chứa engine", fontWeight = FontWeight.SemiBold)
                         Text(runtime.description)
-                        if (RuntimeBindings.candidate) Text("Chưa chứng nhận đăng nhập/cách ly trên máy thật. Engine ứng viên chỉ nhận một APK đầy đủ, chưa nhận bộ split APK.")
+                        if (RuntimeBindings.candidate) {
+                            val capabilities = runtime.capabilities
+                            Text(
+                                "APK đơn: " + if (capabilities.singleApkInstallSupported) "API có sẵn; chưa đồng nghĩa nghiệm thu ứng dụng" else "chưa sẵn sàng",
+                                style = MaterialTheme.typography.bodySmall,
+                            )
+                            Text(
+                                "Split APK: " + if (capabilities.splitClusterImportSupported && capabilities.guestActivityLifecycleVerified) "đã có bằng chứng tích hợp" else "chưa hỗ trợ/nghiệm thu",
+                                style = MaterialTheme.typography.bodySmall,
+                            )
+                            Text(
+                                "Vòng đời guest Activity: " + if (capabilities.guestActivityLifecycleVerified) "đã xác minh" else "chưa xác minh",
+                                style = MaterialTheme.typography.bodySmall,
+                            )
+                            Text(
+                                "Cách ly tài khoản: " + when (capabilities.isolationLevel) {
+                                    EngineIsolationLevel.HOST_UID_NAMESPACE -> "namespace trong UID host; không phải sandbox hệ điều hành"
+                                    EngineIsolationLevel.SEPARATE_OS_UID -> "UID hệ điều hành riêng đã được chấp nhận"
+                                    EngineIsolationLevel.SEPARATE_GUEST_OS -> "guest OS/container riêng đã được chấp nhận"
+                                    EngineIsolationLevel.UNKNOWN -> "chưa được chứng minh"
+                                },
+                                style = MaterialTheme.typography.bodySmall,
+                            )
+                        }
                     }
                 }
             }

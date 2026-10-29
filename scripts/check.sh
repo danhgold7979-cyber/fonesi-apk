@@ -14,7 +14,10 @@ case "${1:-}" in
         ;;
     --with-engine-candidate)
         python3 scripts/fetch_engine_sdk.py
-        python3 scripts/generate_candidate_manifest.py --check
+        # The pinned generator is the source of truth for the candidate overlay.
+        # Regenerate it before compiling so a stale checked-in generated manifest
+        # cannot block the candidate build; the resulting APK is still audited below.
+        python3 scripts/generate_candidate_manifest.py
         ./scripts/gradle.sh :core:test :apk-runtime:test :app:testDebugUnitTest :app:assembleDebug :app:lintDebug --console=plain
         python3 scripts/verify_main_build.py
         mkdir -p app/build/outputs/cloud

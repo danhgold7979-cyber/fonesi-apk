@@ -56,4 +56,5 @@ dependencies {
     implementation(project(":core"))
     testImplementation("com.android.tools.build:apksig:8.11.1")
     testImplementation("junit:junit:4.13.2")
+    testImplementation("org.json:json:20240303")
 }

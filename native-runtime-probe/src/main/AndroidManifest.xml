@@ -1,7 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <!-- Only the project-controlled test payload is visible to the technical probe. -->
-    <queries><package android:name="vn.fonesi.payload" /></queries>
+    <queries>
+        <package android:name="vn.fonesi.payload" />
+        <package android:name="vn.fonesi.splitfixture" />
+    </queries>
     <application android:allowBackup="false" android:usesCleartextTraffic="false"
         android:label="Fonesi native probe" android:theme="@android:style/Theme.Material.Light.NoActionBar">
         <activity android:name=".MainActivity" android:exported="true">
@@ -20,5 +23,13 @@
             android:label="Fonesi internal Binder test" />
         <service android:name=".SyntheticGuestChannelService" android:exported="false"
             android:process=":fonesi_guest_channel" />
+        <activity android:name=".SplitCodeProbeActivity" android:exported="true"
+            android:label="Fonesi E21 signed synthetic split test" />
+        <activity android:name=".SyntheticGuestUiProbeActivity" android:exported="true"
+            android:process=":fonesi_guest_ui"
+            android:configChanges="mcc|mnc|orientation|screenSize|smallestScreenSize|keyboardHidden|keyboard|navigation|touchscreen|screenLayout|uiMode|density|locale|layoutDirection|fontScale|colorMode|assetsPaths|grammaticalGender"
+            android:label="Fonesi E24 private signed View test" />
+        <service android:name=".SplitCodeProbeService" android:exported="false"
+            android:process=":fonesi_guest_split" />
     </application>
 </manifest>

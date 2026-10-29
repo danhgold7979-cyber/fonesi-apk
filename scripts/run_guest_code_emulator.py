@@ -19,6 +19,7 @@ from prepare_source_engine import ROOT, TOOLS
 
 PROBE_PACKAGE = "vn.fonesi.nativeprobe"
 PAYLOAD_PACKAGE = "vn.fonesi.payload"
+SPLIT_PACKAGE = "vn.fonesi.splitfixture"
 PROBE_SHA256 = "4ab18e6408546fbc4effd1efad24c4fdf044212e4f6d26456089cf817fe5551c"
 PAYLOAD_SHA256 = "c8296bb1d62af7186081e2180a22a721318ad4b0c3bc06101350aa69f0fbd114"
 UUID_NAME = re.compile(r"^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\.json$")
@@ -51,10 +52,15 @@ def main():
     parser.add_argument("--reports", type=Path, default=ROOT / ".local/e11-emulator")
     parser.add_argument("--expected-probe-sha256", default=PROBE_SHA256)
     parser.add_argument("--expected-payload-sha256", default=PAYLOAD_SHA256)
+    parser.add_argument("--split-fixture-dir", type=Path, help="Directory containing only E21 synthetic signed base/feature fixtures")
+    parser.add_argument("--expected-split-base-sha256")
+    parser.add_argument("--expected-split-feature-sha256")
+    parser.add_argument("--expected-split-dependent-sha256")
+    parser.add_argument("--expected-split-config-sha256")
     parser.add_argument("--source-commit", default="a9aa5a8d53b0c82eabcc071fd0e0fa19fdcc612c")
     parser.add_argument("--boot-timeout", type=int, default=480)
     parser.add_argument("--probe-timeout", type=int, default=180)
-    parser.add_argument("--proof-level", choices=("e11", "e12", "e13", "e14", "e15", "e16", "e17"), default="e11",
+    parser.add_argument("--proof-level", choices=("e11", "e12", "e13", "e14", "e15", "e16", "e17", "e21", "e22", "e23", "e24", "e25", "e29"), default="e11",
                         help="E13 additionally verifies independent synthetic native file/SQLite routes")
     args = parser.parse_args()
     if args.boot_timeout not in range(30, 601) or args.probe_timeout not in range(15, 301):
@@ -62,6 +68,18 @@ def main():
     for digest in (args.expected_probe_sha256, args.expected_payload_sha256):
         if re.fullmatch(r"[0-9a-f]{64}", digest) is None:
             parser.error("Expected SHA-256 must be 64 lowercase hexadecimal characters")
+    if args.proof_level in ("e21", "e22", "e23"):
+        if args.split_fixture_dir is None:
+            parser.error("E21 must specify its dedicated fixture directory")
+        for digest in (args.expected_split_base_sha256, args.expected_split_feature_sha256):
+            if not digest or re.fullmatch(r"[0-9a-f]{64}", digest) is None:
+                parser.error("Split proof requires exact SHA-256 for base and feature APKs")
+        if args.proof_level in ("e22", "e23") and (not args.expected_split_dependent_sha256 or
+                re.fullmatch(r"[0-9a-f]{64}", args.expected_split_dependent_sha256) is None):
+            parser.error("E22/E23 requires an exact SHA-256 for the dependent beta APK")
+        if args.proof_level == "e23" and (not args.expected_split_config_sha256 or
+                re.fullmatch(r"[0-9a-f]{64}", args.expected_split_config_sha256) is None):
+            parser.error("E23 requires exact SHA-256 for the signed config split APK")
     if re.fullmatch(r"[0-9a-f]{40}", args.source_commit) is None:
         parser.error("Source commit must be a full Git SHA-1")
     env = environment()
@@ -84,6 +102,16 @@ def main():
         "android_internal_binder_verified": False,
         "android_binder_private_bytecode_verified": False,
         "android_synthetic_application_on_create_verified": False,
+        "android_private_isolated_split_code_verified": False,
+        "android_private_isolated_split_resources_verified": False,
+        "android_dependent_feature_code_verified": False,
+        "android_dependent_feature_resources_verified": False,
+        "android_feature_configuration_locale_verified": False,
+        "android_signed_private_hosted_view_lifecycle_verified": False,
+        "android_signed_private_guest_component_manifest_verified": False,
+        "android_synthetic_component_dispatch_verified": False,
+        "android_production_clone_accepted": False,
+        "android_third_party_component_executed": False,
         "social_apps_tested": False,
         "samsung_or_physical_device_tested": False,
     }
@@ -120,6 +148,60 @@ def main():
                 raise RuntimeError(label + " APK not present or hash differs from green CI artifact")
         evidence["probe_sha256"] = args.expected_probe_sha256
         evidence["payload_sha256"] = args.expected_payload_sha256
+        split_base = None
+        split_feature = None
+        split_dependent = None
+        split_config = None
+        if args.proof_level in ("e21", "e22", "e23"):
+            stage = "verify signed synthetic split APK input"
+            fixture_dir = args.split_fixture_dir.resolve()
+            split_base = fixture_dir / "synthetic-split-base.apk"
+            split_feature = fixture_dir / "synthetic-split-feature.apk"
+            split_dependent = fixture_dir / "synthetic-split-dependent.apk"
+            split_config = fixture_dir / "synthetic-split-config.apk"
+            members = [("base", split_base, args.expected_split_base_sha256),
+                       ("feature", split_feature, args.expected_split_feature_sha256)]
+            if args.proof_level in ("e22", "e23"):
+                members.append(("dependent", split_dependent, args.expected_split_dependent_sha256))
+            if args.proof_level == "e23":
+                members.append(("config", split_config, args.expected_split_config_sha256))
+            for label, file, expected in members:
+                if not file.is_file() or file.is_symlink() or sha256(file) != expected:
+                    raise RuntimeError("E21 signed " + label + " APK hash mismatch")
+            receipt_name = {"e21": "checksums.json", "e22": "dependency-checksums.json",
+                            "e23": "config-checksums.json"}[args.proof_level]
+            fixture_receipt = fixture_dir / receipt_name
+            if not fixture_receipt.is_file() or fixture_receipt.is_symlink():
+                raise RuntimeError("E21 fixture checksum manifest missing")
+            source_receipt = json.loads(fixture_receipt.read_text(encoding="utf-8"))
+            if (source_receipt.get("package") != SPLIT_PACKAGE or
+                    source_receipt.get("signed_synthetic_only") is not True or
+                    source_receipt.get("base_sha256") != args.expected_split_base_sha256 or
+                    source_receipt.get("feature_sha256") != args.expected_split_feature_sha256):
+                raise RuntimeError("Synthetic split fixture receipt does not match exact input APKs")
+            if args.proof_level == "e23":
+                if (source_receipt.get("version") != 1 or
+                        source_receipt.get("config_name") != "feature.alpha.fr" or
+                        source_receipt.get("config_for") != "feature.alpha" or
+                        source_receipt.get("has_config_code") is not False or
+                        source_receipt.get("third_party_accounts_tested") is not False or
+                        source_receipt.get("production_guest_engine_enabled") is not False or
+                        source_receipt.get("dependent_sha256") != args.expected_split_dependent_sha256 or
+                        source_receipt.get("config_sha256") != args.expected_split_config_sha256):
+                    raise RuntimeError("E23 signed config fixture manifest is not an exact match")
+                evidence["split_config_sha256"] = args.expected_split_config_sha256
+                evidence["split_dependent_sha256"] = args.expected_split_dependent_sha256
+            elif args.proof_level == "e22":
+                if (source_receipt.get("parent") != "feature.alpha" or
+                        source_receipt.get("dependent") != "feature.beta" or
+                        source_receipt.get("production_guest_engine_enabled") is not False or
+                        source_receipt.get("dependent_sha256") != args.expected_split_dependent_sha256):
+                    raise RuntimeError("E22 dependent feature fixture is not the pinned signed graph")
+                evidence["split_dependent_sha256"] = args.expected_split_dependent_sha256
+            elif source_receipt.get("split") != "feature.alpha":
+                raise RuntimeError("E21 fixture must contain exactly its original alpha feature")
+            evidence["split_base_sha256"] = args.expected_split_base_sha256
+            evidence["split_feature_sha256"] = args.expected_split_feature_sha256
         save()
 
         stage = "verify owned SDK and hardware acceleration"
@@ -193,9 +275,81 @@ def main():
             if installed.returncode or "Success" not in installed.stdout:
                 raise RuntimeError("Synthetic APK install failed")
         evidence["android_apks_installed"] = True
+        if args.proof_level in ("e24", "e25", "e29"):
+            # AOSP first boot can deliver late display/locale configuration changes after
+            # sys.boot_completed. Launching the lifecycle probe during that window destroys
+            # the Activity before its private DEX worker finishes. Require four identical
+            # read-only framework/display snapshots before the Activity lifecycle test.
+            stage = "wait for stable Android UI configuration before E24/E25"
+            deadline = time.monotonic() + 40
+            previous = None
+            stable_samples = 0
+            while time.monotonic() < deadline:
+                snapshot = []
+                for command in (
+                    ("shell", "wm", "size"),
+                    ("shell", "wm", "density"),
+                    ("shell", "settings", "get", "system", "font_scale"),
+                    ("shell", "settings", "get", "system", "user_rotation"),
+                    ("shell", "getprop", "persist.sys.locale"),
+                    ("shell", "getprop", "persist.sys.language"),
+                    ("shell", "getprop", "persist.sys.country"),
+                ):
+                    result = device(*command, timeout=8, check=False)
+                    if result.returncode != 0:
+                        raise RuntimeError("Cannot read Android UI configuration fingerprint")
+                    snapshot.append(result.stdout.strip())
+                current = tuple(snapshot)
+                if current == previous:
+                    stable_samples += 1
+                else:
+                    previous = current
+                    stable_samples = 0
+                if stable_samples >= 3:
+                    evidence["android_ui_configuration_stable"] = True
+                    save()
+                    break
+                time.sleep(2)
+            else:
+                raise RuntimeError("Android UI configuration did not stabilize before E24/E25")
+        if args.proof_level in ("e21", "e22", "e23"):
+            stage = "install exact signed isolated synthetic split members"
+            install_members = [split_base, split_feature]
+            if args.proof_level in ("e22", "e23"):
+                install_members.append(split_dependent)
+            if args.proof_level == "e23":
+                install_members.append(split_config)
+            installed = device("install-multiple", "-r", *install_members, timeout=90, check=False)
+            if installed.returncode or "Success" not in installed.stdout:
+                raise RuntimeError("Android PackageManager rejected the signed isolated split APK fixture")
+            paths = device("shell", "pm", "path", SPLIT_PACKAGE).stdout.splitlines()
+            package_paths = [line for line in paths if line.startswith("package:")]
+            if len(package_paths) != len(install_members) or len(set(package_paths)) != len(install_members):
+                raise RuntimeError("PackageManager did not report the exact signed split member count")
+            evidence["android_isolated_fixture_installed"] = True
         save()
 
-        if args.proof_level in ("e15", "e16", "e17"):
+        if args.proof_level in ("e24", "e25", "e29"):
+            stage = "launch dedicated synthetic UI Activity with signed private View factory"
+            expected_run_id = str(uuid.uuid4())
+            started = device("shell", "am", "start", "-W", "-n",
+                             PROBE_PACKAGE + "/.SyntheticGuestUiProbeActivity",
+                             "--es", "run_id", expected_run_id,
+                             "--es", "proof_level", args.proof_level, timeout=90, check=False)
+            if started.returncode:
+                raise RuntimeError("Synthetic E24/E25 host Activity dispatch failed")
+            stage = "read signed private guest View attachment and lifecycle receipt"
+        elif args.proof_level in ("e21", "e22", "e23"):
+            stage = "dispatch dedicated isolated synthetic split Activity"
+            expected_run_id = str(uuid.uuid4())
+            started = device("shell", "am", "start", "-W", "-n",
+                             PROBE_PACKAGE + "/.SplitCodeProbeActivity",
+                             "--es", "run_id", expected_run_id,
+                             "--es", "proof_level", args.proof_level, timeout=90, check=False)
+            if started.returncode:
+                raise RuntimeError("Synthetic split host Activity dispatch failed")
+            stage = "read fresh private signed base and feature receipt"
+        elif args.proof_level in ("e15", "e16", "e17"):
             stage = "bind dedicated synthetic guest channel by explicit host Activity"
             expected_run_id = str(uuid.uuid4())
             started = device("shell", "am", "start", "-W", "-n",
@@ -223,7 +377,35 @@ def main():
         deadline = time.monotonic() + args.probe_timeout
         report = None
         while time.monotonic() < deadline:
-            if args.proof_level in ("e15", "e16", "e17"):
+            if args.proof_level in ("e24", "e25", "e29"):
+                raw = device("exec-out", "run-as", PROBE_PACKAGE, "cat",
+                             "files/guest-ui-probe/" + expected_run_id + ".json",
+                             timeout=12, check=False)
+                if raw.returncode == 0 and len(raw.stdout) <= 16384:
+                    try:
+                        found = json.loads(raw.stdout)
+                        if found.get("complete") is True:
+                            if found.get("run_id") != expected_run_id:
+                                raise RuntimeError("E24 private View receipt UUID mismatch")
+                            report = found
+                            break
+                    except json.JSONDecodeError:
+                        pass
+            elif args.proof_level in ("e21", "e22", "e23"):
+                raw = device("exec-out", "run-as", PROBE_PACKAGE, "cat",
+                             "files/split-code-probe/" + expected_run_id + ".json",
+                             timeout=12, check=False)
+                if raw.returncode == 0 and len(raw.stdout) <= 16384:
+                    try:
+                        found = json.loads(raw.stdout)
+                        if found.get("complete") is True:
+                            if found.get("run_id") != expected_run_id:
+                                raise RuntimeError("E21 split proof receipt UUID mismatch")
+                            report = found
+                            break
+                    except json.JSONDecodeError:
+                        pass
+            elif args.proof_level in ("e15", "e16", "e17"):
                 raw = device("exec-out", "run-as", PROBE_PACKAGE, "cat",
                              "files/binder-probe/" + expected_run_id + ".json",
                              timeout=12, check=False)
@@ -277,7 +459,115 @@ def main():
             time.sleep(2)
         if report is None:
             raise RuntimeError("No complete Android synthetic receipt before timeout")
-        if args.proof_level in ("e15", "e16", "e17"):
+        if args.proof_level in ("e24", "e25", "e29"):
+            (reports / "synthetic-ui-receipt.json").write_text(json.dumps(report, indent=2) + "\n")
+            expected_true = (
+                "complete", "passed", "real_host_activity_lifecycle_verified",
+                "signed_private_guest_view_rendered", "private_guest_view_attached_to_window",
+                "private_guest_lifecycle_relay_verified", "signed_private_resources_verified",
+                "signed_private_image_rechecked", "same_android_uid",
+            )
+            expected_false = ("kernel_uid_isolation", "actual_guest_activity_attached",
+                              "third_party_guest_components_tested", "social_accounts_tested")
+            if args.proof_level == "e29":
+                expected_true = expected_true + (
+                    "private_component_manifest_verified", "synthetic_component_dispatch_verified",
+                )
+                expected_false = expected_false + (
+                    "real_guest_activity_registered", "production_clone_accepted",
+                    "third_party_component_executed",
+                )
+            if report.get("passed") is False:
+                stage = re.sub(r"[^A-Za-z0-9_]", "", str(report.get("failure_stage", "unknown")))[:96]
+                reason = re.sub(r"[^A-Za-z0-9_]", "", str(report.get("failure_type", "unknown")))[:64]
+                transcript = re.sub(r"[^A-Za-z0-9_,]", "", str(
+                    report.get("android_lifecycle_transcript", "unknown")))[:128]
+                raise RuntimeError(args.proof_level.upper() + " private UI failure at " + stage +
+                                   " type " + reason + " lifecycle " + transcript)
+            missing_true = [key for key in expected_true if report.get(key) is not True]
+            missing_false = [key for key in expected_false if report.get(key) is not False]
+            if missing_true or missing_false:
+                raise RuntimeError("E24/E25 signed private View/lifecycle assertions failed: true=" +
+                    ",".join(missing_true) + "; false=" + ",".join(missing_false))
+            if report.get("proof_level") != args.proof_level:
+                raise RuntimeError("E24/E25 private UI proof mode differs from requested mode")
+            if args.proof_level == "e25" and not (
+                    report.get("private_component_manifest_verified") is True and
+                    report.get("real_guest_activity_registered") is False):
+                raise RuntimeError("E25 signed private component manifest preflight did not pass")
+            if args.proof_level == "e29" and report.get("dispatch_ticket_private_apk_sha256") != args.expected_payload_sha256:
+                raise RuntimeError("E29 ticket did not bind the exact signed private payload SHA-256")
+            if (report.get("lifecycle_transcript") != "CREATE,START,RESUME,PAUSE,STOP,DESTROY" or
+                    report.get("process_name") != PROBE_PACKAGE + ":fonesi_guest_ui" or
+                    report.get("api") != 34 or type(report.get("pid")) is not int or
+                    report["pid"] <= 0 or type(report.get("uid")) is not int or
+                    report["uid"] < 0):
+                raise RuntimeError("E24 actual Android host lifecycle or process proof mismatch")
+            evidence["android_signed_private_hosted_view_lifecycle_verified"] = True
+            if args.proof_level == "e25":
+                evidence["android_signed_private_guest_component_manifest_verified"] = True
+                evidence["result"] = "PASS_E25_SIGNED_PRIVATE_SYNTHETIC_COMPONENT_PREFLIGHT_ONLY"
+                print("PASS: Android 34 read signed PRIVATE synthetic Application/Activity manifest "
+                      "metadata and attached the hosted View, without registering a guest Activity "
+                      "or launching third-party components.", flush=True)
+            elif args.proof_level == "e29":
+                evidence["android_signed_private_guest_component_manifest_verified"] = True
+                evidence["android_synthetic_component_dispatch_verified"] = True
+                evidence["result"] = "PASS_E29_SIGNED_PRIVATE_SYNTHETIC_COMPONENT_TICKET_DISPATCH_ONLY"
+                print("PASS: E25 private catalog and payload SHA were bound to a UUID ticket, "
+                      "validated in an explicit internal host-Activity dispatch, then the existing "
+                      "signed synthetic View lifecycle ran. No guest Activity was registered or "
+                      "third-party component executed.", flush=True)
+            else:
+                evidence["result"] = "PASS_E24_SIGNED_SYNTHETIC_PRIVATE_VIEW_LIFECYCLE_RELAY_ONLY"
+                print("PASS: Android 34 hosted an attached View created by signed private "
+                      "synthetic DEX and relayed CREATE→DESTROY lifecycle. "
+                      "No arbitrary guest Activity, account or UID isolation proved.", flush=True)
+        elif args.proof_level in ("e21", "e22", "e23"):
+            (reports / "isolated-split-receipt.json").write_text(json.dumps(report, indent=2) + "\n")
+            required_true = ("complete", "passed", "private_split_graph_verified",
+                             "private_isolated_base_code_executed", "private_isolated_feature_code_executed",
+                             "private_isolated_resources_verified", "signed_private_cluster_rechecked",
+                             "same_android_uid")
+            required_false = ("kernel_uid_isolation", "guest_activity_executed",
+                              "third_party_guest_components_tested", "social_accounts_tested")
+            if not all(report.get(key) is True for key in required_true) or not all(
+                    report.get(key) is False for key in required_false):
+                raise RuntimeError("E21 isolated split signed APK loader/resource assertions failed")
+            if report.get("proof_level") != args.proof_level:
+                raise RuntimeError("Signed split receipt proof level mismatch")
+            if args.proof_level in ("e22", "e23") and not all(report.get(key) is True for key in (
+                    "private_dependency_graph_verified",
+                    "private_dependent_feature_code_executed",
+                    "private_dependent_resources_verified")):
+                raise RuntimeError("E22 dependent parent DEX/resources proof missing")
+            if args.proof_level == "e23" and not all(report.get(key) is True for key in (
+                    "private_config_graph_verified", "private_feature_config_locale_verified")):
+                raise RuntimeError("E23 signed private feature config locale/resource assertions failed")
+            if (report.get("process_name") != PROBE_PACKAGE + ":fonesi_guest_split" or
+                    report.get("api") != 34 or type(report.get("pid")) is not int or
+                    report["pid"] <= 0 or type(report.get("uid")) is not int or report["uid"] < 0):
+                raise RuntimeError("E21 split process/API/UID proof is invalid")
+            evidence["android_private_isolated_split_code_verified"] = True
+            evidence["android_private_isolated_split_resources_verified"] = True
+            if args.proof_level == "e23":
+                evidence["android_dependent_feature_code_verified"] = True
+                evidence["android_dependent_feature_resources_verified"] = True
+                evidence["android_feature_configuration_locale_verified"] = True
+                evidence["result"] = "PASS_E23_SIGNED_SYNTHETIC_ALPHA_CONFIG_RESOURCES_ONLY"
+                print("PASS: Android 34 verified signed private alpha-targeted French config resources "
+                      "and base/alpha/beta DEX parent calls. No third-party accounts tested.", flush=True)
+            elif args.proof_level == "e22":
+                evidence["android_dependent_feature_code_verified"] = True
+                evidence["android_dependent_feature_resources_verified"] = True
+                evidence["result"] = "PASS_E22_SIGNED_SYNTHETIC_DEPENDENT_FEATURE_ONLY"
+                print("PASS: Android 34 executed signed private base/alpha/beta classloader parent DEX "
+                      "and verified staged beta resources. No third-party guest components/accounts.", flush=True)
+            else:
+                evidence["result"] = "PASS_E21_SIGNED_SYNTHETIC_ISOLATED_BASE_FEATURE_ONLY"
+                print("PASS: Android 34 executed independently loaded private signed base/feature DEX "
+                      "and verified feature resources. No third-party APK components or accounts tested.", flush=True)
+        elif args.proof_level in ("e15", "e16", "e17"):
             (reports / "internal-binder-receipt.json").write_text(json.dumps(report, indent=2) + "\n")
             host_pid, remote_pid = report.get("host_pid"), report.get("remote_pid")
             host_uid, remote_uid = report.get("host_uid"), report.get("remote_uid")
@@ -400,7 +690,8 @@ def main():
             try:
                 filtered = run(
                     [adb, "-s", serial, "logcat", "-d", "-s",
-                     "AndroidRuntime:E", "FonesiNativeProbe:E", "libc:F", "*:S"],
+                     "AndroidRuntime:E", "ActivityTaskManager:W", "ActivityManager:W",
+                     "WindowManager:W", "FonesiNativeProbe:E", "libc:F", "*:S"],
                     timeout=15, check=False,
                 ).stdout
                 (reports / "synthetic-runtime-errors.log").write_text(filtered[-65536:])

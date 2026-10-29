@@ -1,0 +1,138 @@
+name: E29 signed private synthetic component ticket dispatch
+
+on:
+  push:
+    branches:
+      - phase/e21-android-split-code-proof-20261028
+    paths:
+      - ".github/workflows/e29-private-component-dispatch.yml"
+      - "engine-source/**"
+      - "native-runtime-probe/src/main/java/vn/fonesi/nativeprobe/SyntheticGuestUiProbeActivity.java"
+      - "native-runtime-probe/src/main/AndroidManifest.xml"
+      - "probe-payload/**"
+      - "scripts/run_guest_code_emulator.py"
+      - "scripts/run_native_probe.py"
+      - "scripts/bootstrap_android.py"
+      - "scripts/prepare_native_emulator.py"
+      - "scripts/prepare_source_engine.py"
+      - "scripts/gradle.sh"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: fonesi-e29-private-dispatch-v1
+  cancel-in-progress: true
+
+jobs:
+  signed-private-component-dispatch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    env:
+      FONESI_TOOLS_DIR: /tmp/fonesi-tools
+      ANDROID_HOME: /tmp/fonesi-tools/android-sdk
+      ANDROID_SDK_ROOT: /tmp/fonesi-tools/android-sdk
+    steps:
+      - name: Checkout exact cumulative E29 source
+        uses: actions/checkout@v4
+      - name: Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Validate bounded emulator runner and audit Python source
+        run: python3 -m py_compile scripts/run_guest_code_emulator.py scripts/run_native_probe.py
+      - name: Bootstrap pinned SDK36 JDK21 and audited native source dependencies
+        run: |
+          python3 scripts/bootstrap_android.py --accept-sdk-license
+          python3 scripts/prepare_source_engine.py --install-tools
+      - name: Run core, APK auditor and source-engine ticket regression tests
+        run: |
+          ./scripts/gradle.sh :core:test :apk-runtime:test --console=plain
+          ./scripts/gradle.sh -PincludeSourceEngine=true -PsourceEngineAbi=x86_64 \
+            :engine-source:testDebugUnitTest --console=plain
+      - name: Compile and lint the signed synthetic host and payload
+        run: |
+          ./scripts/gradle.sh -PincludeNativeRuntimeProbe=true -PsourceEngineAbi=x86_64 \
+            :native-runtime-probe:assembleDebug :native-runtime-probe:lintDebug --console=plain
+          ./scripts/gradle.sh -PincludeEngineProbe=true \
+            :probe-payload:assembleDebug :probe-payload:lintDebug --console=plain
+      - name: Audit probe component/process allowlist, permissions and native ELF
+        run: python3 scripts/run_native_probe.py --audit-only
+      - name: Verify exact debug APK signatures
+        run: |
+          test -s native-runtime-probe/build/outputs/apk/debug/native-runtime-probe-debug.apk
+          test -s probe-payload/build/outputs/apk/debug/probe-payload-debug.apk
+          "$ANDROID_HOME/build-tools/36.0.0/apksigner" verify --verbose \
+            native-runtime-probe/build/outputs/apk/debug/native-runtime-probe-debug.apk
+          "$ANDROID_HOME/build-tools/36.0.0/apksigner" verify --verbose \
+            probe-payload/build/outputs/apk/debug/probe-payload-debug.apk
+      - name: Install fresh Android 34 AOSP x86_64 image
+        run: python3 scripts/prepare_native_emulator.py --install --image aosp34
+      - name: Verify KVM access for dedicated ephemeral emulator
+        run: |
+          if test -e /dev/kvm; then
+            sudo chmod 666 /dev/kvm
+            test -r /dev/kvm
+            test -w /dev/kvm
+          else
+            echo "KVM unavailable: no simulated pass is permitted"
+          fi
+      - name: Run E24 and E25 regressions plus E29 ticket-bound dispatch proof on fresh emulators
+        run: |
+          PROBE_SHA="$(sha256sum native-runtime-probe/build/outputs/apk/debug/native-runtime-probe-debug.apk | cut -d' ' -f1)"
+          PAYLOAD_SHA="$(sha256sum probe-payload/build/outputs/apk/debug/probe-payload-debug.apk | cut -d' ' -f1)"
+          for LEVEL in e24 e25 e29; do
+            python3 scripts/run_guest_code_emulator.py \
+              --apk-dir . \
+              --expected-probe-sha256 "$PROBE_SHA" \
+              --expected-payload-sha256 "$PAYLOAD_SHA" \
+              --source-commit "$GITHUB_SHA" \
+              --reports ".local/$LEVEL-emulator" \
+              --boot-timeout 480 --probe-timeout 180 --proof-level "$LEVEL"
+          done
+          export PAYLOAD_SHA
+          python3 - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+          e24=json.loads(Path(".local/e24-emulator/synthetic-ui-receipt.json").read_text())
+          e25=json.loads(Path(".local/e25-emulator/synthetic-ui-receipt.json").read_text())
+          e29=json.loads(Path(".local/e29-emulator/synthetic-ui-receipt.json").read_text())
+          assert e24["proof_level"] == "e24" and e24["passed"] is True
+          assert e25["proof_level"] == "e25" and e25["passed"] is True
+          assert e25["private_component_manifest_verified"] is True
+          assert e25["real_guest_activity_registered"] is False
+          assert e29["proof_level"] == "e29" and e29["passed"] is True
+          assert e29["private_component_manifest_verified"] is True
+          assert e29["synthetic_component_dispatch_verified"] is True
+          assert e29["dispatch_ticket_private_apk_sha256"] == os.environ["PAYLOAD_SHA"]
+          assert e29["real_guest_activity_registered"] is False
+          assert e29["actual_guest_activity_attached"] is False
+          assert e29["kernel_uid_isolation"] is False
+          assert e29["third_party_component_executed"] is False
+          assert e29["production_clone_accepted"] is False
+          print("PASS: E24/E25 regressions and UUID/hash-bound E29 synthetic ticket dispatch verified.")
+          print("NOT VERIFIED: actual guest Activity registration, third-party component execution, UID isolation or product-engine acceptance.")
+          PY
+      - name: Upload bounded signed synthetic-only evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: fonesi-E29-private-component-ticket-dispatch-TEST-ONLY
+          path: |
+            native-runtime-probe/build/outputs/apk/debug/native-runtime-probe-debug.apk
+            probe-payload/build/outputs/apk/debug/probe-payload-debug.apk
+            .local/e24-emulator/e11-evidence.json
+            .local/e24-emulator/synthetic-ui-receipt.json
+            .local/e25-emulator/e11-evidence.json
+            .local/e25-emulator/synthetic-ui-receipt.json
+            .local/e29-emulator/e11-evidence.json
+            .local/e29-emulator/synthetic-ui-receipt.json
+            .local/e29-emulator/synthetic-runtime-errors.log
+          if-no-files-found: warn
+          retention-days: 7
+      - name: Preserve explicit production boundary
+        run: |
+          echo "Only a project-owned signed private synthetic manifest and bounded ticket were dispatched."
+          echo "NOT VERIFIED: real guest Activity registration, third-party component execution, account isolation, split production import, Samsung ARM64 or release signing."

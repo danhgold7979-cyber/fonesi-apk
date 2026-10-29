@@ -28,7 +28,13 @@ if [[ -f /etc/ssl/certs/java/cacerts ]]; then
     export GRADLE_OPTS="$GRADLE_OPTS -Djavax.net.ssl.trustStore=/etc/ssl/certs/java/cacerts"
 fi
 cd "$project_dir"
+# bootstrap_android.sh installs and pins this distribution. Prefer it so each CI run does not
+# redownload Gradle through the wrapper and fail on a transient services.gradle.org reset.
+if [[ -x "$tools_dir/gradle-8.13/bin/gradle" ]]; then
+    exec "$tools_dir/gradle-8.13/bin/gradle" "$@"
+fi
 if [[ -x ./gradlew ]]; then
     exec ./gradlew "$@"
 fi
-exec "$tools_dir/gradle-8.13/bin/gradle" "$@"
+echo "Pinned Gradle 8.13 is missing; run bootstrap_android.py first." >&2
+exit 1

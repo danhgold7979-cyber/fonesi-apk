@@ -1,0 +1,152 @@
+name: E22 AOSP34 signed synthetic dependent feature graph code and resources
+
+on:
+  push:
+    branches:
+      - phase/e21-android-split-code-proof-20261028
+    paths:
+      - ".github/workflows/e22-dependent-splits.yml"
+      - "core/**"
+      - "apk-runtime/**"
+      - "engine-source/**"
+      - "native-runtime-probe/src/main/AndroidManifest.xml"
+      - "native-runtime-probe/src/main/java/vn/fonesi/nativeprobe/SplitCodeProbe*.java"
+      - "native-runtime-probe/src/main/java/vn/fonesi/nativeprobe/SyntheticSignedSplitSource.java"
+      - "scripts/run_guest_code_emulator.py"
+      - "scripts/run_native_probe.py"
+      - "scripts/build_isolated_split_fixture.py"
+      - "scripts/build_dependent_split_fixture.py"
+      - "scripts/bootstrap_android.py"
+      - "scripts/prepare_native_emulator.py"
+      - "scripts/prepare_source_engine.py"
+      - "scripts/gradle.sh"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: fonesi-e22-owned-avd-v1
+  cancel-in-progress: true
+
+jobs:
+  android-dependent-feature:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    env:
+      FONESI_TOOLS_DIR: /tmp/fonesi-tools
+      ANDROID_HOME: /tmp/fonesi-tools/android-sdk
+      ANDROID_SDK_ROOT: /tmp/fonesi-tools/android-sdk
+    steps:
+      - name: Checkout exact cumulative E22 source
+        uses: actions/checkout@v4
+      - name: Setup Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Verify E21 and E22 Python syntax
+        run: |
+          python3 -m py_compile \
+            scripts/build_isolated_split_fixture.py \
+            scripts/build_dependent_split_fixture.py \
+            scripts/run_guest_code_emulator.py \
+            scripts/run_native_probe.py
+      - name: Install pinned SDK36, JDK21, Gradle and native dependencies
+        run: |
+          python3 scripts/bootstrap_android.py --accept-sdk-license
+          python3 scripts/prepare_source_engine.py --install-tools
+      - name: Build signed project-owned base alpha beta with an actual alpha dependency
+        run: |
+          python3 scripts/build_dependent_split_fixture.py \
+            --output .local/e22-fixtures \
+            --sdk "$ANDROID_HOME" \
+            --java-home "$FONESI_TOOLS_DIR/jdk-21.0.13+9"
+      - name: Audit complete three-APK set with exact fresh SHA256 and compiled DEX/resources
+        run: |
+          python3 - <<'PY'
+          import hashlib, json, pathlib, zipfile
+          root=pathlib.Path(".local/e22-fixtures")
+          receipt=json.loads((root/"dependency-checksums.json").read_text())
+          assert receipt["package"] == "vn.fonesi.splitfixture"
+          assert receipt["parent"] == "feature.alpha"
+          assert receipt["dependent"] == "feature.beta"
+          assert receipt["signed_synthetic_only"] is True
+          assert receipt["production_guest_engine_enabled"] is False
+          assert receipt["third_party_accounts_tested"] is False
+          for kind in ("base", "feature", "dependent"):
+              path=root / ("synthetic-split-" + kind + ".apk")
+              assert hashlib.sha256(path.read_bytes()).hexdigest()==receipt[kind+"_sha256"]
+              with zipfile.ZipFile(path) as z:
+                  assert {"AndroidManifest.xml", "classes.dex", "resources.arsc"} <= set(z.namelist())
+                  assert len(z.read("classes.dex")) > 100
+          print("PASS: three SHA-pinned signed E22 fixture APKs have DEX and resources.")
+          PY
+          for kind in base feature dependent; do
+            "$ANDROID_HOME/build-tools/36.0.0/apksigner" verify --verbose \
+              ".local/e22-fixtures/synthetic-split-$kind.apk"
+          done
+      - name: Verify old signed APK auditor and private split graph regression
+        run: |
+          ./scripts/gradle.sh :core:test :apk-runtime:test --console=plain
+          ./scripts/gradle.sh -PincludeSourceEngine=true -PsourceEngineAbi=x86_64 \
+            :engine-source:testDebugUnitTest --console=plain
+      - name: Build and lint signed E22 Android probe and unchanged synthetic payload
+        run: |
+          ./scripts/gradle.sh -PincludeNativeRuntimeProbe=true -PsourceEngineAbi=x86_64 \
+            :native-runtime-probe:assembleDebug :native-runtime-probe:lintDebug --console=plain
+          ./scripts/gradle.sh -PincludeEngineProbe=true \
+            :probe-payload:assembleDebug :probe-payload:lintDebug --console=plain
+      - name: Enforce exact native probe components, permissions, ABI and ELF
+        run: python3 scripts/run_native_probe.py --audit-only
+      - name: Install only ephemeral Android 34 AOSP emulator image
+        run: python3 scripts/prepare_native_emulator.py --install --image aosp34
+      - name: Require accessible KVM on isolated CI emulator
+        run: |
+          if test -e /dev/kvm; then
+            sudo chmod 666 /dev/kvm
+            test -r /dev/kvm
+            test -w /dev/kvm
+          else
+            echo "KVM unavailable: E22 remains BLOCKED, never PASS"
+          fi
+      - name: Execute signed private root alpha dependent beta on actual AOSP34 emulator
+        run: |
+          PROBE_SHA="$(sha256sum native-runtime-probe/build/outputs/apk/debug/native-runtime-probe-debug.apk | cut -d' ' -f1)"
+          PAYLOAD_SHA="$(sha256sum probe-payload/build/outputs/apk/debug/probe-payload-debug.apk | cut -d' ' -f1)"
+          BASE_SHA="$(sha256sum .local/e22-fixtures/synthetic-split-base.apk | cut -d' ' -f1)"
+          ALPHA_SHA="$(sha256sum .local/e22-fixtures/synthetic-split-feature.apk | cut -d' ' -f1)"
+          BETA_SHA="$(sha256sum .local/e22-fixtures/synthetic-split-dependent.apk | cut -d' ' -f1)"
+          python3 scripts/run_guest_code_emulator.py \
+            --apk-dir . \
+            --split-fixture-dir .local/e22-fixtures \
+            --expected-probe-sha256 "$PROBE_SHA" \
+            --expected-payload-sha256 "$PAYLOAD_SHA" \
+            --expected-split-base-sha256 "$BASE_SHA" \
+            --expected-split-feature-sha256 "$ALPHA_SHA" \
+            --expected-split-dependent-sha256 "$BETA_SHA" \
+            --source-commit "$GITHUB_SHA" \
+            --reports .local/e22-emulator \
+            --boot-timeout 480 --probe-timeout 180 --proof-level e22
+      - name: Upload only disposable signed E22 fixtures and sanitized Android receipts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: fonesi-E22-TEST-ONLY-dependent-signed-splits
+          path: |
+            native-runtime-probe/build/outputs/apk/debug/native-runtime-probe-debug.apk
+            probe-payload/build/outputs/apk/debug/probe-payload-debug.apk
+            .local/e22-fixtures/synthetic-split-base.apk
+            .local/e22-fixtures/synthetic-split-feature.apk
+            .local/e22-fixtures/synthetic-split-dependent.apk
+            .local/e22-fixtures/dependency-checksums.json
+            .local/e22-emulator/e11-evidence.json
+            .local/e22-emulator/isolated-split-receipt.json
+            .local/e22-emulator/synthetic-runtime-errors.log
+          if-no-files-found: warn
+          retention-days: 7
+      - name: State strict synthetic-only runtime acceptance boundary
+        run: |
+          echo "E22 passes only project-owned dependent synthetic split DEX and resources on AOSP34."
+          echo "NOT VERIFIED: arbitrary real apps, dynamic config splits, guest components,"
+          echo "UID isolation, live accounts, Play Services, Samsung ARM64 or release-ready APK."

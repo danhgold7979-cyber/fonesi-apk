@@ -9,6 +9,8 @@ import androidx.activity.viewModels
 import androidx.biometric.BiometricManager
 import androidx.biometric.BiometricPrompt
 import androidx.core.content.ContextCompat
+import vn.fonesi.app.runtime.RuntimeBindings
+import vn.fonesi.app.update.UpdateJournalRecoveryScheduler
 import androidx.fragment.app.FragmentActivity
 
 /** Common enforcement for manager and shortcut. An Intent extra can never bypass this activity. */
@@ -21,6 +23,7 @@ abstract class LockedActivity : FragmentActivity() {
         active = null
         access.complete(current, result.resultCode == RESULT_OK)
         updateSecureFlag()
+        activateUnlockedForeground()
     }
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -33,6 +36,7 @@ abstract class LockedActivity : FragmentActivity() {
                 active = null
                 access.complete(request, true)
                 updateSecureFlag()
+                activateUnlockedForeground()
             }
             override fun onAuthenticationError(errorCode: Int, errString: CharSequence) {
                 if (active != request) return
@@ -45,7 +49,20 @@ abstract class LockedActivity : FragmentActivity() {
                 }
             }
         })
-    override fun onStart() { super.onStart(); access.foreground(); updateSecureFlag() }
+    override fun onStart() {
+        super.onStart()
+        access.foreground()
+        updateSecureFlag()
+        activateUnlockedForeground()
+    }
+
+    /** Engine activation and journal scheduling are allowed only after an authenticated foreground unlock. */
+    private fun activateUnlockedForeground() {
+        if (!lifecycle.currentState.isAtLeast(androidx.lifecycle.Lifecycle.State.STARTED) ||
+            !access.state.value.unlocked || isFinishing || isDestroyed) return
+        RuntimeBindings.attach(this)
+        UpdateJournalRecoveryScheduler.ensureScheduled(this)
+    }
     override fun onStop() {
         if (!isChangingConfigurations && !access.externalCredential) { active = null; prompt?.cancelAuthentication() }
         access.background(isChangingConfigurations)

@@ -1,0 +1,81 @@
+name: E27 Room-backed durable journal recovery
+
+on:
+  push:
+    branches:
+      - phase/e21-android-split-code-proof-20261028
+    paths:
+      - ".github/workflows/e27-room-worker-recovery.yml"
+      - "app/src/main/java/vn/fonesi/app/update/UpdateJournalRecoveryWorker.kt"
+      - "app/src/main/java/vn/fonesi/app/storage/**"
+      - "app/src/test/java/vn/fonesi/app/update/UpdateJournalRecoveryWorkerTest.kt"
+      - "app/src/main/AndroidManifest.xml"
+      - "app/src/candidate/AndroidManifest.xml"
+      - "app/build.gradle.kts"
+      - "core/src/main/kotlin/vn/fonesi/core/update/**"
+      - "core/src/test/kotlin/vn/fonesi/core/update/**"
+      - "scripts/verify_main_build.py"
+      - "scripts/verify_candidate_build.py"
+      - "scripts/check.sh"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: fonesi-e27-room-recovery-v1
+  cancel-in-progress: true
+
+jobs:
+  room-worker-recovery-and-app-audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      FONESI_TOOLS_DIR: /tmp/fonesi-tools
+      ANDROID_HOME: /tmp/fonesi-tools/android-sdk
+      ANDROID_SDK_ROOT: /tmp/fonesi-tools/android-sdk
+    steps:
+      - name: Checkout exact cumulative E27 source
+        uses: actions/checkout@v4
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Audit worker architecture and Python sources
+        run: |
+          python3 -m py_compile scripts/audit_journal_worker.py scripts/verify_main_build.py scripts/verify_candidate_build.py
+          python3 scripts/audit_journal_worker.py
+      - name: Bootstrap pinned Android SDK36 and JDK21
+        run: python3 scripts/bootstrap_android.py --accept-sdk-license
+      - name: Run core, APK auditor, Room/Robolectric worker tests, cloud build and exact APK audit
+        run: ./scripts/check.sh
+      - name: Build and audit the opt-in candidate separately
+        run: ./scripts/check.sh --with-engine-candidate
+      - name: Verify cloud and candidate reports preserve the engine acceptance boundary
+        run: |
+          test -s app/build/reports/cloud-verification.json
+          test -s app/build/reports/candidate-verification.json
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          cloud = json.loads(Path("app/build/reports/cloud-verification.json").read_text())
+          candidate = json.loads(Path("app/build/reports/candidate-verification.json").read_text())
+          assert cloud["engine_runtime_verified"] is False
+          assert candidate["engine_runtime_verified"] is False
+          assert cloud["version_name"] == "0.5.0-cloud"
+          assert candidate["version"] == "0.5.0-candidate"
+          print("PASS: cloud and candidate APKs separately built, tested and manifest/signature-audited.")
+          print("NOT VERIFIED: physical-device clone lifecycle, third-party accounts, session isolation or release signing.")
+          PY
+      - name: Upload debug-only Room recovery verification receipts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: fonesi-E27-room-worker-recovery-TEST-ONLY
+          path: |
+            app/build/reports/cloud-verification.json
+            app/build/reports/candidate-verification.json
+            app/build/test-results/testDebugUnitTest/TEST-*.xml
+            core/build/test-results/test/TEST-*.xml
+          if-no-files-found: warn
+          retention-days: 7

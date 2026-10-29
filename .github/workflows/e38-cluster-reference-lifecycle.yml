@@ -1,0 +1,79 @@
+name: E38 private cluster reference lifecycle and retention
+
+on:
+  push:
+    branches:
+      - phase/e21-android-split-code-proof-20261028
+    paths:
+      - ".github/workflows/e38-cluster-reference-lifecycle.yml"
+      - "apk-runtime/src/main/kotlin/vn/fonesi/apk/PrivateApkStore.kt"
+      - "apk-runtime/src/main/kotlin/vn/fonesi/apk/PrivateApkClusterReferenceLedger.kt"
+      - "apk-runtime/src/main/kotlin/vn/fonesi/apk/ApkSetAuditor.kt"
+      - "apk-runtime/src/test/kotlin/vn/fonesi/apk/PrivateApkStoreTest.kt"
+      - "apk-runtime/src/test/kotlin/vn/fonesi/apk/ApkSetAuditorTest.kt"
+      - "scripts/audit_cluster_references.py"
+      - "scripts/check.sh"
+      - "scripts/verify_main_build.py"
+      - "scripts/verify_candidate_build.py"
+      - "app/src/main/java/vn/fonesi/app/storage/FonesiDatabase.kt"
+      - "core/src/main/kotlin/vn/fonesi/core/update/**"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: fonesi-e38-cluster-reference-lifecycle-v1
+  cancel-in-progress: true
+
+jobs:
+  cluster-reference-retention:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      FONESI_TOOLS_DIR: /tmp/fonesi-tools
+      ANDROID_HOME: /tmp/fonesi-tools/android-sdk
+      ANDROID_SDK_ROOT: /tmp/fonesi-tools/android-sdk
+    steps:
+      - name: Checkout exact cumulative E38 source
+        uses: actions/checkout@v4
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Audit reference ledger and compile audit scripts
+        run: |
+          python3 -m py_compile scripts/audit_cluster_references.py scripts/verify_main_build.py scripts/verify_candidate_build.py
+          python3 scripts/audit_cluster_references.py
+      - name: Bootstrap pinned Android SDK36 and JDK21
+        run: python3 scripts/bootstrap_android.py --accept-sdk-license
+      - name: Run APK cluster auditor, reference ledger, core and app tests
+        run: ./scripts/check.sh
+      - name: Build and audit opt-in candidate separately
+        run: ./scripts/check.sh --with-engine-candidate
+      - name: Verify storage references do not enable provider split execution
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          backend = Path("app/src/candidate/java/vn/fonesi/app/runtime/SpaceCoreBackend.kt").read_text()
+          runtime = Path("app/src/candidate/java/vn/fonesi/app/runtime/RuntimeBindings.kt").read_text()
+          ledger = Path("apk-runtime/src/main/kotlin/vn/fonesi/apk/PrivateApkClusterReferenceLedger.kt").read_text()
+          assert "check(source.apkPaths.size == 1)" in backend
+          assert "const val supportsSplits = false" in runtime
+          assert "fun unreferencedClusterIds()" in ledger
+          assert "fun collectGarbage(" not in ledger
+          print("PASS: cluster ownership ledger is non-destructive and SpaceCore split import remains disabled.")
+          PY
+      - name: Upload test-only reference lifecycle receipts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: fonesi-E38-cluster-reference-lifecycle-TEST-ONLY
+          path: |
+            app/build/reports/cloud-verification.json
+            app/build/reports/candidate-verification.json
+            app/build/test-results/testDebugUnitTest/TEST-*.xml
+            apk-runtime/build/test-results/test/TEST-*.xml
+            core/build/test-results/test/TEST-*.xml
+          if-no-files-found: warn
+          retention-days: 7

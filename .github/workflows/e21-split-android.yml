@@ -1,0 +1,138 @@
+name: E21 real AOSP34 signed synthetic isolated base/feature proof
+
+on:
+  push:
+    branches:
+      - phase/e21-android-split-code-proof-20261028
+    paths:
+      - ".github/workflows/e21-split-android.yml"
+      - "core/**"
+      - "apk-runtime/**"
+      - "engine-source/**"
+      - "native-runtime-probe/src/main/AndroidManifest.xml"
+      - "native-runtime-probe/src/main/java/vn/fonesi/nativeprobe/SplitCodeProbe*.java"
+      - "native-runtime-probe/src/main/java/vn/fonesi/nativeprobe/SyntheticSignedSplitSource.java"
+      - "scripts/run_guest_code_emulator.py"
+      - "scripts/run_native_probe.py"
+      - "scripts/build_isolated_split_fixture.py"
+      - "scripts/bootstrap_android.py"
+      - "scripts/prepare_native_emulator.py"
+      - "scripts/prepare_source_engine.py"
+      - "scripts/gradle.sh"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: fonesi-e21-owned-avd-v1
+  cancel-in-progress: true
+
+jobs:
+  signed-isolated-split-proof:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    env:
+      FONESI_TOOLS_DIR: /tmp/fonesi-tools
+      ANDROID_HOME: /tmp/fonesi-tools/android-sdk
+      ANDROID_SDK_ROOT: /tmp/fonesi-tools/android-sdk
+    steps:
+      - name: Checkout exact E21 source
+        uses: actions/checkout@v4
+      - name: Setup Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Require valid bounded fixture and emulator runner Python
+        run: |
+          python3 -m py_compile scripts/build_isolated_split_fixture.py scripts/run_guest_code_emulator.py scripts/run_native_probe.py
+      - name: Bootstrap pinned SDK36 Gradle JDK21 and native tools
+        run: |
+          python3 scripts/bootstrap_android.py --accept-sdk-license
+          python3 scripts/prepare_source_engine.py --install-tools
+      - name: Generate isolated base and feature APKs with disposable same-signer test key
+        run: |
+          python3 scripts/build_isolated_split_fixture.py --output .local/e21-fixtures \
+            --sdk "$ANDROID_HOME" --java-home "$FONESI_TOOLS_DIR/jdk-21.0.13+9"
+      - name: Audit exact synthetic signed base and feature APK assets and DEX
+        run: |
+          python3 - <<'PY'
+          import hashlib
+          import json
+          import pathlib
+          import zipfile
+          folder = pathlib.Path(".local/e21-fixtures")
+          checks = json.loads((folder / "checksums.json").read_text(encoding="utf-8"))
+          assert checks["package"] == "vn.fonesi.splitfixture"
+          assert checks["split"] == "feature.alpha"
+          assert checks["signed_synthetic_only"] is True
+          for kind in ("base", "feature"):
+              apk = folder / f"synthetic-split-{kind}.apk"
+              assert hashlib.sha256(apk.read_bytes()).hexdigest() == checks[f"{kind}_sha256"]
+              with zipfile.ZipFile(apk) as z:
+                  names = set(z.namelist())
+                  assert {"AndroidManifest.xml", "classes.dex", "resources.arsc"} <= names
+                  assert len(z.read("classes.dex")) > 100
+          print("PASS: fresh signed disposable fixture input hashes, DEX and compiled resources.")
+          PY
+          "$ANDROID_HOME/build-tools/36.0.0/apksigner" verify --verbose .local/e21-fixtures/synthetic-split-base.apk
+          "$ANDROID_HOME/build-tools/36.0.0/apksigner" verify --verbose .local/e21-fixtures/synthetic-split-feature.apk
+      - name: Verify signed private APK auditor and existing source runtime regression
+        run: |
+          ./scripts/gradle.sh :core:test :apk-runtime:test --console=plain
+          ./scripts/gradle.sh -PincludeSourceEngine=true -PsourceEngineAbi=x86_64 :engine-source:testDebugUnitTest --console=plain
+      - name: Build E21 debug-only probe and synthetic payload with lint
+        run: |
+          ./scripts/gradle.sh -PincludeNativeRuntimeProbe=true -PsourceEngineAbi=x86_64 :native-runtime-probe:assembleDebug :native-runtime-probe:lintDebug --console=plain
+          ./scripts/gradle.sh -PincludeEngineProbe=true :probe-payload:assembleDebug :probe-payload:lintDebug --console=plain
+      - name: Audit existing probe component allowlist and native ELF
+        run: python3 scripts/run_native_probe.py --audit-only
+      - name: Install only owned Android 34 AOSP x86_64 system image
+        run: python3 scripts/prepare_native_emulator.py --install --image aosp34
+      - name: Allow KVM access to only the ephemeral CI emulator
+        run: |
+          if test -e /dev/kvm; then
+            sudo chmod 666 /dev/kvm
+            test -r /dev/kvm
+            test -w /dev/kvm
+          else
+            echo "KVM unavailable: E21 Android execution must be BLOCKED not PASS"
+          fi
+      - name: Boot clean emulator and verify signed private isolated split code plus resources
+        run: |
+          PROBE_SHA="$(sha256sum native-runtime-probe/build/outputs/apk/debug/native-runtime-probe-debug.apk | cut -d' ' -f1)"
+          PAYLOAD_SHA="$(sha256sum probe-payload/build/outputs/apk/debug/probe-payload-debug.apk | cut -d' ' -f1)"
+          BASE_SHA="$(sha256sum .local/e21-fixtures/synthetic-split-base.apk | cut -d' ' -f1)"
+          FEATURE_SHA="$(sha256sum .local/e21-fixtures/synthetic-split-feature.apk | cut -d' ' -f1)"
+          python3 scripts/run_guest_code_emulator.py \
+            --apk-dir . \
+            --split-fixture-dir .local/e21-fixtures \
+            --expected-probe-sha256 "$PROBE_SHA" \
+            --expected-payload-sha256 "$PAYLOAD_SHA" \
+            --expected-split-base-sha256 "$BASE_SHA" \
+            --expected-split-feature-sha256 "$FEATURE_SHA" \
+            --source-commit "$GITHUB_SHA" \
+            --reports .local/e21-emulator \
+            --boot-timeout 480 --probe-timeout 180 --proof-level e21
+      - name: Upload only bounded signed test APKs and sanitized synthetic evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: fonesi-E21-TEST-ONLY-isolated-signed-splits
+          path: |
+            native-runtime-probe/build/outputs/apk/debug/native-runtime-probe-debug.apk
+            probe-payload/build/outputs/apk/debug/probe-payload-debug.apk
+            .local/e21-fixtures/synthetic-split-base.apk
+            .local/e21-fixtures/synthetic-split-feature.apk
+            .local/e21-fixtures/checksums.json
+            .local/e21-emulator/e11-evidence.json
+            .local/e21-emulator/isolated-split-receipt.json
+            .local/e21-emulator/synthetic-runtime-errors.log
+          if-no-files-found: warn
+          retention-days: 7
+      - name: State product acceptance boundary
+        run: |
+          echo "E21 is a signed synthetic base/feature code and resource proof only."
+          echo "NOT VERIFIED: arbitrary third-party APK splits, guest components, kernel isolation,"
+          echo "real accounts, notifications, Samsung ARM64, release signing or app updates."

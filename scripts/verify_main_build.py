@@ -34,13 +34,24 @@ def main():
         raise RuntimeError("Android lint has unresolved errors")
     apk = ROOT / "app/build/outputs/apk/debug/app-debug.apk"
     manifest, permissions, _ = inspect_apk(apk, "vn.fonesi.app")
-    if permissions != {"vn.fonesi.app.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION", "android.permission.USE_BIOMETRIC", "android.permission.USE_FINGERPRINT"}:
-        raise RuntimeError("Unexpected permissions in the main APK")
+    expected_permissions = {
+        "vn.fonesi.app.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION",
+        "android.permission.USE_BIOMETRIC", "android.permission.USE_FINGERPRINT",
+        "android.permission.ACCESS_NETWORK_STATE", "android.permission.WAKE_LOCK",
+        "android.permission.RECEIVE_BOOT_COMPLETED", "android.permission.FOREGROUND_SERVICE",
+    }
+    if permissions != expected_permissions:
+        raise RuntimeError(f"Unexpected permissions in the main APK: {sorted(permissions ^ expected_permissions)}")
     application = manifest.find("application")
     if application.get(A + "allowBackup") != "false":
         raise RuntimeError("Unexpected backup policy")
     public_components = set()
     route = None
+    system_guards = {
+        ("receiver", "androidx.work.impl.diagnostics.DiagnosticsReceiver"): "android.permission.DUMP",
+        ("service", "androidx.work.impl.background.systemjob.SystemJobService"): "android.permission.BIND_JOB_SERVICE",
+        ("receiver", "androidx.work.impl.background.systemjob.RescheduleReceiver"): "android.permission.RECEIVE_BOOT_COMPLETED",
+    }
     for tag in ["activity", "activity-alias", "service", "receiver", "provider"]:
         for component in application.findall(tag):
             if component.get(A + "exported") != "true":
@@ -52,6 +63,8 @@ def main():
             if (tag, name, permission) == ("receiver", "androidx.profileinstaller.ProfileInstallReceiver", "android.permission.DUMP"):
                 continue
             if permission:
+                if system_guards.get((tag, name)) == permission:
+                    continue
                 raise RuntimeError(f"Unexpected exported component guard: {name}")
             public_components.add((tag, name))
             if name == "vn.fonesi.app.shortcuts.CloneLaunchActivity":

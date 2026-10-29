@@ -46,8 +46,12 @@ data class ManagementState(
     val busy: Boolean = false,
 )
 
-data class RuntimeState(val ready: Boolean = false, val description: String = RuntimeBindings.status(),
-    val clones: Map<String, CloneRecord> = emptyMap())
+data class RuntimeState(
+    val ready: Boolean = false,
+    val description: String = RuntimeBindings.status(),
+    val clones: Map<String, CloneRecord> = emptyMap(),
+    val capabilities: EngineCapabilities = EngineCapabilities(),
+)
 
 class AppsViewModel(application: Application) : AndroidViewModel(application) {
     private val catalog = InstalledApps(application)
@@ -291,10 +295,22 @@ class AppsViewModel(application: Application) : AndroidViewModel(application) {
                 try {
                     val lease = services.operationLock().acquire() ?: return@withContext mutableRuntime.value
                     lease.use {
-                    if (engine.availability is EngineAvailability.Ready) RuntimeState(true, RuntimeBindings.status(), engine.listClones().associateBy { it.id })
-                    else RuntimeState(false, RuntimeBindings.status())
+                    if (engine.availability is EngineAvailability.Ready) RuntimeState(
+                        ready = true,
+                        description = RuntimeBindings.status(),
+                        clones = engine.listClones().associateBy { it.id },
+                        capabilities = engine.capabilities,
+                    ) else RuntimeState(
+                        ready = false,
+                        description = RuntimeBindings.status(),
+                        capabilities = engine.capabilities,
+                    )
                     }
-                } catch (_: Exception) { RuntimeState(false, "Chưa đọc được trạng thái engine. Dữ liệu quản lý vẫn được giữ.") }
+                } catch (_: Exception) { RuntimeState(
+                    ready = false,
+                    description = "Chưa đọc được trạng thái engine. Dữ liệu quản lý vẫn được giữ.",
+                    capabilities = EngineCapabilities(),
+                ) }
             }
         }
     }

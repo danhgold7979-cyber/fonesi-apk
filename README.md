@@ -2,6 +2,8 @@
 
 Ứng dụng Android dự kiến quản lý nhiều bản clone của các ứng dụng trên điện thoại, ưu tiên mạng xã hội, không yêu cầu root.
 
+**Trạng thái mới nhất (29/10/2026):** E39 Room ownership registry đã PASS cloud/candidate CI ([#40803931491](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40803931491), 334 test mỗi gate). E40 đang tích hợp registry với metadata clone; chưa chứng minh split import hoặc cách ly tài khoản thật. Tiến độ sản phẩm theo rubric vẫn 28% (~30%), không phải phần trăm E hoàn thành.
+
 Kế hoạch sản phẩm và các điều kiện kỹ thuật nằm trong [docs/PLAN.md](docs/PLAN.md).
 
 Lộ trình chi tiết: [8 phase, 32 bước và 4 mốc thử điện thoại](docs/ROADMAP.md).

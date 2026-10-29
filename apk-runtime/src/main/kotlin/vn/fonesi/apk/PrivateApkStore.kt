@@ -15,7 +15,40 @@ import java.security.MessageDigest
 import java.util.UUID
 
 /** A published code snapshot, never a running/installed guest or an active-version pointer. */
+private fun computeClusterDigest(apks: AuditedApkSet): String {
+    val digest = MessageDigest.getInstance("SHA-256")
+    fun field(value: String) {
+        val bytes = value.toByteArray(Charsets.UTF_8)
+        digest.update(java.nio.ByteBuffer.allocate(4).putInt(bytes.size).array())
+        digest.update(bytes)
+    }
+    field("fonesi-package-cluster-v1")
+    field(apks.base.packageName)
+    field(apks.base.version.toString())
+    apks.base.signers.sorted().forEach { field("signer:$it") }
+    val members = listOf(apks.base) + apks.splits.sortedBy { it.splitName.orEmpty() }
+    members.forEach { member ->
+        field(if (member.splitName == null) "BASE" else "SPLIT")
+        field(member.splitName.orEmpty())
+        field(member.feature.toString())
+        field(member.configFor.orEmpty())
+        member.dependencies.sorted().forEach { field("dependency:$it") }
+        member.requiredTypes.sorted().forEach { field("requires:$it") }
+        member.providedTypes.sorted().forEach { field("provides:$it") }
+        field(member.splitRequired.toString())
+        field(member.isolatedSplits.toString())
+        member.signers.sorted().forEach { field("member-signer:$it") }
+        field(member.sha256)
+        field(member.file.length().toString())
+    }
+    return digest.digest().joinToString("") { "%02x".format(it.toInt() and 255) }
+}
+
+/** A published code snapshot, never a running/installed guest or an active-version pointer. */
 data class PrivateApkCluster(val id: String, val apks: AuditedApkSet) {
+    /** Digest is deterministic for contents/metadata and independent of storage ID and file paths. */
+    val clusterDigest: String get() = computeClusterDigest(apks)
+
     fun source() = InstalledSource(apks.base.packageName, apks.base.version, apks.base.signers,
         listOf(apks.base.file.path) + apks.splits.map { it.file.path })
 }
