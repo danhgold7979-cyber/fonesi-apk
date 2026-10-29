@@ -266,6 +266,54 @@ class ManagedGuestEngineTest {
         assertEquals(0, backend.uninstalls.size)
         assertEquals(2, registry.list().size)
     }
+    @Test fun reservedNativePeerBlocksAnotherCreateBeforeSnapshotOrSdkMutation() {
+        backend.failAfterInstall = true
+        assertThrows(IllegalStateException::class.java) { engine().create(source, "Interrupted") }
+        val reserved = registry.list().single()
+        assertEquals(InstanceState.RESERVED, reserved.state)
+        val actualPackage = checkNotNull(backend.inspect(reserved.userId, reserved.packageName))
+        backend.failAfterInstall = false
+        val preparedBefore = snapshots.prepares
+        assertThrows(IllegalStateException::class.java) { engine().create(source, "Another") }
+        assertEquals(preparedBefore, snapshots.prepares)
+        assertEquals(listOf(reserved), registry.list())
+        assertEquals(setOf(reserved.userId), backend.users())
+        assertEquals(actualPackage, backend.inspect(reserved.userId, reserved.packageName))
+        assertEquals(1, backend.installs.size)
+        assertTrue(backend.uninstalls.isEmpty())
+    }
+    @Test fun reservedNativePeerBlocksSharedUpdateBeforeSdkMutation() {
+        backend.failAfterInstall = true
+        assertThrows(IllegalStateException::class.java) { engine().create(source, "Interrupted") }
+        val reserved = registry.list().single()
+        val nativeBefore = checkNotNull(backend.inspect(reserved.userId, source.packageName))
+        backend.failAfterInstall = false
+        assertThrows(IllegalStateException::class.java) {
+            engine().update(UpdateTarget(source.copy(versionCode = 2), listOf(reserved.id)))
+        }
+        assertEquals(listOf(reserved), registry.list())
+        assertEquals(nativeBefore, backend.inspect(reserved.userId, source.packageName))
+        assertEquals(1, backend.installs.size)
+        assertTrue(backend.uninstalls.isEmpty())
+    }
+    @Test fun mixedReadyAndReservedNativePeersCannotNarrowOrAdvanceSharedUpdate() {
+        val confirmed = engine().create(source, "Ready")
+        backend.failAfterInstall = true
+        assertThrows(IllegalStateException::class.java) { engine().create(source, "Interrupted") }
+        val unconfirmed = registry.list().single { it.state == InstanceState.RESERVED }
+        val nativeBefore = backend.packages.toMap()
+        backend.failAfterInstall = false
+        assertThrows(IllegalStateException::class.java) {
+            engine().update(UpdateTarget(source.copy(versionCode = 2), listOf(confirmed.id)))
+        }
+        assertThrows(IllegalStateException::class.java) {
+            engine().update(UpdateTarget(source.copy(versionCode = 2), listOf(confirmed.id, unconfirmed.id)))
+        }
+        assertEquals(2, backend.installs.size)
+        assertEquals(nativeBefore, backend.packages)
+        assertEquals(InstanceState.RESERVED, registry.list().single { it.id == unconfirmed.id }.state)
+        assertTrue(backend.uninstalls.isEmpty())
+    }
     @Test fun deletingRegistryPeerBlocksSharedImportUntilReconciled() {
         val a = engine().create(source, "A")
         registry.state(a.id, InstanceState.DELETING)
