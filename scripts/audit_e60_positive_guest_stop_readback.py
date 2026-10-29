@@ -14,16 +14,17 @@ required = (
     "ready()", "val row = instance(cloneId)", "mutationAllowed()",
     "backend.stop(row.userId, row.packageName)",
     "val observed = checkNotNull(backend.inspect(row.userId, row.packageName))",
-    "observed.packageName == row.packageName",
-    "observed.version >= 0",
-    "observed.signers.isNotEmpty()",
+    "observed.packageName == beforeStop.packageName",
+    "observed.version == beforeStop.version",
+    "observed.signers == beforeStop.signers",
     "!observed.running",
     "registry.pending(row.id, false)",
 )
 for token in required:
     assert token in body, f"E60 missing positive guest-stop invariant: {token}"
-assert body.index("backend.stop(") < body.index("checkNotNull(backend.inspect(")
-assert body.index("checkNotNull(backend.inspect(") < body.index("observed.packageName ==")
+assert body.index("beforeStop = checkNotNull(backend.inspect(") < body.index("backend.stop(")
+assert body.index("backend.stop(") < body.index("val observed = checkNotNull(backend.inspect(")
+assert body.index("val observed = checkNotNull(backend.inspect(") < body.index("observed.packageName ==")
 assert body.index("observed.packageName ==") < body.index("registry.pending(row.id, false)")
 assert "?.running != true" not in body
 for name in (
