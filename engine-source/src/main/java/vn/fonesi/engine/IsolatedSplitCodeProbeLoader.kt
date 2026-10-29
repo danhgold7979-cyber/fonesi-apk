@@ -29,7 +29,11 @@ class IsolatedSplitCodeProbeLoader(private val context: Context, private val sto
 
     fun verify(clusterId: String, nonce: String) {
         require(host.packageName == HOST_PACKAGE) { "Synthetic split probe host only" }
-        check(Build.VERSION.SDK_INT >= 28) { "Test process identity requires Android 28+" }
+        // Explicit control-flow guard: getProcessName() was added at API 28.
+        // Keep minSdk 26 and refuse this synthetic proof on older Android.
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.P) {
+            error("Test process identity requires Android 28+")
+        }
         check(Application.getProcessName() == "$HOST_PACKAGE:fonesi_guest_split") {
             "Isolated synthetic split code must use its dedicated process"
         }

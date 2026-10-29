@@ -2,7 +2,7 @@
 
 Ứng dụng Android dự kiến quản lý nhiều bản clone của các ứng dụng trên điện thoại, ưu tiên mạng xã hội, không yêu cầu root.
 
-**Trạng thái mới nhất (29/10/2026):** E68 **PASS kỹ thuật** trên đúng code/test SHA `26fdfbe57981a6bfef9672f4708b529710620ee8`: [CI #40904953294](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40904953294) **SUCCESS**, **492 test mỗi gate cloud/candidate**. E68 thêm catalog đọc thành phần Android đã khai báo trong APK base/split ký thật tại kho PRIVATE. **Không** bật split import hoặc chạy guest Activity/UID/tài khoản; [kết quả E68](docs/phases/E68_PRIVATE_SIGNED_COMPONENT_CATALOG_RESULTS.md), [Draft PR #42](https://github.com/danhgold7979-cyber/fonesi-apk/pull/42). Mức hoàn thiện sản phẩm **28.00%**, 0 clone ứng dụng thật nghiệm thu. `main` chưa merge.
+**Trạng thái mới nhất (29/10/2026):** E69 **PASS kỹ thuật** trên đúng code/test SHA `44d9ca97e092bb8f4c8fb5b7e87d84680d60e73e`: [CI #40908213615](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40908213615) **SUCCESS**, **492 test mỗi gate cloud/candidate**, cộng sáu test signed source và build AAR/native host/ELF 16 KB/lint. E69 ràng buộc manifest component base/split đã ký với đúng PRIVATE code/resource image trong `GuestCodeLoader`, chưa khởi chạy hay đăng ký guest Activity. [E69 results](docs/phases/E69_SOURCE_LOADER_SIGNED_COMPONENT_READBACK_RESULTS.md), [Draft PR #43](https://github.com/danhgold7979-cyber/fonesi-apk/pull/43); E68 code/report cũng đã PASS. **Hoàn thiện sản phẩm vẫn 28.00%, 0 ứng dụng clone bên thứ ba đã nghiệm thu**; split provider, UID/tài khoản độc lập, Samsung và release signing chưa đạt. `main` chưa merge.
 
 Kế hoạch sản phẩm và các điều kiện kỹ thuật nằm trong [docs/PLAN.md](docs/PLAN.md).
 
