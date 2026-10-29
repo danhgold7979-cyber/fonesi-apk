@@ -182,6 +182,21 @@ class ManagedGuestEngine(
         val live = record(row)
         check(live == null || live.running == false) { "Instance running or launch outcome unknown" }
         mutationAllowed()
+        // The initial native readback may be stale after foreground authorization.
+        // Verify the same stopped guest image immediately before marking DELETING
+        // and asking the SDK to remove it. An absent image must stay absent.
+        val beforeDelete = backend.inspect(row.userId, row.packageName)
+        if (live == null) {
+            check(beforeDelete == null) { "A native guest appeared during deletion; reconcile before retry" }
+        } else {
+            check(beforeDelete != null &&
+                beforeDelete.packageName == live.packageName &&
+                beforeDelete.version == live.versionCode &&
+                beforeDelete.signers == live.signerDigests &&
+                !beforeDelete.running) {
+                "Native guest identity changed or resumed before deletion; reconcile before retry"
+            }
+        }
         registry.state(row.id, InstanceState.DELETING)
         if (live != null) backend.uninstall(row.userId, row.packageName)
         check(backend.inspect(row.userId, row.packageName) == null) { "Uninstall not confirmed" }

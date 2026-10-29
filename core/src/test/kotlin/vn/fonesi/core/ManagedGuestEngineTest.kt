@@ -274,6 +274,71 @@ class ManagedGuestEngineTest {
         assertNotEquals(a.id, c.id)
         assertEquals(listOf(10001, 10002, 10003), registry.list().map { it.userId })
     }
+    @Test fun changedNativeVersionBeforeDeleteDispatchDoesNotRemoveGuest() {
+        val clone = engine().create(source, "A")
+        val row = registry.list().single()
+        val original = checkNotNull(backend.inspect(row.userId, row.packageName))
+        val guard = ManagedGuestEngine(backend, registry, snapshots) {
+            backend.packages[row.userId to row.packageName] = original.copy(version = original.version + 1)
+            true
+        }
+        assertThrows(IllegalStateException::class.java) { guard.delete(clone.id) }
+        assertEquals(InstanceState.READY, registry.list().single().state)
+        assertEquals(original.version + 1, backend.inspect(row.userId, row.packageName)?.version)
+        assertTrue(backend.uninstalls.isEmpty())
+        assertTrue(row.userId in backend.users())
+    }
+    @Test fun changedNativeSigningIdentityBeforeDeleteDispatchDoesNotRemoveGuest() {
+        val clone = engine().create(source, "A")
+        val row = registry.list().single()
+        val original = checkNotNull(backend.inspect(row.userId, row.packageName))
+        val guard = ManagedGuestEngine(backend, registry, snapshots) {
+            backend.packages[row.userId to row.packageName] = original.copy(signers = setOf("new-signer"))
+            true
+        }
+        assertThrows(IllegalStateException::class.java) { guard.delete(clone.id) }
+        assertEquals(InstanceState.READY, registry.list().single().state)
+        assertEquals(setOf("new-signer"), backend.inspect(row.userId, row.packageName)?.signers)
+        assertTrue(backend.uninstalls.isEmpty())
+    }
+    @Test fun guestBecomingRunningBeforeDeleteDispatchCannotBeUninstalled() {
+        val clone = engine().create(source, "A")
+        val row = registry.list().single()
+        val original = checkNotNull(backend.inspect(row.userId, row.packageName))
+        val guard = ManagedGuestEngine(backend, registry, snapshots) {
+            backend.packages[row.userId to row.packageName] = original.copy(running = true)
+            true
+        }
+        assertThrows(IllegalStateException::class.java) { guard.delete(clone.id) }
+        assertEquals(InstanceState.READY, registry.list().single().state)
+        assertTrue(checkNotNull(backend.inspect(row.userId, row.packageName)).running)
+        assertTrue(backend.uninstalls.isEmpty())
+    }
+    @Test fun nativeGuestAppearingAfterInitiallyMissingReadbackRequiresReconciliation() {
+        val clone = engine().create(source, "A")
+        val row = registry.list().single()
+        backend.packages.remove(row.userId to row.packageName)
+        val guard = ManagedGuestEngine(backend, registry, snapshots) {
+            backend.packages[row.userId to row.packageName] = GuestPackage(row.packageName, 2, setOf("other-signer"), false)
+            true
+        }
+        assertThrows(IllegalStateException::class.java) { guard.delete(clone.id) }
+        assertEquals(InstanceState.READY, registry.list().single().state)
+        assertEquals(2L, backend.inspect(row.userId, row.packageName)?.version)
+        assertTrue(backend.uninstalls.isEmpty())
+    }
+    @Test fun consistentlyAbsentNativeGuestCanRetireWithoutSdkUninstall() {
+        val clone = engine().create(source, "A")
+        val row = registry.list().single()
+        backend.packages.remove(row.userId to row.packageName)
+        engine().delete(clone.id)
+        assertEquals(InstanceState.DELETED, registry.list().single().state)
+        assertTrue(backend.uninstalls.isEmpty())
+        assertTrue(row.userId in backend.users())
+        val next = engine().create(source, "B")
+        assertNotEquals(clone.id, next.id)
+        assertTrue(registry.list().last().userId > row.userId)
+    }
     @Test fun sharedUpdateImportsOnceAndVerifiesAllAffectedInstances() {
         val a = engine().create(source, "A"); val b = engine().create(source, "B")
         val updated = engine().update(UpdateTarget(source.copy(versionCode = 2), listOf(a.id, b.id)))

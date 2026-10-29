@@ -12,7 +12,7 @@ Date: 2026-10-29. Exact repository: `danhgold7979-cyber/fonesi-apk`; branch `pha
 
 **E64 technical PASS at exact source/test SHA `a54c034d21711b7d15d301ebe67a5466c19a3d7d`**: [GitHub Actions #40895219310](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40895219310) **SUCCESS**, with exact source checkout, E40–E64 source audits, pinned Android/JDK, **470 tests each cloud and candidate gate**, build/lint, APK signatures/permissions, SDK integration artifact checks and disabled split/provider/GC guards. [Test-only receipt artifact #12907157275](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40895219310/artifacts/12907157275). Parent E63 exact-source `bbaf4bbb4765033306d8a84619ab245d16e18513` passed [CI #40894087779](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40894087779) (467 tests each gate).
 
-This reporting merge commit has a different SHA and needs its own exact-HEAD CI before it is considered verified. JVM synthetic backend doubles and signed APKs **do not prove** a real third-party Android guest process/account session.
+The reporting merge SHA `3da8eddd267b0118281985167d4adc1a1f7567e7` independently passed [GitHub Actions #40896767719](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40896767719) **SUCCESS**; the verified E64 code/test SHA remains `a54c034d21711b7d15d301ebe67a5466c19a3d7d`. JVM synthetic backend doubles and signed APKs **do not prove** a real third-party Android guest process/account session.
 
 ## Unmet product gates
 
