@@ -36,6 +36,21 @@ class StorageIntegrationTest {
     private val source = InstalledSource("test.social", 2, setOf("signer"), listOf("/base.apk"))
     private fun operationLock() = FileQueueLock(context.filesDir.toPath().resolve("test-mutations.lock"))
 
+    /** Test-only deterministic writer-before-deletion interleaving using a real OS file lease. */
+    private fun beforeDeleteLease(interleavingWriter: () -> Unit): QueueLock {
+        val real = operationLock()
+        var written = false
+        return object : QueueLock {
+            override fun acquire(): AutoCloseable? {
+                if (!written) {
+                    written = true
+                    checkNotNull(real.acquire()).use { interleavingWriter() }
+                }
+                return real.acquire()
+            }
+        }
+    }
+
     @Before fun setup() {
         context = ApplicationProvider.getApplicationContext()
         name = "test-${UUID.randomUUID()}.db"
@@ -163,6 +178,61 @@ class StorageIntegrationTest {
         assertNull(db.clones().find("engine-a", a.cloneId))
         assertNotNull(db.clones().find("engine-a", b.cloneId))
         assertTrue(engine.records.any { it.id == b.cloneId })
+    }
+
+    @Test fun deleteRejectsPresentationEditMadeBeforeSharedLockWithoutTouchingGuest() = background {
+        val engine = EngineDouble()
+        val original = CloneMetadataRepository(db, "engine-a", engine, operationLock())
+            .create(source, "Original")
+        val racedLock = beforeDeleteLease {
+            check(db.clones().rename("engine-a", original.cloneId, "Changed offline",
+                "New group", original.changedAt + 1L) == 1)
+        }
+        val deletion = CloneMetadataRepository(db, "engine-a", engine, racedLock)
+        assertThrows(IllegalStateException::class.java) {
+            deletion.delete(original.cloneId, original.launchToken)
+        }
+        val saved = checkNotNull(db.clones().find("engine-a", original.cloneId))
+        assertEquals("Changed offline", saved.label)
+        assertEquals("New group", saved.groupName)
+        assertEquals(original.launchToken, saved.launchToken) // Token alone would not detect this race.
+        assertEquals(listOf(original.cloneId), engine.records.map { it.id })
+        assertTrue(db.clusterReferences().list().isEmpty())
+        reopen()
+        assertEquals(saved, db.clones().find("engine-a", original.cloneId))
+    }
+
+    @Test fun deleteRejectsClusterGenerationChangeMadeBeforeLockAndKeepsCloneOwner() = background {
+        val engine = EngineDouble()
+        val original = CloneMetadataRepository(db, "engine-a", engine, operationLock())
+            .create(source, "Initial generation")
+        val nextCluster = UUID.randomUUID().toString()
+        // A synthetic Room transaction represents a cooperating owner writer under the
+        // real OS lease; it does not represent APK publication or a real guest.
+        val racedLock = beforeDeleteLease {
+            db.runInTransaction(Callable {
+                val now = original.changedAt + 2L
+                check(db.clusterReferences().insert(ClusterReferenceRow(
+                    nextCluster, vn.fonesi.apk.ClusterOwnerType.CLONE.name,
+                    original.cloneId, "engine-a", now)) > 0L)
+                check(db.clones().associateCluster(
+                    "engine-a", original.cloneId, original.launchToken, nextCluster, now) == 1)
+            })
+        }
+        val deletion = CloneMetadataRepository(db, "engine-a", engine, racedLock)
+        assertThrows(IllegalStateException::class.java) {
+            deletion.delete(original.cloneId, original.launchToken)
+        }
+        val saved = checkNotNull(db.clones().find("engine-a", original.cloneId))
+        assertEquals(nextCluster, saved.clusterId)
+        assertEquals(original.launchToken, saved.launchToken)
+        assertEquals(listOf(original.cloneId), engine.records.map { it.id })
+        assertEquals(listOf(nextCluster), db.clusterReferences()
+            .forOwner(vn.fonesi.apk.ClusterOwnerType.CLONE.name, original.cloneId, "engine-a")
+            .map { it.clusterId })
+        reopen()
+        assertEquals(saved, db.clones().find("engine-a", original.cloneId))
+        assertEquals(1, db.clusterReferences().forCluster(nextCluster).size)
     }
 
     @Test fun inconsistentClusterOwnershipBlocksProviderDeletionBeforeGuestIsTouched() = background {
