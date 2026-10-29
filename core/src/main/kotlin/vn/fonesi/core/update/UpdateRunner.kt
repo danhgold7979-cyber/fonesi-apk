@@ -46,16 +46,18 @@ class UpdateRunner(
             // The journal/OS lock is shared, but only this engine owns its execution.
             // Foreign same-package tasks must neither be scheduled nor veto local work.
             val jobs = store.list().filter { it.engineKey == engineKey }
-            val next = jobs.firstOrNull { candidate ->
+            val eligible = jobs.filter { candidate ->
                 candidate.state == TaskState.QUEUED && jobs.takeWhile { it.id != candidate.id }.none {
                     it.packageName == candidate.packageName && !it.state.terminal
                 } && jobs.none {
                     it.packageName == candidate.packageName && it.state == TaskState.REVIEW_REQUIRED
                 }
-            } ?: return@use RunResult.Idle
-            // A private retained cluster has no validated product update adapter.
-            // Block it before the original installed-app SourceCatalog can be consulted.
-            if (!mayUseLegacySource(next)) return@use RunResult.PolicyBlocked
+            }
+            // Skip a quarantined task only across unrelated packages. Keep the original
+            // same-package FIFO/review barrier above, and never consult the legacy catalog
+            // for a candidate whose private-source authority is not accepted.
+            val next = eligible.firstOrNull(::mayUseLegacySource)
+                ?: return@use if (eligible.isEmpty()) RunResult.Idle else RunResult.PolicyBlocked
             process(next)
         }
     }

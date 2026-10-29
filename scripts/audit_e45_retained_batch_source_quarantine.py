@@ -28,7 +28,8 @@ for marker in (
     if marker not in tests:
         raise SystemExit("E45 cross-feature native SQLite test absent: " + marker)
 for marker in (
-    "if (!mayUseLegacySource(next)) return@use RunResult.PolicyBlocked",
+    "eligible.firstOrNull(::mayUseLegacySource)",
+    "eligible.isEmpty()) RunResult.Idle else RunResult.PolicyBlocked",
     "if (!mayApply() || !mayUseLegacySource(current))",
 ):
     if marker not in runner:

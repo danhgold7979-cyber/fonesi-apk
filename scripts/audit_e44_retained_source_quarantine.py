@@ -54,7 +54,8 @@ for label, source, markers in (
     )),
     ("core original-source execution quarantine", runner, (
         "private val allowLegacySource: (UpdateTask) -> Boolean = { true }",
-        "if (!mayUseLegacySource(next)) return@use RunResult.PolicyBlocked",
+        "eligible.firstOrNull(::mayUseLegacySource)",
+        "eligible.isEmpty()) RunResult.Idle else RunResult.PolicyBlocked",
         "private fun mayUseLegacySource(task: UpdateTask)",
         "!task.retainedSource && runCatching { allowLegacySource(task) }.getOrDefault(false)",
     )),
