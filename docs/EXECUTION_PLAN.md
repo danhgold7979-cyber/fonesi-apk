@@ -1,5 +1,9 @@
 # Kế hoạch thực thi và đối chiếu yêu cầu
 
+## E75 — signed PRIVATE Activity constructor preflight (pre-code, 30/10/2026)
+
+Original Product **Phase 1 steps 7–8**, preparing Phase 3 step 15. E75 branch `phase/e75-activity-constructor-preflight-20261030` from E74 source `0c62831931366612f06c69d8396e68801f384ceb`, [Draft PR #48](https://github.com/danhgold7979-cyber/fonesi-apk/pull/48); E74 source [CI #40919455047](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40919455047) SUCCESS and E73 [CI #40917685335](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40917685335) SUCCESS. [Detailed E75 plan](phases/E75_ACTIVITY_CONSTRUCTOR_PREFLIGHT_PLAN.md): inspect (never invoke) the signed PRIVATE Activity's public zero-argument constructor before future lifecycle dispatch; test invalid constructor shapes and prove no constructor side effect. Pinned E40–E75 cloud/candidate/source-engine AAR CI required. E74 remains classloader metadata proof only, not guest Activity execution. Product 28.00%, 0 accepted real clones.
+
 ## E74 — technical BUILD/AUDIT PASS, Android synthetic class-probe mode (29/10/2026)
 
 Original **Product Phase 1 steps 7–8** and Phase 3 step 15. Code SHA `8cee1ba5b1afefaa1df17d6dc01a90d283019f55` [CI #40917389636](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40917389636) **SUCCESS** with 510 cloud/candidate tests/gate, E73 source JVM suite, E40–E74 audits, source ARM64 AAR, signed host/payload APK build/lint/audit-only. Opt-in E74 probe checks signed PRIVATE `PayloadActivity` classloader identity and reports only host-Activity synthetic receipt; **Android device runtime never ran in CI**. [Detailed results](phases/E74_SIGNED_PRIVATE_ACTIVITY_CLASS_PROBE_RESULTS.md), [Draft PR #48](https://github.com/danhgold7979-cyber/fonesi-apk/pull/48). Parent E73 source CI #40916252411 PASS; E73 reporting CI #40917685335 independent. Report SHA requires new CI; weighted product **28.00%**, 0 accepted apps.
