@@ -28,6 +28,68 @@ class ManagedGuestEngineTest {
         assertThrows(IllegalStateException::class.java) { engine().create(source, "A") }
         assertTrue(registry.list().isEmpty()); assertTrue(backend.users().isEmpty()); assertEquals(1, snapshots.discards)
     }
+    @Test fun peerStartingAfterNativeUserCreationBlocksNewSharedGuestInstall() {
+        val a = engine().create(source, "A")
+        val peer = registry.list().single { it.id == a.id }
+        val key = peer.userId to peer.packageName
+        val nativeBefore = checkNotNull(backend.packages[key])
+        backend.afterCreateUser = { backend.packages[key] = nativeBefore.copy(running = true) }
+        assertThrows(IllegalStateException::class.java) { engine().create(source, "B") }
+        assertEquals(1, backend.installs.size)
+        assertEquals(listOf(InstanceState.READY, InstanceState.RESERVED), registry.list().map { it.state })
+        assertEquals(1, snapshots.discards) // Native entry is uncertain; retain second snapshot.
+        assertTrue(checkNotNull(backend.packages[key]).running)
+        assertTrue(backend.uninstalls.isEmpty())
+    }
+    @Test fun peerSignatureChangingAfterNativeUserCreationBlocksNewSharedInstall() {
+        engine().create(source, "A")
+        val peer = registry.list().single()
+        val key = peer.userId to peer.packageName
+        val nativeBefore = checkNotNull(backend.packages[key])
+        backend.afterCreateUser = { backend.packages[key] = nativeBefore.copy(signers = setOf("changed")) }
+        assertThrows(IllegalStateException::class.java) { engine().create(source, "B") }
+        assertEquals(1, backend.installs.size)
+        assertEquals(setOf("changed"), backend.packages[key]?.signers)
+        assertEquals(InstanceState.RESERVED, registry.list().last().state)
+        assertTrue(backend.uninstalls.isEmpty())
+    }
+    @Test fun removingExistingPeerAfterNativeUserCreationCannotShrinkSharedScope() {
+        val a = engine().create(source, "A")
+        backend.afterCreateUser = { registry.state(a.id, InstanceState.DELETED) }
+        assertThrows(IllegalStateException::class.java) { engine().create(source, "B") }
+        assertEquals(1, backend.installs.size)
+        assertEquals(listOf(InstanceState.DELETED, InstanceState.RESERVED), registry.list().map { it.state })
+        assertTrue(backend.uninstalls.isEmpty())
+    }
+    @Test fun newReservedPeerAfterNativeUserCreationBlocksSharedImport() {
+        engine().create(source, "A")
+        backend.afterCreateUser = { registry.reserve(source.packageName) }
+        assertThrows(IllegalStateException::class.java) { engine().create(source, "B") }
+        assertEquals(1, backend.installs.size)
+        assertEquals(listOf(InstanceState.READY, InstanceState.RESERVED, InstanceState.RESERVED), registry.list().map { it.state })
+        assertTrue(backend.uninstalls.isEmpty())
+    }
+    @Test fun frozenSourceInvalidatedAfterNativeUserCreationRetainsReservation() {
+        engine().create(source, "A")
+        backend.afterCreateUser = { snapshots.valid = false }
+        assertThrows(IllegalStateException::class.java) { engine().create(source, "B") }
+        assertEquals(1, backend.installs.size)
+        assertEquals(1, snapshots.discards)
+        assertEquals(InstanceState.RESERVED, registry.list().last().state)
+        assertTrue(backend.uninstalls.isEmpty())
+    }
+    @Test fun unexpectedNativePackageAtReservedUserMustNotBeOverwritten() {
+        engine().create(source, "A")
+        backend.afterCreateUser = {
+            val newestUser = checkNotNull(backend.userIds.maxOrNull())
+            backend.packages[newestUser to source.packageName] = GuestPackage(source.packageName, 42, setOf("alien-signer"), false)
+        }
+        assertThrows(IllegalStateException::class.java) { engine().create(source, "B") }
+        assertEquals(1, backend.installs.size)
+        assertEquals(InstanceState.RESERVED, registry.list().last().state)
+        assertEquals(42L, backend.packages[registry.list().last().userId to source.packageName]?.version)
+        assertTrue(backend.uninstalls.isEmpty())
+    }
     @Test fun newInstanceCannotSilentlyUpgradeOrInterruptExistingSharedPackage() {
         val a = engine().create(source, "A")
         assertThrows(IllegalStateException::class.java) { engine().create(source.copy(versionCode = 2), "B") }
