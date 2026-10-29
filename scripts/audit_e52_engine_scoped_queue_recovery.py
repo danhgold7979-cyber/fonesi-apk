@@ -10,7 +10,7 @@ recovery = runner.split("private fun recoverLocked() {", 1)[1].split("private fu
 assert "val jobs = store.list().filter { it.engineKey == engineKey }" in entry, "Queue must be scoped before scheduling and checking same-package journals"
 assert "for (old in store.list().filter { it.engineKey == engineKey }) {" in recovery, "Recovery must scope engine before mutating journal/snapshots"
 assert recovery.index("for (old in store.list().filter { it.engineKey == engineKey }) {") < recovery.index("mayUseLegacySource(old)")
-assert "recoverLocked()" in entry and "store.isPaused()" in entry and "mayUseLegacySource(next)" in entry
+assert "recoverLocked()" in entry and "store.isPaused()" in entry and "eligible.firstOrNull(::mayUseLegacySource)" in entry
 for name in (
     "foreign only queued work remains untouched instead of ENGINE_CHANGED",
     "foreign queued same-package work ahead of local task cannot steal this runner",
