@@ -54,6 +54,11 @@ object SignedPrivateExplicitActivityResolver {
         require(component.enabled != false && target.enabled != false) {
             "Disabled signed guest Activity or alias cannot be selected"
         }
+        // A declared guest process needs a real process allocator and Binder lifecycle
+        // mediator. A signed manifest alone cannot authorize any host process mapping.
+        require(component.processName == null && target.processName == null) {
+            "Explicit guest Activity process requires unavailable process mediation"
+        }
         // This static selector has NO Android permission broker. Never authorize protected
         // components by assuming the host, its UID or a future guest possesses permissions.
         require(inventory.applicationPermission == null &&
