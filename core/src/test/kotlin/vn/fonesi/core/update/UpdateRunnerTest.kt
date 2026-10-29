@@ -16,6 +16,105 @@ class UpdateRunnerTest {
     private fun fixture() = QueueFixture(temporary.newFolder().toPath())
     private fun RunResult.task() = (this as RunResult.Processed).task
 
+    @Test fun `retained applying recovery cannot claim success from matching legacy clone version`() {
+        val f = fixture()
+        val queued = f.queue.enqueue("test-engine",
+            listOf(UpdateTarget(checkNotNull(f.source), listOf("a"))),
+            UpdateScope.PER_CLONE, retainedSource = true).single()
+        val preparing = queued.move(TaskState.PREPARING, 101L)
+        assertTrue(f.store.replace(queued, preparing))
+        val applying = preparing.move(TaskState.APPLYING, 102L,
+            affectedIds = listOf("a"), fingerprint = "private-source-test")
+        assertTrue(f.store.replace(preparing, applying))
+        // Deliberately matching *legacy* guest metadata must not prove a private-source update.
+        f.engine.clones[0] = f.engine.clones.single().copy(versionCode = 2L)
+        assertTrue(f.runner().recover())
+        val held = f.store.list().single()
+        assertEquals(TaskState.REVIEW_REQUIRED, held.state)
+        assertEquals(TaskIssue.INTERRUPTED, held.issue)
+        assertNull(held.completion)
+        assertTrue(held.retainedSource)
+        assertEquals(0, f.engine.calls)
+    }
+
+    @Test fun `older owner-only recovery policy denies matching legacy engine version`() {
+        val f = fixture()
+        val queued = f.enqueue()
+        val preparing = queued.move(TaskState.PREPARING, 101L)
+        assertTrue(f.store.replace(queued, preparing))
+        val applying = preparing.move(TaskState.APPLYING, 102L,
+            affectedIds = listOf("a"), fingerprint = "pre-marker-private")
+        assertTrue(f.store.replace(preparing, applying))
+        val verifying = applying.move(TaskState.VERIFYING, 103L)
+        assertTrue(f.store.replace(applying, verifying))
+        f.engine.clones[0] = f.engine.clones.single().copy(versionCode = 2L)
+        val runner = UpdateRunner("test-engine", f.engine, f.store, f.catalog, f.snapshotter,
+            FileQueueLock(f.root.resolve("owner-only-recovery.lock")),
+            allowLegacySource = { false })
+        assertTrue(runner.recover())
+        val held = f.store.list().single()
+        assertEquals(TaskState.REVIEW_REQUIRED, held.state)
+        assertEquals(TaskIssue.INTERRUPTED, held.issue)
+        assertNull(held.completion)
+        assertFalse(held.retainedSource)
+        assertEquals(0, f.engine.calls)
+    }
+
+    @Test fun `recovery authority readback exception keeps uncertain task in review`() {
+        val f = fixture()
+        val queued = f.enqueue()
+        val preparing = queued.move(TaskState.PREPARING, 201L)
+        assertTrue(f.store.replace(queued, preparing))
+        val applying = preparing.move(TaskState.APPLYING, 202L,
+            affectedIds = listOf("a"), fingerprint = "unverified-private")
+        assertTrue(f.store.replace(preparing, applying))
+        f.engine.clones[0] = f.engine.clones.single().copy(versionCode = 2L)
+        val runner = UpdateRunner("test-engine", f.engine, f.store, f.catalog, f.snapshotter,
+            FileQueueLock(f.root.resolve("failed-owner-readback.lock")),
+            allowLegacySource = { throw IllegalStateException("Owner registry unreadable") })
+        assertTrue(runner.recover())
+        val held = f.store.list().single()
+        assertEquals(TaskState.REVIEW_REQUIRED, held.state)
+        assertEquals(TaskIssue.INTERRUPTED, held.issue)
+        assertNull(held.completion)
+        assertEquals(0, f.engine.calls)
+    }
+
+    @Test fun `retained preparing recovery does not discard task snapshot or rewrite task`() {
+        val f = fixture()
+        val queued = f.queue.enqueue("test-engine",
+            listOf(UpdateTarget(checkNotNull(f.source), listOf("a"))),
+            UpdateScope.PER_CLONE, retainedSource = true).single()
+        val preparing = queued.move(TaskState.PREPARING, 301L)
+        assertTrue(f.store.replace(queued, preparing))
+        f.files.prepare(queued.id, checkNotNull(f.source))
+        val snapshot = f.root.resolve("snapshots").resolve(queued.id)
+        assertTrue(Files.exists(snapshot))
+        assertTrue(f.runner().recover())
+        assertEquals(preparing, f.store.list().single())
+        assertTrue(Files.exists(snapshot))
+        assertEquals(0, f.engine.calls)
+    }
+
+    @Test fun `retained review recovery never converts old metadata into success`() {
+        val f = fixture()
+        val queued = f.queue.enqueue("test-engine",
+            listOf(UpdateTarget(checkNotNull(f.source), listOf("a"))),
+            UpdateScope.PER_CLONE, retainedSource = true).single()
+        val preparing = queued.move(TaskState.PREPARING, 401L)
+        assertTrue(f.store.replace(queued, preparing))
+        val applying = preparing.move(TaskState.APPLYING, 402L,
+            affectedIds = listOf("a"), fingerprint = "old-private-source")
+        assertTrue(f.store.replace(preparing, applying))
+        val review = applying.move(TaskState.REVIEW_REQUIRED, 403L, TaskIssue.INTERRUPTED)
+        assertTrue(f.store.replace(applying, review))
+        f.engine.clones[0] = f.engine.clones.single().copy(versionCode = 2L)
+        assertTrue(f.runner().recover())
+        assertEquals(review, f.store.list().single())
+        assertNull(f.store.list().single().completion)
+        assertEquals(0, f.engine.calls)
+    }
+
     @Test fun `retained private task cannot use original catalog or run engine`() {
         val f = fixture()
         val retained = f.queue.enqueue("test-engine",

@@ -67,6 +67,19 @@ class UpdateRunner(
 
     private fun recoverLocked() {
         for (old in store.list()) {
+            // E48: retained private images have no accepted legacy-engine recovery/readback.
+            // Fail closed before discarding task snapshots or consulting the installed original.
+            if (old.state in setOf(TaskState.PREPARING, TaskState.APPLYING,
+                    TaskState.VERIFYING, TaskState.REVIEW_REQUIRED) &&
+                !mayUseLegacySource(old)) {
+                if (old.state == TaskState.APPLYING || old.state == TaskState.VERIFYING) {
+                    // A crash during an unverified private-source mutation is unknown, not success.
+                    // Room commits its matching source owner promotion atomically with this marker.
+                    persist(old, old.move(TaskState.REVIEW_REQUIRED, clock(), TaskIssue.INTERRUPTED))
+                }
+                // PREPARING/REVIEW_REQUIRED remain held, including their snapshots/references.
+                continue
+            }
             when (old.state) {
                 TaskState.PREPARING -> {
                     snapshots.discard(old.id)
