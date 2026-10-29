@@ -138,7 +138,10 @@ class ManagedGuestEngine(
         // A RESERVED import may have native bytes but has not passed create/readback
         // confirmation. Reconciliation can inspect it; normal launch must not.
         check(row.state == InstanceState.READY) { "Guest clone is not confirmed READY" }
-        check(record(row) != null) { "Guest package readback unavailable" }
+        val observed = checkNotNull(record(row)) { "Guest package readback unavailable" }
+        // A previous asynchronous launch with no positive running evidence is
+        // unknown. Re-dispatching would bypass the durable launchPending guard.
+        check(observed.running != null) { "Guest launch outcome is unknown; stop and reconcile before retry" }
         mutationAllowed()
         registry.pending(row.id, true) // Durable before asynchronous launch, including exceptions/death.
         backend.launch(row.userId, row.packageName)
