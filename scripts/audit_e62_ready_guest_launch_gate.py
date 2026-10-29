@@ -9,13 +9,15 @@ launch = engine.split("override fun launch(cloneId: String) {", 1)[1].split("ove
 for token in (
     "val row = instance(cloneId)",
     "check(row.state == InstanceState.READY)",
-    "check(record(row) != null)",
+    "val observed = checkNotNull(record(row))",
+    "check(observed.running != null)",
     "mutationAllowed()",
     "registry.pending(row.id, true)",
     "backend.launch(row.userId, row.packageName)",
 ):
     assert token in launch, "E62 missing READY launch protection: " + token
-assert launch.index("check(row.state == InstanceState.READY)") < launch.index("check(record(row) != null)")
+assert launch.index("check(row.state == InstanceState.READY)") < launch.index("val observed = checkNotNull(record(row))")
+assert launch.index("val observed = checkNotNull(record(row))") < launch.index("check(observed.running != null)")
 assert launch.index("check(row.state == InstanceState.READY)") < launch.index("registry.pending(row.id, true)") < launch.index("backend.launch(")
 assert "row.state != InstanceState.DELETING" not in launch
 for regression in (
