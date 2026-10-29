@@ -50,6 +50,16 @@ internal object PrivateGuestActivityClassPreflight {
             (!candidate.isMemberClass || Modifier.isStatic(candidate.modifiers))) {
             "Signed Activity must be a public, concrete standalone or static class"
         }
+        // Inspect the constructor shape without invoking guest code. The future framework
+        // adapter must not discover a missing public no-arg constructor after dispatch.
+        val constructor = try {
+            candidate.getConstructor()
+        } catch (error: NoSuchMethodException) {
+            throw IllegalArgumentException("Signed Activity requires a public zero-argument constructor", error)
+        }
+        require(Modifier.isPublic(constructor.modifiers) && constructor.parameterCount == 0) {
+            "Signed Activity requires a public zero-argument constructor"
+        }
         return candidate
     }
 }
