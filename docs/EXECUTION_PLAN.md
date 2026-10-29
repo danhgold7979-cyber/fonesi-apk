@@ -1,5 +1,10 @@
 # Kế hoạch thực thi và đối chiếu yêu cầu
 
+## E43 — atomic verified private-cluster enqueue and UPDATE_TASK reference (pre-code, 29/10/2026)
+
+Branch `phase/e43-atomic-retained-enqueue-20261029`, stacked on E42 `1f13bfa70e12631baf650f4478e57244c7de168b`. Phase 4 steps 17–20. [E43 detailed plan](phases/E43_ATOMIC_RETAINED_ENQUEUE_PLAN.md). Steps: (1) readback a previously published, signed private cluster; (2) match exact requested package/version/signers and use only verified private APK paths; (3) atomically insert/get QUEUED task and acquire matching UPDATE_TASK Room reference; (4) reject conflicting owner/generation or in-progress task and roll back if SQLite insert fails; (5) regression tests including reopen/idempotence/unpublished IDs; (6) full cloud/candidate source/APK/CI acceptance at exact SHA. No invocation of actual guest engine, no split import, account/session proof, cluster deletion or product progress increase.
+
+
 ## E42 — accepted technical journal/reference increment (29/10/2026)
 
 Exact tested source `7f749ae4e54f01c23f11772430a992a050be36c0`, [CI #40841923812](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40841923812) **SUCCESS**: cloud/candidate 366 tests each, 0 failed/error/skipped; build/lint/signature/permission/no-split/no-GC audits passed. [E42 results](phases/E42_ATOMIC_JOURNAL_OWNER_TRANSITIONS_RESULTS.md), [pre-code plan](phases/E42_ATOMIC_JOURNAL_OWNER_TRANSITIONS_PLAN.md). This closes only the bounded E42 technical acceptance; Phase 4/guest engine/phone/account acceptance remain open. Read the subsequent report-only commit's exact-HEAD CI before treating it as tested.
