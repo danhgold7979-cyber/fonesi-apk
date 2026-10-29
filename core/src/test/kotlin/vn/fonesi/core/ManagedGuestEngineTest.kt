@@ -339,6 +339,85 @@ class ManagedGuestEngineTest {
         assertNotEquals(clone.id, next.id)
         assertTrue(registry.list().last().userId > row.userId)
     }
+    @Test fun sharedUpdateRejectsNativeVersionDriftAfterAuthorization() {
+        val clone = engine().create(source, "A")
+        val row = registry.list().single()
+        val key = row.userId to row.packageName
+        val prior = checkNotNull(backend.packages[key])
+        val guarded = ManagedGuestEngine(backend, registry, snapshots) {
+            backend.packages[key] = prior.copy(version = prior.version + 1)
+            true
+        }
+        assertThrows(IllegalStateException::class.java) {
+            guarded.update(UpdateTarget(source.copy(versionCode = 2), listOf(clone.id)))
+        }
+        assertEquals(1, backend.installs.size)
+        assertEquals(2L, backend.packages[key]?.version)
+        assertTrue(backend.uninstalls.isEmpty())
+    }
+    @Test fun sharedUpdateRejectsNativeSigningDriftAfterAuthorization() {
+        val clone = engine().create(source, "A")
+        val row = registry.list().single()
+        val key = row.userId to row.packageName
+        val prior = checkNotNull(backend.packages[key])
+        val guarded = ManagedGuestEngine(backend, registry, snapshots) {
+            backend.packages[key] = prior.copy(signers = setOf("unexpected-signer"))
+            true
+        }
+        assertThrows(IllegalStateException::class.java) {
+            guarded.update(UpdateTarget(source.copy(versionCode = 2), listOf(clone.id)))
+        }
+        assertEquals(1, backend.installs.size)
+        assertEquals(setOf("unexpected-signer"), backend.packages[key]?.signers)
+        assertTrue(backend.uninstalls.isEmpty())
+    }
+    @Test fun sharedUpdateRejectsPeerRunningAfterAuthorization() {
+        val a = engine().create(source, "A")
+        val b = engine().create(source, "B")
+        val second = registry.list().single { it.id == b.id }
+        val key = second.userId to second.packageName
+        val prior = checkNotNull(backend.packages[key])
+        val guarded = ManagedGuestEngine(backend, registry, snapshots) {
+            backend.packages[key] = prior.copy(running = true)
+            true
+        }
+        assertThrows(IllegalStateException::class.java) {
+            guarded.update(UpdateTarget(source.copy(versionCode = 2), listOf(a.id, b.id)))
+        }
+        assertEquals(2, backend.installs.size)
+        assertTrue(checkNotNull(backend.packages[key]).running)
+        assertTrue(backend.uninstalls.isEmpty())
+    }
+    @Test fun sharedUpdateRejectsNewReservedPeerAfterAuthorization() {
+        val clone = engine().create(source, "A")
+        val guarded = ManagedGuestEngine(backend, registry, snapshots) {
+            registry.reserve(source.packageName)
+            true
+        }
+        assertThrows(IllegalStateException::class.java) {
+            guarded.update(UpdateTarget(source.copy(versionCode = 2), listOf(clone.id)))
+        }
+        assertEquals(1, backend.installs.size)
+        assertEquals(listOf(InstanceState.READY, InstanceState.RESERVED), registry.list().map { it.state })
+        assertTrue(backend.uninstalls.isEmpty())
+    }
+    @Test fun sharedUpdateRejectsNativeUserIdReassignmentAfterAuthorization() {
+        val clone = engine().create(source, "A")
+        val original = registry.list().single()
+        val nativeBefore = checkNotNull(backend.packages[original.userId to original.packageName])
+        val guarded = ManagedGuestEngine(backend, registry, snapshots) {
+            registry.rows[0] = original.copy(userId = original.userId + 100)
+            backend.packages[original.userId + 100 to original.packageName] = nativeBefore
+            true
+        }
+        assertThrows(IllegalStateException::class.java) {
+            guarded.update(UpdateTarget(source.copy(versionCode = 2), listOf(clone.id)))
+        }
+        assertEquals(1, backend.installs.size)
+        assertEquals(nativeBefore, backend.packages[original.userId to original.packageName])
+        assertEquals(InstanceState.READY, registry.list().single().state)
+        assertTrue(backend.uninstalls.isEmpty())
+    }
     @Test fun sharedUpdateImportsOnceAndVerifiesAllAffectedInstances() {
         val a = engine().create(source, "A"); val b = engine().create(source, "B")
         val updated = engine().update(UpdateTarget(source.copy(versionCode = 2), listOf(a.id, b.id)))
