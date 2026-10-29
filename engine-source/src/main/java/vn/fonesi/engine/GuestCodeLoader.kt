@@ -1,6 +1,7 @@
 package vn.fonesi.engine
 
 import android.app.Application
+import android.app.Activity
 import android.content.Context
 import android.content.pm.ApplicationInfo
 import android.content.res.Resources
@@ -28,12 +29,36 @@ data class LoadedGuestCode(val clusterId: String, val packageName: String, val v
         className: String,
         caller: ExplicitActivityCaller,
     ): VerifiedPrivateActivitySelection {
-        check(componentInventory.clusterId == clusterId && componentInventory.packageName == packageName) {
+        check(componentInventory.clusterId == clusterId &&
+            componentInventory.packageName == packageName &&
+            componentInventory.versionCode == version) {
             "Loaded private code and component manifest have different identity"
         }
         return SignedPrivateExplicitActivityResolver.select(componentInventory, packageName, className, caller)
     }
+
+    /**
+     * Class ownership/type preflight only. Never instantiate/attach the Activity or return
+     * a launch-success result; actual Android lifecycle and guest UID mediation are absent.
+     */
+    fun preflightExplicitActivityClass(
+        className: String,
+        caller: ExplicitActivityCaller,
+    ): PrivateGuestActivityClassHandle {
+        val signed = selectExplicitActivity(className, caller)
+        val loaded = PrivateGuestActivityClassPreflight.resolve(
+            signed, classLoader, Activity::class.java)
+        @Suppress("UNCHECKED_CAST")
+        val type = loaded as Class<out Activity>
+        return PrivateGuestActivityClassHandle(signed, type)
+    }
 }
+
+/** Class type proof only; NOT an Android guest execution/permission token. */
+data class PrivateGuestActivityClassHandle(
+    val selection: VerifiedPrivateActivitySelection,
+    val activityClass: Class<out Activity>,
+)
 
 /**
  * Opt-in code-image component. Resources cover private APK assets; custom resource classloader
