@@ -123,12 +123,15 @@ internal fun SavedCloneCard(
 }
 
 @Composable
-internal fun UpdateTaskCard(task: UpdateTask, enabled: Boolean, cancel: () -> Unit, retry: () -> Unit) {
+internal fun UpdateTaskCard(task: UpdateTask, enabled: Boolean, cancel: () -> Unit, retry: () -> Unit,
+    foreignEngine: Boolean = false) {
     OutlinedCard(Modifier.fillMaxWidth()) {
         Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
             Text(task.packageName, style = MaterialTheme.typography.titleMedium)
             Text("Phiên bản yêu cầu: ${task.versionCode}")
             Text("Trạng thái đã lưu: ${task.state.label()}")
+            if (foreignEngine) Text("Tác vụ thuộc engine khác: chỉ xem lịch sử; không thể hủy hoặc thử lại từ engine hiện tại.",
+                style = MaterialTheme.typography.bodySmall)
             task.issue?.let { Text(it.description(), style = MaterialTheme.typography.bodySmall) }
             if (task.completion == CompletionKind.ALREADY_CURRENT) Text("Đã đúng phiên bản; không cần áp dụng lại.")
             if (task.state == TaskState.REVIEW_REQUIRED) {

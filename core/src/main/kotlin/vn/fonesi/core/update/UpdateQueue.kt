@@ -21,16 +21,20 @@ class UpdateQueue(
     fun pause() = store.setPaused(true)
     fun resume() = store.setPaused(false)
 
-    fun retryDeferred(id: String): Boolean {
+    /** Retry only a durable task owned by the caller's current engine namespace. */
+    fun retryDeferred(engineKey: String, id: String): Boolean {
+        require(engineKey.isNotBlank()) { "Missing expected engine namespace" }
         val current = store.list().firstOrNull { it.id == id } ?: return false
-        if (current.state != TaskState.DEFERRED) return false
+        if (current.engineKey != engineKey || current.state != TaskState.DEFERRED) return false
         return store.replace(current, current.move(TaskState.QUEUED, clock()))
     }
 
-    /** Never cancels an in-flight or uncertain engine operation. */
-    fun cancel(id: String): Boolean {
+    /** Never cancel another engine's task or any in-flight/uncertain engine operation. */
+    fun cancel(engineKey: String, id: String): Boolean {
+        require(engineKey.isNotBlank()) { "Missing expected engine namespace" }
         val current = store.list().firstOrNull { it.id == id } ?: return false
-        if (current.state !in setOf(TaskState.QUEUED, TaskState.DEFERRED)) return false
+        if (current.engineKey != engineKey ||
+            current.state !in setOf(TaskState.QUEUED, TaskState.DEFERRED)) return false
         return store.replace(current, current.move(TaskState.CANCELLED, clock()))
     }
 }

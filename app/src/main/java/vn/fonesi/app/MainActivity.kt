@@ -279,7 +279,9 @@ private fun FonesiScreen(state: AppsState, management: ManagementState, runtime:
                     if (management.loaded && management.jobs.isEmpty()) Text("Chưa có yêu cầu cập nhật. Không có tác vụ mẫu hoặc kết quả giả.")
                 }
                 items(management.jobs.asReversed(), key = { "task:${it.id}" }) { task ->
-                    UpdateTaskCard(task, management.error == null, { model.cancelTask(task.id) }, { model.retryDeferred(task.id) })
+                    UpdateTaskCard(task, management.error == null && task.engineKey == model.engineKey,
+                        { model.cancelTask(task.id) }, { model.retryDeferred(task.id) },
+                        foreignEngine = task.engineKey != model.engineKey)
                 }
             } else {
                 item {

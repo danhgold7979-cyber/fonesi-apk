@@ -190,17 +190,17 @@ class UpdateRunnerTest {
         assertEquals(TaskIssue.PAUSED, f.runner().runNext().task().issue)
         assertEquals(0, f.engine.calls)
         f.afterPrepare = null; f.queue.resume()
-        assertTrue(f.queue.retryDeferred(job.id))
+        assertTrue(f.queue.retryDeferred("test-engine", job.id))
         assertEquals(TaskState.SUCCEEDED, f.runner().runNext().task().state)
     }
 
     @Test fun `cancel is allowed before execution but not while preparing or applying`() {
         val f = fixture(); val cancelled = f.enqueue()
-        assertTrue(f.queue.cancel(cancelled.id))
+        assertTrue(f.queue.cancel("test-engine", cancelled.id))
         assertEquals(RunResult.Idle, f.runner().runNext())
         val active = f.enqueue()
-        f.afterPrepare = { assertFalse(f.queue.cancel(active.id)) }
-        f.engine.beforeApply = { assertFalse(f.queue.cancel(active.id)) }
+        f.afterPrepare = { assertFalse(f.queue.cancel("test-engine", active.id)) }
+        f.engine.beforeApply = { assertFalse(f.queue.cancel("test-engine", active.id)) }
         assertEquals(TaskState.SUCCEEDED, f.runner().runNext().task().state)
     }
 
@@ -392,8 +392,8 @@ class UpdateRunnerTest {
         assertThrows(SimulatedProcessDeath::class.java) { f.runner().runNext() }
         f.engine.beforeApply = null; f.runner().recover()
         assertEquals(TaskState.REVIEW_REQUIRED, f.store.list().single().state)
-        assertFalse(f.queue.cancel(job.id))
-        assertFalse(f.queue.retryDeferred(job.id))
+        assertFalse(f.queue.cancel("test-engine", job.id))
+        assertFalse(f.queue.retryDeferred("test-engine", job.id))
         assertEquals(RunResult.Idle, f.runner().runNext())
         assertEquals(1, f.engine.calls)
     }
