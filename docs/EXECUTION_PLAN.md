@@ -1,5 +1,9 @@
 # Kế hoạch thực thi và đối chiếu yêu cầu
 
+## E62 — READY-only native guest launch gate (pre-code, 29/10/2026)
+
+Original **Product Phase 3 steps 13–16**. E62 branch `phase/e62-ready-guest-launch-gate-20261029` stacked on E61 reporting SHA `b4922a080b9704dcd25b5c9ca5a09c56f31c6beb` with reporting CI pending at pre-code plan; E61 code `2467c147d71f4f4d204a74628508023b7b2b14ab` passed [CI #40887119633](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40887119633). [Detailed E62 pre-code plan](phases/E62_READY_GUEST_LAUNCH_GATE_PLAN.md): guard `ManagedGuestEngine.launch` against RESERVED partially installed guests by requiring READY before readback/pending/SDK dispatch; preserve reconciliation and existing native source checks. Add JVM regressions, exact-SHA cloud/candidate CI and E40–E62 audit. Weighted readiness stays 28.00%, 0 real accepted third-party clones; no split/provider/GC activation.
+
 ## E61 — technical PASS on exact SHA (29/10/2026)
 
 Original Product **Phase 3 steps 14–16**. Source `2467c147d71f4f4d204a74628508023b7b2b14ab` [CI #40887119633](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40887119633) **SUCCESS**: exact-head check, all E40–E61 audits, cloud/candidate tests/build/lint, APK signatures/permissions and split/provider/GC disabled. `ManagedGuestEngine.stop` now requires a valid pre-dispatch native guest readback and exact package/version/signers identity continuity in the explicit post-stop readback before clearing pending. Missing/mismatched results remain pending, no blind retry. E60 source `635cc06f` passed [CI #40885876272](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40885876272). [Detailed results](phases/E61_GUEST_STOP_IDENTITY_CONTINUITY_RESULTS.md) and [Draft PR #35](https://github.com/danhgold7979-cyber/fonesi-apk/pull/35). Product readiness 28.00%, 0 accepted real clones; reporting SHA requires independent CI.
