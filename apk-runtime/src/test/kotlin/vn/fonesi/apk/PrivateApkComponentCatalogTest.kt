@@ -85,6 +85,25 @@ class PrivateApkComponentCatalogTest {
         }
     }
 
+    @Test fun signedBaseApplicationProcessPreservedWithoutInferringGuestRuntime() {
+        val signed = inspect("catalog-app-process")
+        assertEquals(":remote", signed.applicationProcessName)
+        assertNull(signed.applicationEnabled)
+        assertNull(signed.applicationPermission)
+        assertEquals(pkg, signed.packageName)
+        assertEquals(1L, signed.versionCode)
+        assertEquals(signers(), signed.signerDigests)
+        assertNull(inspect("catalog-public").applicationProcessName)
+    }
+
+    @Test fun signedFeatureProcessOverrideCannotChangeBaseApplicationPolicy() {
+        val cluster = publish("catalog-public", "catalog-split-app-process")
+        assertThrows(IllegalArgumentException::class.java) {
+            PrivateApkComponentCatalog.inspect(store, cluster.id, 34)
+        }
+        assertEquals(":remote", inspect("catalog-app-process").applicationProcessName)
+    }
+
     @Test fun signedAliasWithoutActualActivityAndCollidingAuthoritiesAreRejected() {
         val alias = publish("catalog-bad-alias")
         assertThrows(IllegalArgumentException::class.java) {
