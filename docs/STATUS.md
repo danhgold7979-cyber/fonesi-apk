@@ -1,3 +1,35 @@
+# Fonesi APK — E72 technical PASS; Product Phase 1 engine acceptance still incomplete (29/10/2026)
+
+**Repository:** [danhgold7979-cyber/fonesi-apk](https://github.com/danhgold7979-cyber/fonesi-apk); branch `phase/e72-signed-app-process-inheritance-20261029`, stacked [Draft PR #46](https://github.com/danhgold7979-cyber/fonesi-apk/pull/46) on E71 [Draft PR #45](https://github.com/danhgold7979-cyber/fonesi-apk/pull/45), E70 [Draft PR #44](https://github.com/danhgold7979-cyber/fonesi-apk/pull/44). `main@c055df600f87ee9ddf0cd5d6bfc67d80d145e79d` unchanged.
+
+**Roadmap:** original **Product Phase 1 steps 7–8**, with Phase 3 step 15 dependency. **E72 technical PASS** at exact source/test SHA `1b8c5a7e803fcb7832d790d8614d1c92c219953d`: [CI #40912239445](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40912239445) **SUCCESS**. **510 tests per cloud/candidate gate**, signed binary manifest fixtures, E40–E72 audits, build/lint, SDK/APK signatures/permissions, opt-in source-engine native AAR and no split/provider/GC activation. [Test-only artifact #12914827167](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40912239445/artifacts/12914827167). E71 `c1d825bb` [CI #40911242212](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40911242212) passed with 506 tests/gate; E70 `469b5aa5` [CI #40910681708](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40910681708) passed with 503 tests/gate.
+
+**Implementation:** The signed PRIVATE base Application process is retained in the component inventory; explicit Activity selection is denied when the Application requires unsupported guest process mediation, and split APK process overrides are rejected. Two signed fixtures and four JVM regressions. [E72 plan](phases/E72_SIGNED_APP_PROCESS_INHERITANCE_PLAN.md) | [results](phases/E72_SIGNED_APP_PROCESS_INHERITANCE_RESULTS.md). Reporting/integration HEAD is a new SHA requiring independent CI.
+
+**Weighted product readiness 28.00%, 0 accepted real third-party clones.** Runtime guest Android Activity/Service/Provider, complete split provider, independent UID/account, Samsung/social-app device testing and release signing are not accepted. Keep Draft, `main` unchanged.
+
+---
+
+# Fonesi APK — E71 technical PASS; original Product Phase 1 still incomplete (29/10/2026)
+
+**Repository:** [danhgold7979-cyber/fonesi-apk](https://github.com/danhgold7979-cyber/fonesi-apk); branch `phase/e71-signed-activity-process-safety-20261029`, stacked [Draft PR #45](https://github.com/danhgold7979-cyber/fonesi-apk/pull/45) on E70 [Draft PR #44](https://github.com/danhgold7979-cyber/fonesi-apk/pull/44). `main@c055df600f87ee9ddf0cd5d6bfc67d80d145e79d` unchanged.
+
+Original Product **Phase 1 steps 7–8**, preparatory for Phase 3 step 15. **E71 technical PASS** at code/test source SHA `c1d825bbd356db40e175555da23d786e124ff481`: [CI #40911242212](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40911242212) **SUCCESS**, **506 cloud/candidate tests per gate**, signed binary fixture regressions, pinned SDK/JDK build/lint/APK signature/permissions, opt-in source-engine AAR and E40–E71 source audits all passed. [Test-only artifact #12914412753](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40911242212/artifacts/12914412753). Parent E70 code `469b5aa5` passed [CI #40910681708](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40910681708) with 503 tests per gate.
+
+E71 rejects per-Activity/Activity-alias/alias target `android:process` without guest process allocation. [E71 plan](phases/E71_SIGNED_ACTIVITY_PROCESS_SAFETY_PLAN.md) | [results](phases/E71_SIGNED_ACTIVITY_PROCESS_SAFETY_RESULTS.md). The results merge SHA requires independent CI. This is read-only signed metadata, not Android guest runtime or account isolation. **Product readiness 28.00%, accepted real third-party clones 0.** No full split provider, guest process/UID/account, Samsung tests or release signing.
+
+---
+
+# Fonesi APK — E70 technical PASS; Product Phase 1 engine acceptance remains blocked (29/10/2026)
+
+**Repository:** [danhgold7979-cyber/fonesi-apk](https://github.com/danhgold7979-cyber/fonesi-apk). Branch `phase/e70-signed-explicit-activity-selection-20261029`, [Draft PR #44](https://github.com/danhgold7979-cyber/fonesi-apk/pull/44) stacked on E69; `main@c055df600f87ee9ddf0cd5d6bfc67d80d145e79d` unchanged.
+
+Original **Product Phase 1 steps 7–8**, preparing Phase 3 step 15. **E70 technical PASS** on code/test SHA `469b5aa567344154622c099a73351b6ae60494d9`: [CI #40910681708](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40910681708) **SUCCESS**, **503 tests per cloud/candidate gate**, E40–E70 audits, signed APK fixture tests, pinned cloud/candidate build/lint/signature/permission checks, opt-in source-engine AAR, and no split/provider/GC activation. [Test-only artifact #12914911137](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40910681708/artifacts/12914911137).
+
+The source-built loader now exposes read-only explicit signed PRIVATE Activity/alias selection, enforced exported/enabled, Application permission/enabled and signed split scope. [Plan](phases/E70_SIGNED_EXPLICIT_ACTIVITY_SELECTION_PLAN.md) | [results](phases/E70_SIGNED_EXPLICIT_ACTIVITY_SELECTION_RESULTS.md). A follow-up documentation HEAD requires independent CI. No runtime guest Activity, process/UID/account isolation or full split import is accepted. Weighted product **28.00%**, **0 accepted real third-party clones**; leave Draft and `main` unchanged.
+
+---
+
 # Fonesi APK — E67 technical PASS; Product Phase 3/4 acceptance still open (29/10/2026)
 
 **Repository:** [danhgold7979-cyber/fonesi-apk](https://github.com/danhgold7979-cyber/fonesi-apk). **Branch:** `phase/e67-create-preinstall-peer-guard-20261029`, stacked [Draft PR #41](https://github.com/danhgold7979-cyber/fonesi-apk/pull/41) on E66 [Draft PR #40](https://github.com/danhgold7979-cyber/fonesi-apk/pull/40). `main@c055df600f87ee9ddf0cd5d6bfc67d80d145e79d` unchanged.

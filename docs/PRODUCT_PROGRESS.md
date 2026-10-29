@@ -1,5 +1,23 @@
 # Fonesi APK — conservative product completion estimate
 
+Date: 2026-10-29. **Latest verified technical milestone E72 PASS** at exact source SHA `1b8c5a7e803fcb7832d790d8614d1c92c219953d`: [CI #40912239445](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40912239445) **SUCCESS**, **510 tests per cloud/candidate gate**, signed binary manifest fixtures, build/lint/APK signatures/permissions and source AAR. E71 source `c1d825bb` [CI #40911242212](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40911242212) passed 506 tests/gate; E70 source `469b5aa5` [CI #40910681708](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40910681708) passed 503 tests/gate. These remain **metadata-only safety guards**, not Android guest runtime/account acceptance. **Weighted product readiness 28.00%, 0 real accepted third-party clone apps**.
+
+## E72 inherited signed Application process guard is not runtime guest execution
+
+The cryptographically verified PRIVATE base Application `android:process` declaration is now retained, and missing guest process mediation blocks an Activity selection for both caller types; feature/config split process overrides are refused. Two signed APK fixture variants and four JVM regressions verify this bounded catalog/selector behavior. No Android Activity is launched, no independent UID/accounts or full split provider accepted. [E72 results](phases/E72_SIGNED_APP_PROCESS_INHERITANCE_RESULTS.md). Rubric below unchanged.
+
+Date: 2026-10-29. **Latest verified technical milestone E71 PASS** at exact code/test SHA `c1d825bbd356db40e175555da23d786e124ff481`: [CI #40911242212](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40911242212) **SUCCESS**, 506 tests per cloud/candidate gate, signed component JVM fixtures, build/lint/APK signing and opt-in source engine. E70 code `469b5aa5` passed [CI #40910681708](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40910681708), 503 tests/gate. This is read-only guest metadata safety, **not** Android guest app/account acceptance. Weighted product completion **28.00%**, accepted real clone apps **0**.
+
+## E71 Activity-level process refusal does not establish Android guest execution
+
+The signed explicit component selector denies declared Activity/alias/alias-target `android:process`, since native process allocator and Binder mediator are not implemented; three JVM signed-inventory tests cover this. No guest Activity/Service/Provider executes and no split-capable engine, separate Android UID/accounts or physical device acceptance is proven. [E71 results](phases/E71_SIGNED_ACTIVITY_PROCESS_SAFETY_RESULTS.md). Rubric unchanged.
+
+Date 2026-10-29. **Latest verified technical milestone E70 PASS** at exact source `469b5aa567344154622c099a73351b6ae60494d9`, [CI #40910681708](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40910681708) **SUCCESS** with **503 tests per cloud/candidate gate**, signed binary manifest selections, Android build/lint/APK signature/permission checks, source-native AAR and E40–E70 audits. This is metadata-only technical readiness, **not** guest runtime or account acceptance. Weighted product readiness **28.00%**, 0 real third-party clones accepted.
+
+## E70 explicit signed Activity selector is not production guest lifecycle
+
+Verified PRIVATE binary manifest Activity/alias requests may now be selected by exact name after conservative exported/enabled and base Application permission checks; no host component registration, actual guest Android Activity start, independent UID/account/session, or production split provider is implemented. [Results](phases/E70_SIGNED_EXPLICIT_ACTIVITY_SELECTION_RESULTS.md). The original weighted product rubric remains unchanged.
+
 Date: 2026-10-29. **Latest verified technical milestone E67 PASS** at exact code/test SHA `2d631994601594e7848e3ab0c2662f8fa5af0204`: [CI #40900943479](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40900943479) **SUCCESS**, **486 cloud/candidate tests per gate**, E40–E67 audits, build/lint/signatures/permission checks. E66 code and its reporting HEAD passed [CI #40899947204](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40899947204) and [CI #40901211794](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40901211794) separately. These are fail-closed technical gates, NOT real Android guest/session/account acceptance. **Weighted product readiness 28.00%**, **0 accepted real third-party clone apps**.
 
 ## E67 guest create pre-install recheck does not establish real guest execution
@@ -91,7 +109,7 @@ The dimension estimates and weights are heuristic judgments anchored in docs/STA
 
 ## Distinct acceptance counters
 
-- Latest verified technical milestone: **E67 PASS**, exact source `2d631994601594e7848e3ab0c2662f8fa5af0204`, [CI #40900943479](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40900943479), 486 tests per cloud/candidate gate. E66 code/report commits separately passed CI. Neither establishes real guest/app/account/device acceptance.
+- Latest verified technical milestone: **E72 PASS** at code SHA `1b8c5a7e803fcb7832d790d8614d1c92c219953d`, [CI #40912239445](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40912239445), 510 tests per cloud/candidate gate. E70/E71 source SHAs also passed independently. No accepted real guest app/account/device.
 - Production clone of real required social/e-commerce app: **0 applications accepted**.
 - Real Samsung ARM64 / non-Samsung phone acceptance: **not executed**.
 - Full 8-phase/32-step product completion: **not achieved**. Product Phase 1/2 still lacks a fully verified engine and real-device/account isolation acceptance.
