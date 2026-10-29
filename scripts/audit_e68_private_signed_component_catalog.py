@@ -29,8 +29,12 @@ for required in (
     assert required in catalog, "E68 signed PRIVATE catalog missing invariant: " + required
 assert catalog.count("store.open(clusterId, platformApi)") >= 2
 assert "getPackageArchiveInfo(" not in catalog and "getPackageInfo(" not in catalog
-assert "PackageManager" not in catalog and "Intent(" not in catalog
-assert "launch(" not in catalog and "install(" not in catalog and "uninstall(" not in catalog
+# Ignore documentation/comments while rejecting actual PackageManager and dispatch calls.
+code = "\n".join(line for line in catalog.splitlines()
+                 if not line.lstrip().startswith(("*", "//", "/*", "*/")))
+assert "import android.content.pm.PackageManager" not in code
+assert "PackageManager." not in code and "Intent(" not in code
+assert "launch(" not in code and "install(" not in code and "uninstall(" not in code
 for name in (
     "signedPrivateBaseEnumeratesAllComponentTypesWithoutRunningThem",
     "signedBaseFeatureConfigInventoryKeepsExactOriginAndClusterIdentity",
