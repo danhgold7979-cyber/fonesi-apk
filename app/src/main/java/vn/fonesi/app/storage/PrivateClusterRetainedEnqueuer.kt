@@ -11,6 +11,9 @@ import vn.fonesi.core.update.UpdateTask
 import java.util.UUID
 import java.util.concurrent.Callable
 
+/** One explicitly selected, already published private source for a queued update target. */
+data class RetainedClusterTarget(val target: UpdateTarget, val clusterId: String)
+
 /**
  * Offline-only atomic task enqueue + source ownership, for a previously published private APK set.
  *
@@ -73,6 +76,68 @@ class PrivateClusterRetainedEnqueuer(
             UpdateTaskClusterOwnershipRepository(db, clock)
                 .associateReadBackVerified(engineKey, task.id, cluster)
             task
+        })
+    }
+
+    /**
+     * Atomically retain a selected batch of previously published, signed private APK sources.
+     * Every cluster is read back before the first Room write. This API is opt-in and is NOT
+     * wired to the normal update UI or provider runner.
+     */
+    fun enqueueBatch(
+        engineKey: String,
+        targets: List<RetainedClusterTarget>,
+        scope: UpdateScope,
+        store: PrivateApkStore,
+        platformApi: Int,
+    ): List<UpdateTask> {
+        requireOwner(engineKey)
+        require(targets.isNotEmpty()) { "Cannot enqueue an empty private-cluster batch" }
+        targets.forEach { requireCanonicalUuid(it.clusterId) }
+        val verified = targets.map { request ->
+            val cluster = store.open(request.clusterId, platformApi)
+            check(cluster.id == request.clusterId) { "Private store returned a different batch cluster ID" }
+            request.target to cluster
+        }
+        return enqueueBatchReadBackVerified(engineKey, verified, scope)
+    }
+
+    /**
+     * Internal authenticated-source seam for tests; external callers MUST use enqueueBatch()
+     * to cryptographically read back each previously published private cluster.
+     */
+    internal fun enqueueBatchReadBackVerified(
+        engineKey: String,
+        targets: List<Pair<UpdateTarget, PrivateApkCluster>>,
+        scope: UpdateScope,
+    ): List<UpdateTask> {
+        requireOwner(engineKey)
+        require(targets.isNotEmpty()) { "Cannot enqueue an empty private-cluster batch" }
+        // Validate and copy the entire request BEFORE starting the transaction. Do not retain
+        // original-app paths, accept a different signer/version, or enqueue duplicate dedup keys.
+        val prepared = targets.map { (target, cluster) ->
+            requireCanonicalUuid(cluster.id)
+            val source = cluster.source()
+            require(target.source.packageName == source.packageName &&
+                target.source.versionCode == source.versionCode &&
+                target.source.signerDigests == source.signerDigests) {
+                "Requested batch source does not match the verified private cluster"
+            }
+            UpdateTarget(source, target.affectedCloneIds.toList()) to cluster
+        }
+        val dedupKeys = prepared.map { (target, _) ->
+            UpdateTask.create(engineKey, target, scope, 0L).dedupKey
+        }
+        require(dedupKeys.distinct().size == dedupKeys.size) {
+            "Duplicate update identity within one retained batch"
+        }
+
+        // Existing E43 single-target operations nest inside one outer Room transaction.
+        // If any later task or owner fails, *all new task and reference rows* roll back.
+        return db.runInTransaction(Callable {
+            prepared.map { (target, cluster) ->
+                enqueueReadBackVerified(engineKey, target, scope, cluster)
+            }
         })
     }
 
