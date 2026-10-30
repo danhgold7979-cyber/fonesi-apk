@@ -15,7 +15,7 @@ for required in (
     '!"e29".equals(proofLevel) && !"e74".equals(proofLevel) &&',
     '!"e77".equals(proofLevel) && !"e78".equals(proofLevel) && !("e79".equals(proofLevel) || "e80".equals(proofLevel))',
     'if ("e74".equals(proofLevel) || "e77".equals(proofLevel) || "e78".equals(proofLevel) || ("e79".equals(proofLevel) || "e80".equals(proofLevel) || e82Mode)) {',
-    "PrivateGuestActivityClassHandle activityProof = image.preflightExplicitActivityClass(",
+    "activityProof = image.preflightExplicitActivityClass(",
     "SIGNED_ACTIVITY, ExplicitActivityCaller.TRUSTED_INTERNAL",
     "activityProof.getSelection().getClusterId().equals(localCluster.getId())",
     "activityProof.getSelection().getTargetActivityName().equals(SIGNED_ACTIVITY)",
@@ -43,7 +43,7 @@ assert "Class.forName(selection.targetActivityName, false, privateLoader)" in re
 assert "PrivateGuestActivityClassPreflightTest" in audit73
 
 for required in (
-    '"e24", "e25", "e29", "e74", "e77", "e78", "e79", "e80"',
+    '"e24", "e25", "e29", "e74", "e77", "e78", "e79", "e80", "e82"',
     '"android_private_activity_class_preflight_verified": False',
     'report.get("private_activity_class_preflight_verified") is not True',
     '"private_activity_class_preflight_verified",',
