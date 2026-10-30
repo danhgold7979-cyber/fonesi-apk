@@ -9,3 +9,18 @@ preinstalled API36/build-tools36.0.0/JDK17; no SDK installation or license actio
 The root verified Gradle8.13 wrapper is reused with `-p rebuild-android`; root
 historical Gradle settings are not evaluated. Debug APK is CI review only, not release.
 Source tests and APK inspection do not substitute for device/UI/isolation acceptance.
+
+## Metadata presentation model (R5.1)
+
+`ManagerModel` is new dependency-free Java17-compatible source compiled inside the
+Android project. It models immutable metadata, refresh ordering, accent-insensitive
+search and visible-only selection with stale revision rejection. All entries remain
+unverified/quarantined/unavailable; selection never enables operations. Activity
+renders the initial unconnected count only. No stored entries, fake sample rows,
+provider calls or configuration changes are connected.
+
+`./rebuild-android/check-model.sh` runs direct-source contract tests. Installed
+JDK17 CI uses `--release 17`; the limited local JDK21 fallback establishes behavior
+only, and prints that boundary. Android compile/lint additionally verifies source
+and API compatibility. UI event wiring, persistence, rotation, accessibility,
+authentication, shortcuts and device execution remain separate unaccepted work.

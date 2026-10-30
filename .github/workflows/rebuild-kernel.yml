@@ -98,6 +98,8 @@ jobs:
           with open(os.environ['GITHUB_PATH'], 'a') as path:
               path.write(report['jdk17_root'] + '/bin\n')
           PY
+      - name: Test presentation contracts with installed JDK17
+        run: ./rebuild-android/check-model.sh
       - name: Compile fresh isolated debug manager and run Android lint
         run: |
           set -euo pipefail

@@ -43,10 +43,11 @@ class ScaffoldTests(unittest.TestCase):
 
     def test_activity_has_no_adapter_or_enable_path(self):
         sources = list((MAIN / "java").rglob("*.java"))
-        self.assertEqual(len(sources), 1)
-        source = sources[0].read_text()
+        self.assertEqual({p.name for p in sources}, {"ManagerActivity.java", "ManagerModel.java"})
+        source = (MAIN / "java/vn/fonesi/rebuild/ManagerActivity.java").read_text()
         self.assertEqual([line.strip() for line in source.splitlines() if line.startswith("import ")],
-                         ["import android.app.Activity;", "import android.os.Bundle;"])
+                         ["import android.app.Activity;", "import android.os.Bundle;", "import android.widget.TextView;",
+                          "import vn.fonesi.rebuild.model.ManagerModel;"])
         for forbidden in ("setEnabled", "setOnClickListener", "getFilesDir", "getDatabasePath", "Runtime", "Class.forName"):
             self.assertNotIn(forbidden, source)
 

@@ -5,4 +5,6 @@
     <string name="create_clone">Create clone — unavailable</string>
     <string name="launch_clone">Launch clone — unavailable</string>
     <string name="migrate_data">Migrate existing data — unavailable</string>
+    <string name="metadata_pending">Metadata source unavailable.</string>
+    <string name="metadata_unconnected">Metadata source unavailable — %1$d loaded entries. This is not a scan of existing clones.</string>
 </resources>
