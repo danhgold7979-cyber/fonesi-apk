@@ -1,0 +1,4 @@
+e73cf812a0f81b1d289118a306e7bc70d4933af5fb99e4c9af9634807f843213  rebuild-logic/src/main/java/vn/fonesi/rebuild/logical/CapabilityPolicy.java
+bed6dfabe1ffd1d3323cbb1c426b52f8a6a1c0b4828b1e00cac91d18899130f7  rebuild-logic/src/main/java/vn/fonesi/rebuild/logical/IdentityText.java
+c268a1b058f6e1864b89f408127ca35d6f7d3be763adb1edef5f43bde38968bd  rebuild-logic/src/main/java/vn/fonesi/rebuild/logical/ImmutableCollections.java
+345f0a22e3f9f3b5ce72816b7795dda950e79e841b75be0cb1c575498d21593e  rebuild-logic/src/main/java/vn/fonesi/rebuild/logical/OperationProtocol.java

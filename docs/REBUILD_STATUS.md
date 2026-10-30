@@ -135,3 +135,27 @@ B1a exact-head run41117815149 SUCCESS. Pre-code plan commit1a80405 records appro
 Historical v1 four-source archive, hash manifest and99 observations are retained byte-identically, compiled/run separately. Current five-source B1b manifest is checked before compilation. Local11471 desired identity/parity/no-replay checks +208 original checks +42 legacy oracle checks pass. Invalid historical records in all three fields/PREPARED and DISPATCHED reject and remain unchanged with zero callbacks; quarantine-required, not migrated or remapped.108 model/76 controller checks (localJDK21 behavior only),51 SQLite and33 tooling tests also pass. Hosted exact new-head CI pending root publication. Android/provider bridge/source replacement/device acceptance remain gated.
 
 Independent review clarified streaming inspection: valid rows may be observed before a later invalid file aborts inspection; invalid rows are never delivered. Added mixed valid/invalid history test proving no external preflight/mutation/readback executes after incomplete history scan; both records remain unchanged. All 2,048 individual surrogate code units are rejected at every identity entry point.
+
+B1b exact published head `509d71ba89fee571f734455b3980b5c8f38c0022`, run41119246112 completed SUCCESS: hardened and archived-oracle tests, synthetic storage, installed-JDK17 manager tests, Android assemble/lint and packaged semantic gate all pass. `REBUILD_LOGICAL_BRIDGE_PROPOSAL.md` proposes the next pure Java17 capability/state compatibility boundary only, pending root approval; no new bridge implementation or Android import.
+
+## B1c D3 host correction — 2026-10-30 20:11 UTC
+
+B2 matrix exposed inherited same-host-UID + asserted ADV permits, incompatible with E35 hostile-guest boundary. Root approved D3 exact strong-mode necessary condition and denial precedence before code (`c920569`). Host policy now rejects UNKNOWN/HOST_UID_NAMESPACE for ADV evidence/request or protected THIRD_PARTY execution/lifecycle/update, while still requiring existing claim dependencies. Labels are not attestation.
+
+Independent6,200 truth-table checks pass;65 kernel/61 journal/83 dispatcher,11,471 identity and42 v1 oracle checks pass. Original synthetic fixture asserted ADV with same-UID namespace: this is now explicitly denied; separate non-ADV synthetic positive retained and dispatcher synthetic fixture no longer asserts unsupported ADV. This is an intended approved semantic correction, not weakened assertions.
+
+B1b five source bytes/manifest and17,317 D3 observations/harness archived unchanged on isolated classpath. No B1a historical evidence rewritten. Unfinished B2 draft is not accepted or imported by Android; next align it to corrected desired contract and independently compare on hosted JDK17. No provider/storage/device activation.
+
+## B2 corrected logical compatibility port prepared — 2026-10-30 20:13 UTC
+
+Separate dependency-free `rebuild-logic` module ports B1b identity/state and corrected B1c capability rules into ordinary final Java17 value classes. No Android source-set import, codec/filesystem/dispatcher/auth/provider implementation. Four portable/three host hashes pinned; old host and historical manifests retained. Exact equality/hash composition, defensive copies and null constructor/member rejection preserved; implementation-optional collection query/iteration behavior is not serialized authority.
+
+70 independent value/hash/immutability checks and6,200 independent D3 truth-table checks pass on host and portable processes locally.17,317 deterministic desired vectors match; versus historical D3, exactly1,536 approved isolation-denial changes, including96 prior permits removed, no new permits/non-policy drift. CI compares, never regenerates fixtures; requires installed JDK17 runtime and --release17 compiler, no automatic download. Local stripped-JDK21 fallback is explicitly not JDK17 execution acceptance.
+
+API review documents actual production API surface independently;36 tooling checks pass. Host65/61/83 +11,471identity +6,200policy +42oldoracle checks and historical17,317 observations pass; manager108/76 and51 SQLite pass. Full hosted exact new-head CI and independent review required before publishing acceptance. No device/guest isolation/provider or source replacement completion implied.
+
+Independent B2 read-only review found no blocker; independently verified source pins, exact1,536 policy-only changes/96removedpermits/zero new permits and historicalfixture preservation. Updated policy JavaDoc provenance toB1c and refreshed portable source pin. Hosted new-head evidence remains pending.
+
+## Publication transport recovery — 2026-10-30 21:18 UTC
+
+Interrupted publication had not moved remote beyondB1b509d71ba. Root authorized bounded transport-only compaction; two frozen logical fixtures now canonical gzip/base64 text totaling146,890bytes, preserving exact2,270,857 decoded bytes/old SHA/17,317 rows each. Strict bounded Python decoder verifies complete integrity before output and runners compare temporary decoded bytes without regeneration. Original plain files remain inbd5b052 history.57 tooling tests plus all kernel/logical/history/manager/SQLite suites pass locally. No production contract changes; awaiting publication and actual JDK17/full hosted CI.

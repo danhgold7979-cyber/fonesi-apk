@@ -123,3 +123,6 @@ Acceptance: source hashes match, repeat deterministic output matches committed g
 
 ### B1b identity hardening checkpoint
 See `REBUILD_IDENTITY_HARDENING_PLAN.md` and `spec/bridge-oracle/b1b/README.md`. Approved standalone-only compatibility hardening follows green B1a. Preserve historical v1 evidence isolated from production; desired tests reject unsafe prior observations. Exact new-head hosted CI must pass before any separately reviewed portable bridge step. No Android/provider integration authorized by this checkpoint.
+
+### B2 logical boundary after D3 correction
+Root approved bounded B2 at2caaea6. D3 discovered during full matrix review; unsafe same-UID permits were not canonized. Root approved separate B1c host correction atc920569/7e208b1; unfinished B2 then aligned to corrected desired vectors while preserving historical B1b observations. See `REBUILD_POLICY_D3_DECISION.md`, `REBUILD_LOGICAL_API_AUDIT.md` and `rebuild-logic/README.md`. Hosted actual JDK17/full CI is next gate; no Android import or storage/auth/provider work is part of this slice.

@@ -1,0 +1,9 @@
+# B2 logical compatibility port — not an Android engine
+
+Dependency-free, separate `vn.fonesi.rebuild.logical` Java17 source boundary. This is an explicit compatibility port of the pinned B1c host capability and B1b identity/state contracts, not newly invented provider functionality. Records are replaced by final value classes; newer collection factories by defensive null-rejecting immutable copies. The host sources remain unchanged.
+
+Run `./rebuild-logic/check.sh`. Hosted CI requires existing JDK21 and JDK17, compares independently compiled processes against reviewed frozen fixtures, and cannot regenerate them. Local fallback is JDK21 behavior evidence only, not Java17 runtime acceptance. Production has no filesystem/codec/dispatcher/auth/provider callbacks, Android import or app source-set wiring.
+
+**Trust boundary:** capability objects are caller-supplied data, not independent attestation. A permitted decision does not establish guest isolation. Historical B1b HOST_UID_NAMESPACE + asserted adversarial permits are archived as D3 defect evidence. Approved B1c now denies these modes for ADV claims/requests and protected third-party operations; stronger labels still are not proof. See fixture ledger and API audit. Persistence ownership, durable dispatch, verified provider/readback and runtime Android/OEM acceptance remain separate gates.
+
+Collection element/key/value null rejection, immutability and value equality are required. Implementation-optional collection null-query behavior, iteration/toString ordering and enum identity hash numbers are not cross-runtime serialization contracts. Explicit value hash composition uses the host record-style zero-seed multiply31 algorithm; enum hashes remain process-local. No text/hash normalization or persisted-byte interpretation added.

@@ -28,7 +28,10 @@ public final class KernelTest {
         Set<Claim> all = Set.of(Claim.values());
         Evidence synthetic = evidence(Scope.SYNTHETIC, Isolation.HOST_UID_NAMESPACE, all);
         check(!assess(request(Scope.THIRD_PARTY, Claim.SPLIT_EXECUTION), synthetic).permitted());
-        check(assess(request(Scope.SYNTHETIC, Claim.SPLIT_EXECUTION), synthetic).permitted());
+        // B1c intentionally rejects the old synthetic fixture's unsupported ADV claim.
+        check(!assess(request(Scope.SYNTHETIC, Claim.SPLIT_EXECUTION), synthetic).permitted());
+        HashSet<Claim> nonAdversarial = new HashSet<>(all); nonAdversarial.remove(Claim.ADVERSARIAL_ISOLATION);
+        check(assess(request(Scope.SYNTHETIC, Claim.SPLIT_EXECUTION), evidence(Scope.SYNTHETIC, Isolation.HOST_UID_NAMESPACE, nonAdversarial)).permitted());
         check(!assess(request(Scope.SYNTHETIC, Claim.SPLIT_EXECUTION), null).permitted());
         check(!assess(new Request(OTHER, "api34-arm64-4k", DIGEST, Scope.SYNTHETIC, Claim.SPLIT_EXECUTION), synthetic).permitted());
         check(!assess(new Request(P, "api35-arm64-16k", DIGEST, Scope.SYNTHETIC, Claim.SPLIT_EXECUTION), synthetic).permitted());

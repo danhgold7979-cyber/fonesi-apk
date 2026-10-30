@@ -4,6 +4,8 @@
 
 `rebuild-storage/` chứng minh bảo toàn/quarantine bằng SQLite tổng hợp. `rebuild-android/` là manager scaffold mới, độc lập, mọi thao tác clone/import/migration đều vô hiệu hóa; [kế hoạch compile hosted](docs/REBUILD_HOSTED_ANDROID_PLAN.md) yêu cầu SDK/JDK cài sẵn chính xác. Scaffold đã qua hosted compile/lint và kiểm tra APK tại run41109833095; chưa chạy trên thiết bị, chưa có engine clone/cách ly.
 
+`rebuild-logic/` là bản chuyển tương thích logic Java17 độc lập (identity/capability/state), chưa import vào Android. Policy B1c chặn nhãn cách ly cùng host UID cho yêu cầu đối kháng; nhãn/claim không phải chứng minh cách ly. Xem [ranh giới và test](rebuild-logic/README.md).
+
 Toàn bộ source cũ được phục hồi đủ refs; phần Android bên dưới còn giữ làm reference/regression oracle, không phải thành quả rebuild. Không coi test kernel là bằng chứng chạy/cách ly tài khoản. Màu đỏ chỉ nhận diện luồng trao đổi APK, không phải yêu cầu đổi thương hiệu.
 
 ---

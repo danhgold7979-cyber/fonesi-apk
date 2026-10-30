@@ -37,8 +37,16 @@ public final class CapabilityPolicy {
             return deny("SYNTHETIC_ONLY");
         if (!request.clusterSha256().equals(evidence.clusterSha256())) return deny("CLUSTER_MISMATCH");
         Set<Claim> claims = evidence.claims();
-        if (claims.contains(Claim.ADVERSARIAL_ISOLATION) && evidence.isolation() == Isolation.UNKNOWN)
-            return deny("INCONSISTENT_ISOLATION");
+        // B1c: labels/claims are only necessary conditions, never independent attestation.
+        boolean requiresStrongMode = claims.contains(Claim.ADVERSARIAL_ISOLATION)
+                || request.capability() == Claim.ADVERSARIAL_ISOLATION
+                || (request.scope() == Scope.THIRD_PARTY
+                    && (request.capability() == Claim.SPLIT_EXECUTION
+                        || request.capability() == Claim.GUEST_LIFECYCLE
+                        || request.capability() == Claim.ATOMIC_UPDATE));
+        boolean strongMode = evidence.isolation() == Isolation.SEPARATE_OS_UID
+                || evidence.isolation() == Isolation.SEPARATE_GUEST_OS;
+        if (requiresStrongMode && !strongMode) return deny("ISOLATION_MODE_UNSUPPORTED");
         if (!claims.contains(request.capability())) return deny("CLAIM_MISSING");
         // Fail closed for inconsistent evidence, even when the requested claim is lower level.
         if ((claims.contains(Claim.SPLIT_EXECUTION) || claims.contains(Claim.GUEST_LIFECYCLE)) &&
@@ -46,12 +54,10 @@ public final class CapabilityPolicy {
             return deny("IMPORT_PROOF_MISSING");
         if (claims.contains(Claim.ATOMIC_UPDATE) && !claims.contains(Claim.SPLIT_EXECUTION))
             return deny("EXECUTION_PROOF_MISSING");
-        if (request.capability() == Claim.ADVERSARIAL_ISOLATION && evidence.isolation() == Isolation.UNKNOWN)
-            return deny("ISOLATION_UNKNOWN");
         if (request.scope() == Scope.THIRD_PARTY &&
             (request.capability() == Claim.GUEST_LIFECYCLE || request.capability() == Claim.SPLIT_EXECUTION ||
              request.capability() == Claim.ATOMIC_UPDATE)) {
-            if (evidence.isolation() == Isolation.UNKNOWN || !claims.contains(Claim.ADVERSARIAL_ISOLATION))
+            if (!claims.contains(Claim.ADVERSARIAL_ISOLATION))
                 return deny("ADVERSARIAL_PROOF_MISSING");
         }
         return new Decision(true, "EXACT_SCOPE_EVIDENCE");

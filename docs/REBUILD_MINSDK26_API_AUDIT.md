@@ -33,7 +33,7 @@ Current kernel is Java21 host code, not an Android library. The following librar
 | Kernel usage | Current platform API reference | Required bridge work before import |
 |---|---|---|
 | CapabilityPolicy `Set.of`, `Set.copyOf`; Protocol/Dispatcher `Map.copyOf` | [Set](https://developer.android.com/reference/java/util/Set) factories API30/copy API31; [Map.copyOf](https://developer.android.com/reference/java/util/Map#copyOf(java.util.Map)) API31 | Explicit defensive immutable copies preserving null rejection and equality semantics, or separately approved/pinned supported backport. No aliasing wrapper shortcut. |
-| Policy/Protocol `String.isBlank` | [String.isBlank](https://developer.android.com/reference/java/lang/String#isBlank()), API33 | Preserve Unicode whitespace validation semantics; ASCII trim is not equivalent. |
+| Historical pre-B1b Policy/Protocol `String.isBlank` (removed from current constructors by B1b shared validator) | [String.isBlank](https://developer.android.com/reference/java/lang/String#isBlank()), API33 | Preserve Unicode whitespace validation semantics; ASCII trim is not equivalent. |
 | Journal `Stream.sorted().toList()` | [Stream.toList](https://developer.android.com/reference/java/util/stream/Stream#toList()), API34 | Portable sorted copy, preserving deterministic UUID order and immutable boundaries. |
 | Journal `ByteArrayOutputStream.writeBytes(byte[])` | [writeBytes](https://developer.android.com/reference/java/io/ByteArrayOutputStream#writeBytes(byte[])), API33 | Use compatible explicit offset/length write while preserving exact v2 serialized bytes/checksum. Previously omitted from high-level risk list; now recorded. |
 | Dispatcher `HexFormat.of().formatHex` | [HexFormat](https://developer.android.com/reference/java/util/HexFormat), API34 | Portable deterministic lower-case hex with golden scope-directory hash vectors; never change lease namespace accidentally. |
@@ -48,3 +48,5 @@ Current kernel is Java21 host code, not an Android library. The following librar
 5. **Acceptance:** source/API lint + D8, host parity tests, then controlled Android API26/current runtime tests for lifecycle/crash/locking/fsync/CAS and independent readback. Real provider/hostile-guest/device matrix is a subsequent external gate. No emulator, SDK install/license acceptance, device action or provider choice performed by this audit.
 
 Old implementation deletion still waits corresponding tested replacement. This bridge plan does not turn metadata presentation into authorization, a storage migration or engine completion.
+
+B1b update: approved deterministic identity validation replaces historical String.isBlank/trim semantics; do not port unsafe historical acceptance. See `REBUILD_LOGICAL_BRIDGE_PROPOSAL.md` for the bounded next proposal, not an authorized Android import. Other kernel platform/library and filesystem blockers above remain.

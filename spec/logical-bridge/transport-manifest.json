@@ -1,0 +1,18 @@
+{
+  "b1b-observed": {
+    "encoded_bytes": 73413,
+    "encoded_sha256": "1f6eb6890cbe0697498e68c78bbedbe42532ed5c1fb76045e8fb4b29cb039d2c",
+    "compressed_bytes": 55058,
+    "decoded_bytes": 1129640,
+    "decoded_sha256": "330acb1152da6f329792ea36628731f270183f341c4d6f37185da6c7ae679942",
+    "lines": 17317
+  },
+  "b2": {
+    "encoded_bytes": 73477,
+    "encoded_sha256": "4ba8162a5ea8d761499d94b99ccd794ebb317d34382fe80f83a4a9d54a51c6c3",
+    "compressed_bytes": 55105,
+    "decoded_bytes": 1141217,
+    "decoded_sha256": "5524e281c11e827f6e22dfe62c21c78b1a51f2ef79e66a46248dd4ae62cca78a",
+    "lines": 17317
+  }
+}

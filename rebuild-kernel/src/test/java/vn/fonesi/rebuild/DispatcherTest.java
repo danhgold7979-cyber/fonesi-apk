@@ -24,7 +24,9 @@ public final class DispatcherTest {
         for (UUID peer : request.identity().affectedClones()) peers.put(peer,
             new PeerState(request.identity().provider(), request.packageName(), "b".repeat(64), true, true));
         Evidence evidence = new Evidence(request.identity().provider(), request.environment(), request.identity().clusterSha256(),
-            Scope.SYNTHETIC, Isolation.HOST_UID_NAMESPACE, Set.of(Claim.values()));
+            Scope.SYNTHETIC, Isolation.HOST_UID_NAMESPACE,
+            Set.of(Claim.SIGNED_CLUSTER_IMPORT, Claim.PRIVATE_CLUSTER_READBACK,
+                   Claim.SPLIT_EXECUTION, Claim.ATOMIC_UPDATE, Claim.GUEST_LIFECYCLE));
         return new Preflight(request.identity(), true, true, true, peers, evidence);
     }
     private static Readback readback(SharedUpdateDispatcher.Request request, long revision) {
