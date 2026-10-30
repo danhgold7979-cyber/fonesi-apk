@@ -18,6 +18,8 @@ manifest = read("native-runtime-probe/src/main/AndroidManifest.xml")
 manifest_audit = read("scripts/run_native_probe.py")
 factory = read("native-runtime-probe/src/main/java/vn/fonesi/nativeprobe/E82AppComponentFactory.java")
 stub = read("native-runtime-probe/src/main/java/vn/fonesi/nativeprobe/E82HostActivityStub.java")
+host = read("native-runtime-probe/src/main/java/vn/fonesi/nativeprobe/SyntheticGuestUiProbeActivity.java")
+payload = read("probe-payload/src/main/java/vn/fonesi/payload/PayloadActivity.kt")
 
 for marker in (
     "public static synchronized void arm(Ticket ticket)",
@@ -68,6 +70,26 @@ assert "throw new SecurityException" in stub and "super.onCreate(savedInstanceSt
 assert 'PACKAGE + ".E82HostActivityStub"' in manifest_audit
 assert 'stub.get(A + "exported") == "false"' in manifest_audit
 assert "E82AppComponentFactory" in manifest_audit
+for marker in (
+    "prepareE82FactoryDispatch(",
+    "E82FactoryAuthorization.arm(ticket)",
+    "sha256File(hostApk).equals(probeApkSha256)",
+    "sha256File(payloadApk).equals(payloadApkSha256)",
+    "startActivity(dispatch)",
+):
+    assert marker in host, "E82 host controller gate missing: " + marker
+for marker in (
+    "beginE82HostStubLifecycle()",
+    "framework_on_create_called",
+    "framework_on_resume_called",
+    "base_context_non_null",
+    "window_non_null",
+    "guest_component_registered_with_host_package_manager",
+    "payload_source_fixture_package_installed",
+    "host_stub_activity_info_exported",
+):
+    assert marker in payload, "E82 signed PRIVATE Activity receipt missing: " + marker
+
 for marker in (
     "def validate_e82_receipt(",
     "files/e82-factory-receipts/",
