@@ -1,3 +1,15 @@
+# Fonesi APK — E82 exact-source host-stub framework lifecycle technical PASS; guest runtime still unaccepted (30/10/2026)
+
+**Repository:** [danhgold7979-cyber/fonesi-apk](https://github.com/danhgold7979-cyber/fonesi-apk). Current development branch `phase/e82-public-component-factory-feasibility-20261030`, [Draft PR #56](https://github.com/danhgold7979-cyber/fonesi-apk/pull/56) stacked on E81 Draft PR #55. `main@c055df600f87ee9ddf0cd5d6bfc67d80d145e79d` unchanged.
+
+**Latest verified technical milestone E82 PASS** on exact source/test SHA `a223af7e539bff78891786fc6e02d4ea83ccdb0a`: [Full CI #41057227010](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/41057227010) **SUCCESS**, 21/21 substantive steps; [authorization #41057226997](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/41057226997) **SUCCESS**. Owned AOSP API 34 receipt proves framework-created host-stub Activity `onCreate/onResume`, non-null host Context/Window and one-shot AppComponentFactory authorization. [E82 results](phases/E82_PUBLIC_COMPONENT_FACTORY_FEASIBILITY_RESULTS.md) | [TEST-ONLY artifact #12977034713](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/41057227010/artifacts/12977034713).
+
+**Boundary:** the Activity remains registered as a non-exported host stub under host package/UID/process. Receipt explicitly says guest PackageManager registration=false, guest UID isolation=false, third-party execution=false, social accounts=false, production clone=false and physical device=false. Candidate `supportsSplits=false`; pinned SpaceCore remains single-APK. **Weighted product readiness 28.00%; accepted real third-party clones 0.**
+
+**Next:** E83 plan was committed before code at `1839e28dae01f70e7c0d35f1e537da6d8c6303df`. Typed split-provider contract and fail-closed SpaceCore boundary are being implemented on the same branch. Current source HEAD before documentation update: `a644da0b8e5ca2e163194e32f580c91cc9a54d26`; E83 static audit passed in the current full workflow, remaining cloud/candidate tests/build/lint and inherited gates are pending. Do not mark E83 PASS until exact-source workflow succeeds.
+
+---
+
 # Fonesi APK — E81 exact-source synthetic PRIVATE Activity scoped-method technical PASS; guest lifecycle unaccepted (30/10/2026)
 
 **Repository:** [danhgold7979-cyber/fonesi-apk](https://github.com/danhgold7979-cyber/fonesi-apk). Development branch `phase/e81-private-activity-scoped-method-proof-20261030`, [Draft PR #55](https://github.com/danhgold7979-cyber/fonesi-apk/pull/55) stacked on E80 Draft PR #54. `main@c055df600f87ee9ddf0cd5d6bfc67d80d145e79d` unchanged.
