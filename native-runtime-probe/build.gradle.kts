@@ -13,6 +13,7 @@ android {
     compileOptions { sourceCompatibility = JavaVersion.VERSION_21; targetCompatibility = JavaVersion.VERSION_21 }
 }
 dependencies {
+    testImplementation("junit:junit:4.13.2")
     implementation(project(":engine-source"))
     implementation(project(":apk-runtime"))
     implementation(project(":core"))
