@@ -76,6 +76,17 @@ public final class SyntheticGuestUiProbeActivity extends Activity {
     private volatile String sourceCommit;
     private volatile String probeApkSha256;
     private volatile String payloadApkSha256;
+    private volatile String e79Stage;
+    private volatile String e79ProcessToken;
+    private volatile String e79MarkerA;
+    private volatile String e79MarkerB;
+    private volatile String e79PriorProcessToken;
+    private volatile String e79PriorRunId;
+    private volatile int e79PriorPid = -1;
+    private volatile int e79StartCountA;
+    private volatile int e79StartCountB;
+    private volatile boolean e79ProcessRestartVerified;
+    private volatile boolean e79ScopedDataAfterRestartVerified;
     private volatile boolean syntheticComponentDispatchVerified;
     private volatile boolean dispatchOnly;
     private boolean dispatchReceiver;
@@ -109,16 +120,37 @@ public final class SyntheticGuestUiProbeActivity extends Activity {
             if (requestedProof != null) proofLevel = requestedProof;
             if (!"e24".equals(proofLevel) && !"e25".equals(proofLevel) &&
                 !"e29".equals(proofLevel) && !"e74".equals(proofLevel) &&
-                !"e77".equals(proofLevel) && !"e78".equals(proofLevel))
+                !"e77".equals(proofLevel) && !"e78".equals(proofLevel) && !"e79".equals(proofLevel))
                 throw new IllegalArgumentException("Unsupported synthetic host screen proof");
-            if ("e78".equals(proofLevel)) {
+            if ("e78".equals(proofLevel) || "e79".equals(proofLevel)) {
                 sourceCommit = getIntent().getStringExtra("source_commit");
                 probeApkSha256 = getIntent().getStringExtra("probe_apk_sha256");
                 payloadApkSha256 = getIntent().getStringExtra("payload_apk_sha256");
                 if (sourceCommit == null || !sourceCommit.matches("[0-9a-f]{40}") ||
                     probeApkSha256 == null || !probeApkSha256.matches("[0-9a-f]{64}") ||
                     payloadApkSha256 == null || !payloadApkSha256.matches("[0-9a-f]{64}"))
-                    throw new IllegalArgumentException("E78 source/APK SHA-256 binding is missing or malformed");
+                    throw new IllegalArgumentException("E78/E79 source/APK SHA-256 binding is missing or malformed");
+            }
+            if ("e79".equals(proofLevel)) {
+                e79Stage = getIntent().getStringExtra("e79_stage");
+                if (!"write".equals(e79Stage) && !"verify".equals(e79Stage))
+                    throw new IllegalArgumentException("E79 requires an explicit write/verify stage");
+                if ("verify".equals(e79Stage)) {
+                    syntheticScopeAId = getIntent().getStringExtra("e79_scope_a");
+                    syntheticScopeBId = getIntent().getStringExtra("e79_scope_b");
+                    e79MarkerA = getIntent().getStringExtra("e79_marker_a");
+                    e79MarkerB = getIntent().getStringExtra("e79_marker_b");
+                    e79PriorPid = getIntent().getIntExtra("e79_prior_pid", -1);
+                    e79PriorProcessToken = getIntent().getStringExtra("e79_prior_process_token");
+                    e79PriorRunId = getIntent().getStringExtra("e79_prior_run_id");
+                    ProbeData.check(canonicalUuid(syntheticScopeAId) && canonicalUuid(syntheticScopeBId) &&
+                        !syntheticScopeAId.equals(syntheticScopeBId) &&
+                        e79MarkerA != null && e79MarkerA.matches("[0-9a-f]{32}") &&
+                        e79MarkerB != null && e79MarkerB.matches("[0-9a-f]{32}") &&
+                        !e79MarkerA.equals(e79MarkerB) && e79PriorPid > 0 &&
+                        canonicalUuid(e79PriorProcessToken) && canonicalUuid(e79PriorRunId),
+                        "E79 verify-stage handoff fields are invalid");
+                }
             }
             dispatchTicketJson = getIntent().getStringExtra("dispatch_ticket");
             if (dispatchTicketJson != null) {
@@ -263,10 +295,11 @@ public final class SyntheticGuestUiProbeActivity extends Activity {
                 .load(localCluster.getId());
             ProbeData.check(GUEST_PACKAGE.equals(image.getPackageName()),
                 "Signed private payload package mismatch");
-            if ("e74".equals(proofLevel) || "e77".equals(proofLevel) || "e78".equals(proofLevel)) {
-                stage = "e78".equals(proofLevel) ? "e78_signed_private_activity_and_application_preflight" :
-                    ("e77".equals(proofLevel) ? "e77_signed_private_activity_constructor_preflight" :
-                        "e74_signed_private_activity_class_preflight");
+            if ("e74".equals(proofLevel) || "e77".equals(proofLevel) || "e78".equals(proofLevel) || "e79".equals(proofLevel)) {
+                stage = "e79".equals(proofLevel) ? "e79_signed_private_activity_and_application_preflight" :
+                    ("e78".equals(proofLevel) ? "e78_signed_private_activity_and_application_preflight" :
+                        ("e77".equals(proofLevel) ? "e77_signed_private_activity_constructor_preflight" :
+                            "e74_signed_private_activity_class_preflight"));
                 preparationStage = stage;
                 PrivateGuestActivityClassHandle activityProof = image.preflightExplicitActivityClass(
                     SIGNED_ACTIVITY, ExplicitActivityCaller.TRUSTED_INTERNAL);
@@ -285,7 +318,7 @@ public final class SyntheticGuestUiProbeActivity extends Activity {
                 ProbeData.check(localStore.open(localCluster.getId(), Build.VERSION.SDK_INT)
                     .equals(localCluster), "Private signed APK changed during Activity class preflight");
                 privateActivityClassVerified = true;
-                if ("e77".equals(proofLevel) || "e78".equals(proofLevel))
+                if ("e77".equals(proofLevel) || "e78".equals(proofLevel) || "e79".equals(proofLevel))
                     privateActivityConstructorPreflightVerified = true;
             }
             int marker = image.getResources().getIdentifier(
@@ -307,6 +340,12 @@ public final class SyntheticGuestUiProbeActivity extends Activity {
                 verifyE78SyntheticApplication(image, localStore, localCluster);
                 ProbeData.check(localStore.open(localCluster.getId(), Build.VERSION.SDK_INT)
                     .equals(localCluster), "Signed private APK changed after E78 Application/scope proof");
+            } else if ("e79".equals(proofLevel)) {
+                stage = "e79_signed_private_application_process_restart_data_proof";
+                preparationStage = stage;
+                verifyE79SyntheticApplication(image, localStore, localCluster);
+                ProbeData.check(localStore.open(localCluster.getId(), Build.VERSION.SDK_INT)
+                    .equals(localCluster), "Signed private APK changed after E79 process restart proof");
             }
             preparationStage = "private_dex_ready_ui_callback_queued";
             PrivateApkCluster verifiedCluster = localCluster;
@@ -458,6 +497,12 @@ public final class SyntheticGuestUiProbeActivity extends Activity {
         syntheticScopeCrossReadbackVerified = true;
         ProbeData.check(verifiedStore.open(verifiedCluster.getId(), Build.VERSION.SDK_INT).equals(verifiedCluster),
             "Signed private APK changed during E78 scoped data verification");
+    }
+
+    private static boolean canonicalUuid(String value) {
+        if (value == null) return false;
+        try { return UUID.fromString(value).toString().equals(value); }
+        catch (IllegalArgumentException ignored) { return false; }
     }
 
     private static String randomHex() {
