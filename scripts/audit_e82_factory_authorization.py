@@ -12,6 +12,10 @@ def read(path):
 auth = read("native-runtime-probe/src/main/java/vn/fonesi/nativeprobe/E82FactoryAuthorization.java")
 tests = read("native-runtime-probe/src/test/java/vn/fonesi/nativeprobe/E82FactoryAuthorizationTest.java")
 gradle = read("native-runtime-probe/build.gradle.kts")
+manifest = read("native-runtime-probe/src/main/AndroidManifest.xml")
+manifest_audit = read("scripts/run_native_probe.py")
+factory = read("native-runtime-probe/src/main/java/vn/fonesi/nativeprobe/E82AppComponentFactory.java")
+stub = read("native-runtime-probe/src/main/java/vn/fonesi/nativeprobe/E82HostActivityStub.java")
 
 for marker in (
     "public static synchronized void arm(Ticket ticket)",
@@ -43,5 +47,23 @@ for marker in (
 ):
     assert marker in tests, "E82 authorization regression missing: " + marker
 assert 'testImplementation("junit:junit:4.13.2")' in gradle, "JUnit dependency missing"
+assert 'android:appComponentFactory=".E82AppComponentFactory"' in manifest
+assert 'android:name=".E82HostActivityStub" android:exported="false"' in manifest
+assert 'android:process=":fonesi_guest_ui"' in manifest
+for marker in (
+    "extends AppComponentFactory",
+    "return super.instantiateActivity(classLoader, className, intent)",
+    "E82FactoryAuthorization.consume(dispatch)",
+    "Activity.class.isAssignableFrom(candidate)",
+    "candidate.getClassLoader() != ticket.getPrivateClassLoader()",
+    "Application.getProcessName()",
+    "Process.myUid()",
+    "getConstructor().newInstance()",
+):
+    assert marker in factory, "E82 factory invariant missing: " + marker
+assert "throw new SecurityException" in stub and "super.onCreate(savedInstanceState)" in stub
+assert 'PACKAGE + ".E82HostActivityStub"' in manifest_audit
+assert 'stub.get(A + "exported") == "false"' in manifest_audit
+assert "E82AppComponentFactory" in manifest_audit
 print("PASS E82 subgate audit: one-shot process-local authorization is identity-bound and fail-closed.")
 print("NOT VERIFIED: Android AppComponentFactory dispatch/Activity attachment; this audit is not E82 acceptance.")

@@ -57,14 +57,22 @@ def main():
     activities = {component(a.get(A + "name")): a for a in app.findall("activity")}
     assert set(activities) == {
         PACKAGE + ".MainActivity", PACKAGE + ".GuestCodeProbeActivity",
-        PACKAGE + ".SyntheticChannelProbeActivity", PACKAGE + ".SplitCodeProbeActivity", PACKAGE + ".SyntheticGuestUiProbeActivity",
-    }, "Unexpected exported synthetic probe Activity"
-    assert all(a.get(A + "exported") == "true" for a in activities.values())
+        PACKAGE + ".SyntheticChannelProbeActivity", PACKAGE + ".SplitCodeProbeActivity", PACKAGE + ".SyntheticGuestUiProbeActivity", PACKAGE + ".E82HostActivityStub",
+    }, "Unexpected synthetic probe Activity"
+    assert all(activities[name].get(A + "exported") == "true" for name in (
+        PACKAGE + ".MainActivity", PACKAGE + ".GuestCodeProbeActivity",
+        PACKAGE + ".SyntheticChannelProbeActivity", PACKAGE + ".SplitCodeProbeActivity",
+        PACKAGE + ".SyntheticGuestUiProbeActivity"))
+    stub = activities[PACKAGE + ".E82HostActivityStub"]
+    assert stub.get(A + "exported") == "false", "E82 host stub must not be exported"
+    assert stub.get(A + "process") == ":fonesi_guest_ui", "E82 stub must share the authorized probe process"
+    assert not stub.findall("intent-filter"), "E82 stub must not have an implicit entry point"
+    assert app.get(A + "appComponentFactory") == ".E82AppComponentFactory", "E82 factory manifest registration missing"
     assert activities[PACKAGE + ".SyntheticGuestUiProbeActivity"].get(A + "process") == ":fonesi_guest_ui", (
         "E24 UI synthetic activity must run in the dedicated guest-named process"
     )
     assert all(a.get(A + "process") is None for name, a in activities.items()
-               if name != PACKAGE + ".SyntheticGuestUiProbeActivity"), (
+               if name not in (PACKAGE + ".SyntheticGuestUiProbeActivity", PACKAGE + ".E82HostActivityStub")), (
         "No older exported synthetic Activity may acquire a guest process unexpectedly"
     )
     services = {component(s.get(A + "name")): s for s in app.findall("service")}
