@@ -26,3 +26,21 @@ This emulator exercises the project-controlled synthetic host Activity and a sig
 ## Runtime adjustment after first CI attempt (30/10/2026)
 
 The first E77 workflow attempt `#40931231012` passed audit, cloud/candidate and source-engine checks and installed the AOSP image, but the emulator runner stopped before boot because the GitHub-hosted runner has no accessible `/dev/kvm`. This is a **runner capability blocker**, not a guest-preflight assertion failure. E77 now allows a narrowly scoped `--allow-software-emulation` only when `proof-level=e77`, uses QEMU `-accel off`, and increases the bounded boot timeout to 600 seconds. All older proof levels still fail closed without KVM; no audit-only fallback is allowed. E77 is not PASS unless the new exact-SHA workflow actually boots Android and validates the full receipt. If software emulation cannot boot within the limit, report the limitation and leave Android runtime unverified rather than claim success.
+
+
+## Follow-up remediation — bounded Android UI fingerprint collection (pre-code, 30/10/2026)
+
+The exact E77 source `6593c0b24103f049ab851bcef3378dd35b74bb27` reached a booted AOSP API 34 emulator and installed both signed synthetic APKs in [CI #40932749422](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40932749422), but failed before Activity dispatch at `Android UI configuration did not stabilize before E24/E25`. The uploaded receipt confirms `android_boot_verified=true`, `android_apks_installed=true`, software emulation, and no constructor/guest receipt. E76 exact-source CI [#40929596439](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40929596439) is SUCCESS.
+
+The observed failure is specifically the inherited pre-lifecycle stability gate. Its current implementation starts seven independent ADB shell processes for each fingerprint and allows only 40 seconds to obtain four identical consecutive snapshots. The no-KVM software-emulation path can make that repeated process/transport overhead exceed the budget. The artifact did not preserve per-sample snapshots, so this is a bounded implementation diagnosis, not a claim that a particular Android setting was observed changing.
+
+### Ordered corrective work (plan before code)
+
+1. Replace the seven serial ADB invocations per sample with **one** bounded `adb shell sh -c` read that collects the same seven values: `wm size`, `wm density`, system `font_scale`, system `user_rotation`, and the three existing locale properties. Preserve the complete normalized output as the fingerprint; do not drop fields or compare a weaker subset.
+2. Keep the existing requirement of four identical consecutive fingerprints (three equal transitions). Increase only the bounded stability window from 40 to 120 seconds and bound the single ADB read to 20 seconds. Do not turn a timeout or command failure into success.
+3. Persist sample count, consecutive-stable count and the last normalized fingerprint in the sanitized evidence on each sample and on timeout, so the next failure identifies whether the values changed or collection was too slow.
+4. Extract the fingerprint reader into a small deterministic helper. Add Python unit tests using a fake ADB callback for one-call collection, all seven fields, bounded arguments, empty output rejection and non-zero command rejection. Add the test path to the E77 workflow and run it before the emulator stage; extend the E77 static audit to enforce the bounded window and unchanged stability threshold.
+5. Re-run the full E77 exact-source workflow: E40–E77 audits, cloud/candidate checks, E76 non-initialization regressions, source-engine AAR/JVM checks, signed APK build/lint, then actual AOSP API 34 boot, installation, host Activity dispatch and strict E77 receipt. Emulator failure remains a failure; no audit-only fallback.
+6. Update E77 results, STATUS and PRODUCT_PROGRESS only from the resulting exact-source CI. Product readiness remains 28.00% unless product acceptance evidence changes; no guest Activity, UID/account, split-provider or physical-device claims are introduced. Keep PR #51 Draft and `main` unchanged.
+
+This is an E77 corrective implementation, not a new product Phase or a new E-number. E78 must not start until E77's exact-source acceptance gate is resolved.
