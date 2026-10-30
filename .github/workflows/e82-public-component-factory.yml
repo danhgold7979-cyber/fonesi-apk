@@ -10,6 +10,7 @@ on:
   workflow_dispatch:
 
 permissions:
+  actions: read
   contents: read
 
 concurrency:
@@ -37,9 +38,47 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: '3.12'
+      - name: Download and verify pinned E78 parent artifact
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          API_ROOT="https://api.github.com/repos/${GITHUB_REPOSITORY}"
+          ARTIFACT_ID="12952618461"
+          curl --fail --silent --show-error \
+            -H "Authorization: Bearer ${GH_TOKEN}" \
+            -H "Accept: application/vnd.github+json" \
+            "${API_ROOT}/actions/artifacts/${ARTIFACT_ID}" \
+            --output /tmp/fonesi-e78-artifact-metadata.json
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          metadata = json.loads(Path("/tmp/fonesi-e78-artifact-metadata.json").read_text())
+          assert metadata.get("id") == 12952618461
+          assert metadata.get("name") == "fonesi-E78-synthetic-application-scoped-data-TEST-ONLY"
+          assert metadata.get("expired") is False
+          assert metadata.get("digest") == "sha256:ae7537e632889e41f12f8013912867665e6cecba4540c195ebeb953e33729706"
+          run = metadata.get("workflow_run") or {}
+          assert run.get("id") == 40998462184
+          assert run.get("head_branch") == "phase/e78-synthetic-application-lifecycle-20261030"
+          assert run.get("head_sha") == "57d60cb80d6cece692b2898afd15d8668fd14883"
+          print("PASS: pinned E78 artifact metadata, workflow run and exact source SHA verified")
+          PY
+          curl --fail --location --silent --show-error --retry 3 \
+            -H "Authorization: Bearer ${GH_TOKEN}" \
+            -H "Accept: application/vnd.github+json" \
+            "${API_ROOT}/actions/artifacts/${ARTIFACT_ID}/zip" \
+            --output /tmp/fonesi-e78-parent.zip
+          echo "ae7537e632889e41f12f8013912867665e6cecba4540c195ebeb953e33729706  /tmp/fonesi-e78-parent.zip" | sha256sum --check
+          mkdir -p app/build/reports/e78-parent
+          unzip -p /tmp/fonesi-e78-parent.zip app/build/reports/e78-emulator/e11-evidence.json \
+            > app/build/reports/e78-parent/e11-evidence.json
+          unzip -p /tmp/fonesi-e78-parent.zip app/build/reports/e78-emulator/synthetic-ui-receipt.json \
+            > app/build/reports/e78-parent/synthetic-ui-receipt.json
+          python3 scripts/verify_e78_parent_artifact.py --directory app/build/reports/e78-parent
       - name: Audit E40-E82 inherited runtime, component factory and guest non-execution safety
         run: |
-          python3 -m py_compile scripts/audit_e40_clone_cluster_ownership.py scripts/audit_e41_update_task_cluster_ownership.py scripts/audit_e42_atomic_owner_transitions.py scripts/audit_e43_atomic_retained_enqueue.py scripts/audit_e44_atomic_batch_retained_enqueue.py scripts/audit_e44_retained_source_quarantine.py scripts/audit_e45_retained_batch_source_quarantine.py scripts/audit_e46_foreground_source_authority.py scripts/audit_e47_original_source_confirmation.py scripts/audit_e48_retained_recovery_quarantine.py scripts/audit_e49_source_authority_gates_integration.py scripts/audit_e50_preview_private_source_authority.py scripts/audit_e51_retained_enqueue_original_conflict.py scripts/audit_e52_engine_scoped_queue_recovery.py scripts/audit_e53_background_private_source_recovery.py scripts/audit_e54_unblocked_queue_selection.py scripts/audit_e55_engine_scoped_queue_controls.py scripts/audit_e56_stop_identity_revalidation.py scripts/audit_e57_clone_presentation_lock.py scripts/audit_e58_clone_cluster_association_lock.py scripts/audit_e59_delete_locktime_identity.py scripts/audit_e60_positive_guest_stop_readback.py scripts/audit_e61_guest_stop_identity_continuity.py scripts/audit_e62_ready_guest_launch_gate.py scripts/audit_e63_ready_shared_mutations.py scripts/audit_e64_unknown_guest_launch_retry.py scripts/audit_e65_native_guest_delete_identity.py scripts/audit_e66_shared_update_dispatch_revalidation.py scripts/audit_e67_create_preinstall_peer_guard.py scripts/audit_e68_private_signed_component_catalog.py scripts/audit_e69_source_loader_signed_component_readback.py scripts/audit_e70_signed_explicit_activity_selection.py scripts/audit_e71_signed_activity_process_safety.py scripts/audit_e72_signed_app_process_inheritance.py scripts/audit_e73_private_activity_bytecode_preflight.py scripts/audit_e74_private_activity_class_probe.py scripts/audit_e75_activity_constructor_preflight.py scripts/audit_e76_activity_preflight_no_class_init.py scripts/audit_e77_emulator_activity_preflight.py scripts/audit_e78_synthetic_application_lifecycle.py scripts/audit_e79_synthetic_process_restart.py scripts/audit_e80_private_activity_construction.py scripts/audit_e81_private_activity_scoped_method.py scripts/audit_e82_factory_authorization.py scripts/run_guest_code_emulator.py scripts/test_run_guest_code_emulator.py scripts/prepare_native_emulator.py scripts/run_native_probe.py scripts/verify_main_build.py scripts/verify_candidate_build.py
+          python3 -m py_compile scripts/verify_e78_parent_artifact.py scripts/audit_e40_clone_cluster_ownership.py scripts/audit_e41_update_task_cluster_ownership.py scripts/audit_e42_atomic_owner_transitions.py scripts/audit_e43_atomic_retained_enqueue.py scripts/audit_e44_atomic_batch_retained_enqueue.py scripts/audit_e44_retained_source_quarantine.py scripts/audit_e45_retained_batch_source_quarantine.py scripts/audit_e46_foreground_source_authority.py scripts/audit_e47_original_source_confirmation.py scripts/audit_e48_retained_recovery_quarantine.py scripts/audit_e49_source_authority_gates_integration.py scripts/audit_e50_preview_private_source_authority.py scripts/audit_e51_retained_enqueue_original_conflict.py scripts/audit_e52_engine_scoped_queue_recovery.py scripts/audit_e53_background_private_source_recovery.py scripts/audit_e54_unblocked_queue_selection.py scripts/audit_e55_engine_scoped_queue_controls.py scripts/audit_e56_stop_identity_revalidation.py scripts/audit_e57_clone_presentation_lock.py scripts/audit_e58_clone_cluster_association_lock.py scripts/audit_e59_delete_locktime_identity.py scripts/audit_e60_positive_guest_stop_readback.py scripts/audit_e61_guest_stop_identity_continuity.py scripts/audit_e62_ready_guest_launch_gate.py scripts/audit_e63_ready_shared_mutations.py scripts/audit_e64_unknown_guest_launch_retry.py scripts/audit_e65_native_guest_delete_identity.py scripts/audit_e66_shared_update_dispatch_revalidation.py scripts/audit_e67_create_preinstall_peer_guard.py scripts/audit_e68_private_signed_component_catalog.py scripts/audit_e69_source_loader_signed_component_readback.py scripts/audit_e70_signed_explicit_activity_selection.py scripts/audit_e71_signed_activity_process_safety.py scripts/audit_e72_signed_app_process_inheritance.py scripts/audit_e73_private_activity_bytecode_preflight.py scripts/audit_e74_private_activity_class_probe.py scripts/audit_e75_activity_constructor_preflight.py scripts/audit_e76_activity_preflight_no_class_init.py scripts/audit_e77_emulator_activity_preflight.py scripts/audit_e78_synthetic_application_lifecycle.py scripts/audit_e79_synthetic_process_restart.py scripts/audit_e80_private_activity_construction.py scripts/audit_e81_private_activity_scoped_method.py scripts/audit_e82_factory_authorization.py scripts/run_guest_code_emulator.py scripts/test_run_guest_code_emulator.py scripts/prepare_native_emulator.py scripts/run_native_probe.py scripts/verify_main_build.py scripts/verify_candidate_build.py
           python3 scripts/audit_e40_clone_cluster_ownership.py
           python3 scripts/audit_e41_update_task_cluster_ownership.py
           python3 scripts/audit_e42_atomic_owner_transitions.py
@@ -283,16 +322,8 @@ jobs:
             probe-payload/build/reports/lint-results-debug.xml
             app/build/reports/e82-emulator/e11-evidence.json
             app/build/reports/e82-emulator/e82-factory-host-stub-receipt.json
-          if-no-files-found: warn
-          retention-days: 7
-      - name: Upload E78 parent receipt and sanitized test receipts
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: fonesi-E78-parent-synthetic-application-TEST-ONLY
-          path: |
-            app/build/reports/e78-emulator/e11-evidence.json
-            app/build/reports/e78-emulator/synthetic-ui-receipt.json
+            app/build/reports/e78-parent/e11-evidence.json
+            app/build/reports/e78-parent/synthetic-ui-receipt.json
           if-no-files-found: warn
           retention-days: 7
 
