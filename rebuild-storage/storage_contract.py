@@ -220,7 +220,12 @@ def populate_quarantined_catalog(source_fixture: Path, target_fixture: sqlite3.C
                 target_fixture.execute("INSERT INTO main.preserved_rows VALUES(?,?,?)", (table, ordinal, _row_json(row)))
                 fault("after_preserved_row")
         for row in snapshot.tables["clone_metadata"]:
-            for field in ("engineKey", "cloneId", "packageName", "label"):
+            # Opaque composite keys are schema-valid TEXT, including empty strings.
+            # Display projection policy remains separate from historical identity validity.
+            for field in ("engineKey", "cloneId"):
+                if not isinstance(row[field], str):
+                    raise Rejected("Legacy metadata identity cannot be projected")
+            for field in ("packageName", "label"):
                 if not isinstance(row[field], str) or not row[field]:
                     raise Rejected("Legacy metadata identity cannot be projected")
             target_fixture.execute("INSERT INTO main.manager_catalog VALUES(?,?,?,?,?,?,?,?,?,'UNVERIFIED',0)", (
