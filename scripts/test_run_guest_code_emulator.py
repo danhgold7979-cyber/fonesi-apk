@@ -257,6 +257,7 @@ class E79ProcessRestartReceiptTests(unittest.TestCase):
             "synthetic_scope_a_id": "11111111-1111-4111-8111-111111111111",
             "synthetic_scope_b_id": "22222222-2222-4222-8222-222222222222",
             "lifecycle_transcript": "CREATE,START,RESUME,PAUSE,STOP,DESTROY",
+            "e79_private_cluster_id": "55555555-5555-4555-8555-555555555555",
             "e79_process_token": "33333333-3333-4333-8333-333333333333" if write else "44444444-4444-4444-8444-444444444444",
             "e79_marker_a": "a" * 32, "e79_marker_b": "b" * 32,
             "e79_start_count_a": 1 if write else 2,
@@ -292,6 +293,12 @@ class E79ProcessRestartReceiptTests(unittest.TestCase):
     def test_changed_scope_or_marker_after_restart_fails_closed(self):
         write, verify = self.stage("write"), self.stage("verify")
         verify["e79_marker_b"] = "c" * 32
+        with self.assertRaisesRegex(RuntimeError, "changed persisted scope identity/marker"):
+            validate_e79_receipts(write, verify, "a" * 40, "b" * 64, "c" * 64)
+
+    def test_different_private_cluster_after_restart_fails_closed(self):
+        write, verify = self.stage("write"), self.stage("verify")
+        verify["e79_private_cluster_id"] = "66666666-6666-4666-8666-666666666666"
         with self.assertRaisesRegex(RuntimeError, "changed persisted scope identity/marker"):
             validate_e79_receipts(write, verify, "a" * 40, "b" * 64, "c" * 64)
 
