@@ -1,12 +1,15 @@
-# Fonesi APK — E75 technical PASS; Android guest lifecycle remains unaccepted (30/10/2026)
+# Fonesi APK — E77 technical PASS; guest Activity/account lifecycle remains unaccepted (30/10/2026)
 
-**Repository:** [danhgold7979-cyber/fonesi-apk](https://github.com/danhgold7979-cyber/fonesi-apk); branch `phase/e75-activity-constructor-preflight-20261030`, [Draft PR #49](https://github.com/danhgold7979-cyber/fonesi-apk/pull/49) stacked on E74 [Draft PR #48](https://github.com/danhgold7979-cyber/fonesi-apk/pull/48). `main@c055df600f87ee9ddf0cd5d6bfc67d80d145e79d` unchanged.
+**Repository:** [danhgold7979-cyber/fonesi-apk](https://github.com/danhgold7979-cyber/fonesi-apk); branch `phase/e77-emulator-activity-preflight-proof-20261030`, [Draft PR #51](https://github.com/danhgold7979-cyber/fonesi-apk/pull/51) stacked on E76. `main@c055df600f87ee9ddf0cd5d6bfc67d80d145e79d` unchanged.
 
-Original Product **Phase 1 steps 7–8**, preparing Phase 3 step 15. **E75 technical PASS** at exact code/test SHA `f6da373ae11806cce727fab0f07433d521a2c594`: [CI #40927202073](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40927202073) **SUCCESS**, **510 tests per cloud/candidate gate**, E40–E75 audits, build/lint/APK signatures/permissions and opt-in source-engine AAR/JVM class preflight. [Test-only artifact #12920584024](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40927202073/artifacts/12920584024). Constructor shape is checked without executing it; private classloader identity and Activity type checks remain.
+Original Product **Phase 1 steps 7–8**, preparing Phase 3 step 15. **E77 technical PASS** at exact source/test SHA `6cfa12e83e66f191720b7dfb7601dcaf883f4fdc`: [CI #40991321742](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40991321742) **SUCCESS**, all 19 workflow steps. Cloud and candidate each verified **510 tests**, source-engine AAR/JVM and E40–E77 static audits passed, signed host/payload APKs built and linted.
 
-[E75 plan](phases/E75_ACTIVITY_CONSTRUCTOR_PREFLIGHT_PLAN.md) | [results](phases/E75_ACTIVITY_CONSTRUCTOR_PREFLIGHT_RESULTS.md). E74 only builds the synthetic host probe; no Android guest Activity was instantiated/attached/launched in CI. Reporting-only HEAD requires independent CI.
+The owned AOSP API 34 x86_64 emulator booted under **software emulation** (GitHub runner has no KVM), installed both signed synthetic APKs, and emitted an exact-source/APK-hash-bound E77 receipt with a fresh run UUID. Four UI fingerprints produced three consecutive equal transitions. The controlled host Activity verified the signed PRIVATE Activity class and public no-argument constructor; synthetic private View/resource lifecycle completed.
 
-**Weighted product readiness 28.00%, accepted real third-party clone apps 0.** Full split APK provider, ActivityThread/Instrumentation lifecycle, guest Context/PackageManager/Binder permissions, independent UID/account and Samsung/other-device session acceptance remain unmet. Keep Draft, no main merge.
+[E77 pre-code plan](phases/E77_EMULATOR_ACTIVITY_PREFLIGHT_PROOF_PLAN.md) | [E77 results](phases/E77_EMULATOR_ACTIVITY_PREFLIGHT_PROOF_RESULTS.md). The receipt explicitly records `actual_guest_activity_attached=false`, `real_guest_activity_registered=false`, `third_party_component_executed=false`, `kernel_uid_isolation=false`, `social_accounts_tested=false`, and `production_clone_accepted=false`. This is **not** guest ActivityThread/Instrumentation attach, guest Context/PackageManager/Binder/permission mediation, independent Android UID/accounts, split APK provider/import or physical Samsung acceptance.
+
+**Weighted product readiness 28.00%, accepted real third-party clone apps 0.** Keep PR #51 Draft and `main` unchanged. Product Phase 1 and Phase 3 acceptance gates remain open; E78 must be planned against the original roadmap, not treated as a new product Phase.
+
 
 ---
 
