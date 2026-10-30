@@ -92,6 +92,11 @@ def read_ui_configuration(device, timeout_seconds=UI_CONFIGURATION_READ_TIMEOUT_
     return snapshot
 
 
+def software_emulation_proof_allowed(proof_level):
+    """Only E77 metadata preflight and E78 synthetic Application/data proof may use software AVD."""
+    return proof_level in ("e77", "e78")
+
+
 def validate_e78_receipt(report, source_commit, probe_apk_sha256, payload_apk_sha256):
     """Strict exact-source receipt validation for synthetic Application attach and A/B data only."""
     if not isinstance(report, dict):
@@ -203,7 +208,7 @@ def main():
     args = parser.parse_args()
     if args.boot_timeout not in range(30, 601) or args.probe_timeout not in range(15, 301):
         parser.error("Timeout out of bounded range")
-    if args.allow_software_emulation and args.proof_level not in ("e77", "e78"):
+    if args.allow_software_emulation and not software_emulation_proof_allowed(args.proof_level):
         parser.error("Software-emulation fallback is restricted to bounded E77/E78 synthetic proofs")
     for digest in (args.expected_probe_sha256, args.expected_payload_sha256):
         if re.fullmatch(r"[0-9a-f]{64}", digest) is None:
@@ -360,7 +365,7 @@ def main():
         if not adb.is_file() or not emulator_binary.is_file() or not image_path.is_file():
             raise RuntimeError("Pinned emulator, AOSP image or adb is missing")
         has_kvm = Path("/dev/kvm").exists() and os.access("/dev/kvm", os.R_OK | os.W_OK)
-        if not has_kvm and not (args.proof_level in ("e77", "e78") and args.allow_software_emulation):
+        if not has_kvm and not (software_emulation_proof_allowed(args.proof_level) and args.allow_software_emulation):
             evidence["result"] = "BLOCKED"
             raise RuntimeError("GitHub runner has no accessible KVM; Android boot not attempted")
         # Keep older proof levels fail-closed without KVM. E77 verifies signed Activity
