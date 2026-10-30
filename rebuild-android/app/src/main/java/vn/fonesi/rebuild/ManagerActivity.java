@@ -14,6 +14,7 @@ public final class ManagerActivity extends Activity {
         // No storage/provider adapter is connected. Never seed synthetic clone rows.
         ManagerModel.Snapshot snapshot = new ManagerModel().snapshot();
         TextView summary = findViewById(R.id.metadata_summary);
-        summary.setText(getString(R.string.metadata_unconnected, snapshot.totalCount));
+        summary.setText(getResources().getQuantityString(
+                R.plurals.metadata_unconnected, snapshot.totalCount, snapshot.totalCount));
     }
 }

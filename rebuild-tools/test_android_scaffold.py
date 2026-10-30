@@ -67,6 +67,17 @@ class ScaffoldTests(unittest.TestCase):
         self.assertIn("android.builder.sdkDownload=false", props)
         self.assertIn("org.gradle.java.installations.auto-download=false", props)
 
+    def test_metadata_count_uses_quantity_resource(self):
+        values = ET.parse(MAIN / "res/values/strings.xml").getroot()
+        plural = values.find("plurals[@name='metadata_unconnected']")
+        self.assertEqual({item.get("quantity") for item in plural}, {"one", "other"})
+        self.assertTrue(all("%1$d" in item.text for item in plural))
+        self.assertIn("loaded entry.", plural.find("item[@quantity='one']").text)
+        self.assertIn("loaded entries.", plural.find("item[@quantity='other']").text)
+        source = (MAIN / "java/vn/fonesi/rebuild/ManagerActivity.java").read_text()
+        self.assertIn("getQuantityString", source)
+        self.assertIn("R.plurals.metadata_unconnected, snapshot.totalCount, snapshot.totalCount", source)
+
     def test_all_resource_xml_parses_and_status_is_honest(self):
         for file in (MAIN / "res").rglob("*.xml"):
             ET.parse(file)

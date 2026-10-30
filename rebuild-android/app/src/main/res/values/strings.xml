@@ -6,5 +6,8 @@
     <string name="launch_clone">Launch clone — unavailable</string>
     <string name="migrate_data">Migrate existing data — unavailable</string>
     <string name="metadata_pending">Metadata source unavailable.</string>
-    <string name="metadata_unconnected">Metadata source unavailable — %1$d loaded entries. This is not a scan of existing clones.</string>
+    <plurals name="metadata_unconnected">
+        <item quantity="one">Metadata source unavailable — %1$d loaded entry. This is not a scan of existing clones.</item>
+        <item quantity="other">Metadata source unavailable — %1$d loaded entries. This is not a scan of existing clones.</item>
+    </plurals>
 </resources>
