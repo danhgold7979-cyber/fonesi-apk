@@ -118,3 +118,12 @@ Standalone Java21 kernel remains unimported: Set.of API30; Map/Set.copyOf API31;
 Added three focused source/config tripwire tests (not a general API analyzer).33 tooling tests +108 model/76 controller host checks pass locally; production source unchanged from Android-green run41114110538. Exact new test/docs checkpoint CI still pending root publication. API26 runtime/UI/device/isolation acceptance remains NOT RUN.
 
 Independent API review agrees no additional unsupported new-app call. Audit clarifies language/class-file handling separately from library availability, and bridge golden vectors must cover signed UUID ordering and supplementary Unicode/UTF-16-length/UTF-8 hash semantics. This is a planning constraint, not a newly implemented bridge.
+
+## B1a pinned oracle observations and blocking defect — 2026-10-30 19:36 UTC
+
+Four unchanged Java21 production source hashes pinned before observation. New test-only harness freezes99 deterministic observations and42 checks, including high-bit UUID sorting, supplementary Unicode, v2 journal bytes, state/revision rejection and public journal corruption cases. CI comparison never regenerates fixtures. Original208 kernel checks still pass. No Android import/provider/user-data integration.
+
+Blocking D1: accepted unpaired-surrogate provider IDs alias the scope directory because UTF-8 replacement makes distinct UTF-16 strings identical for hashing, while journal modified-UTF8 retains their difference. This demonstrates namespace alias/unintended lease sharing, not guest-data access. Root instructed no port/production acceptance until a reviewed identity contract. Embedded NUL and NBSP-only acceptance are separately flagged undecided observations. `REBUILD_BRIDGE_ORACLE_REVIEW.md` proposes well-formed scalar/Cc rejection/fixed whitespace incl.NBSP/exact Unicode preservation and explicit256 UTF-16/768 UTF-8 budgets, plus quarantine rather than rewriting old records. Unsafe observations are not desired-port requirements. Production oracle remains unchanged pending root review.
+
+
+B1a independent review corrections before freeze: include malformed-to-valid `p?` alias, not just two malformed IDs; isolate kernel compilation in a fresh temporary output so stale class files cannot execute; reject duplicate observation keys. All four production hashes remain unchanged. Root approved the precise desired identity contract for a later separate hardening step only after this checkpoint's hosted CI; v1 defect observations remain historical, never rewritten as desired vectors.
