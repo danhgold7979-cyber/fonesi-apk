@@ -70,3 +70,44 @@ Baseline source/reporting HEAD before remediation: `0075521db86e20a4498cb2615c9a
 7. Run the exact-source cloud/candidate workflow and inherited E40–E83 audits. E83 remains a contract-boundary milestone only; no production provider, guest split execution, UID/account isolation or product acceptance is claimed.
 
 Stop if a real provider or SDK API is needed: do not invent an overload or enable a capability without source-verified SDK support and complete import/readback evidence.
+
+
+## E83 follow-up 2 — identity completeness parity and parent-receipt packaging (30/10/2026)
+
+### Exact-source baseline before this follow-up
+
+- Branch `phase/e82-public-component-factory-feasibility-20261030`, source/reporting HEAD `13525e009984897f705b9f8dad18cfebf08a7709`, Draft PR #56 stacked on E81 Draft PR #55; `main@c055df600f87ee9ddf0cd5d6bfc67d80d145e79d` unchanged.
+- Full exact-source workflow [#41063943128](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/41063943128) **SUCCESS**, all 21 substantive steps. Authorization subgate [#41063943130](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/41063943130) **SUCCESS**.
+- Cloud and candidate each: 517 tests, 0 failures/errors/skips. Source-engine: 63 JVM tests, 0 failures/errors/skips. Signed synthetic payload: 14 JVM tests, 0 failures/errors/skips. Candidate/cloud build, lint and APK audits passed.
+- E82 AOSP API 34 receipt is bound to this exact SHA and both APK hashes. It confirms factory authorization, framework onCreate/onResume, non-null host Context/Window, non-exported host stub, host package/UID 10142; it explicitly records guest PackageManager registration=false, guest UID isolation=false, third-party execution=false, social accounts=false, production clone=false and physical device=false.
+- [E82 exact-source test-only artifact #12982089451](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/41063943128/artifacts/12982089451) contains the receipt and reports. The E78 parent artifact [#12952618461](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40998462184/artifacts/12952618461) remains available separately.
+
+This is a full exact-source technical pass for the current contract prototype and E82 host-stub regression. It is **not** the final E83 identity-contract acceptance: the source audit below found that the typed identity does not yet preserve every field committed by the APK auditor/private-store digest. Do not mark E83 final or change the product score until this follow-up passes.
+
+### Source-audit findings requiring correction before more code
+
+1. `ApkSetAuditor` uses split-name grammar `[A-Za-z_][A-Za-z0-9_]*(\\.[A-Za-z_][A-Za-z0-9_]*)*`; `GuestApkClusterIdentity` currently allows a numeric-leading segment after a dot. This permits an identity the APK auditor would reject.
+2. `ApkSetAuditor` accepts an empty `configForSplit` on a non-feature config split (it means no feature dependency), and validates `uses-split` dependencies on all split members. The current core model rejects empty config names and rejects dependencies on non-feature split members, so it is not behaviorally identical to the source auditor.
+3. `AuditedApk` carries `requiredTypes`, `providedTypes`, `splitRequired`, `isolatedSplits`, verified SHA-256 and file length. The current `GuestApkClusterMemberIdentity` omits those fields. `PrivateApkStore.computeClusterDigest` commits all of them, while the core identity currently treats `clusterDigest` as an opaque 64-character string. Equality/readback can therefore omit metadata that the existing audited/private cluster digest already protects.
+4. `EngineCapabilities` is less strict than `GuestBackendCapabilities`: it can accept `splitClusterCodeExecutionVerified=true` without accepted import, and `splitClusterAtomicUpdateVerified=true` without code-execution proof. Both models must enforce the same dependency chain.
+5. E82 artifact #12982089451 correctly contains the E82 receipt, but the workflow's separate E78 parent-upload step warned that `app/build/reports/e78-emulator/e11-evidence.json` and `synthetic-ui-receipt.json` were absent. The E82 workflow does not itself run E78, so it must explicitly download and verify the exact E78 parent artifact instead of pointing at an unpopulated local path.
+
+### Bounded implementation plan — commit this plan before source changes
+
+1. Extend `GuestApkClusterMemberIdentity` to preserve the auditor's complete digest-relevant metadata: positive member byte length, `requiredTypes`, `providedTypes`, `splitRequired` and `isolatedSplits`, alongside split name, SHA, feature, config and dependencies. Missing byte length must fail closed.
+2. Match `ApkSetAuditor` exactly: package length limit; same split-name grammar; empty configForSplit accepted only for non-feature config splits; all dependency targets must be feature splits; non-feature `uses-split` metadata remains representable; base constraints, required/provided split-type coverage, base `isSplitRequired` and iterative acyclic graph validation are retained.
+3. Move the existing length-prefixed `fonesi-package-cluster-v1` digest algorithm into a shared core helper on `GuestApkClusterIdentity`. Structural validation must recompute and compare the digest rather than accept any syntactically valid SHA. Make `PrivateApkCluster.identity` map the actual `AuditedApkSet` metadata and measured file lengths into this shared identity; `PrivateApkCluster.clusterDigest` must delegate to it so existing cluster digest semantics remain byte-for-byte stable.
+4. Align `EngineCapabilities` with `GuestBackendCapabilities`: code execution requires accepted cluster import; atomic update requires both accepted import and code-execution proof. Add positive/negative dependency-chain tests.
+5. Add tests for numeric-leading split segments, empty configForSplit, non-feature dependencies, missing required types, base split-required without splits, metadata/digest tampering, byte-length validation, package length, and private-store identity/digest parity across input ordering/readback.
+6. Strengthen `audit_e83_split_provider_contract.py` to require the canonical digest and metadata invariants, while continuing to assert that ManagedGuestEngine does not surface split capabilities, SpaceCore still rejects multi-member input before FCore, and RuntimeBindings.supportsSplits remains false.
+7. Fix E82 evidence packaging: grant only the workflow's required `actions: read` permission, download the pinned E78 parent artifact from run #40998462184 by its exact artifact name, validate its E78 source SHA/result/APK hashes and false guest/UID claims, then place the verified parent receipt in the E82 artifact bundle. Do not treat a missing E78 parent artifact as a successful upload.
+8. Run focused `:core:test` and `:apk-runtime:test`, the E83 static audit, then the complete exact-source cloud/candidate/source-engine/E82 workflow. Do not weaken tests, change the existing APK auditor's acceptance rules, invent a provider or enable split support.
+
+### Acceptance and product boundary
+
+- Core identity and private-store cluster digest use one canonical algorithm and preserve all metadata the APK auditor has already verified.
+- A valid identity is exactly compatible with `ApkSetAuditor` semantics; an altered/missing field cannot pass readback.
+- Capability dependency invariants are identical at backend and engine boundaries.
+- E82 workflow artifacts contain both the new exact-source E82 receipt and the explicitly verified E78 parent receipt.
+- SpaceCore remains one-APK only; `importsSplitApks=false`, `supportsSplits=false`; no production split provider, guest split execution, separate UID/account or physical-device acceptance is claimed.
+- Product readiness remains **28.00%**; accepted real third-party clones remain **0**.
