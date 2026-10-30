@@ -11,6 +11,8 @@ def read(path):
 
 auth = read("native-runtime-probe/src/main/java/vn/fonesi/nativeprobe/E82FactoryAuthorization.java")
 tests = read("native-runtime-probe/src/test/java/vn/fonesi/nativeprobe/E82FactoryAuthorizationTest.java")
+runner = read("scripts/run_guest_code_emulator.py")
+python_tests = read("scripts/test_run_guest_code_emulator.py")
 gradle = read("native-runtime-probe/build.gradle.kts")
 manifest = read("native-runtime-probe/src/main/AndroidManifest.xml")
 manifest_audit = read("scripts/run_native_probe.py")
@@ -66,5 +68,21 @@ assert "throw new SecurityException" in stub and "super.onCreate(savedInstanceSt
 assert 'PACKAGE + ".E82HostActivityStub"' in manifest_audit
 assert 'stub.get(A + "exported") == "false"' in manifest_audit
 assert "E82AppComponentFactory" in manifest_audit
+for marker in (
+    "def validate_e82_receipt(",
+    "files/e82-factory-receipts/",
+    "PASS_E82_HOST_STUB_FRAMEWORK_ACTIVITY_LIFECYCLE_ONLY",
+    '"e80", "e82"',
+):
+    assert marker in runner, "E82 runner/receipt gate missing: " + marker
+for marker in (
+    "class E82HostStubFrameworkReceiptTests",
+    "test_real_host_stub_context_and_lifecycle_receipt_passes",
+    "test_factory_consumption_and_both_framework_callbacks_are_required",
+    "test_guest_uid_third_party_or_production_overclaim_is_denied",
+    "test_installed_payload_source_fixture_is_not_misreported_as_guest_registration",
+):
+    assert marker in python_tests, "E82 Python negative-claim test missing: " + marker
+
 print("PASS E82 subgate audit: one-shot process-local authorization is identity-bound and fail-closed.")
 print("NOT VERIFIED: Android AppComponentFactory dispatch/Activity attachment; this audit is not E82 acceptance.")
