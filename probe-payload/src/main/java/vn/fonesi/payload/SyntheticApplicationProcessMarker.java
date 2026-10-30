@@ -27,3 +27,4 @@ public final class SyntheticApplicationProcessMarker {
         private State(int starts, int pid, String processToken) { this.starts=starts; this.pid=pid; this.processToken=processToken; }
         public int getStarts() { return starts; } public int getPid() { return pid; } public String getProcessToken() { return processToken; }
     }
+}
