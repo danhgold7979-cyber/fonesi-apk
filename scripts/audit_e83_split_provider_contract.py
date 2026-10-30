@@ -11,6 +11,9 @@ engine = read("core/src/main/kotlin/vn/fonesi/core/CloneEngine.kt")
 backend = read("core/src/main/kotlin/vn/fonesi/core/ManagedGuestEngine.kt")
 tests = read("core/src/test/kotlin/vn/fonesi/core/EngineCapabilitiesTest.kt")
 managed_tests = read("core/src/test/kotlin/vn/fonesi/core/ManagedGuestEngineTest.kt")
+store = read("apk-runtime/src/main/kotlin/vn/fonesi/apk/PrivateApkStore.kt")
+store_tests = read("apk-runtime/src/test/kotlin/vn/fonesi/apk/PrivateApkStoreTest.kt")
+parent_verifier = read("scripts/verify_e78_parent_artifact.py")
 spacecore = read("app/src/candidate/java/vn/fonesi/app/runtime/SpaceCoreBackend.kt")
 bindings = read("app/src/candidate/java/vn/fonesi/app/runtime/RuntimeBindings.kt")
 workflow = read(".github/workflows/e82-public-component-factory.yml")
@@ -34,6 +37,18 @@ for marker in (
     "fun inspectCluster(userId: Int, packageName: String): GuestApkClusterReadback?",
     "data class GuestApkClusterIdentity(",
     "fun requireStructurallyValid(): GuestApkClusterIdentity",
+    "fun computeCanonicalDigest(): String",
+    "clusterDigest == computeCanonicalDigest()",
+    "val byteLength: Long",
+    "val signerDigests: Set<String>",
+    "val splitRequired: Boolean = false",
+    "val requiredTypes: Set<String> = emptySet()",
+    "val providedTypes: Set<String> = emptySet()",
+    "val isolatedSplits: Boolean = false",
+    "member.byteLength > 0",
+    "member.signerDigests == signerDigests",
+    "packageName.length <= 255",
+    "member.configForSplit?.takeIf { it.isNotEmpty() }",
     "Split dependency graph contains a cycle",
     "splitClusterPreflightSupported = false",
     "splitClusterInstallDispatchSupported = false",
@@ -65,8 +80,17 @@ for marker in (
 assert "const val supportsSplits = false" in bindings
 
 for marker in (
+    "val identity: GuestApkClusterIdentity",
+    "byteLength = member.file.length()",
+    "val clusterDigest: String get() = identity.clusterDigest",
+):
+    assert marker in store, "E83 private-store identity parity missing: " + marker
+
+for marker in (
     "splitProviderCapabilitiesRequirePreflightDispatchAndCompleteReadback",
     "splitClusterIdentityRequiresOneBaseUniqueMembersAndAcyclicDependencies",
+    "splitIdentityMatchesAuditorConfigDependencyAndSplitTypeRules",
+    "splitIdentityDigestCommitsEveryMetadataFieldAndMemberLength",
     "splitClusterIdentityRequiresCanonicalNamesAndFeatureConfigRelationships",
     "splitClusterReadbackRequiresExactIdentityAndCompleteSdkOwnedMemberSet",
     "engineCannotClaimSplitImportWithoutCompleteProviderEvidence",
@@ -79,6 +103,31 @@ for marker in (
 ):
     assert marker in managed_tests, "E83 engine regression test missing: " + marker
 
-assert "audit_e83_split_provider_contract.py" in workflow, "E83 audit is not wired into exact-source CI"
-print("PASS E83 contract audit: split import remains fail-closed; pinned SpaceCore remains single-APK only.")
+for marker in (
+    "identityMatchesAllAuditorMetadataAndPreservesLegacyDigestBytes",
+    "requiredTypesSplitRequiredAndIsolatedFlagsSurvivePrivateReadback",
+    "legacyClusterDigest",
+):
+    assert marker in store_tests, "E83 private-store parity regression missing: " + marker
+
+for marker in (
+    "EXPECTED_SOURCE_SHA = \"57d60cb80d6cece692b2898afd15d8668fd14883\"",
+    "EXPECTED_RESULT = \"PASS_E78_SIGNED_SYNTHETIC_APPLICATION_ATTACH_AND_SCOPED_DATA_ONLY\"",
+    "guest_application_registered_with_package_manager",
+    "kernel_uid_isolation",
+):
+    assert marker in parent_verifier, "Pinned E78 parent receipt validation missing: " + marker
+
+for marker in (
+    "actions: read",
+    "Download and verify pinned E78 parent artifact",
+    "12952618461",
+    "40998462184",
+    "57d60cb80d6cece692b2898afd15d8668fd14883",
+    "app/build/reports/e78-parent/e11-evidence.json",
+):
+    assert marker in workflow, "E82 parent evidence packaging missing: " + marker
+assert "Upload E78 parent receipt and sanitized test receipts" not in workflow
+assert "verify_e78_parent_artifact.py" in workflow
+print("PASS E83 contract audit: canonical audited identity/digest, fail-closed split import and pinned E78 parent evidence verified.")
 print("NOT VERIFIED: no production split-capable SDK/provider or guest split execution is accepted by this audit.")
