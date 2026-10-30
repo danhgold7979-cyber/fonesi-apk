@@ -63,8 +63,11 @@ class PayloadActivity : Activity() {
         super.onCreate(savedInstanceState)
         if (intent.getStringExtra("proof_level") == "e82" ||
             intent.getBooleanExtra("e82_factory_authorized", false)) {
-            check(Build.VERSION.SDK_INT >= 28) { "E82 requires Android API 28+" }
-            beginE82HostStubLifecycle()
+            if (Build.VERSION.SDK_INT >= 28) {
+                beginE82HostStubLifecycle()
+            } else {
+                error("E82 requires Android API 28+")
+            }
             return
         }
         val preferences = getSharedPreferences("isolation_probe", MODE_PRIVATE)
