@@ -69,7 +69,7 @@ for name in (
     "test_missing_application_or_scope_evidence_fails_closed",
     "test_guest_registration_or_uid_isolation_overclaim_fails_closed",
     "test_scope_ids_must_be_distinct_canonical_uuids",
-    "test_software_emulation_is_limited_to_e77_and_e78",
+    "test_software_emulation_is_limited_to_e77_e78_and_e79",
 ):
     assert name in runner_tests, "Missing E78 runner regression: " + name
 assert "def validate_e78_receipt(" in runner
