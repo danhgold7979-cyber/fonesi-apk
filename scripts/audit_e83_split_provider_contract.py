@@ -47,7 +47,7 @@ for marker in (
     "splitClusterReadbackVerified = false",
     "splitClusterCodeExecutionVerified = false",
     "splitClusterAtomicUpdateVerified = false",
-    "if (source.apkPaths.size != 1)",
+    "check(source.apkPaths.size == 1)",
     "core.installPackageAsUser(input, userId)",
 ):
     assert marker in spacecore, "Pinned SpaceCore single-APK guard missing: " + marker
