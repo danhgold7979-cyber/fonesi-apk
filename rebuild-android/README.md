@@ -24,3 +24,16 @@ JDK17 CI uses `--release 17`; the limited local JDK21 fallback establishes behav
 only, and prints that boundary. Android compile/lint additionally verifies source
 and API compatibility. UI event wiring, persistence, rotation, accessibility,
 authentication, shortcuts and device execution remain separate unaccepted work.
+
+## Native presentation wiring (R5.2)
+
+Foreground-bound `ManagerController` drives native search, exact-group and
+visible-selection controls. Epoch/revision tokens reject stale UI events; pause
+invalidates pending refresh tickets, clears selection and renders hidden metadata.
+Controller and Activity both guard render-triggered callbacks. Source ingestion is
+not connected: the real Activity stays truthfully unconnected, with no sample rows.
+Original import/clone/launch/migration buttons remain disabled.
+
+Fake-view lifecycle tests are not Android UI/device tests. Input/page budgets,
+normalized search caching and large-list virtualization are mandatory before a
+storage adapter is connected; current filtering applies to loaded metadata only.

@@ -43,13 +43,30 @@ class ScaffoldTests(unittest.TestCase):
 
     def test_activity_has_no_adapter_or_enable_path(self):
         sources = list((MAIN / "java").rglob("*.java"))
-        self.assertEqual({p.name for p in sources}, {"ManagerActivity.java", "ManagerModel.java"})
+        self.assertEqual({p.name for p in sources}, {"ManagerActivity.java", "ManagerModel.java", "ManagerController.java"})
         source = (MAIN / "java/vn/fonesi/rebuild/ManagerActivity.java").read_text()
-        self.assertEqual([line.strip() for line in source.splitlines() if line.startswith("import ")],
-                         ["import android.app.Activity;", "import android.os.Bundle;", "import android.widget.TextView;",
-                          "import vn.fonesi.rebuild.model.ManagerModel;"])
-        for forbidden in ("setEnabled", "setOnClickListener", "getFilesDir", "getDatabasePath", "Runtime", "Class.forName"):
+        allowed = {"android.app.Activity", "android.os.Bundle", "android.os.Looper", "android.text.Editable", "android.text.TextWatcher",
+                   "android.widget.CheckBox", "android.widget.EditText", "android.widget.LinearLayout", "android.widget.TextView",
+                   "vn.fonesi.rebuild.model.ManagerModel", "vn.fonesi.rebuild.model.ManagerController"}
+        self.assertEqual({line[len("import "):-1] for line in source.splitlines() if line.startswith("import ")}, allowed)
+        for forbidden in ("getFilesDir", "getDatabasePath", "Runtime", "Class.forName", "beginRefresh", "controller.publish"):
             self.assertNotIn(forbidden, source)
+        for operation in ("import_apk", "create_clone", "launch_clone", "migrate_data"):
+            self.assertNotIn("R.id." + operation, source)
+        self.assertIn("controller.attach(this)", source)
+        self.assertIn("controller.detach()", source)
+        self.assertIn("controller.select(next.token, entry.id, checked)", source)
+        self.assertIn("if (rendering || state == null)", source)
+
+    def test_metadata_view_state_is_not_saved(self):
+        root = ET.parse(MAIN / "res/layout/manager.xml").getroot()
+        names = {"metadata_search", "metadata_group", "metadata_group_filter", "metadata_select_visible"}
+        found = [node for node in root.iter() if node.get(A + "id") in {"@+id/" + name for name in names}]
+        self.assertEqual(len(found), 4)
+        self.assertTrue(all(node.get(A + "saveEnabled") == "false" for node in found))
+        source = (MAIN / "java/vn/fonesi/rebuild/ManagerActivity.java").read_text()
+        self.assertIn("row.setSaveEnabled(false)", source)
+        self.assertIn("Looper.myLooper() != Looper.getMainLooper()", source)
 
     def test_isolated_build_and_pinned_versions(self):
         build = (ROOT / "app/build.gradle.kts").read_text()
@@ -76,7 +93,7 @@ class ScaffoldTests(unittest.TestCase):
         self.assertIn("loaded entries.", plural.find("item[@quantity='other']").text)
         source = (MAIN / "java/vn/fonesi/rebuild/ManagerActivity.java").read_text()
         self.assertIn("getQuantityString", source)
-        self.assertIn("R.plurals.metadata_unconnected, snapshot.totalCount, snapshot.totalCount", source)
+        self.assertIn("R.plurals.metadata_unconnected, next.totalCount, next.totalCount", source)
 
     def test_all_resource_xml_parses_and_status_is_honest(self):
         for file in (MAIN / "res").rglob("*.xml"):

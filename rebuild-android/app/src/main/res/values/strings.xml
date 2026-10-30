@@ -10,4 +10,17 @@
         <item quantity="one">Metadata source unavailable — %1$d loaded entry. This is not a scan of existing clones.</item>
         <item quantity="other">Metadata source unavailable — %1$d loaded entries. This is not a scan of existing clones.</item>
     </plurals>
+    <string name="metadata_search">Search loaded metadata</string>
+    <string name="metadata_group_filter">Filter exact group</string>
+    <string name="metadata_group">Group name (empty means ungrouped)</string>
+    <string name="metadata_select_visible">Select all visible metadata (uncheck to clear)</string>
+    <string name="metadata_hidden">Metadata hidden while inactive.</string>
+    <string name="metadata_loading">Loading metadata only. No clone operation is running.</string>
+    <string name="metadata_failed">Metadata load failed or was interrupted. No result is treated as successful.</string>
+    <string name="metadata_empty">No metadata returned by this source. This does not prove there are no existing clones.</string>
+    <string name="metadata_counts">Visible: %1$d · Loaded: %2$d · Selected: %3$d. Metadata only; operations unavailable.</string>
+    <string name="metadata_row">%1$s · %2$s · %3$s</string>
+    <string name="metadata_quarantined">Quarantined — no operations</string>
+    <string name="metadata_unverified">Unverified — no operations</string>
+    <string name="metadata_unavailable">Unavailable — no operations</string>
 </resources>

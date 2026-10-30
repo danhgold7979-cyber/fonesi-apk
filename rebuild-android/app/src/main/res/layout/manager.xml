@@ -10,6 +10,18 @@
             android:text="@string/status" android:paddingTop="16dp" android:paddingBottom="16dp" />
         <TextView android:id="@+id/metadata_summary" android:layout_width="match_parent"
             android:layout_height="wrap_content" android:text="@string/metadata_pending" />
+        <EditText android:id="@+id/metadata_search" android:saveEnabled="false" android:layout_width="match_parent"
+            android:layout_height="wrap_content" android:hint="@string/metadata_search"
+            android:inputType="text" android:importantForAutofill="no" />
+        <CheckBox android:id="@+id/metadata_group_filter" android:saveEnabled="false" android:layout_width="match_parent"
+            android:layout_height="wrap_content" android:text="@string/metadata_group_filter" />
+        <EditText android:id="@+id/metadata_group" android:saveEnabled="false" android:layout_width="match_parent"
+            android:layout_height="wrap_content" android:hint="@string/metadata_group"
+            android:inputType="text" android:importantForAutofill="no" />
+        <CheckBox android:id="@+id/metadata_select_visible" android:saveEnabled="false" android:layout_width="match_parent"
+            android:layout_height="wrap_content" android:text="@string/metadata_select_visible" />
+        <LinearLayout android:id="@+id/metadata_rows" android:layout_width="match_parent"
+            android:layout_height="wrap_content" android:orientation="vertical" />
         <Button android:id="@+id/import_apk" android:layout_width="match_parent" android:layout_height="wrap_content"
             android:text="@string/import_apk" android:enabled="false" />
         <Button android:id="@+id/create_clone" android:layout_width="match_parent" android:layout_height="wrap_content"

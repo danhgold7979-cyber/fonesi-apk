@@ -102,3 +102,9 @@ Local 108 presentation checks pass (including concurrent duplicate completion, s
 ## R5.1 hosted Java17 PASS; plural resource correction — 2026-10-30 19:06 UTC
 
 Run41111859787/head `3e09e62b0c7258c60868f0d5a7295762a663a6fc`: installed JDK17 compiles/runs108 model checks successfully; Android Java/DEX/assemble succeeds. JVM/storage jobs PASS. Fatal lint finds `PluralsCandidate` in metadata count text; APK audit skipped. Correct with one/other quantity resources and getQuantityString (count passed as selector and formatting argument), following [official quantity resources](https://developer.android.com/guide/topics/resources/string-resource#Plurals); no lint suppression. Added resource regression;29 tooling tests pass locally. Await corrected-head hosted compile/lint/package result.
+
+## R5.2 native controller checkpoint prepared — 2026-10-30 19:15 UTC
+
+New dependency-free controller binds events to foreground epoch/view revision, cancels pending refresh on pause, hides inactive metadata, clears selection and rejects late/duplicate callbacks. Native Activity wires search/exact-group/select-visible metadata controls and truthful unconnected/loading/failed/empty/quarantined states. No adapter or seeded rows exists; no clone/import/migration operation is enabled. Original four unsupported Buttons and strict APK gate remain unchanged. Render recursion is blocked in both layers.
+
+Local108 model +76 fake-view controller checks and30 tooling tests pass; localJDK21 behavior only. Hosted installedJDK17 and Android compile/lint/APK gate required for this new source. Actual UI/TalkBack/rotation/insets/device tests remain NOT RUN. Before any external metadata adapter, execution plan requires stable snapshot pages, measured byte/field/time budgets, fail-closed over-budget handling and normalized-search caching, without a product clone-count cap. No source deletion or data migration.
