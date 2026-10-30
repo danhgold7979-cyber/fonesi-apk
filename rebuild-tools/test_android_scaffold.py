@@ -43,7 +43,7 @@ class ScaffoldTests(unittest.TestCase):
 
     def test_activity_has_only_owned_catalog_and_no_operation_enable_path(self):
         sources = list((MAIN / "java").rglob("*.java"))
-        self.assertEqual({p.name for p in sources}, {"ManagerActivity.java", "ManagerModel.java", "ManagerController.java", "CatalogReader.java", "CatalogSql.java", "CatalogPage.java", "CatalogLoader.java", "CatalogRequestGate.java"})
+        self.assertEqual({p.name for p in sources}, {"ManagerActivity.java", "ManagerModel.java", "ManagerController.java", "CatalogReader.java", "CatalogSql.java", "CatalogPage.java", "CatalogLoader.java", "CatalogRequestGate.java", "CatalogOwnership.java"})
         source = (MAIN / "java/vn/fonesi/rebuild/ManagerActivity.java").read_text()
         allowed = {"android.app.Activity", "android.os.Bundle", "android.os.Looper", "android.text.Editable", "android.text.TextWatcher", "android.text.InputFilter",
                    "android.widget.CheckBox", "android.widget.EditText", "android.widget.LinearLayout", "android.widget.TextView",
@@ -79,6 +79,23 @@ class ScaffoldTests(unittest.TestCase):
         self.assertNotIn("deleteDatabase", reader)
         self.assertNotIn("CREATE_IF_NECESSARY", reader)
         self.assertIn("throw new SQLiteDatabaseCorruptException", reader)
+
+    def test_catalog_directory_policy_adapter_keeps_path_and_file_guards(self):
+        source = (MAIN / "java/vn/fonesi/rebuild/catalog/CatalogReader.java").read_text()
+        policy = (MAIN / "java/vn/fonesi/rebuild/catalog/CatalogOwnership.java").read_text()
+        self.assertIn("Os.lstat(file.getAbsolutePath())", source)
+        self.assertIn("directory ? OsConstants.S_ISDIR(s.st_mode) : OsConstants.S_ISREG(s.st_mode)", source)
+        self.assertIn("CatalogOwnership.permits(directory, s.st_mode, s.st_uid, s.st_gid,", source)
+        self.assertIn("Process.myUid(), Os.geteuid(), Os.getgid(), Os.getegid()", source)
+        self.assertIn("actual.st_dev == expected.st_dev && actual.st_ino == expected.st_ino", source)
+        self.assertIn("getCanonicalFile()", source)
+        self.assertIn("file.createNewFile()", source)
+        self.assertIn("noSidecars(file)", source)
+        for forbidden in ("Os.chmod", "Os.chown", "Os.umask", "Os.open", "O_CLOEXEC", "setWritable", "setReadable"):
+            self.assertNotIn(forbidden, source + policy)
+        self.assertIn("(mode & 0002) != 0", policy)
+        self.assertIn("(mode & 0020) == 0", policy)
+        self.assertIn("return directory && ownerGid == processUid", policy)
 
     def test_metadata_view_state_is_not_saved(self):
         root = ET.parse(MAIN / "res/layout/manager.xml").getroot()

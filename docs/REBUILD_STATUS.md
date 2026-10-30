@@ -251,3 +251,13 @@ Independent final review PASS, including a separate reviewer execution of89 actu
 Base remote38f589e/run41146244852 is SUCCESS (allthree jobs, actualJDK17 and Android compile/package), verified by root. Pre-code amendment a70ece9 records the separately approved initialization correction. Exactly one production line now requires effective `PRAGMA main.synchronous` integer2 immediately after settingFULL on the creator connection and before the transaction. Existing strict single-row/type helper rejects missing/unknown/wrong results; encoding remains verified on read-only reopen. No storage reset/retry or durability claim added.
 
 Independent review PASS.20 catalog SQL methods now include exact source ordering and actual same-connection syntheticOFF→FULL readback;102 tooling methods PASS.186model/92controller/237gate/62decoder-page/89actual-loader-host,56 existing storage and full kernel/history/logical/codec regressions PASS locally. New-head hosted CI remains pending publication. Actual Android database/runtime and power-loss acceptance remain NOTRUN.
+
+## Framework no-backup directory mode correction — 2026-10-30 23:55 UTC
+
+FULL checkpoint remotefffced9/run41146808770 is SUCCESS per root. Root's primary-source review found Android8 no_backup is framework-created0771, which the previous common directory/file0022guard rejected. Plan310ea90 and pre-code approval8b959c8 authorize only a directory-specific exception for the observed current-app primary group.
+
+CatalogOwnership now permits directory group-write only with matching ownerUID, ownerGID, real/effective processGIDs and effectiveUID; worldwrite remains rejected. Non-groupwritable directory behavior and regular-file0022guard remain unchanged. Reader retains lstat/type/canonical/filedev-inode/sidecar checks, File.createNewFile, strict retained failures and FULL readback. No permission mutation, low-level creator or group membership changes.
+
+6153 direct permission truth-table checks PASS plus186model/92controller/237gate/62page/89actual-loader-host.103 tooling methods,56 existing storage and full kernel/history/logical/codec regressions PASS locally. Truth-table and source adapter checks are not Android lstat/ACL/OEM execution. New-head JDK17/AndroidCI pending; real Android directory/bootstrap/runtime acceptance remains NOTRUN. No additional legacy deletion, provider activation or denied experiment.
+
+Independent final read-only review PASS for the directory exception and native adapter. Reviewer separately ran6153 ownership checks, the existing presentation/page/gate/actual-loader-host suites and11 scaffold source tests. No remaining source blocker identified in this bounded correction; Android/OEM/runtime limitations remain unchanged.

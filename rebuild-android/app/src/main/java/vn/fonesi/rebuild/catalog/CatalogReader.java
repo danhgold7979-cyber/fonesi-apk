@@ -99,8 +99,9 @@ public final class CatalogReader {
     }
     private static StructStat stat(File file, boolean directory) throws Exception {
         StructStat s = Os.lstat(file.getAbsolutePath());
-        require(s.st_uid == Process.myUid() && (s.st_mode & 0022) == 0
-                && (directory ? OsConstants.S_ISDIR(s.st_mode) : OsConstants.S_ISREG(s.st_mode)));
+        require((directory ? OsConstants.S_ISDIR(s.st_mode) : OsConstants.S_ISREG(s.st_mode))
+                && CatalogOwnership.permits(directory, s.st_mode, s.st_uid, s.st_gid,
+                        Process.myUid(), Os.geteuid(), Os.getgid(), Os.getegid()));
         return s;
     }
     private static void same(File file, StructStat expected) throws Exception {

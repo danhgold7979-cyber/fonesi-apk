@@ -69,3 +69,9 @@ contracts. **Android SQLite, CursorWindow, OEM filesystem and Activity lifecycle
 runtime acceptance remain NOTRUN.** Hosted compile/lint/package evidence is required
 for this new checkpoint and is not device execution. See
 `docs/REBUILD_R3_R5_CATALOG_READ_PLAN.md` and the API/query audit documents.
+
+The no-backup directory guard recognizes framework0771 only when its writable
+group is the verified current-app primary group. World write and foreign writable
+groups remain rejected; regular files retain the stricter no-group/world-write
+rule. No directory/file permission is modified. Direct predicate tests do not
+substitute for actual Android lstat/OEM filesystem validation.

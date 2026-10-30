@@ -14,7 +14,7 @@ class ApiBoundaryTests(unittest.TestCase):
         self.assertEqual({file.name for file in files},
                          {'ManagerActivity.java', 'ManagerModel.java', 'ManagerController.java',
                           'CatalogReader.java', 'CatalogSql.java', 'CatalogPage.java',
-                          'CatalogLoader.java', 'CatalogRequestGate.java'})
+                          'CatalogLoader.java', 'CatalogRequestGate.java', 'CatalogOwnership.java'})
         for file in files:
             source = file.read_text()
             for symbol in ('HexFormat', '.isBlank(', '.strip(', '.toList(', '.writeBytes(',
