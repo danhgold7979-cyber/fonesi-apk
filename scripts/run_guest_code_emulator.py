@@ -93,7 +93,7 @@ def read_ui_configuration(device, timeout_seconds=UI_CONFIGURATION_READ_TIMEOUT_
 
 
 def software_emulation_proof_allowed(proof_level):
-    """Only E77 metadata preflight and E78 synthetic Application/data proof may use software AVD."""
+    """Only bounded synthetic E77/E78/E79 proofs may use software AVD."""
     return proof_level in ("e77", "e78", "e79")
 
 
@@ -650,9 +650,11 @@ def main():
             while time.monotonic() < process_deadline:
                 old_pid = device("shell", "pidof", PROBE_PACKAGE + ":fonesi_guest_ui",
                                  timeout=8, check=False)
-                if not old_pid.stdout.strip():
+                if old_pid.returncode == 1 and not old_pid.stdout.strip():
                     process_stopped = True
                     break
+                if old_pid.returncode not in (0, 1):
+                    raise RuntimeError("E79 cannot reliably query the prior dedicated process PID")
                 time.sleep(1)
             if not process_stopped:
                 raise RuntimeError("E79 force-stop did not terminate the dedicated host process")

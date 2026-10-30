@@ -256,6 +256,7 @@ jobs:
             app/build/reports/cloud-verification.json
             app/build/reports/candidate-verification.json
             app/build/test-results/testDebugUnitTest/TEST-*.xml
+            probe-payload/build/test-results/testDebugUnitTest/TEST-*.xml
             apk-runtime/build/test-results/test/TEST-*.xml
             core/build/test-results/test/TEST-*.xml
             engine-source/build/test-results/testDebugUnitTest/TEST-*.xml
