@@ -43,3 +43,23 @@ jobs:
         run: |
           echo 'JVM contracts and Linux private-filesystem tests only.' >> "$GITHUB_STEP_SUMMARY"
           echo 'No Android build, actual provider, hostile-guest isolation or physical-device acceptance.' >> "$GITHUB_STEP_SUMMARY"
+  synthetic-sqlite-storage:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Checkout exact source without stored credentials
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+          fetch-depth: 2
+      - name: Verify exact source and run synthetic SQLite contract
+        env:
+          EXPECTED_SOURCE: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$EXPECTED_SOURCE"
+          python3 rebuild-storage/check.py
+      - name: Explicit storage evidence boundary
+        run: |
+          echo 'Synthetic SQLite schema1-6 preservation/quarantine only; no real user database or Android migration.' >> "$GITHUB_STEP_SUMMARY"
