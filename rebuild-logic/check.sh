@@ -45,3 +45,5 @@ fi
 cmp "$OUT/frozen.txt" "$OUT/portable.txt"
 cmp "$OUT/host.txt" "$OUT/portable.txt"
 echo "PASS $(wc -l < "$OUT/portable.txt") frozen B2 logical vectors in separate host/portable processes; no Android/provider/storage integration"
+
+./check-codec.sh

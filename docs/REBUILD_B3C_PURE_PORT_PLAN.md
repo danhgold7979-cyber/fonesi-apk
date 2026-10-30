@@ -53,3 +53,9 @@ Pre-code approval→pinnedcase plan→implementation/differential+independent te
 ## Approval recorded before implementation
 
 2026-10-30 22:42 UTC: root approved exactly the two proposed pure classes, corrected B3b owned/bounded canonical validation and UUID binding, precise exception-family parity, new compact desired fixtures, independent assertions and cross-JDK comparison. Historical B3a/B2 fixtures remain unchanged. No Android, filesystem adapter, journal, dispatcher, provider or dependency activation. Actual JDK17 CI and independent review remain acceptance gates. Unexplained drift stops work rather than updating expected fixtures automatically.
+
+## Implementation sequencing after D5 review
+
+B3c draft review found D5's inherited package-regex-before-length ordering. Root approved a separate bounded defensive correction, committed e78e722/treeab4ddb1 and published b9b1a6a. D5 historical sources/old manifests are preserved. Root then approved continuation of this same B3c scope against corrected D5 host; no production surface expanded beyond the original two pure classes. The separately denied malformed-envelope verification remains unavailable and is not retried or included in B3c acceptance claims. See REBUILD_PACKAGE_BOUNDS_DEFECT.md.
+
+The new342row desired fixture remains byte-identical across B3b→D5 host comparison, rather than being regenerated after the correction. Portable generic semantic-value IOException intentionally omits raw enum cause text by root approval; only top-level failure-family parity is required. No exception-chain parity or denied test result is asserted. Actual installedJDK17 and exact-headCI remain required after local review.

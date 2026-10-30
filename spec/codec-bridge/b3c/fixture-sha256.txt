@@ -1,0 +1,1 @@
+af7fa8d1dedb6a0acfb023d3fa47d8b72876b415c5256999c494265da8f9386d  spec/codec-bridge/b3c/desired.txt
