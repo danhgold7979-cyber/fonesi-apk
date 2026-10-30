@@ -116,7 +116,8 @@ public final class E82FactoryAuthorizationTest {
                     E82FactoryAuthorization.HOST_PACKAGE + "/" + E82FactoryAuthorization.STUB_CLASS,
                     E82FactoryAuthorization.HOST_PROCESS, 10142, SOURCE, HOST_APK, "d".repeat(64));
             }
-            expectSecurityFailure(() -> E82FactoryAuthorization.consume(d));
+            final E82FactoryAuthorization.Dispatch attempt = d;
+            expectSecurityFailure(() -> E82FactoryAuthorization.consume(attempt));
             assertReplayDenied();
         }
     }
@@ -130,17 +131,8 @@ public final class E82FactoryAuthorizationTest {
                 "not-a-uuid", E82FactoryAuthorization.PRIVATE_ACTIVITY_CLASS,
                 PayloadActivity.class.getClassLoader(), PayloadActivity.class, loadedImage);
         expectSecurityFailure(() -> E82FactoryAuthorization.arm(invalid));
-        assertEquals(E82FactoryAuthorization.State.EMPTY, stateForTest());
-    }
-
-    private static E82FactoryAuthorization.State stateForTest() {
-        try {
-            java.lang.reflect.Field field = E82FactoryAuthorization.class.getDeclaredField("state");
-            field.setAccessible(true);
-            return (E82FactoryAuthorization.State) field.get(null);
-        } catch (ReflectiveOperationException error) {
-            throw new AssertionError(error);
-        }
+        E82FactoryAuthorization.arm(ticket());
+        assertReplayDenied();
     }
 
     private static void assertReplayDenied() {
