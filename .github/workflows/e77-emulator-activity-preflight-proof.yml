@@ -186,7 +186,7 @@ on:
       - "scripts/check.sh"
   pull_request:
     branches:
-      - phase/e74-signed-private-activity-class-probe-20261029
+      - phase/e76-activity-preflight-no-class-init-20261030
   workflow_dispatch:
 
 permissions:

@@ -48,7 +48,11 @@ assert "UI_CONFIGURATION_READ_TIMEOUT_SECONDS = 20" in runner
 assert "UI_CONFIGURATION_STABILITY_TIMEOUT_SECONDS = 120" in runner
 assert "UI_CONFIGURATION_SAMPLE_INTERVAL_SECONDS = 2" in runner
 assert "UI_CONFIGURATION_REQUIRED_STABLE_TRANSITIONS = 3" in runner
-assert 'device(\n        "shell", "sh", "-c", UI_CONFIGURATION_COMMAND,' in runner
+assert 'device(\n        "shell", UI_CONFIGURATION_COMMAND,' in runner
+assert '"shell", "sh", "-c", UI_CONFIGURATION_COMMAND' not in runner
+assert 'snapshot[0] != "[wm-size]"' in runner
+assert 'line == "[wm-density]"' in runner
+assert '"font-scale=", "user-rotation=", "locale=", "language=", "country="' in runner
 assert "timeout=timeout_seconds, check=False" in runner
 assert "deadline = time.monotonic() + UI_CONFIGURATION_STABILITY_TIMEOUT_SECONDS" in runner
 assert "stable_samples >= UI_CONFIGURATION_REQUIRED_STABLE_TRANSITIONS" in runner
@@ -56,15 +60,20 @@ assert 'evidence["android_ui_configuration_last_fingerprint"] = list(current)' i
 assert '"last_fingerprint": list(previous or ())' in runner
 test_source = read("scripts/test_run_guest_code_emulator.py")
 for required in (
-    "test_reads_all_seven_values_with_one_bounded_adb_shell_call",
+    "test_reads_all_seven_values_with_one_adb_shell_command",
     "test_nonzero_adb_exit_fails_closed",
     "test_empty_fingerprint_fails_closed",
+    "test_shell_environment_contamination_is_rejected",
+    "test_missing_or_duplicate_scalar_marker_is_rejected",
     "test_per_sample_timeout_can_be_reduced_to_remaining_window",
     "test_unbounded_timeout_is_rejected_before_adb_call",
 ):
     assert required in test_source, "Missing E77 helper regression: " + required
 assert "scripts/test_run_guest_code_emulator.py" in workflow
 assert "python3 scripts/test_run_guest_code_emulator.py" in workflow
+pull_request_block = workflow.split("pull_request:", 1)[1].split("workflow_dispatch:", 1)[0]
+assert "phase/e76-activity-preflight-no-class-init-20261030" in pull_request_block
+assert "phase/e74-signed-private-activity-class-probe-20261029" not in pull_request_block
 print("PASS: E77 workflow requires a booted AOSP API 34 emulator and an exact-source/hash-bound constructor-preflight receipt.")
 print("PASS: UI fingerprint retains all seven values, four identical snapshots and bounded diagnostic timeout.")
 print("PASS: deterministic fake-ADB tests are wired into the exact-source E77 workflow.")

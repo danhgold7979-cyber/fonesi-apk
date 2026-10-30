@@ -10,9 +10,7 @@ from run_guest_code_emulator import (
 )
 
 
-class UiConfigurationReaderTests(unittest.TestCase):
-    def test_reads_all_seven_values_with_one_bounded_adb_shell_call(self):
-        output = """[wm-size]
+VALID_OUTPUT = """[wm-size]
 Physical size: 1080x1920
 Override size: 480x800
 [wm-density]
@@ -23,11 +21,15 @@ locale=en-US
 language=en
 country=US
 """
+
+
+class UiConfigurationReaderTests(unittest.TestCase):
+    def test_reads_all_seven_values_with_one_adb_shell_command(self):
         calls = []
 
         def fake_device(*args, **kwargs):
             calls.append((args, kwargs))
-            return SimpleNamespace(returncode=0, stdout=output)
+            return SimpleNamespace(returncode=0, stdout=VALID_OUTPUT)
 
         snapshot = read_ui_configuration(fake_device)
 
@@ -48,8 +50,7 @@ country=US
         )
         self.assertEqual(len(calls), 1)
         args, kwargs = calls[0]
-        self.assertEqual(args[:3], ("shell", "sh", "-c"))
-        self.assertEqual(args[3], UI_CONFIGURATION_COMMAND)
+        self.assertEqual(args, ("shell", UI_CONFIGURATION_COMMAND))
         self.assertEqual(kwargs, {"timeout": UI_CONFIGURATION_READ_TIMEOUT_SECONDS, "check": False})
         for required in (
             "wm size",
@@ -76,12 +77,33 @@ country=US
         with self.assertRaisesRegex(RuntimeError, "fingerprint is empty"):
             read_ui_configuration(empty_device)
 
+    def test_shell_environment_contamination_is_rejected(self):
+        contaminated = "BASHPID=123\nEPOCHREALTIME=1.2\n" + VALID_OUTPUT
+
+        def fake_device(*args, **kwargs):
+            return SimpleNamespace(returncode=0, stdout=contaminated)
+
+        with self.assertRaisesRegex(RuntimeError, "shell environment"):
+            read_ui_configuration(fake_device)
+
+    def test_missing_or_duplicate_scalar_marker_is_rejected(self):
+        missing = VALID_OUTPUT.replace("locale=en-US\n", "")
+        duplicate = VALID_OUTPUT.replace("country=US\n", "country=US\ncountry=US\n")
+
+        for output in (missing, duplicate):
+            with self.subTest(output=output):
+                def fake_device(*args, **kwargs):
+                    return SimpleNamespace(returncode=0, stdout=output)
+
+                with self.assertRaisesRegex(RuntimeError, "exactly one"):
+                    read_ui_configuration(fake_device)
+
     def test_per_sample_timeout_can_be_reduced_to_remaining_window(self):
         calls = []
 
         def fake_device(*args, **kwargs):
             calls.append(kwargs)
-            return SimpleNamespace(returncode=0, stdout="locale=en-US\n")
+            return SimpleNamespace(returncode=0, stdout=VALID_OUTPUT)
 
         read_ui_configuration(fake_device, timeout_seconds=3)
         self.assertEqual(calls, [{"timeout": 3, "check": False}])
@@ -91,7 +113,7 @@ country=US
 
         def fake_device(*args, **kwargs):
             calls.append((args, kwargs))
-            return SimpleNamespace(returncode=0, stdout="locale=en-US\n")
+            return SimpleNamespace(returncode=0, stdout=VALID_OUTPUT)
 
         with self.assertRaises(ValueError):
             read_ui_configuration(fake_device, timeout_seconds=21)

@@ -43,11 +43,11 @@ UI_CONFIGURATION_REQUIRED_STABLE_TRANSITIONS = 3
 
 
 def read_ui_configuration(device, timeout_seconds=UI_CONFIGURATION_READ_TIMEOUT_SECONDS):
-    """Read the full UI/display/locale fingerprint through one bounded ADB shell."""
+    """Read and validate the full UI/display/locale fingerprint through one ADB shell command."""
     if not isinstance(timeout_seconds, int) or not 1 <= timeout_seconds <= UI_CONFIGURATION_READ_TIMEOUT_SECONDS:
         raise ValueError("UI configuration read timeout must be between 1 and 20 seconds")
     result = device(
-        "shell", "sh", "-c", UI_CONFIGURATION_COMMAND,
+        "shell", UI_CONFIGURATION_COMMAND,
         timeout=timeout_seconds, check=False,
     )
     if result.returncode != 0:
@@ -55,6 +55,40 @@ def read_ui_configuration(device, timeout_seconds=UI_CONFIGURATION_READ_TIMEOUT_
     snapshot = tuple(line.strip() for line in result.stdout.splitlines() if line.strip())
     if not snapshot:
         raise RuntimeError("Android UI configuration fingerprint is empty")
+
+    # adb shell accepts one remote command string. Do not wrap it in "sh -c":
+    # adb's remote-shell argument handling can otherwise execute "set" alone and
+    # contaminate the fingerprint with volatile shell environment variables.
+    if snapshot[0] != "[wm-size]":
+        raise RuntimeError("Unexpected Android UI fingerprint prefix; shell environment or command output leaked")
+    density_markers = [i for i, line in enumerate(snapshot) if line == "[wm-density]"]
+    if len(density_markers) != 1:
+        raise RuntimeError("Android UI fingerprint must contain exactly one density marker")
+    density_index = density_markers[0]
+    size_lines = snapshot[1:density_index]
+    if not size_lines or any(
+        not (line.startswith("Physical size:") or line.startswith("Override size:"))
+        for line in size_lines
+    ):
+        raise RuntimeError("Android UI fingerprint contains invalid display-size output")
+
+    scalar_labels = ("font-scale=", "user-rotation=", "locale=", "language=", "country=")
+    scalar_positions = []
+    for label in scalar_labels:
+        matches = [i for i, line in enumerate(snapshot) if line.startswith(label)]
+        if len(matches) != 1:
+            raise RuntimeError("Android UI fingerprint must contain exactly one " + label + " value")
+        scalar_positions.append(matches[0])
+    density_lines = snapshot[density_index + 1:scalar_positions[0]]
+    if not density_lines or any(
+        not (line.startswith("Physical density:") or line.startswith("Override density:"))
+        for line in density_lines
+    ):
+        raise RuntimeError("Android UI fingerprint contains invalid density output")
+    if scalar_positions != sorted(scalar_positions) or scalar_positions[0] != density_index + 1:
+        raise RuntimeError("Android UI fingerprint scalar values are missing or out of order")
+    if len(snapshot) != scalar_positions[-1] + 1:
+        raise RuntimeError("Android UI fingerprint contains unexpected trailing output")
     return snapshot
 
 
