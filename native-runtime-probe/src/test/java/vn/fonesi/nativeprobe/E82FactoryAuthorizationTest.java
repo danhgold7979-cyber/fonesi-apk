@@ -156,8 +156,7 @@ public final class E82FactoryAuthorizationTest {
                 RUN, NONCE, E82FactoryAuthorization.HOST_PACKAGE,
                 E82FactoryAuthorization.STUB_CLASS,
                 E82FactoryAuthorization.HOST_PACKAGE + "/" + E82FactoryAuthorization.STUB_CLASS,
-                E82FactoryAuthorization.HOST_PROCESS, 10142, E82FactoryAuthorizationTest.class.getClassLoader(),
-                SOURCE, HOST_APK, PAYLOAD_APK, "not-a-uuid", E82FactoryAuthorization.PRIVATE_ACTIVITY_CLASS,
+                E82FactoryAuthorization.HOST_PROCESS, 10142, SOURCE, HOST_APK, PAYLOAD_APK, "not-a-uuid", E82FactoryAuthorization.PRIVATE_ACTIVITY_CLASS,
                 PayloadActivity.class.getClassLoader(), E82FactoryAuthorizationTest.class.getClassLoader(),
                 PayloadActivity.class, loadedImage);
         expectSecurityFailure(() -> E82FactoryAuthorization.arm(invalid));
@@ -165,8 +164,7 @@ public final class E82FactoryAuthorizationTest {
                 RUN, NONCE, E82FactoryAuthorization.HOST_PACKAGE,
                 E82FactoryAuthorization.STUB_CLASS,
                 E82FactoryAuthorization.HOST_PACKAGE + "/" + E82FactoryAuthorization.STUB_CLASS,
-                E82FactoryAuthorization.HOST_PROCESS, 10142, E82FactoryAuthorizationTest.class.getClassLoader(),
-                SOURCE, HOST_APK, PAYLOAD_APK, CLUSTER, E82FactoryAuthorization.PRIVATE_ACTIVITY_CLASS,
+                E82FactoryAuthorization.HOST_PROCESS, 10142, SOURCE, HOST_APK, PAYLOAD_APK, CLUSTER, E82FactoryAuthorization.PRIVATE_ACTIVITY_CLASS,
                 new ClassLoader() { }, E82FactoryAuthorizationTest.class.getClassLoader(),
                 PayloadActivity.class, loadedImage);
         expectSecurityFailure(() -> E82FactoryAuthorization.arm(wrongLoader));
