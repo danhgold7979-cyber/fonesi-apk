@@ -1,3 +1,20 @@
+# Fonesi APK — E83 split-provider contract technical PASS; production guest runtime still unaccepted (30/10/2026)
+
+Repository: [danhgold7979-cyber/fonesi-apk](https://github.com/danhgold7979-cyber/fonesi-apk). Current development branch: phase/e82-public-component-factory-feasibility-20261030. Current source/test HEAD: 58d52f4aa05c8c8d5256e7125b522815418b1e02. [Draft PR #56](https://github.com/danhgold7979-cyber/fonesi-apk/pull/56) remains stacked on E81 Draft PR #55. Main at c055df600f87ee9ddf0cd5d6bfc67d80d145e79d is unchanged.
+
+Latest verified technical milestone E83 PASS at exact source/test SHA 58d52f4aa05c8c8d5256e7125b522815418b1e02: [full exact-source workflow #41083456690](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/41083456690) SUCCESS, 21/21 job steps; [authorization subgate #41083456286](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/41083456286) SUCCESS. Cloud and candidate each passed 521 tests; source-engine 63 JVM, payload 14 JVM, native host 18 and code-layout 7 tests passed. Candidate/cloud APK audit, lint, source AAR and AOSP API 34 E82 host-stub lifecycle passed. [E83 results](phases/E83_PRODUCTION_SPLIT_PROVIDER_CONTRACT_RESULTS.md) | [TEST-ONLY artifact #12992820772](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/41083456690/artifacts/12992820772).
+
+E83 scope: core cluster identity preserves byte length, signer set, splitRequired, required/provided split types, isolatedSplits, config and dependency metadata. Core and PrivateApkStore share the length-prefixed v1 cluster digest; parity tests prove legacy digest stability and readback identity equality. Engine capability dependency rules are aligned and the E78 parent receipt is fetched/verified before E82 evidence packaging. These are source/JVM/contract proofs, not a production split provider.
+
+Runtime boundary: E82 receipt is a host-stub Activity under host package/process/UID 10142. Guest PackageManager registration=false, guest/kernel UID isolation=false, third-party execution=false, social accounts=false, production clone=false, physical device=false. Candidate supportsSplits=false; pinned SpaceCore rejects every multi-APK source before SDK install. Weighted product readiness remains 28.00%; accepted real third-party clones 0.
+
+E84 source-audit outcome: no currently accessible candidate passed the full Fonesi integrity/transaction/compatibility gate. The current public VirtualApp source is legacy while maintained code is commercial; the ISEKHON fork has split file handling but fake-signature fallback and non-atomic update behavior; TeguFy BlackBox remains base-APK only. No fork was integrated. See [E84 results](phases/E84_ALTERNATIVE_SPLIT_PROVIDER_FEASIBILITY_RESULTS.md).
+
+Next: E85 plan adds generic ManagedGuestEngine orchestration for the typed provider boundary, using immutable multi-file snapshots and exact post-install readback. It does not enable SpaceCore split support or claim a real provider.
+
+---
+
+
 # Fonesi APK — E81 exact-source synthetic PRIVATE Activity scoped-method technical PASS; guest lifecycle unaccepted (30/10/2026)
 
 **Repository:** [danhgold7979-cyber/fonesi-apk](https://github.com/danhgold7979-cyber/fonesi-apk). Development branch `phase/e81-private-activity-scoped-method-proof-20261030`, [Draft PR #55](https://github.com/danhgold7979-cyber/fonesi-apk/pull/55) stacked on E80 Draft PR #54. `main@c055df600f87ee9ddf0cd5d6bfc67d80d145e79d` unchanged.

@@ -92,9 +92,21 @@ def read_ui_configuration(device, timeout_seconds=UI_CONFIGURATION_READ_TIMEOUT_
     return snapshot
 
 
+def synthetic_install_failure(apk, result):
+    """Keep bounded ADB install diagnostics so a failed emulator install is actionable."""
+    stdout = str(getattr(result, "stdout", "") or "")[-2000:]
+    stderr = str(getattr(result, "stderr", "") or "")[-2000:]
+    return (
+        "Synthetic APK install failed for " + Path(apk).name +
+        " (exit=" + str(getattr(result, "returncode", "unknown")) + ")" +
+        "; stdout=" + (stdout.strip() or "<empty>") +
+        "; stderr=" + (stderr.strip() or "<empty>")
+    )
+
+
 def software_emulation_proof_allowed(proof_level):
     """Only bounded synthetic E77/E78/E79 proofs may use software AVD."""
-    return proof_level in ("e77", "e78", "e79", "e80")
+    return proof_level in ("e77", "e78", "e79", "e80", "e82")
 
 
 def validate_e78_receipt(report, source_commit, probe_apk_sha256, payload_apk_sha256):
@@ -322,6 +334,68 @@ def validate_e81_receipts(write_report, verify_report, source_commit, probe_apk_
     return write, verify
 
 
+def validate_e82_receipt(report, source_commit, probe_apk_sha256, payload_apk_sha256, expected_run_id):
+    """Require an actual framework-created host-stub Activity; never label it a guest package."""
+    if not isinstance(report, dict):
+        raise RuntimeError("E82 receipt must be a JSON object")
+    required_true = (
+        "complete", "passed", "factory_authorization_consumed",
+        "framework_on_create_called", "framework_on_resume_called",
+        "base_context_non_null", "window_non_null",
+        "private_activity_classloader_distinct_from_host",
+        "payload_source_fixture_package_installed",
+    )
+    required_false = (
+        "guest_component_registered_with_host_package_manager",
+        "guest_uid_isolation", "third_party_component_executed",
+        "social_accounts_tested", "production_clone_accepted",
+        "physical_device_tested",
+    )
+    missing_true = [key for key in required_true if report.get(key) is not True]
+    missing_false = [key for key in required_false if report.get(key) is not False]
+    if missing_true or missing_false:
+        raise RuntimeError("E82 host-stub receipt assertions failed: true=" +
+                           ",".join(missing_true) + "; false=" + ",".join(missing_false))
+    if report.get("proof_level") != "e82":
+        raise RuntimeError("E82 receipt proof level mismatch")
+    if report.get("run_id") != expected_run_id or str(uuid.UUID(expected_run_id)) != expected_run_id:
+        raise RuntimeError("E82 receipt run UUID mismatch or noncanonical UUID")
+    if report.get("source_commit") != source_commit:
+        raise RuntimeError("E82 receipt source SHA differs from checked-out source")
+    if report.get("probe_apk_sha256") != probe_apk_sha256:
+        raise RuntimeError("E82 receipt host APK SHA-256 mismatch")
+    if report.get("payload_apk_sha256") != payload_apk_sha256:
+        raise RuntimeError("E82 receipt payload fixture APK SHA-256 mismatch")
+    if report.get("private_activity_class_name") != PAYLOAD_PACKAGE + ".PayloadActivity":
+        raise RuntimeError("E82 receipt did not instantiate the exact signed PRIVATE Activity class")
+    if report.get("host_package") != PROBE_PACKAGE or report.get("host_stub_component") != (
+            PROBE_PACKAGE + "/" + PROBE_PACKAGE + ".E82HostActivityStub"):
+        raise RuntimeError("E82 receipt host package or stub ComponentName mismatch")
+    if report.get("api") != 34 or report.get("process_name") != PROBE_PACKAGE + ":fonesi_guest_ui":
+        raise RuntimeError("E82 receipt Android API/process identity mismatch")
+    if report.get("host_stub_activity_info_package") != PROBE_PACKAGE or (
+            report.get("host_stub_activity_info_name") != PROBE_PACKAGE + ".E82HostActivityStub") or (
+            report.get("host_stub_activity_info_process") != PROBE_PACKAGE + ":fonesi_guest_ui") or (
+            report.get("host_stub_activity_info_exported") is not False):
+        raise RuntimeError("E82 PackageManager host-stub ActivityInfo mismatch")
+    pid, uid = report.get("pid"), report.get("uid")
+    if type(pid) is not int or pid <= 0 or type(uid) is not int or uid < 0:
+        raise RuntimeError("E82 host process PID/UID is invalid")
+    if report.get("host_uid") != uid or report.get("host_stub_activity_info_uid") != uid:
+        raise RuntimeError("E82 Activity, host Application and registered stub UID differ")
+    nonce = report.get("nonce")
+    if not isinstance(nonce, str) or re.fullmatch(r"[0-9a-f]{32}", nonce) is None:
+        raise RuntimeError("E82 one-shot nonce is missing or malformed")
+    cluster_id = report.get("private_cluster_id")
+    try:
+        canonical_cluster = isinstance(cluster_id, str) and str(uuid.UUID(cluster_id)) == cluster_id
+    except (ValueError, AttributeError):
+        canonical_cluster = False
+    if not canonical_cluster:
+        raise RuntimeError("E82 signed PRIVATE cluster UUID is invalid")
+    return report
+
+
 def read_e79_stage_receipt(device, run_id, timeout_seconds):
     deadline = time.monotonic() + timeout_seconds
     while time.monotonic() < deadline:
@@ -396,10 +470,10 @@ def main():
     parser.add_argument("--boot-timeout", type=int, default=480)
     parser.add_argument("--probe-timeout", type=int, default=180)
     parser.add_argument("--allow-software-emulation", action="store_true",
-                        help="E77/E78/E79/E80-only bounded synthetic proof fallback when GitHub has no KVM")
+                        help="E77/E78/E79/E80/E82-only bounded synthetic proof fallback when GitHub has no KVM")
     parser.add_argument("--e81-scoped-activity", action="store_true",
                         help="Test-only PRIVATE Activity method scope proof; requires --proof-level e80")
-    parser.add_argument("--proof-level", choices=("e11", "e12", "e13", "e14", "e15", "e16", "e17", "e21", "e22", "e23", "e24", "e25", "e29", "e74", "e77", "e78", "e79", "e80"), default="e11",
+    parser.add_argument("--proof-level", choices=("e11", "e12", "e13", "e14", "e15", "e16", "e17", "e21", "e22", "e23", "e24", "e25", "e29", "e74", "e77", "e78", "e79", "e80", "e82"), default="e11",
                         help="E13 additionally verifies independent synthetic native file/SQLite routes")
     args = parser.parse_args()
     if args.e81_scoped_activity and args.proof_level != "e80":
@@ -407,7 +481,7 @@ def main():
     if args.boot_timeout not in range(30, 601) or args.probe_timeout not in range(15, 301):
         parser.error("Timeout out of bounded range")
     if args.allow_software_emulation and not software_emulation_proof_allowed(args.proof_level):
-        parser.error("Software-emulation fallback is restricted to bounded E77-E80 synthetic proofs")
+        parser.error("Software-emulation fallback is restricted to bounded E77-E82 synthetic proofs")
     for digest in (args.expected_probe_sha256, args.expected_payload_sha256):
         if re.fullmatch(r"[0-9a-f]{64}", digest) is None:
             parser.error("Expected SHA-256 must be 64 lowercase hexadecimal characters")
@@ -464,6 +538,9 @@ def main():
         "android_synthetic_component_dispatch_verified": False,
         "android_private_activity_class_preflight_verified": False,
         "android_private_activity_constructor_preflight_verified": False,
+        "android_e82_factory_authorization_consumed": False,
+        "android_e82_host_stub_context_verified": False,
+        "android_e82_framework_activity_lifecycle_verified": False,
         "android_production_clone_accepted": False,
         "android_third_party_component_executed": False,
         "social_apps_tested": False,
@@ -631,9 +708,9 @@ def main():
         for apk in (payload_apk, probe_apk):
             installed = device("install", "-r", apk, timeout=90, check=False)
             if installed.returncode or "Success" not in installed.stdout:
-                raise RuntimeError("Synthetic APK install failed")
+                raise RuntimeError(synthetic_install_failure(apk, installed))
         evidence["android_apks_installed"] = True
-        if args.proof_level in ("e24", "e25", "e29", "e74", "e77", "e78", "e79", "e80"):
+        if args.proof_level in ("e24", "e25", "e29", "e74", "e77", "e78", "e79", "e80", "e82"):
             # AOSP first boot can deliver late display/locale configuration changes after
             # sys.boot_completed. Preserve the complete seven-value fingerprint and require
             # four identical consecutive snapshots before dispatching the host Activity.
@@ -763,6 +840,22 @@ def main():
             save()
         if args.proof_level in ("e79", "e80"):
             pass
+        elif args.proof_level == "e82":
+            stage = "launch E82 host controller for process-local AppComponentFactory authorization"
+            expected_run_id = str(uuid.uuid4())
+            launch_args = [
+                "shell", "am", "start", "-W", "-n",
+                PROBE_PACKAGE + "/.SyntheticGuestUiProbeActivity",
+                "--es", "run_id", expected_run_id,
+                "--es", "proof_level", "e82",
+                "--es", "source_commit", args.source_commit,
+                "--es", "probe_apk_sha256", args.expected_probe_sha256,
+                "--es", "payload_apk_sha256", args.expected_payload_sha256,
+            ]
+            started = device(*launch_args, timeout=90, check=False)
+            if started.returncode:
+                raise RuntimeError("E82 host controller Activity dispatch failed")
+            stage = "read Android framework-created E82 host-stub Activity receipt"
         elif args.proof_level in ("e24", "e25", "e29", "e74", "e77", "e78"):
             stage = "launch dedicated synthetic UI Activity with signed private View factory"
             expected_run_id = str(uuid.uuid4())
@@ -820,7 +913,31 @@ def main():
         deadline = time.monotonic() if args.proof_level in ("e79", "e80") else time.monotonic() + args.probe_timeout
         report = report if args.proof_level in ("e79", "e80") else None
         while time.monotonic() < deadline:
-            if args.proof_level in ("e24", "e25", "e29", "e74", "e77", "e78"):
+            if args.proof_level == "e82":
+                raw = device("exec-out", "run-as", PROBE_PACKAGE, "cat",
+                             "files/e82-factory-receipts/" + expected_run_id + ".json",
+                             timeout=12, check=False)
+                if raw.returncode == 0 and len(raw.stdout) <= 16384:
+                    try:
+                        found = json.loads(raw.stdout)
+                        if found.get("complete") is True:
+                            report = found
+                            break
+                    except json.JSONDecodeError:
+                        pass
+                failed = device("exec-out", "run-as", PROBE_PACKAGE, "cat",
+                                "files/guest-ui-probe/" + expected_run_id + ".json",
+                                timeout=12, check=False)
+                if failed.returncode == 0 and len(failed.stdout) <= 16384:
+                    try:
+                        failure_report = json.loads(failed.stdout)
+                        if failure_report.get("complete") is True and failure_report.get("passed") is False:
+                            raise RuntimeError("E82 host preparation failed at " +
+                                               str(failure_report.get("failure_stage", "unknown")) + ": " +
+                                               str(failure_report.get("failure_type", "unknown")))
+                    except json.JSONDecodeError:
+                        pass
+            elif args.proof_level in ("e24", "e25", "e29", "e74", "e77", "e78"):
                 raw = device("exec-out", "run-as", PROBE_PACKAGE, "cat",
                              "files/guest-ui-probe/" + expected_run_id + ".json",
                              timeout=12, check=False)
@@ -902,7 +1019,19 @@ def main():
             time.sleep(2)
         if report is None:
             raise RuntimeError("No complete Android synthetic receipt before timeout")
-        if args.proof_level in ("e24", "e25", "e29", "e74", "e77", "e78", "e79", "e80"):
+        if args.proof_level == "e82":
+            (reports / "e82-factory-host-stub-receipt.json").write_text(json.dumps(report, indent=2) + "\n")
+            validate_e82_receipt(report, args.source_commit, args.expected_probe_sha256,
+                                 args.expected_payload_sha256, expected_run_id)
+            evidence["android_e82_factory_authorization_consumed"] = True
+            evidence["android_e82_host_stub_context_verified"] = True
+            evidence["android_e82_framework_activity_lifecycle_verified"] = True
+            evidence["result"] = "PASS_E82_HOST_STUB_FRAMEWORK_ACTIVITY_LIFECYCLE_ONLY"
+            print("PASS: Android framework created and attached the signed PRIVATE synthetic Activity " +
+                  "through the registered non-exported host stub and one-shot AppComponentFactory ticket. " +
+                  "The Activity ran with the host package/UID/Context; no guest package registration, " +
+                  "independent UID/account, third-party app or production clone was accepted.", flush=True)
+        elif args.proof_level in ("e24", "e25", "e29", "e74", "e77", "e78", "e79", "e80"):
             (reports / "synthetic-ui-receipt.json").write_text(json.dumps(report, indent=2) + "\n")
             expected_true = (
                 "complete", "passed", "real_host_activity_lifecycle_verified",

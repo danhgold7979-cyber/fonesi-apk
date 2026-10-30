@@ -14,6 +14,8 @@ from run_guest_code_emulator import (
     validate_e79_receipts,
     validate_e80_receipts,
     validate_e81_receipts,
+    validate_e82_receipt,
+    synthetic_install_failure,
 )
 
 
@@ -467,6 +469,118 @@ class E81SignedPrivateScopedActivityMethodReceiptTests(unittest.TestCase):
         w, v = self.stages()
         with self.assertRaisesRegex(RuntimeError, "payload APK"):
             validate_e81_receipts(w, v, "a" * 40, "b" * 64, "d" * 64)
+
+
+class E82HostStubFrameworkReceiptTests(unittest.TestCase):
+    def valid_receipt(self):
+        return {
+            "complete": True, "passed": True, "proof_level": "e82",
+            "run_id": "aaaaaaaa-bbbb-4ccc-8ddd-eeeeeeeeeeee",
+            "nonce": "0123456789abcdef0123456789abcdef",
+            "source_commit": "a" * 40, "probe_apk_sha256": "b" * 64,
+            "payload_apk_sha256": "c" * 64,
+            "private_cluster_id": "11111111-2222-4333-8444-555555555555",
+            "private_activity_class_name": PAYLOAD_PACKAGE + ".PayloadActivity",
+            "private_activity_classloader_distinct_from_host": True,
+            "factory_authorization_consumed": True,
+            "framework_on_create_called": True, "framework_on_resume_called": True,
+            "base_context_non_null": True, "window_non_null": True,
+            "api": 34, "pid": 2345, "uid": 10142,
+            "process_name": PROBE_PACKAGE + ":fonesi_guest_ui",
+            "host_package": PROBE_PACKAGE, "host_uid": 10142,
+            "host_stub_component": PROBE_PACKAGE + "/" + PROBE_PACKAGE + ".E82HostActivityStub",
+            "host_stub_activity_info_package": PROBE_PACKAGE,
+            "host_stub_activity_info_name": PROBE_PACKAGE + ".E82HostActivityStub",
+            "host_stub_activity_info_process": PROBE_PACKAGE + ":fonesi_guest_ui",
+            "host_stub_activity_info_exported": False,
+            "host_stub_activity_info_uid": 10142,
+            "guest_component_registered_with_host_package_manager": False,
+            "payload_source_fixture_package_installed": True,
+            "guest_uid_isolation": False, "third_party_component_executed": False,
+            "social_accounts_tested": False, "production_clone_accepted": False,
+            "physical_device_tested": False,
+        }
+
+    def validate(self, report):
+        return validate_e82_receipt(
+            report, "a" * 40, "b" * 64, "c" * 64,
+            "aaaaaaaa-bbbb-4ccc-8ddd-eeeeeeeeeeee")
+
+    def test_real_host_stub_context_and_lifecycle_receipt_passes(self):
+        report = self.valid_receipt()
+        self.assertIs(self.validate(report), report)
+
+    def test_factory_consumption_and_both_framework_callbacks_are_required(self):
+        for key in ("factory_authorization_consumed", "framework_on_create_called",
+                    "framework_on_resume_called", "base_context_non_null", "window_non_null"):
+            with self.subTest(key=key):
+                report = self.valid_receipt()
+                report[key] = False
+                with self.assertRaisesRegex(RuntimeError, "E82 host-stub receipt assertions failed"):
+                    self.validate(report)
+
+    def test_exact_source_apk_run_class_and_stub_identity_are_required(self):
+        mutations = (
+            ("source_commit", "d" * 40),
+            ("probe_apk_sha256", "d" * 64),
+            ("payload_apk_sha256", "d" * 64),
+            ("private_activity_class_name", PAYLOAD_PACKAGE + ".OtherActivity"),
+            ("host_package", "vn.fonesi.attacker"),
+            ("host_stub_activity_info_name", PROBE_PACKAGE + ".OtherActivity"),
+            ("host_stub_activity_info_exported", True),
+            ("host_stub_activity_info_uid", 10143),
+        )
+        for key, value in mutations:
+            with self.subTest(key=key):
+                report = self.valid_receipt()
+                report[key] = value
+                with self.assertRaises(RuntimeError):
+                    self.validate(report)
+
+    def test_guest_uid_third_party_or_production_overclaim_is_denied(self):
+        for key in ("guest_component_registered_with_host_package_manager",
+                    "guest_uid_isolation", "third_party_component_executed",
+                    "social_accounts_tested", "production_clone_accepted",
+                    "physical_device_tested"):
+            with self.subTest(key=key):
+                report = self.valid_receipt()
+                report[key] = True
+                with self.assertRaisesRegex(RuntimeError, "E82 host-stub receipt assertions failed"):
+                    self.validate(report)
+
+    def test_installed_payload_source_fixture_is_not_misreported_as_guest_registration(self):
+        report = self.valid_receipt()
+        report["payload_source_fixture_package_installed"] = True
+        self.assertIs(self.validate(report), report)
+
+    def test_nonce_cluster_run_pid_and_uid_are_validated(self):
+        for key, value in (
+            ("nonce", "bad"), ("private_cluster_id", "bad"),
+            ("run_id", "bbbbbbbb-cccc-4ddd-8eee-ffffffffffff"),
+            ("pid", 0), ("uid", -1), ("host_uid", 999),
+        ):
+            with self.subTest(key=key):
+                report = self.valid_receipt()
+                report[key] = value
+                with self.assertRaises(RuntimeError):
+                    self.validate(report)
+
+
+class SyntheticInstallDiagnosticsTests(unittest.TestCase):
+    def test_install_failure_preserves_bounded_adb_reason(self):
+        result = SimpleNamespace(returncode=1, stdout="Failure [INSTALL_FAILED_INVALID_APK]", stderr="signature mismatch")
+        message = synthetic_install_failure("/tmp/probe-payload-debug.apk", result)
+        self.assertIn("probe-payload-debug.apk", message)
+        self.assertIn("exit=1", message)
+        self.assertIn("INSTALL_FAILED_INVALID_APK", message)
+        self.assertIn("signature mismatch", message)
+
+    def test_install_failure_bounds_untrusted_adb_output(self):
+        result = SimpleNamespace(returncode=1, stdout="x" * 5000, stderr="y" * 5000)
+        message = synthetic_install_failure("payload.apk", result)
+        self.assertLess(len(message), 4200)
+        self.assertIn("payload.apk", message)
+
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)

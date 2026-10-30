@@ -1,0 +1,329 @@
+name: E82 public AppComponentFactory host-stub framework lifecycle proof
+
+on:
+  push:
+    branches:
+      - phase/e82-public-component-factory-feasibility-20261030
+  pull_request:
+    branches:
+      - phase/e81-private-activity-scoped-method-proof-20261030
+  workflow_dispatch:
+
+permissions:
+  actions: read
+  contents: read
+
+concurrency:
+  group: fonesi-e82-public-component-factory-host-stub-v1
+  cancel-in-progress: true
+
+jobs:
+  verified-source-queue:
+    runs-on: ubuntu-latest
+    timeout-minutes: 70
+    env:
+      FONESI_TOOLS_DIR: /tmp/fonesi-tools
+      ANDROID_HOME: /tmp/fonesi-tools/android-sdk
+      ANDROID_SDK_ROOT: /tmp/fonesi-tools/android-sdk
+    steps:
+      - name: Checkout exact E82 source
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - name: Verify exact E82 source SHA (not synthetic PR merge commit)
+        run: |
+          test "$(git rev-parse HEAD)" = "${{ github.event.pull_request.head.sha || github.sha }}"
+          echo "PASS: validated exact E82 source SHA $(git rev-parse HEAD)"
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Download and verify pinned E78 parent artifact
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          API_ROOT="https://api.github.com/repos/${GITHUB_REPOSITORY}"
+          ARTIFACT_ID="12952618461"
+          curl --fail --silent --show-error \
+            -H "Authorization: Bearer ${GH_TOKEN}" \
+            -H "Accept: application/vnd.github+json" \
+            "${API_ROOT}/actions/artifacts/${ARTIFACT_ID}" \
+            --output /tmp/fonesi-e78-artifact-metadata.json
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          metadata = json.loads(Path("/tmp/fonesi-e78-artifact-metadata.json").read_text())
+          assert metadata.get("id") == 12952618461
+          assert metadata.get("name") == "fonesi-E78-synthetic-application-scoped-data-TEST-ONLY"
+          assert metadata.get("expired") is False
+          assert metadata.get("digest") == "sha256:ae7537e632889e41f12f8013912867665e6cecba4540c195ebeb953e33729706"
+          run = metadata.get("workflow_run") or {}
+          assert run.get("id") == 40998462184
+          assert run.get("head_branch") == "phase/e78-synthetic-application-lifecycle-20261030"
+          assert run.get("head_sha") == "57d60cb80d6cece692b2898afd15d8668fd14883"
+          print("PASS: pinned E78 artifact metadata, workflow run and exact source SHA verified")
+          PY
+          curl --fail --location --silent --show-error --retry 3 \
+            -H "Authorization: Bearer ${GH_TOKEN}" \
+            -H "Accept: application/vnd.github+json" \
+            "${API_ROOT}/actions/artifacts/${ARTIFACT_ID}/zip" \
+            --output /tmp/fonesi-e78-parent.zip
+          echo "ae7537e632889e41f12f8013912867665e6cecba4540c195ebeb953e33729706  /tmp/fonesi-e78-parent.zip" | sha256sum --check
+          mkdir -p app/build/reports/e78-parent
+          unzip -p /tmp/fonesi-e78-parent.zip app/build/reports/e78-emulator/e11-evidence.json \
+            > app/build/reports/e78-parent/e11-evidence.json
+          unzip -p /tmp/fonesi-e78-parent.zip app/build/reports/e78-emulator/synthetic-ui-receipt.json \
+            > app/build/reports/e78-parent/synthetic-ui-receipt.json
+          python3 scripts/verify_e78_parent_artifact.py --directory app/build/reports/e78-parent
+      - name: Audit E40-E82 inherited runtime, component factory and guest non-execution safety
+        run: |
+          python3 -m py_compile scripts/verify_e78_parent_artifact.py scripts/audit_e40_clone_cluster_ownership.py scripts/audit_e41_update_task_cluster_ownership.py scripts/audit_e42_atomic_owner_transitions.py scripts/audit_e43_atomic_retained_enqueue.py scripts/audit_e44_atomic_batch_retained_enqueue.py scripts/audit_e44_retained_source_quarantine.py scripts/audit_e45_retained_batch_source_quarantine.py scripts/audit_e46_foreground_source_authority.py scripts/audit_e47_original_source_confirmation.py scripts/audit_e48_retained_recovery_quarantine.py scripts/audit_e49_source_authority_gates_integration.py scripts/audit_e50_preview_private_source_authority.py scripts/audit_e51_retained_enqueue_original_conflict.py scripts/audit_e52_engine_scoped_queue_recovery.py scripts/audit_e53_background_private_source_recovery.py scripts/audit_e54_unblocked_queue_selection.py scripts/audit_e55_engine_scoped_queue_controls.py scripts/audit_e56_stop_identity_revalidation.py scripts/audit_e57_clone_presentation_lock.py scripts/audit_e58_clone_cluster_association_lock.py scripts/audit_e59_delete_locktime_identity.py scripts/audit_e60_positive_guest_stop_readback.py scripts/audit_e61_guest_stop_identity_continuity.py scripts/audit_e62_ready_guest_launch_gate.py scripts/audit_e63_ready_shared_mutations.py scripts/audit_e64_unknown_guest_launch_retry.py scripts/audit_e65_native_guest_delete_identity.py scripts/audit_e66_shared_update_dispatch_revalidation.py scripts/audit_e67_create_preinstall_peer_guard.py scripts/audit_e68_private_signed_component_catalog.py scripts/audit_e69_source_loader_signed_component_readback.py scripts/audit_e70_signed_explicit_activity_selection.py scripts/audit_e71_signed_activity_process_safety.py scripts/audit_e72_signed_app_process_inheritance.py scripts/audit_e73_private_activity_bytecode_preflight.py scripts/audit_e74_private_activity_class_probe.py scripts/audit_e75_activity_constructor_preflight.py scripts/audit_e76_activity_preflight_no_class_init.py scripts/audit_e77_emulator_activity_preflight.py scripts/audit_e78_synthetic_application_lifecycle.py scripts/audit_e79_synthetic_process_restart.py scripts/audit_e80_private_activity_construction.py scripts/audit_e81_private_activity_scoped_method.py scripts/audit_e82_factory_authorization.py scripts/run_guest_code_emulator.py scripts/test_run_guest_code_emulator.py scripts/prepare_native_emulator.py scripts/run_native_probe.py scripts/verify_main_build.py scripts/verify_candidate_build.py
+          python3 scripts/audit_e40_clone_cluster_ownership.py
+          python3 scripts/audit_e41_update_task_cluster_ownership.py
+          python3 scripts/audit_e42_atomic_owner_transitions.py
+          python3 scripts/audit_e43_atomic_retained_enqueue.py
+          python3 scripts/audit_e44_atomic_batch_retained_enqueue.py
+          python3 scripts/audit_e44_retained_source_quarantine.py
+          python3 scripts/audit_e45_retained_batch_source_quarantine.py
+          python3 scripts/audit_e46_foreground_source_authority.py
+          python3 scripts/audit_e47_original_source_confirmation.py
+          python3 scripts/audit_e48_retained_recovery_quarantine.py
+          python3 scripts/audit_e49_source_authority_gates_integration.py
+          python3 scripts/audit_e50_preview_private_source_authority.py
+          python3 scripts/audit_e51_retained_enqueue_original_conflict.py
+          python3 scripts/audit_e52_engine_scoped_queue_recovery.py
+          python3 scripts/audit_e53_background_private_source_recovery.py
+          python3 scripts/audit_e54_unblocked_queue_selection.py
+          python3 scripts/audit_e55_engine_scoped_queue_controls.py
+          python3 scripts/audit_e56_stop_identity_revalidation.py
+          python3 scripts/audit_e57_clone_presentation_lock.py
+          python3 scripts/audit_e58_clone_cluster_association_lock.py
+          python3 scripts/audit_e59_delete_locktime_identity.py
+          python3 scripts/audit_e60_positive_guest_stop_readback.py
+          python3 scripts/audit_e61_guest_stop_identity_continuity.py
+          python3 scripts/audit_e62_ready_guest_launch_gate.py
+          python3 scripts/audit_e63_ready_shared_mutations.py
+          python3 scripts/audit_e64_unknown_guest_launch_retry.py
+          python3 scripts/audit_e65_native_guest_delete_identity.py
+          python3 scripts/audit_e66_shared_update_dispatch_revalidation.py
+          python3 scripts/audit_e67_create_preinstall_peer_guard.py
+          python3 scripts/audit_e68_private_signed_component_catalog.py
+          python3 scripts/audit_e69_source_loader_signed_component_readback.py
+          python3 scripts/audit_e70_signed_explicit_activity_selection.py
+          python3 scripts/audit_e71_signed_activity_process_safety.py
+          python3 scripts/audit_e72_signed_app_process_inheritance.py
+          python3 scripts/audit_e73_private_activity_bytecode_preflight.py
+          python3 scripts/audit_e74_private_activity_class_probe.py
+          python3 scripts/audit_e75_activity_constructor_preflight.py
+          python3 scripts/audit_e76_activity_preflight_no_class_init.py
+          python3 scripts/audit_e77_emulator_activity_preflight.py
+          python3 scripts/audit_e78_synthetic_application_lifecycle.py
+          python3 scripts/audit_e79_synthetic_process_restart.py
+          python3 scripts/audit_e80_private_activity_construction.py
+          python3 scripts/audit_e81_private_activity_scoped_method.py
+          python3 scripts/audit_e82_factory_authorization.py
+          python3 scripts/audit_e83_split_provider_contract.py
+      - name: Run inherited E81 and E82 host-stub receipt regression tests
+        run: python3 scripts/test_run_guest_code_emulator.py
+      - name: Bootstrap pinned Android SDK36 Gradle and JDK21
+        run: python3 scripts/bootstrap_android.py --accept-sdk-license
+      - name: Cloud signed APK fixture tests lint APK audit for E79
+        run: ./scripts/check.sh
+      - name: Verify E77 Android class preflight plus E76 non-initialization regressions executed
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import xml.etree.ElementTree as ET
+          files = list(Path("apk-runtime/build/test-results/test").glob("*SignedPrivateExplicitActivityResolverTest.xml"))
+          assert files, "E71 signed Activity selection tests did not execute"
+          xml = ET.parse(files[0]).getroot()
+          assert int(xml.get("tests", "0")) >= 16
+          catalog = list(Path("apk-runtime/build/test-results/test").glob("*PrivateApkComponentCatalogTest.xml"))
+          assert catalog, "E72 signed base/split catalog tests did not execute"
+          cat_result = ET.parse(catalog[0]).getroot()
+          assert int(cat_result.get("tests", "0")) >= 8
+          assert all(int(cat_result.get(item, "0")) == 0 for item in ("failures", "errors", "skipped"))
+          assert all(int(xml.get(x, "0")) == 0 for x in ("failures", "errors", "skipped"))
+          print("PASS: signed PRIVATE Activity selection verified with real binary APK fixtures")
+          PY
+      - name: Candidate SDK and signed APK audit for E79
+        run: ./scripts/check.sh --with-engine-candidate
+      - name: Build and test source AAR, Activity and Application preflight for E79
+        run: |
+          python3 scripts/prepare_source_engine.py --install-tools
+          python3 scripts/check_source_engine.py
+          python3 - <<'PY'
+          from pathlib import Path
+          import xml.etree.ElementTree as ET
+          root = Path("engine-source/build/test-results/testDebugUnitTest")
+          matches = list(root.glob("*PrivateGuestComponentPreflightTest.xml"))
+          assert matches, "E69 signed component source JVM suite did not run"
+          result = ET.parse(matches[0]).getroot()
+          assert int(result.get("tests", "0")) >= 6
+          assert all(int(result.get(item, "0")) == 0 for item in ("failures", "errors", "skipped"))
+          print("PASS: E69 source-engine signed component regressions were actually executed")
+          class_tests = list(root.glob("*PrivateGuestActivityClassPreflightTest.xml"))
+          assert class_tests, "E73 private Activity bytecode class JVM regressions did not execute"
+          classes = ET.parse(class_tests[0]).getroot()
+          assert int(classes.get("tests", "0")) >= 10, "E76 private class suite is incomplete"
+          assert all(int(classes.get(key, "0")) == 0 for key in ("failures", "errors", "skipped"))
+          executed = {case.get("name") for case in classes.findall("testcase")}
+          assert "successfulPreflightDoesNotRunGuestStaticInitializer" in executed
+          assert "constructorShapeFailureDoesNotRunGuestStaticInitializer" in executed
+          print("PASS: E76 static-initializer non-execution and E75 class-preflight regressions actually executed")
+          app_tests = list(root.glob("*PrivateGuestApplicationClassPreflightTest.xml"))
+          assert len(app_tests) == 1, "E78 signed Application preflight JVM suite did not execute"
+          app_result = ET.parse(app_tests[0]).getroot()
+          assert int(app_result.get("tests", "0")) >= 5, "E78 Application JVM suite is incomplete"
+          assert all(int(app_result.get(key, "0")) == 0 for key in ("failures", "errors", "skipped"))
+          app_cases = {case.get("name") for case in app_result.findall("testcase")}
+          required_app_cases = {
+              "exactPrivateConcreteApplicationPassesWithoutRunningConstructor",
+              "delegatedParentClassAndMissingSignedNameFailClosed",
+              "wrongBaseAbstractNonPublicAndInnerTypesAreRejected",
+              "parameterizedPrivateAndProtectedConstructorsAreRejected",
+              "staticInitializerIsNotRunOnSuccessfulOrFailedPreflight",
+          }
+          assert required_app_cases <= app_cases, f"E78 Application JVM regressions missing: {required_app_cases - app_cases}"
+          print("PASS: E78 signed Application class preflight ran against Android Application type without constructor invocation")
+          PY
+      - name: Build opt-in signed synthetic Android probe and payload APKs
+        run: |
+          ./scripts/gradle.sh -PincludeNativeRuntimeProbe=true -PsourceEngineAbi=x86_64 :native-runtime-probe:assembleDebug :native-runtime-probe:lintDebug --console=plain
+          ./scripts/gradle.sh -PincludeEngineProbe=true :probe-payload:assembleDebug :probe-payload:lintDebug :probe-payload:testDebugUnitTest --console=plain
+          python3 scripts/run_native_probe.py --audit-only
+          python3 - <<'PY'
+          from pathlib import Path
+          import xml.etree.ElementTree as ET
+          marker_tests = list(Path("probe-payload/build/test-results/testDebugUnitTest").glob("*SyntheticApplicationProcessMarkerTest.xml"))
+          assert len(marker_tests) == 1, "E79 payload lifecycle marker JVM tests did not execute"
+          marker_result = ET.parse(marker_tests[0]).getroot()
+          assert int(marker_result.get("tests", "0")) >= 7
+          constructor_tests = list(Path("probe-payload/build/test-results/testDebugUnitTest").glob("*SyntheticActivityConstructionProbeTest.xml"))
+          assert len(constructor_tests) == 1, "E80 payload synthetic Activity constructor JVM suite did not execute"
+          activity_result = ET.parse(constructor_tests[0]).getroot()
+          assert int(activity_result.get("tests", "0")) >= 3
+          scoped_tests = list(Path("probe-payload/build/test-results/testDebugUnitTest").glob("*SyntheticActivityScopedBindingRulesTest.xml"))
+          assert len(scoped_tests) == 1, "E81 immutable scoped binding JVM suite did not execute"
+          scoped_result = ET.parse(scoped_tests[0]).getroot()
+          assert int(scoped_result.get("tests", "0")) >= 4
+          assert all(int(scoped_result.get(k, "0")) == 0 for k in ("failures", "errors", "skipped"))
+          assert all(int(activity_result.get(key, "0")) == 0 for key in ("failures", "errors", "skipped"))
+          assert all(int(marker_result.get(key, "0")) == 0 for key in ("failures", "errors", "skipped"))
+          print("PASS: E79 payload process-marker JVM regressions executed")
+          PY
+          python3 - <<'PY'
+          from pathlib import Path
+          import xml.etree.ElementTree as ET
+          for module in ("native-runtime-probe", "probe-payload"):
+              path = Path(module) / "build/reports/lint-results-debug.xml"
+              assert path.is_file(), "Missing synthetic probe lint report: " + str(path)
+              issues = ET.parse(path).getroot().findall("issue")
+              assert not any(i.get("severity") in ("Error", "Fatal") for i in issues)
+          print("PASS: signed synthetic Android host/payload APKs built/linted and payload marker JVM tests passed; E79 will execute across process death on AOSP emulator")
+          PY
+      - name: Install pinned AOSP API 34 emulator image for E82
+        run: python3 scripts/prepare_native_emulator.py --install --image aosp34
+      - name: Execute E82 signed PRIVATE Activity through Android AppComponentFactory host stub
+        run: |
+          PROBE_APK="native-runtime-probe/build/outputs/apk/debug/native-runtime-probe-debug.apk"
+          PAYLOAD_APK="probe-payload/build/outputs/apk/debug/probe-payload-debug.apk"
+          test -f "$PROBE_APK"
+          test -f "$PAYLOAD_APK"
+          PROBE_SHA256="$(sha256sum "$PROBE_APK" | cut -d ' ' -f 1)"
+          PAYLOAD_SHA256="$(sha256sum "$PAYLOAD_APK" | cut -d ' ' -f 1)"
+          python3 scripts/run_guest_code_emulator.py \
+            --apk-dir . \
+            --reports app/build/reports/e82-emulator \
+            --proof-level e82 \
+            --allow-software-emulation \
+            --expected-probe-sha256 "$PROBE_SHA256" \
+            --expected-payload-sha256 "$PAYLOAD_SHA256" \
+            --source-commit "$(git rev-parse HEAD)" \
+            --boot-timeout 600 --probe-timeout 180
+          python3 - <<'PY'
+          import json
+          import subprocess
+          from pathlib import Path
+          root = Path("app/build/reports/e82-emulator")
+          evidence = json.loads((root / "e11-evidence.json").read_text())
+          receipt = json.loads((root / "e82-factory-host-stub-receipt.json").read_text())
+          source_sha = subprocess.check_output(["git", "rev-parse", "HEAD"], text=True).strip()
+          assert evidence.get("source_commit") == source_sha
+          assert evidence.get("result") == "PASS_E82_HOST_STUB_FRAMEWORK_ACTIVITY_LIFECYCLE_ONLY"
+          for key in ("android_boot_verified", "android_apks_installed",
+                      "android_e82_factory_authorization_consumed",
+                      "android_e82_host_stub_context_verified",
+                      "android_e82_framework_activity_lifecycle_verified"):
+              assert evidence.get(key) is True, "E82 exact-source emulator evidence missing " + key
+          assert receipt.get("source_commit") == source_sha
+          assert receipt.get("probe_apk_sha256") == evidence.get("probe_sha256")
+          assert receipt.get("payload_apk_sha256") == evidence.get("payload_sha256")
+          assert receipt.get("proof_level") == "e82"
+          for key in ("factory_authorization_consumed", "framework_on_create_called",
+                      "framework_on_resume_called", "base_context_non_null", "window_non_null",
+                      "private_activity_classloader_distinct_from_host"):
+              assert receipt.get(key) is True, "E82 framework receipt missing " + key
+          assert receipt.get("host_package") == "vn.fonesi.nativeprobe"
+          assert receipt.get("host_stub_activity_info_name") == "vn.fonesi.nativeprobe.E82HostActivityStub"
+          assert receipt.get("host_stub_activity_info_exported") is False
+          assert receipt.get("guest_component_registered_with_host_package_manager") is False
+          assert receipt.get("payload_source_fixture_package_installed") is True
+          for key in ("guest_uid_isolation", "third_party_component_executed",
+                      "social_accounts_tested", "production_clone_accepted", "physical_device_tested"):
+              assert receipt.get(key) is False, "E82 must not overclaim " + key
+          print("PASS: E82 Android framework Activity lifecycle was created through the registered non-exported host stub; package/UID/Context remain host-owned.")
+          PY
+      - name: Verify E82 host factory remains test-only and production split support stays disabled
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          backend = Path("app/src/candidate/java/vn/fonesi/app/runtime/SpaceCoreBackend.kt").read_text()
+          runtime = Path("app/src/candidate/java/vn/fonesi/app/runtime/RuntimeBindings.kt").read_text()
+          factory = Path("native-runtime-probe/src/main/java/vn/fonesi/nativeprobe/E82AppComponentFactory.java").read_text()
+          host = Path("native-runtime-probe/src/main/java/vn/fonesi/nativeprobe/SyntheticGuestUiProbeActivity.java").read_text()
+          assert "check(source.apkPaths.size == 1)" in backend
+          assert "const val supportsSplits = false" in runtime
+          for forbidden in ("Activity.attach(", "callActivityOnCreate(", "Instrumentation.callActivityOnCreate("):
+              assert forbidden not in factory and forbidden not in host
+          print("PASS: E82 is an opt-in test-only host-stub experiment; production split and guest lifecycle remain unenabled.")
+          PY
+      - name: Verify E80 Java constructor does not enable real guest Activity or split support
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          backend = Path("app/src/candidate/java/vn/fonesi/app/runtime/SpaceCoreBackend.kt").read_text()
+          runtime = Path("app/src/candidate/java/vn/fonesi/app/runtime/RuntimeBindings.kt").read_text()
+          queue = Path("app/src/main/java/vn/fonesi/app/storage/PrivateClusterRetainedEnqueuer.kt").read_text()
+          assert "check(source.apkPaths.size == 1)" in backend
+          assert "const val supportsSplits = false" in runtime
+          for forbidden in ("engine.update(", "engine.launch(", "fun collectGarbage(", "fun deleteCluster(", "Files.delete("):
+              assert forbidden not in queue
+          print("PASS: E80 is only an unattached Java Activity constructor; production split and real guest execution remain disabled")
+          PY
+      - name: Upload E82 host-stub lifecycle receipt, generated schema and sanitized tests
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: fonesi-E82-AppComponentFactory-host-stub-TEST-ONLY
+          path: |
+            app/schemas/vn.fonesi.app.storage.FonesiDatabase/6.json
+            app/build/reports/cloud-verification.json
+            app/build/reports/candidate-verification.json
+            app/build/test-results/testDebugUnitTest/TEST-*.xml
+            probe-payload/build/test-results/testDebugUnitTest/TEST-*.xml
+            apk-runtime/build/test-results/test/TEST-*.xml
+            core/build/test-results/test/TEST-*.xml
+            engine-source/build/test-results/testDebugUnitTest/TEST-*.xml
+            engine-source/build/reports/source-engine-verification.json
+            native-runtime-probe/build/reports/runtime/native-probe-static.json
+            native-runtime-probe/build/reports/lint-results-debug.xml
+            probe-payload/build/reports/lint-results-debug.xml
+            app/build/reports/e82-emulator/e11-evidence.json
+            app/build/reports/e82-emulator/e82-factory-host-stub-receipt.json
+            app/build/reports/e78-parent/e11-evidence.json
+            app/build/reports/e78-parent/synthetic-ui-receipt.json
+          if-no-files-found: warn
+          retention-days: 7
+

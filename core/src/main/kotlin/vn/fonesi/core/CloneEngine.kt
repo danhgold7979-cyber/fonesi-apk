@@ -43,7 +43,12 @@ data class EngineCapabilities(
     val singleApkPreflightSupported: Boolean = false,
     val singleApkInstallSupported: Boolean = false,
     val packageIdentityReadbackSupported: Boolean = false,
+    val splitClusterPreflightSupported: Boolean = false,
+    val splitClusterInstallDispatchSupported: Boolean = false,
+    val splitClusterReadbackVerified: Boolean = false,
     val splitClusterImportSupported: Boolean = false,
+    val splitClusterCodeExecutionVerified: Boolean = false,
+    val splitClusterAtomicUpdateVerified: Boolean = false,
     val guestActivityLifecycleVerified: Boolean = false,
     val guestServiceLifecycleVerified: Boolean = false,
     val guestReceiverLifecycleVerified: Boolean = false,
@@ -54,6 +59,20 @@ data class EngineCapabilities(
     val isolationLevel: EngineIsolationLevel = EngineIsolationLevel.UNKNOWN,
     val evidenceRefs: Set<String> = emptySet(),
 ) {
+    init {
+        require(!splitClusterImportSupported || (splitClusterPreflightSupported &&
+            splitClusterInstallDispatchSupported && splitClusterReadbackVerified)) {
+            "Split import cannot be accepted without preflight, dispatch and complete readback"
+        }
+        require(!splitClusterCodeExecutionVerified || splitClusterImportSupported) {
+            "Split code execution requires an accepted split import provider"
+        }
+        require(!splitClusterAtomicUpdateVerified ||
+            (splitClusterImportSupported && splitClusterCodeExecutionVerified)) {
+            "Atomic split update requires accepted import and code-execution proof"
+        }
+    }
+
     /** True only when a stronger, explicit isolation boundary has been accepted. */
     fun satisfiesIsolation(required: EngineIsolationLevel): Boolean = when (required) {
         EngineIsolationLevel.HOST_UID_NAMESPACE -> isolationLevel != EngineIsolationLevel.UNKNOWN

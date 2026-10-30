@@ -1,0 +1,69 @@
+name: E82 one-shot AppComponentFactory authorization subgate
+
+on:
+  push:
+    branches:
+      - phase/e82-public-component-factory-feasibility-20261030
+  pull_request:
+    branches:
+      - phase/e81-private-activity-scoped-method-proof-20261030
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: fonesi-e82-factory-authorization-subgate
+  cancel-in-progress: true
+
+jobs:
+  authorization-state-machine:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    env:
+      FONESI_TOOLS_DIR: /tmp/fonesi-tools
+      ANDROID_HOME: /tmp/fonesi-tools/android-sdk
+      ANDROID_SDK_ROOT: /tmp/fonesi-tools/android-sdk
+    steps:
+      - name: Checkout exact E82 source
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - name: Verify exact source SHA
+        run: |
+          test "$(git rev-parse HEAD)" = "${{ github.event.pull_request.head.sha || github.sha }}"
+          echo "PASS: exact E82 source $(git rev-parse HEAD)"
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Audit and compile E82 authorization guard
+        run: |
+          python3 -m py_compile scripts/audit_e82_factory_authorization.py scripts/run_guest_code_emulator.py scripts/test_run_guest_code_emulator.py
+          python3 scripts/audit_e82_factory_authorization.py
+          python3 scripts/test_run_guest_code_emulator.py
+      - name: Bootstrap pinned Android SDK, JDK and Gradle
+        run: python3 scripts/bootstrap_android.py --accept-sdk-license
+      - name: Install pinned NDK and CMake required by source-engine Gradle configuration
+        run: python3 scripts/prepare_source_engine.py --install-tools
+      - name: Run E82 JVM authorization state-machine tests
+        run: |
+          ./scripts/gradle.sh -PincludeNativeRuntimeProbe=true -PsourceEngineAbi=x86_64 :native-runtime-probe:testDebugUnitTest --console=plain
+          python3 - <<'PY'
+          from pathlib import Path
+          import xml.etree.ElementTree as ET
+          reports = list(Path("native-runtime-probe/build/test-results/testDebugUnitTest").glob("*E82FactoryAuthorizationTest.xml"))
+          assert len(reports) == 1, "E82 authorization JVM suite did not execute"
+          result = ET.parse(reports[0]).getroot()
+          assert int(result.get("tests", "0")) >= 5, "E82 authorization suite is incomplete"
+          assert all(int(result.get(key, "0")) == 0 for key in ("failures", "errors", "skipped")), "E82 authorization JVM tests failed or skipped"
+          print("PASS: E82 one-shot authorization JVM suite executed with zero failures/errors/skips")
+          PY
+      - name: Upload E82 authorization test report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: fonesi-E82-authorization-subgate-TEST-ONLY
+          path: native-runtime-probe/build/test-results/testDebugUnitTest/TEST-*.xml
+          if-no-files-found: warn
+          retention-days: 7

@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.app.Application;
 import android.app.Instrumentation;
 import android.content.Context;
+import android.content.ComponentName;
 import android.content.SharedPreferences;
 import android.content.Intent;
 import android.content.res.Configuration;
@@ -14,6 +15,7 @@ import android.os.Looper;
 import android.view.View;
 import android.widget.TextView;
 import java.io.File;
+import java.io.FileInputStream;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.SecureRandom;
@@ -95,6 +97,9 @@ public final class SyntheticGuestUiProbeActivity extends Activity {
     private volatile String e80PrivateActivityClassName;
     private volatile int e80PrivateActivityConstructorCount;
     private volatile boolean e81ScopedMode;
+    private volatile boolean e82Mode;
+    private volatile String e82Nonce;
+    private volatile boolean e82DispatchQueued;
     private volatile Activity e81PrivateActivity;
     private volatile boolean e81PrivateInstanceScopeBound;
     private volatile boolean e81PrivateRebindingRejected;
@@ -134,7 +139,7 @@ public final class SyntheticGuestUiProbeActivity extends Activity {
             if (requestedProof != null) proofLevel = requestedProof;
             if (!"e24".equals(proofLevel) && !"e25".equals(proofLevel) &&
                 !"e29".equals(proofLevel) && !"e74".equals(proofLevel) &&
-                !"e77".equals(proofLevel) && !"e78".equals(proofLevel) && !("e79".equals(proofLevel) || "e80".equals(proofLevel)))
+                !"e77".equals(proofLevel) && !"e78".equals(proofLevel) && !("e79".equals(proofLevel) || "e80".equals(proofLevel)) && !"e82".equals(proofLevel))
                 throw new IllegalArgumentException("Unsupported synthetic host screen proof");
             String e81Mode = getIntent().getStringExtra("e81_scoped_mode");
             if (e81Mode != null) {
@@ -142,7 +147,10 @@ public final class SyntheticGuestUiProbeActivity extends Activity {
                     throw new IllegalArgumentException("E81 requires explicit e80 synthetic scope opt-in");
                 e81ScopedMode = true;
             }
-            if ("e78".equals(proofLevel) || ("e79".equals(proofLevel) || "e80".equals(proofLevel))) {
+            e82Mode = "e82".equals(proofLevel);
+            if (e82Mode && Build.VERSION.SDK_INT < 28)
+                throw new IllegalStateException("E82 requires Android API 28 or later AppComponentFactory support");
+            if ("e78".equals(proofLevel) || ("e79".equals(proofLevel) || "e80".equals(proofLevel) || e82Mode)) {
                 sourceCommit = getIntent().getStringExtra("source_commit");
                 probeApkSha256 = getIntent().getStringExtra("probe_apk_sha256");
                 payloadApkSha256 = getIntent().getStringExtra("payload_apk_sha256");
@@ -322,13 +330,14 @@ public final class SyntheticGuestUiProbeActivity extends Activity {
                 .load(localCluster.getId());
             ProbeData.check(GUEST_PACKAGE.equals(image.getPackageName()),
                 "Signed private payload package mismatch");
-            if ("e74".equals(proofLevel) || "e77".equals(proofLevel) || "e78".equals(proofLevel) || ("e79".equals(proofLevel) || "e80".equals(proofLevel))) {
+            PrivateGuestActivityClassHandle activityProof = null;
+            if ("e74".equals(proofLevel) || "e77".equals(proofLevel) || "e78".equals(proofLevel) || ("e79".equals(proofLevel) || "e80".equals(proofLevel) || e82Mode)) {
                 stage = ("e79".equals(proofLevel) || "e80".equals(proofLevel)) ? "e79_signed_private_activity_and_application_preflight" :
                     ("e78".equals(proofLevel) ? "e78_signed_private_activity_and_application_preflight" :
                         ("e77".equals(proofLevel) ? "e77_signed_private_activity_constructor_preflight" :
                             "e74_signed_private_activity_class_preflight"));
                 preparationStage = stage;
-                PrivateGuestActivityClassHandle activityProof = image.preflightExplicitActivityClass(
+                activityProof = image.preflightExplicitActivityClass(
                     SIGNED_ACTIVITY, ExplicitActivityCaller.TRUSTED_INTERNAL);
                 ProbeData.check(activityProof.getSelection().getClusterId().equals(localCluster.getId()) &&
                     activityProof.getSelection().getPackageName().equals(GUEST_PACKAGE) &&
@@ -345,8 +354,16 @@ public final class SyntheticGuestUiProbeActivity extends Activity {
                 ProbeData.check(localStore.open(localCluster.getId(), Build.VERSION.SDK_INT)
                     .equals(localCluster), "Private signed APK changed during Activity class preflight");
                 privateActivityClassVerified = true;
-                if ("e77".equals(proofLevel) || "e78".equals(proofLevel) || ("e79".equals(proofLevel) || "e80".equals(proofLevel)))
+                if ("e77".equals(proofLevel) || "e78".equals(proofLevel) || ("e79".equals(proofLevel) || "e80".equals(proofLevel) || e82Mode)) {
+                    activityProof.getActivityClass().getConstructor();
                     privateActivityConstructorPreflightVerified = true;
+                }
+            }
+            if (e82Mode) {
+                if (activityProof == null) throw new IllegalStateException("E82 signed PRIVATE Activity preflight is missing");
+                prepareE82FactoryDispatch(image, localStore, localCluster, activityProof);
+                preparationFinished = true;
+                return;
             }
             int marker = image.getResources().getIdentifier(
                 "fonesi_guest_code_probe", "string", GUEST_PACKAGE);
@@ -389,6 +406,78 @@ public final class SyntheticGuestUiProbeActivity extends Activity {
             preparationFinished = true;
             runOnUiThread(() -> failure(failedAt, error));
         }
+    }
+
+    /** E82: arm the host-process factory only after exact installed APK and private class readback. */
+    private void prepareE82FactoryDispatch(LoadedGuestCode image, PrivateApkStore verifiedStore,
+            PrivateApkCluster verifiedCluster, PrivateGuestActivityClassHandle activityProof) throws Exception {
+        if (Build.VERSION.SDK_INT < 28 || !Process.is64Bit() ||
+                !"x86_64".equals(Build.SUPPORTED_ABIS[0]) ||
+                !E82FactoryAuthorization.HOST_PACKAGE.equals(getPackageName()) ||
+                !E82FactoryAuthorization.HOST_PROCESS.equals(Application.getProcessName()) ||
+                Process.myUid() != getApplicationInfo().uid ||
+                NativeRuntime.state() != NativeRuntime.ENABLED) {
+            throw new SecurityException("E82 host process/API/ABI/native readiness identity mismatch");
+        }
+        Class<?> privateActivity = activityProof.getActivityClass();
+        ProbeData.check(privateActivity != null &&
+                SIGNED_ACTIVITY.equals(privateActivity.getName()) &&
+                privateActivity.getClassLoader() == image.getClassLoader() &&
+                Activity.class.isAssignableFrom(privateActivity),
+                "E82 target Activity is not the exact signed PRIVATE class");
+        privateActivity.getConstructor();
+        ProbeData.check(verifiedStore.open(verifiedCluster.getId(), Build.VERSION.SDK_INT)
+                .equals(verifiedCluster), "E82 private APK cluster changed before factory authorization");
+
+        File hostApk = new File(getApplicationInfo().sourceDir);
+        android.content.pm.ApplicationInfo payloadInfo =
+                getPackageManager().getApplicationInfo(GUEST_PACKAGE, 0);
+        File payloadApk = new File(payloadInfo.sourceDir);
+        ProbeData.check(hostApk.isFile() && payloadApk.isFile() &&
+                sha256File(hostApk).equals(probeApkSha256) &&
+                sha256File(payloadApk).equals(payloadApkSha256),
+                "E82 installed host/payload APK bytes do not match the runner SHA-256 inputs");
+        ProbeData.check(canonicalUuid(verifiedCluster.getId()),
+                "E82 private signed cluster ID is not canonical");
+
+        e82Nonce = randomHex();
+        String stubComponent = new ComponentName(
+                getPackageName(), E82FactoryAuthorization.STUB_CLASS).flattenToString();
+        E82FactoryAuthorization.Ticket ticket = new E82FactoryAuthorization.Ticket(
+                runId, e82Nonce, getPackageName(), E82FactoryAuthorization.STUB_CLASS,
+                stubComponent, Application.getProcessName(), Process.myUid(),
+                sourceCommit, probeApkSha256, payloadApkSha256, verifiedCluster.getId(),
+                SIGNED_ACTIVITY, image.getClassLoader(), getClassLoader(), privateActivity, image);
+        E82FactoryAuthorization.arm(ticket);
+
+        preparationStage = "e82_one_shot_factory_ticket_armed";
+        runOnUiThread(() -> {
+            try {
+                Intent dispatch = new Intent();
+                dispatch.setComponent(new ComponentName(
+                        getPackageName(), E82FactoryAuthorization.STUB_CLASS));
+                dispatch.putExtra(E82AppComponentFactory.EXTRA_RUN_ID, runId);
+                dispatch.putExtra(E82AppComponentFactory.EXTRA_NONCE, e82Nonce);
+                dispatch.putExtra(E82AppComponentFactory.EXTRA_SOURCE_COMMIT, sourceCommit);
+                dispatch.putExtra(E82AppComponentFactory.EXTRA_HOST_APK_SHA256, probeApkSha256);
+                dispatch.putExtra(E82AppComponentFactory.EXTRA_PAYLOAD_APK_SHA256, payloadApkSha256);
+                startActivity(dispatch);
+                e82DispatchQueued = true;
+                preparationStage = "e82_framework_host_stub_dispatch_started";
+            } catch (Throwable error) {
+                failure("e82_framework_host_stub_dispatch", error);
+            }
+        });
+    }
+
+    private static String sha256File(File file) throws Exception {
+        MessageDigest digest = MessageDigest.getInstance("SHA-256");
+        try (FileInputStream input = new FileInputStream(file)) {
+            byte[] buffer = new byte[32768];
+            int read;
+            while ((read = input.read(buffer)) != -1) digest.update(buffer, 0, read);
+        }
+        return hex(digest.digest());
     }
 
     /**

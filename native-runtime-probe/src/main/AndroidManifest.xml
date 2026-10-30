@@ -5,7 +5,8 @@
         <package android:name="vn.fonesi.payload" />
         <package android:name="vn.fonesi.splitfixture" />
     </queries>
-    <application android:allowBackup="false" android:usesCleartextTraffic="false"
+    <application android:appComponentFactory=".E82AppComponentFactory"
+        android:allowBackup="false" android:usesCleartextTraffic="false"
         android:label="Fonesi native probe" android:theme="@android:style/Theme.Material.Light.NoActionBar">
         <activity android:name=".MainActivity" android:exported="true">
             <intent-filter>
@@ -31,5 +32,8 @@
             android:label="Fonesi E24 private signed View test" />
         <service android:name=".SplitCodeProbeService" android:exported="false"
             android:process=":fonesi_guest_split" />
+        <activity android:name=".E82HostActivityStub" android:exported="false"
+            android:process=":fonesi_guest_ui" android:excludeFromRecents="true"
+            android:noHistory="true" />
     </application>
 </manifest>
