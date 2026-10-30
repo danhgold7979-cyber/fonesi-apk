@@ -25,6 +25,38 @@ PAYLOAD_SHA256 = "c8296bb1d62af7186081e2180a22a721318ad4b0c3bc06101350aa69f0fbd1
 UUID_NAME = re.compile(r"^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\.json$")
 SDK_IMAGE = IMAGES["aosp34"]
 
+UI_CONFIGURATION_COMMAND = """set -eu
+printf '%s\\n' '[wm-size]'
+wm size
+printf '%s\\n' '[wm-density]'
+wm density
+printf 'font-scale=%s\\n' "$(settings get system font_scale)"
+printf 'user-rotation=%s\\n' "$(settings get system user_rotation)"
+printf 'locale=%s\\n' "$(getprop persist.sys.locale)"
+printf 'language=%s\\n' "$(getprop persist.sys.language)"
+printf 'country=%s\\n' "$(getprop persist.sys.country)"
+"""
+UI_CONFIGURATION_READ_TIMEOUT_SECONDS = 20
+UI_CONFIGURATION_STABILITY_TIMEOUT_SECONDS = 120
+UI_CONFIGURATION_SAMPLE_INTERVAL_SECONDS = 2
+UI_CONFIGURATION_REQUIRED_STABLE_TRANSITIONS = 3
+
+
+def read_ui_configuration(device, timeout_seconds=UI_CONFIGURATION_READ_TIMEOUT_SECONDS):
+    """Read the full UI/display/locale fingerprint through one bounded ADB shell."""
+    if not isinstance(timeout_seconds, int) or not 1 <= timeout_seconds <= UI_CONFIGURATION_READ_TIMEOUT_SECONDS:
+        raise ValueError("UI configuration read timeout must be between 1 and 20 seconds")
+    result = device(
+        "shell", "sh", "-c", UI_CONFIGURATION_COMMAND,
+        timeout=timeout_seconds, check=False,
+    )
+    if result.returncode != 0:
+        raise RuntimeError("Cannot read Android UI configuration fingerprint")
+    snapshot = tuple(line.strip() for line in result.stdout.splitlines() if line.strip())
+    if not snapshot:
+        raise RuntimeError("Android UI configuration fingerprint is empty")
+    return snapshot
+
 
 def sha256(file):
     digest = hashlib.sha256()
@@ -99,6 +131,10 @@ def main():
         "source_commit": args.source_commit,
         "result": "RUNNING",
         "android_boot_verified": False,
+        "android_ui_configuration_stable": False,
+        "android_ui_configuration_sample_count": 0,
+        "android_ui_configuration_consecutive_equal_transitions": 0,
+        "android_ui_configuration_last_fingerprint": [],
         "android_code_image_verified": False,
         "android_guest_bytecode_verified": False,
         "android_native_ab_sqlite_verified": False,
@@ -287,41 +323,53 @@ def main():
         evidence["android_apks_installed"] = True
         if args.proof_level in ("e24", "e25", "e29", "e74", "e77"):
             # AOSP first boot can deliver late display/locale configuration changes after
-            # sys.boot_completed. Launching the lifecycle probe during that window destroys
-            # the Activity before its private DEX worker finishes. Require four identical
-            # read-only framework/display snapshots before the Activity lifecycle test.
-            stage = "wait for stable Android UI configuration before E24/E25"
-            deadline = time.monotonic() + 40
+            # sys.boot_completed. Preserve the complete seven-value fingerprint and require
+            # four identical consecutive snapshots before dispatching the host Activity.
+            # A single shell call avoids seven serial ADB process/transport round trips,
+            # which can exhaust the stability budget under E77 software emulation.
+            stage = "wait for stable Android UI configuration before synthetic Activity probe"
+            deadline = time.monotonic() + UI_CONFIGURATION_STABILITY_TIMEOUT_SECONDS
             previous = None
             stable_samples = 0
-            while time.monotonic() < deadline:
-                snapshot = []
-                for command in (
-                    ("shell", "wm", "size"),
-                    ("shell", "wm", "density"),
-                    ("shell", "settings", "get", "system", "font_scale"),
-                    ("shell", "settings", "get", "system", "user_rotation"),
-                    ("shell", "getprop", "persist.sys.locale"),
-                    ("shell", "getprop", "persist.sys.language"),
-                    ("shell", "getprop", "persist.sys.country"),
-                ):
-                    result = device(*command, timeout=8, check=False)
-                    if result.returncode != 0:
-                        raise RuntimeError("Cannot read Android UI configuration fingerprint")
-                    snapshot.append(result.stdout.strip())
-                current = tuple(snapshot)
+            sample_count = 0
+            stable = False
+            while True:
+                remaining = deadline - time.monotonic()
+                if remaining < 1:
+                    break
+                command_timeout = min(UI_CONFIGURATION_READ_TIMEOUT_SECONDS, int(remaining))
+                current = read_ui_configuration(device, timeout_seconds=command_timeout)
+                sample_count += 1
                 if current == previous:
                     stable_samples += 1
                 else:
                     previous = current
                     stable_samples = 0
-                if stable_samples >= 3:
+                evidence["android_ui_configuration_sample_count"] = sample_count
+                evidence["android_ui_configuration_consecutive_equal_transitions"] = stable_samples
+                evidence["android_ui_configuration_last_fingerprint"] = list(current)
+                save()
+                if stable_samples >= UI_CONFIGURATION_REQUIRED_STABLE_TRANSITIONS:
                     evidence["android_ui_configuration_stable"] = True
                     save()
+                    stable = True
                     break
-                time.sleep(2)
-            else:
-                raise RuntimeError("Android UI configuration did not stabilize before E24/E25")
+                remaining = deadline - time.monotonic()
+                if remaining > 0:
+                    time.sleep(min(UI_CONFIGURATION_SAMPLE_INTERVAL_SECONDS, remaining))
+            if not stable:
+                evidence["android_ui_configuration_timeout"] = {
+                    "timeout_seconds": UI_CONFIGURATION_STABILITY_TIMEOUT_SECONDS,
+                    "required_identical_snapshots": UI_CONFIGURATION_REQUIRED_STABLE_TRANSITIONS + 1,
+                    "sample_count": sample_count,
+                    "consecutive_equal_transitions": stable_samples,
+                    "last_fingerprint": list(previous or ()),
+                }
+                save()
+                raise RuntimeError(
+                    "Android UI configuration did not stabilize within bounded "
+                    + str(UI_CONFIGURATION_STABILITY_TIMEOUT_SECONDS) + "-second window"
+                )
         if args.proof_level in ("e21", "e22", "e23"):
             stage = "install exact signed isolated synthetic split members"
             install_members = [split_base, split_feature]
