@@ -43,6 +43,9 @@ data class EngineCapabilities(
     val singleApkPreflightSupported: Boolean = false,
     val singleApkInstallSupported: Boolean = false,
     val packageIdentityReadbackSupported: Boolean = false,
+    val splitClusterPreflightSupported: Boolean = false,
+    val splitClusterInstallDispatchSupported: Boolean = false,
+    val splitClusterReadbackVerified: Boolean = false,
     val splitClusterImportSupported: Boolean = false,
     val splitClusterCodeExecutionVerified: Boolean = false,
     val splitClusterAtomicUpdateVerified: Boolean = false,
@@ -57,8 +60,9 @@ data class EngineCapabilities(
     val evidenceRefs: Set<String> = emptySet(),
 ) {
     init {
-        require(!splitClusterImportSupported || splitClusterCodeExecutionVerified) {
-            "Split import cannot be accepted without verified split code execution"
+        require(!splitClusterImportSupported || (splitClusterPreflightSupported &&
+            splitClusterInstallDispatchSupported && splitClusterReadbackVerified)) {
+            "Split import cannot be accepted without preflight, dispatch and complete readback"
         }
         require(!splitClusterAtomicUpdateVerified || splitClusterImportSupported) {
             "Atomic split update requires an accepted split import provider"
