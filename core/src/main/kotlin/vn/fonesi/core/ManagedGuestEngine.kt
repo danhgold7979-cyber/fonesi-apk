@@ -34,6 +34,12 @@ data class GuestApkClusterMemberIdentity(
     val splitName: String?,
     val sha256: String,
     val feature: Boolean,
+    val byteLength: Long,
+    val signerDigests: Set<String>,
+    val splitRequired: Boolean = false,
+    val requiredTypes: Set<String> = emptySet(),
+    val providedTypes: Set<String> = emptySet(),
+    val isolatedSplits: Boolean = false,
     val configForSplit: String? = null,
     val dependencies: Set<String> = emptySet(),
 )
@@ -45,44 +51,92 @@ data class GuestApkClusterIdentity(
     val members: List<GuestApkClusterMemberIdentity>,
     val clusterDigest: String,
 ) {
-    /** Validates identity completeness only; signature verification remains the provider's duty. */
+    /** The v1 digest commits every manifest field accepted by ApkSetAuditor. */
+    fun computeCanonicalDigest(): String {
+        val digest = java.security.MessageDigest.getInstance("SHA-256")
+        fun field(value: String) {
+            val bytes = value.toByteArray(Charsets.UTF_8)
+            digest.update(java.nio.ByteBuffer.allocate(4).putInt(bytes.size).array())
+            digest.update(bytes)
+        }
+        val base = members.first()
+        field("fonesi-package-cluster-v1")
+        field(packageName)
+        field(versionCode.toString())
+        base.signerDigests.sorted().forEach { field("signer:$it") }
+        members.forEach { member ->
+            field(if (member.splitName == null) "BASE" else "SPLIT")
+            field(member.splitName.orEmpty())
+            field(member.feature.toString())
+            field(member.configForSplit.orEmpty())
+            member.dependencies.sorted().forEach { field("dependency:$it") }
+            member.requiredTypes.sorted().forEach { field("requires:$it") }
+            member.providedTypes.sorted().forEach { field("provides:$it") }
+            field(member.splitRequired.toString())
+            field(member.isolatedSplits.toString())
+            member.signerDigests.sorted().forEach { field("member-signer:$it") }
+            field(member.sha256)
+            field(member.byteLength.toString())
+        }
+        return digest.digest().joinToString("") { "%02x".format(it.toInt() and 255) }
+    }
+
+    /** Validates exactly the structural and graph rules enforced by ApkSetAuditor. */
     fun requireStructurallyValid(): GuestApkClusterIdentity {
         val digest = Regex("^[0-9a-f]{64}$")
         val packagePattern = Regex("^[A-Za-z_][A-Za-z0-9_]*(\\.[A-Za-z_][A-Za-z0-9_]*)+$")
-        val splitPattern = Regex("^[A-Za-z_][A-Za-z0-9_]*(\\.[A-Za-z0-9_]+)*$")
-        require((packageName == "android" || packagePattern.matches(packageName)) &&
+        val splitPattern = Regex("^[A-Za-z_][A-Za-z0-9_]*(\\.[A-Za-z_][A-Za-z0-9_]*)*$")
+        require((packageName == "android" || (packageName.length <= 255 && packagePattern.matches(packageName))) &&
             versionCode >= 0 && signerDigests.isNotEmpty())
-        require(signerDigests.all(digest::matches) && digest.matches(clusterDigest))
+        require(signerDigests.all(digest::matches))
         require(members.isNotEmpty() && members.first().splitName == null &&
             members.count { it.splitName == null } == 1)
-        require(members.all { digest.matches(it.sha256) })
-        val splits = members.mapNotNull { it.splitName }
-        require(splits == splits.sorted() && splits.distinct().size == splits.size &&
-            splits.all(splitPattern::matches))
-        val featureNames = members.filter { it.feature }.mapNotNull { it.splitName }.toSet()
-        require(members.filter { it.splitName == null }.all {
-            it.feature.not() && it.configForSplit == null && it.dependencies.isEmpty()
-        })
         require(members.all { member ->
-            (member.configForSplit == null || (!member.feature && member.splitName != null &&
-                member.configForSplit in featureNames)) &&
-                member.dependencies.all { it in featureNames } &&
-                (member.feature || member.dependencies.isEmpty())
+            digest.matches(member.sha256) && member.byteLength > 0 &&
+                member.signerDigests.isNotEmpty() && member.signerDigests.all(digest::matches) &&
+                member.signerDigests == signerDigests &&
+                member.requiredTypes.all(splitPattern::matches) &&
+                member.providedTypes.all(splitPattern::matches)
         })
-        val edges = members.filter { it.feature }.associate { checkNotNull(it.splitName) to it.dependencies }
+        val splits = members.drop(1)
+        val splitNames = splits.map { checkNotNull(it.splitName) }
+        require(splitNames == splitNames.sorted() && splitNames.distinct().size == splitNames.size &&
+            splitNames.all(splitPattern::matches))
+        val base = members.first()
+        require(!base.feature && base.configForSplit == null && base.dependencies.isEmpty())
+        require(!base.splitRequired || splits.isNotEmpty())
+        val providedTypes = members.flatMap { it.providedTypes }.toSet()
+        require(members.all { providedTypes.containsAll(it.requiredTypes) })
+
+        val byName = splits.associateBy { checkNotNull(it.splitName) }
+        val edges = splits.associate { member ->
+            member.configForSplit?.let { require(it.isEmpty() || splitPattern.matches(it)) }
+            require(!member.feature || member.configForSplit == null)
+            val required = member.dependencies + listOfNotNull(member.configForSplit?.takeIf { it.isNotEmpty() })
+            required.forEach { name -> require(byName[name]?.feature == true) }
+            checkNotNull(member.splitName) to required
+        }
+        // Match ApkSetAuditor: uses-split edges on feature and non-feature splits both count.
         val remaining = edges.mapValues { it.value.size }.toMutableMap()
         val dependants = mutableMapOf<String, MutableList<String>>()
-        edges.forEach { (name, parents) -> parents.forEach { parent -> dependants.getOrPut(parent) { mutableListOf() }.add(name) } }
+        edges.forEach { (name, parents) ->
+            parents.forEach { parent -> dependants.getOrPut(parent) { mutableListOf() }.add(name) }
+        }
         val ready = java.util.ArrayDeque(remaining.filterValues { it == 0 }.keys)
         var visited = 0
         while (ready.isNotEmpty()) {
-            val name = ready.removeFirst(); visited++
+            val name = ready.removeFirst()
+            visited++
             dependants[name].orEmpty().forEach { child ->
-                val count = remaining.getValue(child) - 1; remaining[child] = count
+                val count = remaining.getValue(child) - 1
+                remaining[child] = count
                 if (count == 0) ready.addLast(child)
             }
         }
         require(visited == edges.size) { "Split dependency graph contains a cycle" }
+        require(clusterDigest.matches(digest) && clusterDigest == computeCanonicalDigest()) {
+            "Cluster digest does not commit the complete audited APK identity"
+        }
         return this
     }
 }
