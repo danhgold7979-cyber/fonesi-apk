@@ -159,3 +159,9 @@ Independent B2 read-only review found no blocker; independently verified source 
 ## Publication transport recovery — 2026-10-30 21:18 UTC
 
 Interrupted publication had not moved remote beyondB1b509d71ba. Root authorized bounded transport-only compaction; two frozen logical fixtures now canonical gzip/base64 text totaling146,890bytes, preserving exact2,270,857 decoded bytes/old SHA/17,317 rows each. Strict bounded Python decoder verifies complete integrity before output and runners compare temporary decoded bytes without regeneration. Original plain files remain inbd5b052 history.57 tooling tests plus all kernel/logical/history/manager/SQLite suites pass locally. No production contract changes; awaiting publication and actual JDK17/full hosted CI.
+
+## B1c/B2/transport exact-head hosted SUCCESS — 2026-10-30 21:23 UTC
+
+Published `f5a11ac7aa014a67b913ab910d9c1bb69efbe101`, exact tree53662b9d7f5aaba717c67841f7ffaf9a01b64a60. [Run41130512434](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/41130512434) completed SUCCESS, all three jobs. Actual installed OpenJDK17.0.21 compiles/runs portable70 value/hash/immutability checks +6,200 independent policy checks and17,317 exact frozen desired vectors, matching separate JDK21 host output. Historical source/vector checks remain passing.57 tooling tests,108 model/76 controller checks,51 SQLite tests, Android compile/lint and strict packaged semantic/debug-signature checks pass. APK SHA25699adf21f8c7be3126db900975205363beeef191578bc42c38fc158612bb5a105; debug build only, not release/deployment.
+
+This establishes the bounded logical Java17 compatibility gate and reversible fixture transport on hosted Linux. The module is still not imported by Android; no codec/filesystem/auth/provider bridge was implemented. API26 runtime, actual UI/device/provider/hostile-guest isolation and old-source replacement remain NOT ACCEPTED. No new feature scope opened by this CI result.
