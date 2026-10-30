@@ -29,7 +29,8 @@ public final class E82FactoryAuthorizationTest {
                 E82FactoryAuthorization.HOST_PACKAGE + "/" + E82FactoryAuthorization.STUB_CLASS,
                 E82FactoryAuthorization.HOST_PROCESS, 10142, SOURCE, HOST_APK, PAYLOAD_APK,
                 CLUSTER, E82FactoryAuthorization.PRIVATE_ACTIVITY_CLASS,
-                PayloadActivity.class.getClassLoader(), PayloadActivity.class, loadedImage);
+                PayloadActivity.class.getClassLoader(), E82FactoryAuthorizationTest.class.getClassLoader(),
+                PayloadActivity.class, loadedImage);
     }
 
     private E82FactoryAuthorization.Dispatch dispatch() {
@@ -37,7 +38,8 @@ public final class E82FactoryAuthorizationTest {
                 E82FactoryAuthorization.HOST_PACKAGE,
                 E82FactoryAuthorization.STUB_CLASS,
                 E82FactoryAuthorization.HOST_PACKAGE + "/" + E82FactoryAuthorization.STUB_CLASS,
-                E82FactoryAuthorization.HOST_PROCESS, 10142, SOURCE, HOST_APK, PAYLOAD_APK);
+                E82FactoryAuthorization.HOST_PROCESS, 10142, E82FactoryAuthorizationTest.class.getClassLoader(),
+                SOURCE, HOST_APK, PAYLOAD_APK);
     }
 
     @Test public void exactSignedPrivateIdentityConsumesOneShotTicket() {
@@ -67,7 +69,8 @@ public final class E82FactoryAuthorizationTest {
                 RUN, "ffffffffffffffffffffffffffffffff",
                 E82FactoryAuthorization.HOST_PACKAGE, E82FactoryAuthorization.STUB_CLASS,
                 E82FactoryAuthorization.HOST_PACKAGE + "/" + E82FactoryAuthorization.STUB_CLASS,
-                E82FactoryAuthorization.HOST_PROCESS, 10142, SOURCE, HOST_APK, PAYLOAD_APK);
+                E82FactoryAuthorization.HOST_PROCESS, 10142, E82FactoryAuthorizationTest.class.getClassLoader(),
+                SOURCE, HOST_APK, PAYLOAD_APK);
         expectSecurityFailure(() -> E82FactoryAuthorization.consume(wrong));
         assertReplayDenied();
     }
@@ -91,7 +94,8 @@ public final class E82FactoryAuthorizationTest {
                 d = new E82FactoryAuthorization.Dispatch(RUN, NONCE,
                     E82FactoryAuthorization.HOST_PACKAGE, "vn.fonesi.nativeprobe.OtherActivity",
                     E82FactoryAuthorization.HOST_PACKAGE + "/vn.fonesi.nativeprobe.OtherActivity",
-                    E82FactoryAuthorization.HOST_PROCESS, 10142, SOURCE, HOST_APK, PAYLOAD_APK);
+                    E82FactoryAuthorization.HOST_PROCESS, 10142, E82FactoryAuthorizationTest.class.getClassLoader(),
+                    SOURCE, HOST_APK, PAYLOAD_APK);
             } else if ("wrong-process".equals(mismatch[0])) {
                 d = new E82FactoryAuthorization.Dispatch(RUN, NONCE,
                     E82FactoryAuthorization.HOST_PACKAGE, E82FactoryAuthorization.STUB_CLASS,
@@ -101,32 +105,38 @@ public final class E82FactoryAuthorizationTest {
                 d = new E82FactoryAuthorization.Dispatch(RUN, NONCE,
                     "vn.fonesi.attacker", E82FactoryAuthorization.STUB_CLASS,
                     E82FactoryAuthorization.HOST_PACKAGE + "/" + E82FactoryAuthorization.STUB_CLASS,
-                    E82FactoryAuthorization.HOST_PROCESS, 10142, SOURCE, HOST_APK, PAYLOAD_APK);
+                    E82FactoryAuthorization.HOST_PROCESS, 10142, E82FactoryAuthorizationTest.class.getClassLoader(),
+                SOURCE, HOST_APK, PAYLOAD_APK);
             } else if ("wrong-source".equals(mismatch[0])) {
                 d = new E82FactoryAuthorization.Dispatch(RUN, NONCE,
                     E82FactoryAuthorization.HOST_PACKAGE, E82FactoryAuthorization.STUB_CLASS,
                     E82FactoryAuthorization.HOST_PACKAGE + "/" + E82FactoryAuthorization.STUB_CLASS,
-                    E82FactoryAuthorization.HOST_PROCESS, 10142, "d".repeat(40), HOST_APK, PAYLOAD_APK);
+                    E82FactoryAuthorization.HOST_PROCESS, 10142, E82FactoryAuthorizationTest.class.getClassLoader(),
+                    "d".repeat(40), HOST_APK, PAYLOAD_APK);
             } else if ("wrong-host-apk".equals(mismatch[0])) {
                 d = new E82FactoryAuthorization.Dispatch(RUN, NONCE,
                     E82FactoryAuthorization.HOST_PACKAGE, E82FactoryAuthorization.STUB_CLASS,
                     E82FactoryAuthorization.HOST_PACKAGE + "/" + E82FactoryAuthorization.STUB_CLASS,
-                    E82FactoryAuthorization.HOST_PROCESS, 10142, SOURCE, "d".repeat(64), PAYLOAD_APK);
+                    E82FactoryAuthorization.HOST_PROCESS, 10142, E82FactoryAuthorizationTest.class.getClassLoader(),
+                    SOURCE, "d".repeat(64), PAYLOAD_APK);
             } else if ("wrong-payload-apk".equals(mismatch[0])) {
                 d = new E82FactoryAuthorization.Dispatch(RUN, NONCE,
                     E82FactoryAuthorization.HOST_PACKAGE, E82FactoryAuthorization.STUB_CLASS,
                     E82FactoryAuthorization.HOST_PACKAGE + "/" + E82FactoryAuthorization.STUB_CLASS,
-                    E82FactoryAuthorization.HOST_PROCESS, 10142, SOURCE, HOST_APK, "d".repeat(64));
+                    E82FactoryAuthorization.HOST_PROCESS, 10142, E82FactoryAuthorizationTest.class.getClassLoader(),
+                    SOURCE, HOST_APK, "d".repeat(64));
             } else if ("wrong-uid".equals(mismatch[0])) {
                 d = new E82FactoryAuthorization.Dispatch(RUN, NONCE,
                     E82FactoryAuthorization.HOST_PACKAGE, E82FactoryAuthorization.STUB_CLASS,
                     E82FactoryAuthorization.HOST_PACKAGE + "/" + E82FactoryAuthorization.STUB_CLASS,
-                    E82FactoryAuthorization.HOST_PROCESS, 10143, SOURCE, HOST_APK, PAYLOAD_APK);
+                    E82FactoryAuthorization.HOST_PROCESS, 10143, E82FactoryAuthorizationTest.class.getClassLoader(),
+                    SOURCE, HOST_APK, PAYLOAD_APK);
             } else if ("wrong-run".equals(mismatch[0])) {
                 d = new E82FactoryAuthorization.Dispatch("bbbbbbbb-cccc-4ddd-8eee-ffffffffffff", NONCE,
                     E82FactoryAuthorization.HOST_PACKAGE, E82FactoryAuthorization.STUB_CLASS,
                     E82FactoryAuthorization.HOST_PACKAGE + "/" + E82FactoryAuthorization.STUB_CLASS,
-                    E82FactoryAuthorization.HOST_PROCESS, 10142, SOURCE, HOST_APK, PAYLOAD_APK);
+                    E82FactoryAuthorization.HOST_PROCESS, 10142, E82FactoryAuthorizationTest.class.getClassLoader(),
+                SOURCE, HOST_APK, PAYLOAD_APK);
             }
             final E82FactoryAuthorization.Dispatch attempt = d;
             expectSecurityFailure(() -> E82FactoryAuthorization.consume(attempt));
@@ -141,7 +151,8 @@ public final class E82FactoryAuthorizationTest {
                 E82FactoryAuthorization.HOST_PACKAGE + "/" + E82FactoryAuthorization.STUB_CLASS,
                 E82FactoryAuthorization.HOST_PROCESS, 10142, SOURCE, HOST_APK, PAYLOAD_APK,
                 "not-a-uuid", E82FactoryAuthorization.PRIVATE_ACTIVITY_CLASS,
-                PayloadActivity.class.getClassLoader(), PayloadActivity.class, loadedImage);
+                PayloadActivity.class.getClassLoader(), E82FactoryAuthorizationTest.class.getClassLoader(),
+                PayloadActivity.class, loadedImage);
         expectSecurityFailure(() -> E82FactoryAuthorization.arm(invalid));
         E82FactoryAuthorization.Ticket wrongLoader = new E82FactoryAuthorization.Ticket(
                 RUN, NONCE, E82FactoryAuthorization.HOST_PACKAGE,
@@ -149,7 +160,8 @@ public final class E82FactoryAuthorizationTest {
                 E82FactoryAuthorization.HOST_PACKAGE + "/" + E82FactoryAuthorization.STUB_CLASS,
                 E82FactoryAuthorization.HOST_PROCESS, 10142, SOURCE, HOST_APK, PAYLOAD_APK,
                 CLUSTER, E82FactoryAuthorization.PRIVATE_ACTIVITY_CLASS,
-                new ClassLoader() { }, PayloadActivity.class, loadedImage);
+                new ClassLoader() { }, E82FactoryAuthorizationTest.class.getClassLoader(),
+                PayloadActivity.class, loadedImage);
         expectSecurityFailure(() -> E82FactoryAuthorization.arm(wrongLoader));
         E82FactoryAuthorization.arm(ticket());
         assertReplayDenied();

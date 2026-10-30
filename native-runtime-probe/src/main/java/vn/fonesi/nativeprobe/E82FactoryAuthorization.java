@@ -62,6 +62,7 @@ public final class E82FactoryAuthorization {
                 ticket.payloadApkSha256 == null || !SHA256.matcher(ticket.payloadApkSha256).matches() ||
                 !PRIVATE_ACTIVITY_CLASS.equals(ticket.activityClassName) ||
                 ticket.privateClassLoader == null ||
+                ticket.hostClassLoader == null ||
                 ticket.privateActivityClass == null ||
                 !PRIVATE_ACTIVITY_CLASS.equals(ticket.privateActivityClass.getName()) ||
                 ticket.privateActivityClass.getClassLoader() != ticket.privateClassLoader ||
@@ -82,6 +83,7 @@ public final class E82FactoryAuthorization {
         final int hostUid;
         final String sourceCommit, hostApkSha256, payloadApkSha256, clusterId, activityClassName;
         final ClassLoader privateClassLoader;
+        final ClassLoader hostClassLoader;
         final Class<?> privateActivityClass;
         final Object loadedGuestCode;
 
@@ -89,7 +91,7 @@ public final class E82FactoryAuthorization {
                 String stubComponent, String processName, int hostUid, String sourceCommit,
                 String hostApkSha256, String payloadApkSha256, String clusterId,
                 String activityClassName, ClassLoader privateClassLoader,
-                Class<?> privateActivityClass, Object loadedGuestCode) {
+                ClassLoader hostClassLoader, Class<?> privateActivityClass, Object loadedGuestCode) {
             this.runId = runId;
             this.nonce = nonce;
             this.hostPackage = hostPackage;
@@ -97,12 +99,14 @@ public final class E82FactoryAuthorization {
             this.stubComponent = stubComponent;
             this.processName = processName;
             this.hostUid = hostUid;
+            this.hostClassLoader = hostClassLoader;
             this.sourceCommit = sourceCommit;
             this.hostApkSha256 = hostApkSha256;
             this.payloadApkSha256 = payloadApkSha256;
             this.clusterId = clusterId;
             this.activityClassName = activityClassName;
             this.privateClassLoader = privateClassLoader;
+            this.hostClassLoader = hostClassLoader;
             this.privateActivityClass = privateActivityClass;
             this.loadedGuestCode = loadedGuestCode;
         }
@@ -121,6 +125,7 @@ public final class E82FactoryAuthorization {
                     stubClassName.equals(d.stubClassName) &&
                     stubComponent.equals(d.stubComponent) &&
                     processName.equals(d.processName) && hostUid == d.hostUid &&
+                    hostClassLoader == d.hostClassLoader &&
                     sourceCommit.equals(d.sourceCommit) &&
                     hostApkSha256.equals(d.hostApkSha256) &&
                     payloadApkSha256.equals(d.payloadApkSha256);
@@ -131,11 +136,12 @@ public final class E82FactoryAuthorization {
     public static final class Dispatch {
         final String runId, nonce, hostPackage, stubClassName, stubComponent, processName;
         final int hostUid;
+        final ClassLoader hostClassLoader;
         final String sourceCommit, hostApkSha256, payloadApkSha256;
 
         public Dispatch(String runId, String nonce, String hostPackage, String stubClassName,
-                String stubComponent, String processName, int hostUid, String sourceCommit,
-                String hostApkSha256, String payloadApkSha256) {
+                String stubComponent, String processName, int hostUid, ClassLoader hostClassLoader,
+                String sourceCommit, String hostApkSha256, String payloadApkSha256) {
             this.runId = runId;
             this.nonce = nonce;
             this.hostPackage = hostPackage;
