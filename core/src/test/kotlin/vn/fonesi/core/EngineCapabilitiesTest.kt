@@ -104,7 +104,7 @@ class EngineCapabilitiesTest {
         val french = identity.members.single { it.splitName == "feature.alpha.fr" }
         assertEquals(identity, identity.requireStructurallyValid())
         assertThrows(IllegalArgumentException::class.java) {
-            identity.copy(members = listOf(alpha, beta, french)).requireStructurallyValid()
+            identity.copy(members = listOf(alpha, french, beta)).requireStructurallyValid()
         }
         assertThrows(IllegalArgumentException::class.java) {
             identity.copy(members = listOf(base, alpha, alpha, french, beta)).requireStructurallyValid()
