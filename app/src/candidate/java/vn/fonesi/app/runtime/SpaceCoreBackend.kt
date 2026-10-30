@@ -7,6 +7,7 @@ import android.os.Build
 import com.fvbox.lib.FCore
 import vn.fonesi.apk.ApkSetAuditor
 import vn.fonesi.core.GuestBackend
+import vn.fonesi.core.GuestBackendCapabilities
 import vn.fonesi.core.GuestPackage
 import vn.fonesi.core.InstalledSource
 import java.io.File
@@ -16,6 +17,16 @@ import java.util.zip.ZipFile
 /** Calls the pinned SDK. No source-package launch, session copying or device identity spoofing. */
 class SpaceCoreBackend(private val context: Context, private val isReady: () -> Boolean) : GuestBackend {
     override val ready get() = isReady()
+    override val capabilities = GuestBackendCapabilities(
+        singleApkPreflightSupported = true,
+        singleApkInstallSupported = true,
+        packageIdentityReadbackSupported = true,
+        splitClusterPreflightSupported = false,
+        splitClusterInstallDispatchSupported = false,
+        splitClusterReadbackVerified = false,
+        splitClusterCodeExecutionVerified = false,
+        splitClusterAtomicUpdateVerified = false,
+    )
     private val core get() = FCore.get().also { check(ready) }
     override fun users() = core.users.map { it.id }.toSet()
     override fun createUser(userId: Int) { checkNotNull(core.createUser(userId)); core.setEnableDevice(userId, false) }
