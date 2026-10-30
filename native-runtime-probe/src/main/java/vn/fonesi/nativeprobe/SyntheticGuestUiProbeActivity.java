@@ -94,6 +94,13 @@ public final class SyntheticGuestUiProbeActivity extends Activity {
     private volatile boolean e80PrivateActivityLoaderVerified;
     private volatile String e80PrivateActivityClassName;
     private volatile int e80PrivateActivityConstructorCount;
+    private volatile boolean e81ScopedMode;
+    private volatile Activity e81PrivateActivity;
+    private volatile boolean e81PrivateInstanceScopeBound;
+    private volatile boolean e81PrivateRebindingRejected;
+    private volatile boolean e81PrivateScopedDataReadbackVerified;
+    private volatile boolean e81PrivateBaseContextStillNull;
+    private volatile String e81BoundScopeId;
     private volatile boolean syntheticComponentDispatchVerified;
     private volatile boolean dispatchOnly;
     private boolean dispatchReceiver;
@@ -129,6 +136,12 @@ public final class SyntheticGuestUiProbeActivity extends Activity {
                 !"e29".equals(proofLevel) && !"e74".equals(proofLevel) &&
                 !"e77".equals(proofLevel) && !"e78".equals(proofLevel) && !("e79".equals(proofLevel) || "e80".equals(proofLevel)))
                 throw new IllegalArgumentException("Unsupported synthetic host screen proof");
+            String e81Mode = getIntent().getStringExtra("e81_scoped_mode");
+            if (e81Mode != null) {
+                if (!"e80".equals(proofLevel) || !"enabled".equals(e81Mode))
+                    throw new IllegalArgumentException("E81 requires explicit e80 synthetic scope opt-in");
+                e81ScopedMode = true;
+            }
             if ("e78".equals(proofLevel) || ("e79".equals(proofLevel) || "e80".equals(proofLevel))) {
                 sourceCommit = getIntent().getStringExtra("source_commit");
                 probeApkSha256 = getIntent().getStringExtra("probe_apk_sha256");
@@ -566,6 +579,11 @@ public final class SyntheticGuestUiProbeActivity extends Activity {
             new SyntheticGuestScopedContext(getApplicationContext(), image, scopeA);
         final SyntheticGuestScopedContext contextB =
             new SyntheticGuestScopedContext(getApplicationContext(), image, scopeB);
+        final SyntheticGuestScopedContext contextB =
+            new SyntheticGuestScopedContext(getApplicationContext(), image, scopeB);
+        if (e81ScopedMode)
+            verifyE81PrivateScopedMethodBinding(image, verifiedStore, verifiedCluster,
+                contextA, contextB, scopeA, scopeB);
         Class<?> scopedEntrypoint = image.getClassLoader().loadClass(SCOPED_ENTRY);
         ProbeData.check(scopedEntrypoint.getClassLoader() == image.getClassLoader(),
             "E79 scoped storage helper must be loaded from signed PRIVATE DEX");
@@ -654,6 +672,19 @@ public final class SyntheticGuestUiProbeActivity extends Activity {
             !markerA.equals((String) read.invoke(null, reopenedB)),
             "E79 cross-scope readback detected data leakage");
         syntheticScopeCrossReadbackVerified = true;
+        if (e81ScopedMode) {
+            ProbeData.check(e81PrivateActivity != null &&
+                scopeA.equals(e81BoundScopeId) && e81PrivateBaseContextStillNull &&
+                e81PrivateInstanceScopeBound && e81PrivateRebindingRejected,
+                "E81 Activity scope preflight did not complete");
+            java.lang.reflect.Method readViaPrivateActivity = e81PrivateActivity.getClass()
+                .getMethod("readBoundSyntheticScopeForTestOnly");
+            String viaActivity = (String) readViaPrivateActivity.invoke(e81PrivateActivity);
+            ProbeData.check(markerA.equals(viaActivity) && !markerB.equals(viaActivity) &&
+                e81PrivateActivity.getBaseContext() == null,
+                "E81 PRIVATE Activity scoped method did not preserve A/B data boundary");
+            e81PrivateScopedDataReadbackVerified = true;
+        }
         if ("verify".equals(e79Stage)) e79ScopedDataAfterRestartVerified = true;
         e79MarkerA = markerA;
         e79MarkerB = markerB;
@@ -699,6 +730,7 @@ public final class SyntheticGuestUiProbeActivity extends Activity {
                 ProbeData.check(created.getBaseContext() == null,
                     "E80 synthetic private Activity unexpectedly received a framework Context");
                 e80PrivateActivityConstructorCount = after;
+                if (e81ScopedMode) e81PrivateActivity = created;
                 e80PrivateActivityClassName = created.getClass().getName();
                 e80PrivateActivityMainThreadVerified = true;
                 e80PrivateActivityLoaderVerified = true;
@@ -716,6 +748,69 @@ public final class SyntheticGuestUiProbeActivity extends Activity {
             throw new IllegalStateException("E80 signed PRIVATE constructor failed", failure[0]);
         ProbeData.check(verifiedStore.open(verifiedCluster.getId(), Build.VERSION.SDK_INT)
             .equals(verifiedCluster), "E80 signed PRIVATE image changed after constructor");
+    }
+
+    /**
+     * E81: execute ONLY project-owned signed PRIVATE Activity instance methods against
+     * exact synthetic scope A; framework base Context stays null, no onCreate.
+     */
+    private void verifyE81PrivateScopedMethodBinding(LoadedGuestCode image,
+            PrivateApkStore verifiedStore, PrivateApkCluster verifiedCluster,
+            SyntheticGuestScopedContext contextA, SyntheticGuestScopedContext contextB,
+            String scopeA, String scopeB) throws Exception {
+        ProbeData.check(e81PrivateActivity != null && e80PrivateActivityConstructorVerified &&
+            e81PrivateActivity.getClass().getClassLoader() == image.getClassLoader() &&
+            e81PrivateActivity.getBaseContext() == null &&
+            scopeA.equals(contextA.getScopeId()) && scopeB.equals(contextB.getScopeId()) &&
+            !scopeA.equals(scopeB), "E81 Activity/scope identity was not signed or distinct");
+        ProbeData.check(verifiedStore.open(verifiedCluster.getId(), Build.VERSION.SDK_INT)
+            .equals(verifiedCluster), "E81 PRIVATE APK changed before scoped method binding");
+        final Throwable[] failure = new Throwable[1];
+        final CountDownLatch finished = new CountDownLatch(1);
+        runOnUiThread(() -> {
+            try {
+                ProbeData.check(Looper.myLooper() == Looper.getMainLooper(),
+                    "E81 scoped PRIVATE Activity method must bind on Android main Looper");
+                Activity instance = e81PrivateActivity;
+                java.lang.reflect.Method bind = instance.getClass().getMethod(
+                    "bindSyntheticScopedContextForTestOnly", Context.class, String.class);
+                java.lang.reflect.Method scopeId = instance.getClass().getMethod(
+                    "boundSyntheticScopeIdForTestOnly");
+                ProbeData.check(bind.getDeclaringClass() == instance.getClass() &&
+                    scopeId.getDeclaringClass() == instance.getClass(),
+                    "E81 methods must be defined by exact PRIVATE Activity");
+                bind.invoke(instance, contextA, scopeA);
+                ProbeData.check(scopeA.equals(scopeId.invoke(instance)) &&
+                    instance.getBaseContext() == null, "E81 bind leaked framework Context");
+                try {
+                    bind.invoke(instance, contextB, scopeB);
+                    throw new IllegalStateException("E81 PRIVATE Activity allowed cross-scope rebinding");
+                } catch (java.lang.reflect.InvocationTargetException expected) {
+                    ProbeData.check(expected.getCause() instanceof IllegalStateException,
+                        "E81 binding did not reject B scope as immutable");
+                }
+                try {
+                    bind.invoke(instance, contextA, scopeA);
+                    throw new IllegalStateException("E81 PRIVATE Activity allowed duplicate binding");
+                } catch (java.lang.reflect.InvocationTargetException expected) {
+                    ProbeData.check(expected.getCause() instanceof IllegalStateException,
+                        "E81 binding did not reject duplicate A scope");
+                }
+                ProbeData.check(scopeA.equals(scopeId.invoke(instance)) &&
+                    instance.getBaseContext() == null, "E81 rejected rebinding changed scope identity");
+                e81BoundScopeId = scopeA;
+                e81PrivateBaseContextStillNull = true;
+                e81PrivateRebindingRejected = true;
+                e81PrivateInstanceScopeBound = true;
+            } catch (Throwable error) { failure[0] = error; }
+            finally { finished.countDown(); }
+        });
+        if (!finished.await(45, TimeUnit.SECONDS))
+            throw new IllegalStateException("E81 synthetic scoped method binding timed out");
+        if (failure[0] != null)
+            throw new IllegalStateException("E81 signed PRIVATE Activity scoped binding failed", failure[0]);
+        ProbeData.check(verifiedStore.open(verifiedCluster.getId(), Build.VERSION.SDK_INT)
+            .equals(verifiedCluster), "E81 PRIVATE APK changed after scoped binding");
     }
 
     private static boolean canonicalUuid(String value) {
@@ -860,6 +955,13 @@ public final class SyntheticGuestUiProbeActivity extends Activity {
                             e79ProcessRestartVerified && e79ScopedDataAfterRestartVerified)),
                         "E79 process restart or two-scope persistence proof is incomplete");
                 }
+                if (e81ScopedMode) {
+                    verificationStage = "final_e81_private_activity_scoped_method_only";
+                    ProbeData.check(e81PrivateInstanceScopeBound && e81PrivateRebindingRejected &&
+                        e81PrivateScopedDataReadbackVerified && e81PrivateBaseContextStillNull &&
+                        syntheticScopeAId.equals(e81BoundScopeId),
+                        "E81 scoped PRIVATE Activity instance-method proof is incomplete");
+                }
                 if ("e80".equals(proofLevel)) {
                     verificationStage = "final_e80_private_activity_java_constructor_only";
                     ProbeData.check(e80PrivateActivityConstructorVerified &&
@@ -929,6 +1031,14 @@ public final class SyntheticGuestUiProbeActivity extends Activity {
                     .put("e80_private_activity_constructor_count", e80PrivateActivityConstructorCount)
                     .put("e80_private_activity_class_name", e80PrivateActivityClassName)
                     .put("e80_guest_activity_oncreate_called", false)
+                    .put("e81_scoped_mode", e81ScopedMode)
+                    .put("e81_private_activity_scope_bound_verified", e81PrivateInstanceScopeBound)
+                    .put("e81_private_activity_rebinding_rejected", e81PrivateRebindingRejected)
+                    .put("e81_private_activity_scoped_readback_verified", e81PrivateScopedDataReadbackVerified)
+                    .put("e81_private_activity_base_context_null", e81PrivateBaseContextStillNull)
+                    .put("e81_bound_scope_id", e81BoundScopeId)
+                    .put("e81_guest_activity_oncreate_called", false)
+                    .put("e81_framework_activity_attached", false)
                                         .put("guest_application_registered_with_activity_thread", false)
                     .put("guest_application_registered_with_package_manager", false)
                     .put("full_guest_application_lifecycle_verified", false)
@@ -1005,6 +1115,14 @@ public final class SyntheticGuestUiProbeActivity extends Activity {
                     .put("e80_private_activity_constructor_count", e80PrivateActivityConstructorCount)
                     .put("e80_private_activity_class_name", e80PrivateActivityClassName)
                     .put("e80_guest_activity_oncreate_called", false)
+                    .put("e81_scoped_mode", e81ScopedMode)
+                    .put("e81_private_activity_scope_bound_verified", e81PrivateInstanceScopeBound)
+                    .put("e81_private_activity_rebinding_rejected", e81PrivateRebindingRejected)
+                    .put("e81_private_activity_scoped_readback_verified", e81PrivateScopedDataReadbackVerified)
+                    .put("e81_private_activity_base_context_null", e81PrivateBaseContextStillNull)
+                    .put("e81_bound_scope_id", e81BoundScopeId)
+                    .put("e81_guest_activity_oncreate_called", false)
+                    .put("e81_framework_activity_attached", false)
                                     .put("guest_application_registered_with_activity_thread", false)
                 .put("guest_application_registered_with_package_manager", false)
                 .put("full_guest_application_lifecycle_verified", false)
