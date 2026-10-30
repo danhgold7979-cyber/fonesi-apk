@@ -1,3 +1,15 @@
+# Fonesi APK — E80 exact-source signed synthetic Activity constructor technical PASS; guest lifecycle unaccepted (30/10/2026)
+
+**Repository:** [danhgold7979-cyber/fonesi-apk](https://github.com/danhgold7979-cyber/fonesi-apk); branch `phase/e80-signed-private-activity-construction-20261030`, [Draft PR #54](https://github.com/danhgold7979-cyber/fonesi-apk/pull/54) stacked on E79 Draft PR #53. `main@c055df600f87ee9ddf0cd5d6bfc67d80d145e79d` unchanged.
+
+Original product **Phase 1 steps 7–8**, especially the controlled-app proof part of step 8; preparing Phase 3 step 15 and Phase 2 phone acceptance steps 9–12. **E80 technical PASS** on exact source SHA `050deaedeaebd04f9e2327bfb3741636631574e3` [CI #41018992724](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/41018992724) **SUCCESS**, all 17 substantive steps. Cloud/candidate each **510 tests**; source-engine **63 JVM tests**, Python **27 tests**, payload **10 JVM tests**, native AAR, signed host/payload APK build/lint/signature and E40–E80 audits passed. [E80 results](phases/E80_SIGNED_PRIVATE_ACTIVITY_CONSTRUCTION_RESULTS.md) | [E80 test-only artifact #12961168620](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/41018992724/artifacts/12961168620).
+
+Owned AOSP API 34 x86_64 software emulator actually invoked the public no-argument constructor of the project-owned signed PRIVATE `vn.fonesi.payload.PayloadActivity` via public `Instrumentation.newActivity` on Android's main Looper, once in **PID 2324** and once after force-stop/relaunch in **PID 2941**, both under UID **10142**. Both construction receipts required exact private classloader and signed class identity, constructed count **1 per process**, and `getBaseContext()==null` (**unattached**). E79 inherited A/B SharedPreferences/files/SQLite survived the restart with counters 1→2 and no cross-scope reads.
+
+**No real guest Activity was attached/launched/onCreated**, no ActivityThread/PackageManager guest registration, no third-party app, no independent UID/account security boundary, no production split support or real phone sessions. Candidate `supportsSplits=false`; `SpaceCoreBackend` still accepts one full APK only. **Weighted product readiness 28.00%; real third-party clones accepted 0.** No Product Phase 1 step 8 or Phase 2 acceptance completion. Keep PRs Draft, `main` unchanged, no APK release. The reporting-only commit after the PASS source requires its own CI.
+
+---
+
 # Fonesi APK — E79 exact-source synthetic restart technical PASS; real guest/account acceptance remains open (30/10/2026)
 
 **Repository:** [danhgold7979-cyber/fonesi-apk](https://github.com/danhgold7979-cyber/fonesi-apk), development branch `phase/e79-synthetic-process-restart-durability-20261030`, [Draft PR #53](https://github.com/danhgold7979-cyber/fonesi-apk/pull/53) stacked on E78 [Draft PR #52](https://github.com/danhgold7979-cyber/fonesi-apk/pull/52). `main@c055df600f87ee9ddf0cd5d6bfc67d80d145e79d` unchanged.
