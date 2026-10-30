@@ -55,7 +55,7 @@ assert 'android:appComponentFactory=".E82AppComponentFactory"' in manifest
 assert 'android:name=".E82HostActivityStub" android:exported="false"' in manifest
 assert 'android:process=":fonesi_guest_ui"' in manifest
 for marker in (
-    "@TargetApi(28)",
+    "@RequiresApi(28)",
     "extends AppComponentFactory",
     "return super.instantiateActivity(classLoader, className, intent)",
     "E82FactoryAuthorization.consume(dispatch)",
@@ -80,9 +80,10 @@ for marker in (
 ):
     assert marker in host, "E82 host controller gate missing: " + marker
 for marker in (
-    "import android.annotation.TargetApi",
-    "@TargetApi(28)",
+    "import android.annotation.RequiresApi",
+    "@RequiresApi(28)",
     "beginE82HostStubLifecycle()",
+    "private fun writeE82Receipt()",
     "framework_on_create_called",
     "framework_on_resume_called",
     "base_context_non_null",
