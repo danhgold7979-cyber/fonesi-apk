@@ -1,5 +1,6 @@
 package vn.fonesi.nativeprobe;
 
+import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.AppComponentFactory;
 import android.app.Application;
@@ -13,6 +14,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Modifier;
 
 /** Test-only framework factory for the non-exported E82 host Activity stub. */
+@TargetApi(28)
 public final class E82AppComponentFactory extends AppComponentFactory {
     public static final String EXTRA_RUN_ID = "e82_run_id";
     public static final String EXTRA_NONCE = "e82_nonce";
