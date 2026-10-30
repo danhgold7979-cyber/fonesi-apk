@@ -27,8 +27,7 @@ public final class E82FactoryAuthorizationTest {
                 E82FactoryAuthorization.HOST_PACKAGE,
                 E82FactoryAuthorization.STUB_CLASS,
                 E82FactoryAuthorization.HOST_PACKAGE + "/" + E82FactoryAuthorization.STUB_CLASS,
-                E82FactoryAuthorization.HOST_PROCESS, 10142, E82FactoryAuthorizationTest.class.getClassLoader(),
-                SOURCE, HOST_APK, PAYLOAD_APK, CLUSTER, E82FactoryAuthorization.PRIVATE_ACTIVITY_CLASS,
+                E82FactoryAuthorization.HOST_PROCESS, 10142, SOURCE, HOST_APK, PAYLOAD_APK, CLUSTER, E82FactoryAuthorization.PRIVATE_ACTIVITY_CLASS,
                 PayloadActivity.class.getClassLoader(), E82FactoryAuthorizationTest.class.getClassLoader(),
                 PayloadActivity.class, loadedImage);
     }
