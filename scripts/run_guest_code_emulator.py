@@ -85,7 +85,7 @@ def read_ui_configuration(device, timeout_seconds=UI_CONFIGURATION_READ_TIMEOUT_
         for line in density_lines
     ):
         raise RuntimeError("Android UI fingerprint contains invalid density output")
-    if scalar_positions != sorted(scalar_positions) or scalar_positions[0] != density_index + 1:
+    if scalar_positions != sorted(scalar_positions):
         raise RuntimeError("Android UI fingerprint scalar values are missing or out of order")
     if len(snapshot) != scalar_positions[-1] + 1:
         raise RuntimeError("Android UI fingerprint contains unexpected trailing output")
