@@ -46,6 +46,7 @@ public final class DispatcherTest {
             }, DispatcherTest::readback);
             return;
         }
+        authorityBindingMatrix();
         SharedUpdateDispatcher dispatcher = fresh();
         SharedUpdateDispatcher.Request request = request("example.app");
         AtomicInteger probes = new AtomicInteger(), calls = new AtomicInteger(), inspections = new AtomicInteger();
@@ -227,6 +228,64 @@ public final class DispatcherTest {
         check(Files.readString(outside).equals("untouched"));
         if (checks < 45) throw new AssertionError("Incomplete dispatcher suite");
         System.out.println("PASS " + checks + " synthetic dispatcher checks; trusted callbacks only; no provider");
+    }
+    private static Preflight mismatchedBinding(SharedUpdateDispatcher.Request request, int kind) {
+        Preflight good = valid(request);
+        Map<UUID, PeerState> peers = good.peers();
+        Evidence evidence = good.evidence();
+        Provider changed = kind == 0 || kind == 2
+                ? new Provider("other-provider", PROVIDER.revision())
+                : new Provider(PROVIDER.id(), "other-revision");
+        if (kind < 2) {
+            PeerState peer = peers.get(request.identity().cloneId());
+            peers = Map.of(request.identity().cloneId(), new PeerState(changed, peer.packageName(),
+                    peer.installedClusterSha256(), peer.ready(), peer.stopped()));
+        } else {
+            evidence = new Evidence(kind < 4 ? changed : evidence.provider(),
+                    kind == 4 ? "other-environment" : evidence.environment(),
+                    kind == 5 ? "c".repeat(64) : evidence.clusterSha256(),
+                    evidence.scope(), evidence.isolation(), evidence.claims());
+        }
+        return new Preflight(good.consent(), good.unlockedForeground(), good.frozenSourceVerified(),
+                good.completePackageEnumeration(), peers, evidence);
+    }
+    private static void authorityBindingMatrix() throws Exception {
+        for (int kind = 0; kind < 6; kind++) for (int stage = 1; stage <= 3; stage++) {
+            final int mismatch = kind, rejectAt = stage;
+            Path root = Files.createTempDirectory("fonesi-dispatch-binding-");
+            try {
+                SharedUpdateDispatcher dispatcher = new SharedUpdateDispatcher(root);
+                SharedUpdateDispatcher.Request target = request("example.binding");
+                AtomicInteger probes = new AtomicInteger(), mutations = new AtomicInteger(), reads = new AtomicInteger();
+                Result result = dispatcher.execute(target,
+                        r -> probes.incrementAndGet() == rejectAt ? mismatchedBinding(r, mismatch) : valid(r),
+                        r -> mutations.incrementAndGet(),
+                        (r, revision) -> { reads.incrementAndGet(); return readback(r, revision); });
+                check(result == (stage == 3 ? Result.REVIEW_REQUIRED : Result.PREFLIGHT_REJECTED));
+                check(probes.get() == stage); check(mutations.get() == 0); check(reads.get() == 0);
+                Path file = root.resolve(target.identity().operation() + ".journal");
+                if (stage == 1) check(!Files.exists(file));
+                else {
+                    Operation retained = new OperationJournal(root).read(target.identity().operation());
+                    check(retained.state() == (stage == 2 ? State.CANCELLED : State.REVIEW_REQUIRED));
+                    byte[] before = Files.readAllBytes(file);
+                    check(dispatcher.execute(target, r -> { throw new AssertionError("Duplicate probed"); },
+                            r -> mutations.incrementAndGet(), (r, v) -> { reads.incrementAndGet(); return readback(r, v); }) == Result.DUPLICATE);
+                    if (stage == 3) {
+                        check(new SharedUpdateDispatcher(root).execute(request("example.binding"),
+                                r -> { throw new AssertionError("Unresolved scope probed"); },
+                                r -> mutations.incrementAndGet(),
+                                (r, v) -> { reads.incrementAndGet(); return readback(r, v); }) == Result.SCOPE_REVIEW_REQUIRED);
+                    }
+                    check(Arrays.equals(before, Files.readAllBytes(file)));
+                    check(mutations.get() == 0); check(reads.get() == 0);
+                }
+            } finally {
+                try (var paths = Files.walk(root)) {
+                    for (Path path : paths.sorted(Comparator.reverseOrder()).toList()) Files.delete(path);
+                }
+            }
+        }
     }
     private static void check(boolean value) { checks++; if (!value) throw new AssertionError("Check " + checks); }
 }

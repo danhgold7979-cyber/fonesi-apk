@@ -12,7 +12,7 @@ The latest historical provider/specification reference is E82 branch `2fac016e3b
 
 | Gate | Deliverable | Required evidence / stop boundary |
 |---|---|---|
-| R0 Recovery | All refs + hashes + independent restore + divergent-head oracle | 64 refs restored exactly; preserve unique history. No source disposal before semantic review. |
+| R0 Recovery — ACCEPTED (narrow gate, 2026-10-30) | All refs + hashes + independent restore + divergent-head oracle | Fresh empty-repository restore reverified64 refs/hash/fsck;14-head semantic ledger retained. See REBUILD_LEGACY_CLEANUP_PROPOSAL.md. This does not accept source replacement or any other gate. |
 | R1 Specification | Requirements, threat boundaries, acceptance ledger and detailed steps | Each requirement mapped to unit/Android/provider/phone evidence. Unknown is never PASS. |
 | R2 Independent kernel | New capability decisions and durable operation state protocol | Local JVM tests, negative/race cases, no Android/provider dependency. No clone claims. |
 | R3 Persistence/integration | Fresh storage adapter and migrations 1–6 compatibility, immutable source ownership | SQLite transaction/crash tests, namespace-safe recovery; old guest data never silently reset. |

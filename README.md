@@ -6,6 +6,8 @@
 
 `rebuild-logic/` là bản chuyển tương thích logic Java17 độc lập (identity/capability/state), chưa import vào Android. Policy B1c chặn nhãn cách ly cùng host UID cho yêu cầu đối kháng; nhãn/claim không phải chứng minh cách ly. Xem [ranh giới và test](rebuild-logic/README.md).
 
+Build tại root đã bị chặn có chủ đích; dùng `./gradlew -p rebuild-android` theo gate CI. Chỉ cấu hình build root cũ được gỡ; 16 script lịch sử vẫn còn, không thuộc quy trình rebuild và chưa được vô hiệu hóa toàn bộ. Source/test/probe/notice cũ chưa bị xóa vì chưa đủ nghiệm thu thay thế.
+
 Toàn bộ source cũ được phục hồi đủ refs; phần Android bên dưới còn giữ làm reference/regression oracle, không phải thành quả rebuild. Không coi test kernel là bằng chứng chạy/cách ly tài khoản. Màu đỏ chỉ nhận diện luồng trao đổi APK, không phải yêu cầu đổi thương hiệu.
 
 ---

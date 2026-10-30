@@ -32,6 +32,7 @@ public final class JournalTest {
             }
             return;
         }
+        durableTransitionMatrix();
         Path root = Files.createTempDirectory("fonesi-rebuild-journal-");
         OperationJournal journal = new OperationJournal(root);
         Operation first = initial();
@@ -146,6 +147,54 @@ public final class JournalTest {
         check(Files.readString(leftover).equals("unowned staging"));
         if (checks < 30) throw new AssertionError("Incomplete journal suite");
         System.out.println("PASS " + checks + " filesystem journal checks; Linux host only; no guest data");
+    }
+    private static long reachable(State state) {
+        return switch (state) {
+            case PREPARED -> 0;
+            case DISPATCHED, CANCELLED -> 1;
+            case VERIFIED, REVIEW_REQUIRED -> 2;
+        };
+    }
+    private static void durableTransitionMatrix() throws Exception {
+        int allowed = 0, denied = 0;
+        for (State from : State.values()) for (State to : State.values()) {
+            Path root = Files.createTempDirectory("fonesi-cas-matrix-");
+            try {
+                OperationJournal journal = new OperationJournal(root);
+                Operation prepared = initial(); journal.create(prepared);
+                Operation source = new Operation(prepared.identity(), from, reachable(from));
+                if (from == State.CANCELLED) journal.compareAndSet(prepared, source);
+                else if (from != State.PREPARED) {
+                    Operation dispatched = prepared.dispatch(0, prepared.identity());
+                    journal.compareAndSet(prepared, dispatched);
+                    if (from != State.DISPATCHED) journal.compareAndSet(dispatched, source);
+                }
+                check(new OperationJournal(root).read(source.identity().operation()).equals(source));
+                // Construct outside the rejection try: every replacement is a reachable record.
+                Operation target = new Operation(source.identity(), to, reachable(to));
+                Path file = root.resolve(source.identity().operation() + ".journal");
+                byte[] before = Files.readAllBytes(file);
+                boolean legal = (from == State.PREPARED && (to == State.DISPATCHED || to == State.CANCELLED))
+                        || (from == State.DISPATCHED && (to == State.VERIFIED || to == State.REVIEW_REQUIRED));
+                if (legal) {
+                    journal.compareAndSet(source, target); allowed++;
+                    check(new OperationJournal(root).read(source.identity().operation()).equals(target));
+                    check(!Arrays.equals(before, Files.readAllBytes(file)));
+                } else {
+                    try {
+                        journal.compareAndSet(source, target);
+                        throw new AssertionError("Forbidden durable CAS accepted: " + from + " -> " + to);
+                    } catch (IllegalArgumentException expected) { denied++; checks++; }
+                    check(new OperationJournal(root).read(source.identity().operation()).equals(source));
+                    check(Arrays.equals(before, Files.readAllBytes(file)));
+                }
+            } finally {
+                try (var paths = Files.walk(root)) {
+                    for (Path path : paths.sorted(Comparator.reverseOrder()).toList()) Files.delete(path);
+                }
+            }
+        }
+        check(allowed == 4); check(denied == 21);
     }
     private static byte[] fixture(Operation operation, int magic, int version, String provider, String state,
                                   long revision, String digest, boolean duplicate, boolean trailing) throws Exception {

@@ -1,0 +1,10 @@
+# Stage A root-build retirement — approved before mutation, 2026-10-30 21:36 UTC
+
+Root approved exact cleanup manifest: remove only root `build.gradle.kts` and `gradle.properties`; replace only root `settings.gradle.kts` with explicit fail-closed legacy-root guard. Preserve official wrapper bytes, every legacy runtime/probe/test/schema/script/notice, all rebuild sources and history. No provider/source-equivalence claim.
+
+Add source tests verifying the exact guard and absent root files; retain wrapper hash verification. Hosted CI first completes the existing fresh `-p rebuild-android` compile/lint using verified wrapper/preinstalledSDK and no auto-download. Then invoke root `help` with `--offline` and require a nonzero status plus the exact guard diagnostic (not generic build failure), no executed tasks; no SDK/license/download fallback. This is diagnostic refusal, not building old source. Require fresh packaged semantic audit and all independent suites. Local Gradle absent: only source/verifier unit tests can run locally; actual refusal remains hosted gate.
+
+The16 historical scripts remain and may directly fetch/build before Gradle; do not run them. Stage A does not promise every manual legacy command is inert or complete source replacement. Rollback is exact three-file retrieval from b409f60 into review paths, never broad reset over new work. Separate commit from R2 test closure; root publishes after review.
+
+## Local implementation / pending hosted gate
+Exactly rootbuild.gradle.kts andgradle.properties removed; settings replaced by explicit GradleException marker. Root wrapper, all legacy runtime/test/probe/schema/scripts/notices and production rebuild classes unchanged.10new focused source/log-verifier tests pass (67tooling total); generic buildfailure,zero exit,source-quoted marker,tasks/download,oversize andinvalidUTF8 reject. Actual offline rootrefusal only runs afterfresh hosted compile has established cachedverifiedGradle; local noGradle execution.16legacycommandpaths remain as disclosed.

@@ -111,6 +111,18 @@ jobs:
             -Pandroid.builder.sdkDownload=false \
             -Porg.gradle.java.installations.auto-download=false \
             :app:assembleDebug :app:lintDebug
+      - name: Require intentional offline legacy-root refusal
+        run: |
+          set -euo pipefail
+          log="$RUNNER_TEMP/fonesi-legacy-root-refusal.log"
+          set +e
+          ./gradlew --offline --no-daemon --console=plain \
+            -Pandroid.builder.sdkDownload=false \
+            -Porg.gradle.java.installations.auto-download=false help > "$log" 2>&1
+          status=$?
+          set -e
+          cat "$log"
+          python3 rebuild-tools/verify_root_refusal.py "$status" "$log"
       - name: Verify actual APK identity permissions disabled actions and debug signature
         run: python3 rebuild-tools/verify_debug_apk.py
       - name: Explicit Android scaffold evidence boundary

@@ -2,7 +2,7 @@
 
 Fresh Java21 capability-policy and operation-transition implementation; not copied from the old engine. No Android, native SDK, network, accounts or production provider. Existing application does not consume this module yet.
 
-Run `./rebuild-kernel/check.sh` from repository root. It uses the installed JDK compiler module and real JVM; no downloads. Standalone Gradle build is provided for future CI (`gradle -p rebuild-kernel check`), not executed in this environment.
+Run `./rebuild-kernel/check.sh` from repository root. It uses the installed JDK compiler module and real JVM; no downloads. Standalone Gradle build is a partial future entrypoint (`gradle -p rebuild-kernel check`), not executed or equivalent to the canonical runner: it currently omits newer policy/identity/history suites. Use check.sh for the complete gate.
 
 Evidence records are policy input, **not attestations**: a future verifier must authenticate and inspect receipts. Capability approval requires exact provider/environment/scope; synthetic evidence cannot grant third-party claims. Separate UID alone never substitutes for hostile-guest testing.
 
