@@ -26,6 +26,8 @@ for marker in (
     "splitClusterCodeExecutionVerified: Boolean = false",
     "splitClusterAtomicUpdateVerified: Boolean = false",
     "Split import cannot be accepted without preflight, dispatch and complete readback",
+    "Split code execution requires an accepted split import provider",
+    "Atomic split update requires accepted import and code-execution proof",
 ):
     assert marker in engine, "E83 engine capability invariant missing: " + marker
 
