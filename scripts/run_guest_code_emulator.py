@@ -466,10 +466,10 @@ def main():
     parser.add_argument("--boot-timeout", type=int, default=480)
     parser.add_argument("--probe-timeout", type=int, default=180)
     parser.add_argument("--allow-software-emulation", action="store_true",
-                        help="E77/E78/E79/E80-only bounded synthetic proof fallback when GitHub has no KVM")
+                        help="E77/E78/E79/E80/E82-only bounded synthetic proof fallback when GitHub has no KVM")
     parser.add_argument("--e81-scoped-activity", action="store_true",
                         help="Test-only PRIVATE Activity method scope proof; requires --proof-level e80")
-    parser.add_argument("--proof-level", choices=("e11", "e12", "e13", "e14", "e15", "e16", "e17", "e21", "e22", "e23", "e24", "e25", "e29", "e74", "e77", "e78", "e79", "e80"), default="e11",
+    parser.add_argument("--proof-level", choices=("e11", "e12", "e13", "e14", "e15", "e16", "e17", "e21", "e22", "e23", "e24", "e25", "e29", "e74", "e77", "e78", "e79", "e80", "e82"), default="e11",
                         help="E13 additionally verifies independent synthetic native file/SQLite routes")
     args = parser.parse_args()
     if args.e81_scoped_activity and args.proof_level != "e80":
@@ -477,7 +477,7 @@ def main():
     if args.boot_timeout not in range(30, 601) or args.probe_timeout not in range(15, 301):
         parser.error("Timeout out of bounded range")
     if args.allow_software_emulation and not software_emulation_proof_allowed(args.proof_level):
-        parser.error("Software-emulation fallback is restricted to bounded E77-E80 synthetic proofs")
+        parser.error("Software-emulation fallback is restricted to bounded E77-E82 synthetic proofs")
     for digest in (args.expected_probe_sha256, args.expected_payload_sha256):
         if re.fullmatch(r"[0-9a-f]{64}", digest) is None:
             parser.error("Expected SHA-256 must be 64 lowercase hexadecimal characters")
@@ -534,6 +534,9 @@ def main():
         "android_synthetic_component_dispatch_verified": False,
         "android_private_activity_class_preflight_verified": False,
         "android_private_activity_constructor_preflight_verified": False,
+        "android_e82_factory_authorization_consumed": False,
+        "android_e82_host_stub_context_verified": False,
+        "android_e82_framework_activity_lifecycle_verified": False,
         "android_production_clone_accepted": False,
         "android_third_party_component_executed": False,
         "social_apps_tested": False,
@@ -703,7 +706,7 @@ def main():
             if installed.returncode or "Success" not in installed.stdout:
                 raise RuntimeError(synthetic_install_failure(apk, installed))
         evidence["android_apks_installed"] = True
-        if args.proof_level in ("e24", "e25", "e29", "e74", "e77", "e78", "e79", "e80"):
+        if args.proof_level in ("e24", "e25", "e29", "e74", "e77", "e78", "e79", "e80", "e82"):
             # AOSP first boot can deliver late display/locale configuration changes after
             # sys.boot_completed. Preserve the complete seven-value fingerprint and require
             # four identical consecutive snapshots before dispatching the host Activity.
