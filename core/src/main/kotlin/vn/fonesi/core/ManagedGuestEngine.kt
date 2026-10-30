@@ -86,7 +86,7 @@ data class GuestApkClusterReadback(
     val completeMemberSetVerified: Boolean,
 )
 
-interface SplitClusterGuestBackend {
+interface SplitClusterGuestBackend : GuestBackend {
     /** Must verify every member's signature, package, version, split graph and SHA before mutation. */
     fun preflightCluster(source: InstalledSource): GuestApkClusterIdentity
     /** Must import every member atomically or preserve an explicit unknown/reconciliation state. */
@@ -141,16 +141,24 @@ class ManagedGuestEngine(
      * initialized. This is not acceptance of guest component lifecycle, framework mediation,
      * native page-size support or account isolation.
      */
+    private val backendCapabilities: GuestBackendCapabilities get() = backend.capabilities.also { reported ->
+        if (reported.splitClusterImportSupported) {
+            check(backend is SplitClusterGuestBackend) {
+                "Backend cannot claim split import without implementing the typed cluster provider contract"
+            }
+        }
+    }
+
     override val capabilities: EngineCapabilities get() = if (backend.ready) EngineCapabilities(
-        singleApkPreflightSupported = backend.capabilities.singleApkPreflightSupported,
-        singleApkInstallSupported = backend.capabilities.singleApkInstallSupported,
-        packageIdentityReadbackSupported = backend.capabilities.packageIdentityReadbackSupported,
-        splitClusterPreflightSupported = backend.capabilities.splitClusterPreflightSupported,
-        splitClusterInstallDispatchSupported = backend.capabilities.splitClusterInstallDispatchSupported,
-        splitClusterReadbackVerified = backend.capabilities.splitClusterReadbackVerified,
-        splitClusterImportSupported = backend.capabilities.splitClusterImportSupported,
-        splitClusterCodeExecutionVerified = backend.capabilities.splitClusterCodeExecutionVerified,
-        splitClusterAtomicUpdateVerified = backend.capabilities.splitClusterAtomicUpdateVerified,
+        singleApkPreflightSupported = backendCapabilities.singleApkPreflightSupported,
+        singleApkInstallSupported = backendCapabilities.singleApkInstallSupported,
+        packageIdentityReadbackSupported = backendCapabilities.packageIdentityReadbackSupported,
+        splitClusterPreflightSupported = backendCapabilities.splitClusterPreflightSupported,
+        splitClusterInstallDispatchSupported = backendCapabilities.splitClusterInstallDispatchSupported,
+        splitClusterReadbackVerified = backendCapabilities.splitClusterReadbackVerified,
+        splitClusterImportSupported = backendCapabilities.splitClusterImportSupported,
+        splitClusterCodeExecutionVerified = backendCapabilities.splitClusterCodeExecutionVerified,
+        splitClusterAtomicUpdateVerified = backendCapabilities.splitClusterAtomicUpdateVerified,
         guestActivityLifecycleVerified = false,
         guestServiceLifecycleVerified = false,
         guestReceiverLifecycleVerified = false,
