@@ -55,6 +55,7 @@ assert 'android:appComponentFactory=".E82AppComponentFactory"' in manifest
 assert 'android:name=".E82HostActivityStub" android:exported="false"' in manifest
 assert 'android:process=":fonesi_guest_ui"' in manifest
 for marker in (
+    "@TargetApi(28)",
     "extends AppComponentFactory",
     "return super.instantiateActivity(classLoader, className, intent)",
     "E82FactoryAuthorization.consume(dispatch)",
