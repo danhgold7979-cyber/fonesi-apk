@@ -10,6 +10,7 @@ def read(path):
 engine = read("core/src/main/kotlin/vn/fonesi/core/CloneEngine.kt")
 backend = read("core/src/main/kotlin/vn/fonesi/core/ManagedGuestEngine.kt")
 tests = read("core/src/test/kotlin/vn/fonesi/core/EngineCapabilitiesTest.kt")
+managed_tests = read("core/src/test/kotlin/vn/fonesi/core/ManagedGuestEngineTest.kt")
 spacecore = read("app/src/candidate/java/vn/fonesi/app/runtime/SpaceCoreBackend.kt")
 bindings = read("app/src/candidate/java/vn/fonesi/app/runtime/RuntimeBindings.kt")
 workflow = read(".github/workflows/e82-public-component-factory.yml")
@@ -69,10 +70,14 @@ for marker in (
     "splitClusterIdentityRequiresCanonicalNamesAndFeatureConfigRelationships",
     "splitClusterReadbackRequiresExactIdentityAndCompleteSdkOwnedMemberSet",
     "engineCannotClaimSplitImportWithoutCompleteProviderEvidence",
+):
+    assert marker in tests, "E83 regression test missing: " + marker
+
+for marker in (
     "splitSourceIsRejectedBeforeSharedUpdateMutation",
     "backendCannotAdvertiseSplitCapabilityWithoutTypedProvider",
 ):
-    assert marker in tests, "E83 regression test missing: " + marker
+    assert marker in managed_tests, "E83 engine regression test missing: " + marker
 
 assert "audit_e83_split_provider_contract.py" in workflow, "E83 audit is not wired into exact-source CI"
 print("PASS E83 contract audit: split import remains fail-closed; pinned SpaceCore remains single-APK only.")
