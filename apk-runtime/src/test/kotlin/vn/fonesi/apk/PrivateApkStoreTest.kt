@@ -71,8 +71,11 @@ class PrivateApkStoreTest {
         )
         assertNotEquals(first.id, second.id)
         assertEquals(64, first.clusterDigest.length)
-        assertEquals(first.clusterDigest, store.open(first.id, 34).clusterDigest)
+        val reopened = store.open(first.id, 34)
+        assertEquals(first.clusterDigest, reopened.clusterDigest)
+        assertEquals(first.identity, reopened.identity)
         assertEquals(first.clusterDigest, second.clusterDigest)
+        assertEquals(first.identity, second.identity)
     }
 
     @Test fun identityMatchesAllAuditorMetadataAndPreservesLegacyDigestBytes() {
