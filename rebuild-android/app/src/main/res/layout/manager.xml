@@ -10,6 +10,10 @@
             android:text="@string/status" android:paddingTop="16dp" android:paddingBottom="16dp" />
         <TextView android:id="@+id/metadata_summary" android:layout_width="match_parent"
             android:layout_height="wrap_content" android:text="@string/metadata_pending" />
+        <Button android:id="@+id/metadata_first" android:saveEnabled="false" android:layout_width="match_parent"
+            android:layout_height="wrap_content" android:text="@string/metadata_first" android:enabled="false" />
+        <Button android:id="@+id/metadata_next" android:saveEnabled="false" android:layout_width="match_parent"
+            android:layout_height="wrap_content" android:text="@string/metadata_next" android:enabled="false" />
         <EditText android:id="@+id/metadata_search" android:saveEnabled="false" android:layout_width="match_parent"
             android:layout_height="wrap_content" android:hint="@string/metadata_search"
             android:inputType="text" android:importantForAutofill="no" />

@@ -262,7 +262,45 @@ public final class ManagerModelTest {
         check(namespaceRefresh.snapshot().selected.equals(Collections.singleton(otherNamespace.key)));
         check(!namespaceRefresh.publish(originalGeneration,Arrays.asList(a)));
         check(namespaceRefresh.snapshot().visible.size() == 1 && namespaceRefresh.snapshot().visible.get(0) == otherNamespace);
-        if (checks < 158) throw new AssertionError("missing tests");
+        String atBudget = "x".repeat(4096);
+        String beyondBudget = "x".repeat(4097);
+        Entry boundedEntry = new Entry(new CatalogKey(beyondBudget, beyondBudget), atBudget, atBudget, atBudget, Status.UNVERIFIED);
+        check(boundedEntry.key.cloneId.equals(beyondBudget));
+        check(boundedEntry.name.equals(atBudget));
+        check(boundedEntry.normalizedUnits() == 3 * 4096);
+        rejects(() -> new Entry(a.key, beyondBudget, "name", "", Status.UNVERIFIED));
+        rejects(() -> new Entry(a.key, "pkg", beyondBudget, "", Status.UNVERIFIED));
+        rejects(() -> new Entry(a.key, "pkg", "name", beyondBudget, Status.UNVERIFIED));
+        String expanding = "\uac01".repeat(2730);
+        Entry expandedEntry = new Entry(a.key, "p", expanding, "", Status.UNVERIFIED);
+        check(expandedEntry.normalizedUnits() == 8191);
+        rejects(() -> new Entry(a.key, "p", expanding + "\uac01", "", Status.UNVERIFIED));
+        ManagerModel budgets = new ManagerModel();
+        check(budgets.publish(budgets.beginRefresh(), Arrays.asList(a)));
+        check(budgets.select(budgets.snapshot().revision, a.key, true));
+        ManagerModel.Snapshot beforeInvalid = budgets.snapshot();
+        rejects(() -> budgets.filter(beforeInvalid.revision, beyondBudget, null));
+        rejects(() -> budgets.filter(beforeInvalid.revision, "", beyondBudget));
+        rejects(() -> budgets.filter(beforeInvalid.revision, expanding + "\uac01", null));
+        check(budgets.snapshot().revision == beforeInvalid.revision);
+        check(budgets.snapshot().query.equals(beforeInvalid.query));
+        check(budgets.snapshot().group == beforeInvalid.group);
+        check(budgets.snapshot().selected.equals(beforeInvalid.selected));
+        check(budgets.snapshot().visible.equals(beforeInvalid.visible));
+        budgets.filter(budgets.snapshot().revision, atBudget, atBudget);
+        check(budgets.snapshot().query.equals(atBudget));
+        check(budgets.snapshot().group.equals(atBudget));
+        budgets.filter(budgets.snapshot().revision, expanding, null);
+        check(budgets.snapshot().query.equals(expanding));
+        for (String fieldName : Arrays.asList("foldedName", "foldedGroup", "foldedPackage")) {
+            Field cached = Entry.class.getDeclaredField(fieldName);
+            check(java.lang.reflect.Modifier.isFinal(cached.getModifiers()));
+            check(java.lang.reflect.Modifier.isPrivate(cached.getModifiers()));
+        }
+        int cacheUnits = a.normalizedUnits();
+        for (int i = 0; i < 10; i++) budgets.filter(budgets.snapshot().revision, "dang", null);
+        check(a.normalizedUnits() == cacheUnits);
+        if (checks < 186) throw new AssertionError("missing tests");
         System.out.println("PASS " + checks + " manager presentation checks; no provider/data/UI execution");
     }
 }

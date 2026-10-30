@@ -15,12 +15,18 @@ launchable-activity: name='vn.fonesi.rebuild.ManagerActivity'
 """
 
 
-LAYOUT = "".join(f"E: Button (line=1)\n A: http://schemas.android.com/apk/res/android:id(0x010100d0)=@0x7f08000{i}\n A: android:enabled(0x0101000e)=false\n" for i in range(4))
+LAYOUT = "".join(f"E: Button (line=1)\n A: http://schemas.android.com/apk/res/android:id(0x010100d0)=@0x7f08000{i}\n A: android:enabled(0x0101000e)=false\n" for i in range(6))
+
+# Synthetic resource-table output, derived from the pinned AOSP formatter in the
+# verifier. It is NOT observed build-tools36 output; actual hosted verification is required.
+BUTTON_NAMES = ("import_apk", "create_clone", "launch_clone", "migrate_data", "metadata_first", "metadata_next")
+RESOURCES = "Binary APK\nPackage name=vn.fonesi.rebuild.debug id=7f\n  type id id=08 entryCount=6\n" + "".join(
+    f"    resource 0x7f08000{i} id/{name}\n      () (id)\n" for i, name in enumerate(BUTTON_NAMES))
 
 
 class ApkGateTests(unittest.TestCase):
     def exercise(self, badging=BADGING, manifest='allowBackup(0x01010280)=false\n E: activity (line=1)',
-                 layout=LAYOUT, signer='CN=Android Debug', extra=None):
+                 layout=LAYOUT, resources=RESOURCES, signer='CN=Android Debug', extra=None):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
             apk = root / 'rebuild-android/app/build/outputs/apk/debug/app-debug.apk'
@@ -30,18 +36,26 @@ class ApkGateTests(unittest.TestCase):
                 archive.writestr('AndroidManifest.xml', b'synthetic')
                 if extra:
                     archive.writestr(extra, b'synthetic')
-            outputs = [badging, manifest, "", layout, signer]
+            outputs = [badging, manifest, "", layout, resources, signer]
             with patch.object(subject.subprocess, 'run', side_effect=[subprocess.CompletedProcess([], 0, x) for x in outputs]), patch('builtins.print'):
                 subject.verify(root, root / 'sdk')
 
     def test_synthetic_expected_evidence(self):
         self.exercise()
 
-    def test_captured_sdk36_evidence(self):
+    def test_captured_sdk36_other_evidence_with_synthetic_new_layout(self):
         fixture = Path(__file__).parent / 'fixtures/sdk36'
         self.exercise(**{key: (fixture / (name + '.txt')).read_text()
                          for key, name in [('badging', 'badging'), ('manifest', 'manifest'),
-                                           ('layout', 'layout'), ('signer', 'signature')]})
+                                           ('signer', 'signature')]})
+
+    def test_historical_four_button_layout_is_not_current_acceptance(self):
+        fixture = Path(__file__).parent / 'fixtures/sdk36/layout.txt'
+        historical = fixture.read_text()
+        self.assertEqual(4, historical.count('E: Button '))
+        self.assertEqual(4, historical.count('enabled(0x0101000e)=false'))
+        with self.assertRaisesRegex(RuntimeError, 'exactly six'):
+            subject.verify_disabled_buttons(historical, RESOURCES)
 
     def test_wrong_minimum_sdk_rejected(self):
         with self.assertRaises(RuntimeError):
@@ -78,6 +92,57 @@ class ApkGateTests(unittest.TestCase):
     def test_unrecognized_format_rejected(self):
         with self.assertRaises(RuntimeError):
             self.exercise(layout=LAYOUT.replace('=false', '=(unknown)0'))
+
+    def test_every_button_initial_enabled_rejected(self):
+        for index in range(6):
+            with self.subTest(button=BUTTON_NAMES[index]):
+                parts = LAYOUT.split('=false')
+                changed = '=false'.join(parts[:index + 1]) + '=true' + '=false'.join(parts[index + 1:])
+                with self.assertRaises(RuntimeError):
+                    self.exercise(layout=changed)
+
+    def test_six_wrong_button_names_rejected(self):
+        with self.assertRaises(RuntimeError):
+            self.exercise(resources=RESOURCES.replace('id/metadata_next', 'id/enable_engine'))
+
+    def test_missing_resource_id_rejected(self):
+        with self.assertRaises(RuntimeError):
+            self.exercise(resources=RESOURCES.replace('0x7f080005', '0x7f080099'))
+
+    def test_wrong_resource_kind_rejected(self):
+        with self.assertRaises(RuntimeError):
+            self.exercise(resources=RESOURCES.replace('id/metadata_next', 'string/metadata_next'))
+
+    def test_duplicate_resource_id_rejected(self):
+        with self.assertRaises(RuntimeError):
+            self.exercise(resources=RESOURCES.replace('0x7f080005', '0x7f080004'))
+
+    def test_duplicate_resource_name_rejected(self):
+        with self.assertRaises(RuntimeError):
+            self.exercise(resources=RESOURCES.replace('id/metadata_next', 'id/metadata_first'))
+
+    def test_wrong_resource_package_rejected(self):
+        with self.assertRaises(RuntimeError):
+            self.exercise(resources=RESOURCES.replace('vn.fonesi.rebuild.debug', 'vn.fonesi.old'))
+
+    def test_unrecognized_resource_format_rejected(self):
+        with self.assertRaises(RuntimeError):
+            self.exercise(resources=RESOURCES.replace('resource 0x7f080005', 'resource unknown'))
+
+    def test_missing_or_conflicting_enabled_rejected(self):
+        for layout in (LAYOUT.replace(' A: android:enabled(0x0101000e)=false\n', '', 1),
+                       LAYOUT.replace('=false', '=false\n A: android:enabled(0x0101000e)=true', 1)):
+            with self.assertRaises(RuntimeError):
+                self.exercise(layout=layout)
+
+    def test_xml_callback_rejected(self):
+        with self.assertRaises(RuntimeError):
+            self.exercise(layout=LAYOUT + ' A: android:onClick(0x0101026f)=activate\n')
+
+    def test_extra_button_and_alias_rejected(self):
+        for extra in ('Button', 'android.widget.Button'):
+            with self.assertRaises(RuntimeError):
+                self.exercise(layout=LAYOUT + f'E: {extra} (line=9)\n')
 
     def test_release_signer_rejected(self):
         with self.assertRaises(RuntimeError):

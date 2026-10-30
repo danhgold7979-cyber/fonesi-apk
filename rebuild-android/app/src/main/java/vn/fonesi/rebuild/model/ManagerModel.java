@@ -12,6 +12,8 @@ import java.util.Set;
 
 /** Metadata presentation only: selection never confers provider or operation authority. */
 public final class ManagerModel {
+    public static final int TEXT_UTF16_BUDGET = 4096;
+    public static final int FOLDED_UTF16_BUDGET = 8192;
     public enum Phase { IDLE, LOADING, LOADED, FAILED }
     public enum Status { UNVERIFIED, QUARANTINED, UNAVAILABLE }
 
@@ -43,13 +45,24 @@ public final class ManagerModel {
         public final String name;
         public final String group;
         public final Status status;
+        private final String foldedName;
+        private final String foldedGroup;
+        private final String foldedPackage;
 
         public Entry(CatalogKey key, String packageName, String name, String group, Status status) {
             this.key = Objects.requireNonNull(key, "key");
             this.packageName = required(packageName);
             this.name = required(name);
-            this.group = Objects.requireNonNull(group, "group");
+            this.group = bounded(Objects.requireNonNull(group, "group"));
             this.status = Objects.requireNonNull(status, "status");
+            foldedName = fold(this.name);
+            foldedGroup = fold(this.group);
+            foldedPackage = fold(this.packageName);
+        }
+
+        /** Cached display-search UTF16 units, not an identity/schema validity limit. */
+        public int normalizedUnits() {
+            return foldedName.length() + foldedGroup.length() + foldedPackage.length();
         }
     }
 
@@ -81,6 +94,7 @@ public final class ManagerModel {
     private long generation;
     private Phase phase = Phase.IDLE;
     private String query = "";
+    private String foldedQuery = "";
     private String group;
     private List<Entry> entries = Collections.emptyList();
     private final Set<CatalogKey> selected = new LinkedHashSet<>();
@@ -128,10 +142,13 @@ public final class ManagerModel {
 
     public synchronized Snapshot filter(long expectedRevision, String newQuery, String newGroup) {
         if (revision != expectedRevision) return snapshot();
-        Objects.requireNonNull(newQuery, "query");
+        bounded(Objects.requireNonNull(newQuery, "query"));
+        if (newGroup != null) bounded(newGroup);
+        String newFoldedQuery = fold(newQuery);
         if (!query.equals(newQuery) || !Objects.equals(group, newGroup)) {
             long nextRevision = Math.addExact(revision, 1);
             query = newQuery;
+            foldedQuery = newFoldedQuery;
             group = newGroup;
             Set<CatalogKey> visibleIds = new HashSet<>();
             for (Entry entry : visible()) visibleIds.add(entry.key);
@@ -174,22 +191,29 @@ public final class ManagerModel {
 
     private List<Entry> visible() {
         List<Entry> result = new ArrayList<>();
-        String needle = fold(query);
+        String needle = foldedQuery;
         for (Entry entry : entries) {
             if (group != null && !group.equals(entry.group)) continue;
-            if (fold(entry.name).contains(needle) || fold(entry.group).contains(needle)
-                    || fold(entry.packageName).contains(needle)) result.add(entry);
+            if (entry.foldedName.contains(needle) || entry.foldedGroup.contains(needle)
+                    || entry.foldedPackage.contains(needle)) result.add(entry);
         }
         return result;
     }
 
     private static String fold(String value) {
-        return Normalizer.normalize(value, Normalizer.Form.NFD)
+        String result = Normalizer.normalize(bounded(value), Normalizer.Form.NFD)
                 .replaceAll("\\p{M}+", "").toLowerCase(Locale.ROOT).replace('đ', 'd');
+        if (result.length() > FOLDED_UTF16_BUDGET) throw new IllegalArgumentException("Display search budget exceeded");
+        return result;
+    }
+
+    private static String bounded(String value) {
+        if (value.length() > TEXT_UTF16_BUDGET) throw new IllegalArgumentException("Display text budget exceeded");
+        return value;
     }
 
     private static String required(String value) {
-        Objects.requireNonNull(value, "metadata");
+        bounded(Objects.requireNonNull(value, "metadata"));
         if (value.trim().isEmpty()) throw new IllegalArgumentException("empty metadata");
         return value;
     }

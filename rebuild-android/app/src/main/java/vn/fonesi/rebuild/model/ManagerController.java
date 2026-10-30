@@ -6,7 +6,7 @@ import java.util.Objects;
 import java.util.Set;
 import vn.fonesi.rebuild.model.ManagerModel.CatalogKey;
 
-/** Foreground-bound presentation only. No storage/provider adapter or operation dispatch. */
+/** Foreground-bound metadata presentation only; no operation dispatch. */
 public final class ManagerController {
     public interface View { void render(Render state); }
 
@@ -100,7 +100,7 @@ public final class ManagerController {
         return true;
     }
 
-    /** Reserved for a future reviewed adapter. The production Activity never calls this. */
+    /** Begin a foreground-bound metadata page load; ticket identity prevents stale delivery. */
     public synchronized RefreshTicket beginRefresh(Token token) {
         if (!valid(token)) return null;
         RefreshTicket created = new RefreshTicket(epoch, model.beginRefresh());

@@ -4,15 +4,19 @@ import android.app.Activity;
 import android.os.Bundle;
 import android.os.Looper;
 import android.text.Editable;
+import android.text.InputFilter;
 import android.text.TextWatcher;
 import android.widget.CheckBox;
+import android.widget.Button;
+import vn.fonesi.rebuild.catalog.CatalogLoader;
+import vn.fonesi.rebuild.catalog.CatalogPage;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import vn.fonesi.rebuild.model.ManagerController;
 import vn.fonesi.rebuild.model.ManagerModel;
 
-/** Fresh metadata views only. No storage/provider adapter, operation dispatch or fake rows. */
+/** Owned catalog metadata only; no legacy data, provider dispatch or seeded rows. */
 public final class ManagerActivity extends Activity implements ManagerController.View {
     private final ManagerController controller = new ManagerController();
     private ManagerController.Render state;
@@ -23,6 +27,9 @@ public final class ManagerActivity extends Activity implements ManagerController
     private LinearLayout rows;
     private TextView summary;
     private CheckBox selectVisible;
+    private Button firstPage;
+    private Button nextPage;
+    private CatalogLoader loader;
 
     @Override
     public void onCreate(Bundle savedState) {
@@ -30,10 +37,15 @@ public final class ManagerActivity extends Activity implements ManagerController
         setContentView(R.layout.manager);
         search = findViewById(R.id.metadata_search);
         group = findViewById(R.id.metadata_group);
+        search.setFilters(new InputFilter[] {new InputFilter.LengthFilter(4096)});
+        group.setFilters(new InputFilter[] {new InputFilter.LengthFilter(4096)});
         groupFilter = findViewById(R.id.metadata_group_filter);
         rows = findViewById(R.id.metadata_rows);
         summary = findViewById(R.id.metadata_summary);
         selectVisible = findViewById(R.id.metadata_select_visible);
+        firstPage = findViewById(R.id.metadata_first);
+        nextPage = findViewById(R.id.metadata_next);
+        loader = CatalogLoader.get(getApplicationContext());
         TextWatcher watcher = new TextWatcher() {
             @Override public void beforeTextChanged(CharSequence text, int start, int count, int after) { }
             @Override public void onTextChanged(CharSequence text, int start, int before, int count) { }
@@ -51,18 +63,33 @@ public final class ManagerActivity extends Activity implements ManagerController
     protected void onResume() {
         super.onResume();
         controller.attach(this);
+        loadPage(false, state.token);
     }
 
     @Override
     protected void onPause() {
+        loader.cancel(controller);
         controller.detach(); // hide rows and invalidate callbacks before leaving foreground
         super.onPause();
     }
 
+    private void loadPage(boolean advance, ManagerController.Token token) {
+        if (rendering || state == null || !state.active || state.phase == ManagerModel.Phase.LOADING) return;
+        CatalogPage.Position position = advance ? loader.nextPosition(controller) : null;
+        if (advance && position == null) return;
+        ManagerController.RefreshTicket ticket = controller.beginRefresh(token);
+        if (ticket != null) loader.request(controller, ticket, position);
+    }
+
     private void filterChanged() {
         if (rendering || state == null) return;
-        controller.filter(state.token, search.getText().toString(),
-                groupFilter.isChecked() ? group.getText().toString() : null);
+        try {
+            controller.filter(state.token, search.getText().toString(),
+                    groupFilter.isChecked() ? group.getText().toString() : null);
+        } catch (IllegalArgumentException overBudget) {
+            render(controller.current());
+            summary.setText(R.string.metadata_filter_budget);
+        }
     }
 
     @Override
@@ -74,6 +101,11 @@ public final class ManagerActivity extends Activity implements ManagerController
             setTextIfDifferent(search, next.query);
             groupFilter.setChecked(next.group != null);
             setTextIfDifferent(group, next.group == null ? "" : next.group);
+            firstPage.setOnClickListener(button -> loadPage(false, next.token));
+            nextPage.setOnClickListener(button -> loadPage(true, next.token));
+            firstPage.setEnabled(next.active && next.phase != ManagerModel.Phase.LOADING);
+            nextPage.setEnabled(next.active && next.phase == ManagerModel.Phase.LOADED
+                    && loader.nextPosition(controller) != null);
             search.setEnabled(next.active);
             groupFilter.setEnabled(next.active);
             group.setEnabled(next.active && next.group != null);
@@ -104,7 +136,9 @@ public final class ManagerActivity extends Activity implements ManagerController
             case FAILED: return getString(R.string.metadata_failed);
             case LOADED:
                 if (next.totalCount == 0) return getString(R.string.metadata_empty);
-                return getString(R.string.metadata_counts, next.visible.size(), next.totalCount, next.selected.size());
+                return getString(R.string.metadata_page_summary,
+                        getString(R.string.metadata_counts, next.visible.size(), next.totalCount, next.selected.size()),
+                        getString(loader.nextPosition(controller) == null ? R.string.metadata_page_end : R.string.metadata_page_more));
             default: throw new IllegalStateException("Unknown presentation phase");
         }
     }

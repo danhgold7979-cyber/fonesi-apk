@@ -4,6 +4,8 @@
 
 `rebuild-storage/` chứng minh bảo toàn/quarantine bằng SQLite tổng hợp. `rebuild-android/` là manager scaffold mới, độc lập, mọi thao tác clone/import/migration đều vô hiệu hóa; [kế hoạch compile hosted](docs/REBUILD_HOSTED_ANDROID_PLAN.md) yêu cầu SDK/JDK cài sẵn chính xác. Scaffold đã qua hosted compile/lint và kiểm tra APK tại run41109833095; chưa chạy trên thiết bị, chưa có engine clone/cách ly.
 
+Native catalog reader mới đang được kiểm tra: chỉ tạo/đọc catalog rỗng thuộc app mới, không truy cập dữ liệu cũ hay tạo clone giả. First/Next chỉ hiển thị metadata; mọi thao tác provider vẫn bị khóa. Chưa có nghiệm thu Android SQLite/thiết bị. Xem [ranh giới reader](rebuild-android/README.md).
+
 `rebuild-logic/` là bản chuyển tương thích logic Java17 độc lập (identity/capability/state), chưa import vào Android. Policy B1c chặn nhãn cách ly cùng host UID cho yêu cầu đối kháng; nhãn/claim không phải chứng minh cách ly. Xem [ranh giới và test](rebuild-logic/README.md).
 
 Build tại root đã bị chặn có chủ đích; dùng `./gradlew -p rebuild-android` theo gate CI. Chỉ cấu hình build root cũ được gỡ; 16 script lịch sử vẫn còn, không thuộc quy trình rebuild và chưa được vô hiệu hóa toàn bộ. Source/test/probe/notice cũ chưa bị xóa vì chưa đủ nghiệm thu thay thế.

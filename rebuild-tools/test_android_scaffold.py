@@ -34,29 +34,51 @@ class ScaffoldTests(unittest.TestCase):
     def test_all_four_actions_disabled_without_handlers(self):
         root = ET.parse(MAIN / "res/layout/manager.xml").getroot()
         buttons = list(root.iter("Button"))
-        self.assertEqual(len(buttons), 4)
+        self.assertEqual(len(buttons), 6)
         self.assertEqual({b.get(A + "id") for b in buttons},
-                         {"@+id/" + x for x in ("import_apk", "create_clone", "launch_clone", "migrate_data")})
+                         {"@+id/" + x for x in ("import_apk", "create_clone", "launch_clone", "migrate_data", "metadata_first", "metadata_next")})
         for button in buttons:
             self.assertEqual(button.get(A + "enabled"), "false")
             self.assertIsNone(button.get(A + "onClick"))
 
-    def test_activity_has_no_adapter_or_enable_path(self):
+    def test_activity_has_only_owned_catalog_and_no_operation_enable_path(self):
         sources = list((MAIN / "java").rglob("*.java"))
-        self.assertEqual({p.name for p in sources}, {"ManagerActivity.java", "ManagerModel.java", "ManagerController.java"})
+        self.assertEqual({p.name for p in sources}, {"ManagerActivity.java", "ManagerModel.java", "ManagerController.java", "CatalogReader.java", "CatalogSql.java", "CatalogPage.java", "CatalogLoader.java", "CatalogRequestGate.java"})
         source = (MAIN / "java/vn/fonesi/rebuild/ManagerActivity.java").read_text()
-        allowed = {"android.app.Activity", "android.os.Bundle", "android.os.Looper", "android.text.Editable", "android.text.TextWatcher",
+        allowed = {"android.app.Activity", "android.os.Bundle", "android.os.Looper", "android.text.Editable", "android.text.TextWatcher", "android.text.InputFilter",
                    "android.widget.CheckBox", "android.widget.EditText", "android.widget.LinearLayout", "android.widget.TextView",
-                   "vn.fonesi.rebuild.model.ManagerModel", "vn.fonesi.rebuild.model.ManagerController"}
+                   "vn.fonesi.rebuild.model.ManagerModel", "vn.fonesi.rebuild.model.ManagerController",
+                   "android.widget.Button", "vn.fonesi.rebuild.catalog.CatalogLoader", "vn.fonesi.rebuild.catalog.CatalogPage"}
         self.assertEqual({line[len("import "):-1] for line in source.splitlines() if line.startswith("import ")}, allowed)
-        for forbidden in ("getFilesDir", "getDatabasePath", "Runtime", "Class.forName", "beginRefresh", "controller.publish"):
+        for forbidden in ("getFilesDir", "getDatabasePath", "Runtime", "Class.forName", "controller.publish"):
             self.assertNotIn(forbidden, source)
         for operation in ("import_apk", "create_clone", "launch_clone", "migrate_data"):
             self.assertNotIn("R.id." + operation, source)
         self.assertIn("controller.attach(this)", source)
+        self.assertIn("loader.cancel(controller)", source)
+        self.assertIn("loader.request(controller, ticket, position)", source)
+        self.assertIn("loadPage(false, next.token)", source)
+        self.assertIn("loadPage(true, next.token)", source)
         self.assertIn("controller.detach()", source)
         self.assertIn("controller.select(next.token, entry.key, checked)", source)
         self.assertIn("if (rendering || state == null)", source)
+
+    def test_catalog_delivery_source_guards(self):
+        base = MAIN / "java/vn/fonesi/rebuild"
+        loader = (base / "catalog/CatalogLoader.java").read_text()
+        activity = (base / "ManagerActivity.java").read_text()
+        reader = (base / "catalog/CatalogReader.java").read_text()
+        self.assertIn("TIMEOUT_MILLIS = 2_000", loader)
+        self.assertIn("new ArrayBlockingQueue<Runnable>(1)", loader)
+        self.assertNotIn("CallerRunsPolicy", loader)
+        self.assertIn("state.phase == ManagerModel.Phase.LOADING", activity)
+        self.assertIn("controller.beginRefresh(token)", activity)
+        self.assertEqual(activity.count("new InputFilter.LengthFilter(4096)"), 2)
+        self.assertIn("2 * entry.normalizedUnits()", reader)
+        self.assertNotIn("getString(", reader)
+        self.assertNotIn("deleteDatabase", reader)
+        self.assertNotIn("CREATE_IF_NECESSARY", reader)
+        self.assertIn("throw new SQLiteDatabaseCorruptException", reader)
 
     def test_metadata_view_state_is_not_saved(self):
         root = ET.parse(MAIN / "res/layout/manager.xml").getroot()

@@ -1,24 +1,30 @@
 <resources>
     <string name="app_name">Fonesi rebuild — diagnostic</string>
-    <string name="status">Fresh manager scaffold. No runtime provider is connected. Import, cloning, launch and migration are unavailable. Existing app data is not accessed. A successful build does not prove guest isolation.</string>
+    <string name="status">Fresh owned catalog manager. No runtime provider is connected. Import, cloning, launch and migration are unavailable. Existing app data is not accessed. A successful build does not prove guest isolation.</string>
     <string name="import_apk">Import APK — unavailable</string>
     <string name="create_clone">Create clone — unavailable</string>
     <string name="launch_clone">Launch clone — unavailable</string>
     <string name="migrate_data">Migrate existing data — unavailable</string>
-    <string name="metadata_pending">Metadata source unavailable.</string>
+    <string name="metadata_pending">Owned catalog has not been read.</string>
     <plurals name="metadata_unconnected">
         <item quantity="one">Metadata source unavailable — %1$d loaded entry. This is not a scan of existing clones.</item>
         <item quantity="other">Metadata source unavailable — %1$d loaded entries. This is not a scan of existing clones.</item>
     </plurals>
+    <string name="metadata_filter_budget">Filter exceeds the display budget; previous filter retained.</string>
+    <string name="metadata_first">Reload first metadata page</string>
+    <string name="metadata_next">Next metadata page</string>
     <string name="metadata_search">Search loaded metadata</string>
     <string name="metadata_group_filter">Filter exact group</string>
     <string name="metadata_group">Group name (empty means ungrouped)</string>
     <string name="metadata_select_visible">Select all visible metadata (uncheck to clear)</string>
     <string name="metadata_hidden">Metadata hidden while inactive.</string>
     <string name="metadata_loading">Loading metadata only. No clone operation is running.</string>
-    <string name="metadata_failed">Metadata load failed or was interrupted. No result is treated as successful.</string>
+    <string name="metadata_failed">Catalog unavailable, changed, interrupted or outside the display budget. Reload the first page; source is retained. No result is treated as successful.</string>
     <string name="metadata_empty">No metadata returned by this source. This does not prove there are no existing clones.</string>
-    <string name="metadata_counts">Visible: %1$d · Loaded: %2$d · Selected: %3$d. Metadata only; operations unavailable.</string>
+    <string name="metadata_counts">This page — visible: %1$d · loaded: %2$d · selected: %3$d. Metadata only; operations unavailable.</string>
+    <string name="metadata_page_summary">%1$s %2$s</string>
+    <string name="metadata_page_more">More metadata is available on the next page.</string>
+    <string name="metadata_page_end">End of this catalog snapshot.</string>
     <string name="metadata_row">%1$s · %2$s · %3$s</string>
     <string name="metadata_quarantined">Quarantined — no operations</string>
     <string name="metadata_unverified">Unverified — no operations</string>

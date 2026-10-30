@@ -12,7 +12,9 @@ class ApiBoundaryTests(unittest.TestCase):
     def test_current_android_source_avoids_known_kernel_api_gaps(self):
         files = list(SOURCE.rglob('*.java'))
         self.assertEqual({file.name for file in files},
-                         {'ManagerActivity.java', 'ManagerModel.java', 'ManagerController.java'})
+                         {'ManagerActivity.java', 'ManagerModel.java', 'ManagerController.java',
+                          'CatalogReader.java', 'CatalogSql.java', 'CatalogPage.java',
+                          'CatalogLoader.java', 'CatalogRequestGate.java'})
         for file in files:
             source = file.read_text()
             for symbol in ('HexFormat', '.isBlank(', '.strip(', '.toList(', '.writeBytes(',
@@ -36,8 +38,10 @@ class ApiBoundaryTests(unittest.TestCase):
 
     def test_host_test_only_apis_are_not_packaged_source(self):
         production = '\n'.join(file.read_text() for file in SOURCE.rglob('*.java'))
-        for symbol in ('java.lang.reflect', 'CountDownLatch', 'TimeUnit', 'setAccessible'):
+        for symbol in ('java.lang.reflect', 'CountDownLatch', 'setAccessible'):
             self.assertNotIn(symbol, production)
+        # TimeUnit is now approved for the bounded application-owned executor (API1),
+        # not a Java21 kernel import or device execution claim.
         self.assertTrue((APP / 'contract-tests/ManagerModelTest.java').is_file())
         self.assertTrue((APP / 'contract-tests/ManagerControllerTest.java').is_file())
 

@@ -122,3 +122,19 @@ The page SELECT must keep meta row and limited metadata rows in the same stateme
 ### Reference checkpoint evidence
 
 Permitted empty-ID correction implemented only in the Python synthetic projection, with5new unittest methods/108subcases across allsix schemas;56total methods pass. Complete source rows/bytes/fingerprint and inert catalog/task/owner flags preserved, BLOBidentity and unchanged emptydisplay rejects roll back, injected after_catalog failure proves emptyIDs reached projection before rollback. Independent read-only review passes. This does not implement any later-reader design above; wait for root-published reference CI and renewed reader review.
+
+## Final API/query audit refinement — 2026-10-30 23:28 UTC
+
+See REBUILD_CATALOG_API26_RECIPE_AUDIT.md and fully expanded REBUILD_CATALOG_QUERY_RECIPE.md. These refine the earlier single-statement snapshot wording: Android CursorWindow can refill/re-execute, so require every row's same catalog_id/revision, close page cursor, independently reread metadata, and compare again with cancellation/deadline/current owner-ticket before publish. Unknown outcomes fail, never partial success. Future trusted writers must atomically increment nonwrapping revision; not a hostile-file authentication claim.
+
+BaselineAPI26 AOSP SQLite3.18.2 supports index_xinfo (introduced3.8.9); table_xinfo/table_list/sqlite_schema/window functions excluded. Expected PRAGMA result shape must be present or source fails; no weaker fallback. Initial pagination explicitly includes Long.MIN_VALUE and all negative/zero rowids; continuation usesstrict>lastposition, no+1 or implicit0cursor. Existing SQLite open is READONLY; throwing nondeleting corruption handler prevents baseline internal retry. Exclusive creator alone initializes absent file; all uncertain existing files retained. ReferenceCI41143832070 is green; live-reader implementation still awaits root review of this final audit.
+
+## Native implementation authorization — 2026-10-30 23:31 UTC
+
+Root reviewed a87d0c5 and approved the coherent native reader path: exclusive fresh empty bootstrap, strict schema/read-only retained-failure reader, bounded strict UTF8 pages and cancellation, existing foreground controller/Activity First/Next wiring. Validate ALL metadata rows as exactly one id=1, not merely the filtered page. Preserve four disabled operation controls. Implement and independently review before root publication; actual JDK17 and Android compile/lint/package CI required. Android SQLite/CursorWindow/OEM/lifecycle execution remains NOTRUN. No seeded rows, legacy database access, provider activation, device installation, source deletion or denied experiment.
+
+## Implemented scope and proof boundary — 2026-10-30 23:41 UTC
+
+Native source now implements the approved empty-owned-catalog path. `CatalogReader/CatalogSql/CatalogPage` own bounded schema/query/decoding; `CatalogLoader/CatalogRequestGate` own one-worker delivery; existing Activity/controller/model own current-page native controls and cached display filtering. Fixed2-second deadline and rawUTF8+2×normalizedUTF16 accounting are enforced, not changed to broader budgets. UI query/group4096UTF16 limits and normalized-query8192 are rendering limits only. All First/Next listeners capture render tokens, and LOADING navigation is rejected explicitly.
+
+Host tests execute actual loader source on a separate fake-Android classpath, not packaged stubs. Synthetic SQLite executes exact source literals, not a divergent schema. These close host coordination/recipe tests only. Android database/CursorWindow/filesystem/UI execution remains NOTRUN, and exact-head JDK17/Android compile/lint/package CI is still required after root publication. Read REBUILD_STATUS.md for exact counts, corrections and remaining acceptance boundaries.
