@@ -499,13 +499,22 @@ def main():
         if args.proof_level in ("e24", "e25", "e29", "e74", "e77", "e78"):
             stage = "launch dedicated synthetic UI Activity with signed private View factory"
             expected_run_id = str(uuid.uuid4())
-            started = device("shell", "am", "start", "-W", "-n",
-                             PROBE_PACKAGE + "/.SyntheticGuestUiProbeActivity",
-                             "--es", "run_id", expected_run_id,
-                             "--es", "proof_level", args.proof_level, timeout=90, check=False)
+            launch_args = [
+                "shell", "am", "start", "-W", "-n",
+                PROBE_PACKAGE + "/.SyntheticGuestUiProbeActivity",
+                "--es", "run_id", expected_run_id,
+                "--es", "proof_level", args.proof_level,
+            ]
+            if args.proof_level == "e78":
+                launch_args.extend([
+                    "--es", "source_commit", args.source_commit,
+                    "--es", "probe_apk_sha256", args.expected_probe_sha256,
+                    "--es", "payload_apk_sha256", args.expected_payload_sha256,
+                ])
+            started = device(*launch_args, timeout=90, check=False)
             if started.returncode:
-                raise RuntimeError("Synthetic E24/E25 host Activity dispatch failed")
-            stage = "read signed private guest View attachment and lifecycle receipt"
+                raise RuntimeError("Synthetic E24/E78 host Activity dispatch failed")
+            stage = "read signed private guest View/Application attachment and scoped data receipt"
         elif args.proof_level in ("e21", "e22", "e23"):
             stage = "dispatch dedicated isolated synthetic split Activity"
             expected_run_id = str(uuid.uuid4())
@@ -664,16 +673,19 @@ def main():
                     ",".join(missing_true) + "; false=" + ",".join(missing_false))
             if report.get("proof_level") != args.proof_level:
                 raise RuntimeError("E24/E25 private UI proof mode differs from requested mode")
-            if args.proof_level == "e77" and report.get("private_activity_constructor_preflight_verified") is not True:
-                raise RuntimeError("E77 public no-argument Activity constructor preflight was not proven")
+            if args.proof_level in ("e77", "e78") and report.get("private_activity_constructor_preflight_verified") is not True:
+                raise RuntimeError("E77/E78 public no-argument Activity constructor preflight was not proven")
             if args.proof_level == "e25" and not (
                     report.get("private_component_manifest_verified") is True and
                     report.get("real_guest_activity_registered") is False):
                 raise RuntimeError("E25 signed private component manifest preflight did not pass")
             if args.proof_level == "e29" and report.get("dispatch_ticket_private_apk_sha256") != args.expected_payload_sha256:
                 raise RuntimeError("E29 ticket did not bind the exact signed private payload SHA-256")
-            if args.proof_level in ("e74", "e77") and report.get("private_activity_class_preflight_verified") is not True:
+            if args.proof_level in ("e74", "e77", "e78") and report.get("private_activity_class_preflight_verified") is not True:
                 raise RuntimeError("E74 signed private Activity class was not proven by the private loader")
+            if args.proof_level == "e78":
+                validate_e78_receipt(report, args.source_commit,
+                                     args.expected_probe_sha256, args.expected_payload_sha256)
             if (report.get("lifecycle_transcript") != "CREATE,START,RESUME,PAUSE,STOP,DESTROY" or
                     report.get("process_name") != PROBE_PACKAGE + ":fonesi_guest_ui" or
                     report.get("api") != 34 or type(report.get("pid")) is not int or
@@ -710,6 +722,21 @@ def main():
                       "zero-argument constructor shape, then relayed the existing synthetic host "
                       "View lifecycle. No guest Activity was instantiated/attached/launched; "
                       "no separate OS UID or account was accepted.", flush=True)
+            elif args.proof_level == "e78":
+                evidence["android_private_activity_class_preflight_verified"] = True
+                evidence["android_private_activity_constructor_preflight_verified"] = True
+                evidence["android_private_application_class_preflight_verified"] = True
+                evidence["android_synthetic_application_attached"] = True
+                evidence["android_synthetic_application_on_create_verified"] = True
+                evidence["android_synthetic_scoped_storage_ab_verified"] = True
+                evidence["android_synthetic_scope_persistence_verified"] = True
+                evidence["android_synthetic_scope_cross_readback_verified"] = True
+                evidence["result"] = "PASS_E78_SIGNED_SYNTHETIC_APPLICATION_ATTACH_AND_SCOPED_DATA_ONLY"
+                print("PASS: Android 34 manually attached two instances of the signed PRIVATE "
+                      "synthetic Application through public Instrumentation, ran onCreate on the "
+                      "main thread, and verified independent persistent SharedPreferences/files/SQLite "
+                      "scopes. No ActivityThread registration, guest Activity, third-party app, "
+                      "separate UID/account or production clone was accepted.", flush=True)
             else:
                 evidence["result"] = "PASS_E24_SIGNED_SYNTHETIC_PRIVATE_VIEW_LIFECYCLE_RELAY_ONLY"
                 print("PASS: Android 34 hosted an attached View created by signed private "
