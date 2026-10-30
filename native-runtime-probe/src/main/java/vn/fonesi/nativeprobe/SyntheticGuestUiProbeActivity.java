@@ -264,7 +264,9 @@ public final class SyntheticGuestUiProbeActivity extends Activity {
             ProbeData.check(GUEST_PACKAGE.equals(image.getPackageName()),
                 "Signed private payload package mismatch");
             if ("e74".equals(proofLevel) || "e77".equals(proofLevel) || "e78".equals(proofLevel)) {
-                stage = "e77".equals(proofLevel) ? "e77_signed_private_activity_constructor_preflight" : "e74_signed_private_activity_class_preflight";
+                stage = "e78".equals(proofLevel) ? "e78_signed_private_activity_and_application_preflight" :
+                    ("e77".equals(proofLevel) ? "e77_signed_private_activity_constructor_preflight" :
+                        "e74_signed_private_activity_class_preflight");
                 preparationStage = stage;
                 PrivateGuestActivityClassHandle activityProof = image.preflightExplicitActivityClass(
                     SIGNED_ACTIVITY, ExplicitActivityCaller.TRUSTED_INTERNAL);
@@ -380,6 +382,8 @@ public final class SyntheticGuestUiProbeActivity extends Activity {
         final CountDownLatch attached = new CountDownLatch(1);
         runOnUiThread(() -> {
             try {
+                ProbeData.check(Looper.myLooper() == Looper.getMainLooper(),
+                    "E78 Instrumentation attach/onCreate must execute on Android main thread");
                 Instrumentation instrumentationA = new Instrumentation();
                 applications[0] = instrumentationA.newApplication(
                     image.getClassLoader(), SIGNED_APPLICATION, contextA);
