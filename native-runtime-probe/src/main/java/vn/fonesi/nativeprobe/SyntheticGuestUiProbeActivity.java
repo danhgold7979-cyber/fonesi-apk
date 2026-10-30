@@ -2,11 +2,15 @@ package vn.fonesi.nativeprobe;
 
 import android.app.Activity;
 import android.app.Application;
+import android.app.Instrumentation;
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Process;
+import android.os.Looper;
 import android.view.View;
 import android.widget.TextView;
 import java.io.File;
@@ -19,6 +23,8 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 import org.json.JSONObject;
 import vn.fonesi.apk.PrivateApkCluster;
 import vn.fonesi.apk.PrivateApkStore;
@@ -26,6 +32,7 @@ import vn.fonesi.apk.ExplicitActivityCaller;
 import vn.fonesi.engine.GuestCodeLoader;
 import vn.fonesi.engine.LoadedGuestCode;
 import vn.fonesi.engine.PrivateGuestActivityClassHandle;
+import vn.fonesi.engine.SyntheticGuestScopedContext;
 import vn.fonesi.engine.NativeRuntime;
 import vn.fonesi.engine.PrivateSyntheticComponentCatalog;
 import vn.fonesi.engine.SyntheticComponentDispatchTicket;
@@ -40,6 +47,8 @@ public final class SyntheticGuestUiProbeActivity extends Activity {
     private static final String GUEST_PACKAGE = "vn.fonesi.payload";
     private static final String ENTRY = GUEST_PACKAGE + ".SyntheticGuestScreen";
     private static final String SIGNED_ACTIVITY = GUEST_PACKAGE + ".PayloadActivity";
+    private static final String SIGNED_APPLICATION = GUEST_PACKAGE + ".SyntheticGuestApplication";
+    private static final String SCOPED_ENTRY = GUEST_PACKAGE + ".ScopedProbeEntrypoint";
     private static final String PREFIX = "FONESI-E24-PRIVATE-SCREEN:";
     private static final List<String> COMPLETE = Arrays.asList(
         "CREATE", "START", "RESUME", "PAUSE", "STOP", "DESTROY");
@@ -52,6 +61,21 @@ public final class SyntheticGuestUiProbeActivity extends Activity {
     /** E74: class/type only, never an attached Android guest Activity. */
     private volatile boolean privateActivityClassVerified;
     private volatile boolean privateActivityConstructorPreflightVerified;
+    private volatile boolean privateApplicationClassPreflightVerified;
+    private volatile boolean syntheticApplicationAttached;
+    private volatile boolean syntheticApplicationOnCreateVerified;
+    private volatile boolean syntheticApplicationMainThreadVerified;
+    private volatile boolean syntheticApplicationInstancesDistinct;
+    private volatile boolean syntheticScopeAStorageVerified;
+    private volatile boolean syntheticScopeBStorageVerified;
+    private volatile boolean syntheticScopePersistenceVerified;
+    private volatile boolean syntheticScopeCrossReadbackVerified;
+    private volatile String syntheticApplicationClassName;
+    private volatile String syntheticScopeAId;
+    private volatile String syntheticScopeBId;
+    private volatile String sourceCommit;
+    private volatile String probeApkSha256;
+    private volatile String payloadApkSha256;
     private volatile boolean syntheticComponentDispatchVerified;
     private volatile boolean dispatchOnly;
     private boolean dispatchReceiver;
@@ -84,8 +108,18 @@ public final class SyntheticGuestUiProbeActivity extends Activity {
             String requestedProof = getIntent().getStringExtra("proof_level");
             if (requestedProof != null) proofLevel = requestedProof;
             if (!"e24".equals(proofLevel) && !"e25".equals(proofLevel) &&
-                !"e29".equals(proofLevel) && !"e74".equals(proofLevel) && !"e77".equals(proofLevel))
+                !"e29".equals(proofLevel) && !"e74".equals(proofLevel) &&
+                !"e77".equals(proofLevel) && !"e78".equals(proofLevel))
                 throw new IllegalArgumentException("Unsupported synthetic host screen proof");
+            if ("e78".equals(proofLevel)) {
+                sourceCommit = getIntent().getStringExtra("source_commit");
+                probeApkSha256 = getIntent().getStringExtra("probe_apk_sha256");
+                payloadApkSha256 = getIntent().getStringExtra("payload_apk_sha256");
+                if (sourceCommit == null || !sourceCommit.matches("[0-9a-f]{40}") ||
+                    probeApkSha256 == null || !probeApkSha256.matches("[0-9a-f]{64}") ||
+                    payloadApkSha256 == null || !payloadApkSha256.matches("[0-9a-f]{64}"))
+                    throw new IllegalArgumentException("E78 source/APK SHA-256 binding is missing or malformed");
+            }
             dispatchTicketJson = getIntent().getStringExtra("dispatch_ticket");
             if (dispatchTicketJson != null) {
                 if (!"e29".equals(proofLevel) || dispatchTicketJson.length() > 4096)
@@ -229,8 +263,10 @@ public final class SyntheticGuestUiProbeActivity extends Activity {
                 .load(localCluster.getId());
             ProbeData.check(GUEST_PACKAGE.equals(image.getPackageName()),
                 "Signed private payload package mismatch");
-            if ("e74".equals(proofLevel) || "e77".equals(proofLevel)) {
-                stage = "e77".equals(proofLevel) ? "e77_signed_private_activity_constructor_preflight" : "e74_signed_private_activity_class_preflight";
+            if ("e74".equals(proofLevel) || "e77".equals(proofLevel) || "e78".equals(proofLevel)) {
+                stage = "e78".equals(proofLevel) ? "e78_signed_private_activity_and_application_preflight" :
+                    ("e77".equals(proofLevel) ? "e77_signed_private_activity_constructor_preflight" :
+                        "e74_signed_private_activity_class_preflight");
                 preparationStage = stage;
                 PrivateGuestActivityClassHandle activityProof = image.preflightExplicitActivityClass(
                     SIGNED_ACTIVITY, ExplicitActivityCaller.TRUSTED_INTERNAL);
@@ -249,7 +285,8 @@ public final class SyntheticGuestUiProbeActivity extends Activity {
                 ProbeData.check(localStore.open(localCluster.getId(), Build.VERSION.SDK_INT)
                     .equals(localCluster), "Private signed APK changed during Activity class preflight");
                 privateActivityClassVerified = true;
-                if ("e77".equals(proofLevel)) privateActivityConstructorPreflightVerified = true;
+                if ("e77".equals(proofLevel) || "e78".equals(proofLevel))
+                    privateActivityConstructorPreflightVerified = true;
             }
             int marker = image.getResources().getIdentifier(
                 "fonesi_guest_code_probe", "string", GUEST_PACKAGE);
@@ -264,6 +301,13 @@ public final class SyntheticGuestUiProbeActivity extends Activity {
             } catch (ClassNotFoundException required) { /* genuine private code */ }
             ProbeData.check(localStore.open(localCluster.getId(), Build.VERSION.SDK_INT)
                 .equals(localCluster), "Private DEX/resources changed while preparing UI");
+            if ("e78".equals(proofLevel)) {
+                stage = "e78_signed_private_application_preflight_attach_and_scoped_data";
+                preparationStage = stage;
+                verifyE78SyntheticApplication(image, localStore, localCluster);
+                ProbeData.check(localStore.open(localCluster.getId(), Build.VERSION.SDK_INT)
+                    .equals(localCluster), "Signed private APK changed after E78 Application/scope proof");
+            }
             preparationStage = "private_dex_ready_ui_callback_queued";
             PrivateApkCluster verifiedCluster = localCluster;
             PrivateApkStore verifiedStore = localStore;
@@ -279,6 +323,147 @@ public final class SyntheticGuestUiProbeActivity extends Activity {
             preparationFinished = true;
             runOnUiThread(() -> failure(failedAt, error));
         }
+    }
+
+    /**
+     * E78 only: manually attach the project-owned signed synthetic Application with public
+     * Instrumentation APIs. This does not register a package/Application with ActivityThread.
+     * Storage work remains on this worker thread; attach/onCreate run on Android's main thread.
+     */
+    private void verifyE78SyntheticApplication(LoadedGuestCode image,
+            PrivateApkStore verifiedStore, PrivateApkCluster verifiedCluster) throws Exception {
+        if (Looper.myLooper() == Looper.getMainLooper())
+            throw new IllegalStateException("E78 storage preparation must remain off the Android main Looper");
+        final var applicationProof = image.preflightApplicationClass();
+        ProbeData.check(SIGNED_APPLICATION.equals(applicationProof.getSignedName()) &&
+            applicationProof.getApplicationClass().getName().equals(SIGNED_APPLICATION) &&
+            applicationProof.getApplicationClass().getClassLoader() == image.getClassLoader() &&
+            Application.class.isAssignableFrom(applicationProof.getApplicationClass()),
+            "Signed PRIVATE Application class was not owned by the exact private loader");
+        try {
+            getClassLoader().loadClass(SIGNED_APPLICATION);
+            throw new SecurityException("Signed PRIVATE Application class leaked into host classloader");
+        } catch (ClassNotFoundException expected) { /* No host/original package fallback. */ }
+        ProbeData.check(verifiedStore.open(verifiedCluster.getId(), Build.VERSION.SDK_INT).equals(verifiedCluster),
+            "Private signed APK changed during Application class preflight");
+        privateApplicationClassPreflightVerified = true;
+        syntheticApplicationClassName = applicationProof.getSignedName();
+
+        final String scopeA = UUID.randomUUID().toString();
+        final String scopeB = UUID.randomUUID().toString();
+        ProbeData.check(!scopeA.equals(scopeB) &&
+            UUID.fromString(scopeA).toString().equals(scopeA) &&
+            UUID.fromString(scopeB).toString().equals(scopeB),
+            "E78 requires two distinct canonical UUID data scopes");
+        syntheticScopeAId = scopeA;
+        syntheticScopeBId = scopeB;
+        final String markerA = randomHex();
+        final String markerB = randomHex();
+        ProbeData.check(!markerA.equals(markerB), "E78 synthetic markers must be distinct and non-secret");
+        final SyntheticGuestScopedContext contextA =
+            new SyntheticGuestScopedContext(getApplicationContext(), image, scopeA);
+        final SyntheticGuestScopedContext contextB =
+            new SyntheticGuestScopedContext(getApplicationContext(), image, scopeB);
+        Class<?> scopedEntrypoint = image.getClassLoader().loadClass(SCOPED_ENTRY);
+        ProbeData.check(scopedEntrypoint.getClassLoader() == image.getClassLoader(),
+            "E78 scoped data helper must come from the signed PRIVATE DEX");
+        try {
+            getClassLoader().loadClass(SCOPED_ENTRY);
+            throw new SecurityException("E78 scoped data helper leaked into host classloader");
+        } catch (ClassNotFoundException expected) { /* exact private DEX only */ }
+        java.lang.reflect.Method write = scopedEntrypoint.getMethod("write", Context.class, String.class);
+        java.lang.reflect.Method read = scopedEntrypoint.getMethod("read", Context.class);
+        ProbeData.check("EMPTY".equals(read.invoke(null, contextA)) &&
+            "EMPTY".equals(read.invoke(null, contextB)),
+            "E78 both fresh scoped stores must begin empty");
+
+        final Application[] applications = new Application[2];
+        final Throwable[] attachFailure = new Throwable[1];
+        final CountDownLatch attached = new CountDownLatch(1);
+        runOnUiThread(() -> {
+            try {
+                ProbeData.check(Looper.myLooper() == Looper.getMainLooper(),
+                    "E78 Instrumentation attach/onCreate must execute on Android main thread");
+                Instrumentation instrumentationA = new Instrumentation();
+                applications[0] = instrumentationA.newApplication(
+                    image.getClassLoader(), SIGNED_APPLICATION, contextA);
+                ProbeData.check(applications[0].getClass() == applicationProof.getApplicationClass() &&
+                    applications[0].getBaseContext() == contextA,
+                    "Instrumentation did not attach Application A to exact scoped Context");
+                instrumentationA.callApplicationOnCreate(applications[0]);
+
+                Instrumentation instrumentationB = new Instrumentation();
+                applications[1] = instrumentationB.newApplication(
+                    image.getClassLoader(), SIGNED_APPLICATION, contextB);
+                ProbeData.check(applications[1].getClass() == applicationProof.getApplicationClass() &&
+                    applications[1].getBaseContext() == contextB,
+                    "Instrumentation did not attach Application B to exact scoped Context");
+                instrumentationB.callApplicationOnCreate(applications[1]);
+            } catch (Throwable failure) {
+                attachFailure[0] = failure;
+            } finally {
+                attached.countDown();
+            }
+        });
+        if (!attached.await(45, TimeUnit.SECONDS))
+            throw new IllegalStateException("E78 public Instrumentation attach/onCreate timed out");
+        if (attachFailure[0] != null)
+            throw new IllegalStateException("E78 public Instrumentation attach/onCreate failed", attachFailure[0]);
+        ProbeData.check(applications[0] != null && applications[1] != null &&
+            applications[0] != applications[1] &&
+            applications[0].getClass().getClassLoader() == image.getClassLoader() &&
+            applications[1].getClass().getClassLoader() == image.getClassLoader() &&
+            applications[0].getBaseContext() == contextA &&
+            applications[1].getBaseContext() == contextB &&
+            applications[0].getPackageName().equals(GUEST_PACKAGE) &&
+            applications[1].getPackageName().equals(GUEST_PACKAGE) &&
+            applications[0].getResources() == image.getResources() &&
+            applications[1].getResources() == image.getResources(),
+            "E78 attached Application object/classloader/Context/resource identity mismatch");
+        syntheticApplicationAttached = true;
+        syntheticApplicationOnCreateVerified = true;
+        syntheticApplicationMainThreadVerified = true;
+        syntheticApplicationInstancesDistinct = true;
+
+        SharedPreferences appPrefsA = contextA.getSharedPreferences("synthetic_application", Context.MODE_PRIVATE);
+        SharedPreferences appPrefsB = contextB.getSharedPreferences("synthetic_application", Context.MODE_PRIVATE);
+        ProbeData.check(appPrefsA.getInt("starts", 0) == 1 && appPrefsB.getInt("starts", 0) == 1,
+            "E78 each synthetic Application must persist exactly one onCreate marker");
+
+        write.invoke(null, contextA, markerA);
+        write.invoke(null, contextB, markerB);
+        String readA = (String) read.invoke(null, contextA);
+        String readB = (String) read.invoke(null, contextB);
+        ProbeData.check(markerA.equals(readA) && markerB.equals(readB),
+            "E78 SharedPreferences/file/SQLite write/readback did not match both scopes");
+        syntheticScopeAStorageVerified = true;
+        syntheticScopeBStorageVerified = true;
+
+        SyntheticGuestScopedContext reopenedA =
+            new SyntheticGuestScopedContext(getApplicationContext(), image, scopeA);
+        SyntheticGuestScopedContext reopenedB =
+            new SyntheticGuestScopedContext(getApplicationContext(), image, scopeB);
+        ProbeData.check(reopenedA != contextA && reopenedB != contextB &&
+            markerA.equals(read.invoke(null, reopenedA)) &&
+            markerB.equals(read.invoke(null, reopenedB)) &&
+            reopenedA.getSharedPreferences("synthetic_application", Context.MODE_PRIVATE).getInt("starts", 0) == 1 &&
+            reopenedB.getSharedPreferences("synthetic_application", Context.MODE_PRIVATE).getInt("starts", 0) == 1,
+            "E78 scope state did not survive Context wrapper reconstruction");
+        syntheticScopePersistenceVerified = true;
+        ProbeData.check(markerA.equals((String) read.invoke(null, reopenedA)) &&
+            markerB.equals((String) read.invoke(null, reopenedB)) &&
+            !markerB.equals((String) read.invoke(null, reopenedA)) &&
+            !markerA.equals((String) read.invoke(null, reopenedB)),
+            "E78 cross-scope readback detected data leakage");
+        syntheticScopeCrossReadbackVerified = true;
+        ProbeData.check(verifiedStore.open(verifiedCluster.getId(), Build.VERSION.SDK_INT).equals(verifiedCluster),
+            "Signed private APK changed during E78 scoped data verification");
+    }
+
+    private static String randomHex() {
+        byte[] value = new byte[16];
+        new SecureRandom().nextBytes(value);
+        return hex(value);
     }
 
     private void display(Class<?> screen, PrivateApkStore verifiedStore,
@@ -376,12 +561,24 @@ public final class SyntheticGuestUiProbeActivity extends Activity {
                     ProbeData.check(syntheticComponentDispatchVerified,
                         "E29 private component dispatch ticket was not validated before private code load");
                 verificationStage = "final_e74_private_activity_class_preflight";
-                if ("e74".equals(proofLevel) || "e77".equals(proofLevel))
+                if ("e74".equals(proofLevel) || "e77".equals(proofLevel) || "e78".equals(proofLevel))
                     ProbeData.check(privateActivityClassVerified,
                         "Signed PRIVATE Activity class was not preflighted before hosted View");
-                if ("e77".equals(proofLevel))
+                if ("e77".equals(proofLevel) || "e78".equals(proofLevel))
                     ProbeData.check(privateActivityConstructorPreflightVerified,
                         "E77 public no-argument constructor preflight was not verified");
+                if ("e78".equals(proofLevel)) {
+                    verificationStage = "final_e78_synthetic_application_and_scoped_data";
+                    ProbeData.check(privateApplicationClassPreflightVerified &&
+                        syntheticApplicationAttached && syntheticApplicationOnCreateVerified &&
+                        syntheticApplicationMainThreadVerified && syntheticApplicationInstancesDistinct &&
+                        syntheticScopeAStorageVerified && syntheticScopeBStorageVerified &&
+                        syntheticScopePersistenceVerified && syntheticScopeCrossReadbackVerified &&
+                        SIGNED_APPLICATION.equals(syntheticApplicationClassName) &&
+                        syntheticScopeAId != null && syntheticScopeBId != null &&
+                        !syntheticScopeAId.equals(syntheticScopeBId),
+                        "E78 signed Application attach/onCreate or two-scope data proof is incomplete");
+                }
                 verificationStage = "final_android_host_lifecycle";
                 ProbeData.check(COMPLETE.equals(androidEvents),
                     "Actual Android Activity lifecycle was incomplete");
@@ -409,6 +606,25 @@ public final class SyntheticGuestUiProbeActivity extends Activity {
                     .put("private_component_manifest_verified", privateComponentCatalogVerified)
                     .put("private_activity_class_preflight_verified", privateActivityClassVerified)
                     .put("private_activity_constructor_preflight_verified", privateActivityConstructorPreflightVerified)
+                    .put("private_application_class_preflight_verified", privateApplicationClassPreflightVerified)
+                    .put("synthetic_guest_application_attached", syntheticApplicationAttached)
+                    .put("synthetic_guest_application_on_create_verified", syntheticApplicationOnCreateVerified)
+                    .put("synthetic_guest_application_on_main_thread", syntheticApplicationMainThreadVerified)
+                    .put("synthetic_guest_application_instances_distinct", syntheticApplicationInstancesDistinct)
+                    .put("synthetic_application_on_create_once_per_scope", syntheticApplicationOnCreateVerified)
+                    .put("synthetic_application_class_name", syntheticApplicationClassName)
+                    .put("synthetic_scope_a_id", syntheticScopeAId)
+                    .put("synthetic_scope_b_id", syntheticScopeBId)
+                    .put("synthetic_scope_a_preferences_file_sqlite_verified", syntheticScopeAStorageVerified)
+                    .put("synthetic_scope_b_preferences_file_sqlite_verified", syntheticScopeBStorageVerified)
+                    .put("synthetic_scope_persistence_after_context_reconstruction_verified", syntheticScopePersistenceVerified)
+                    .put("synthetic_scope_cross_readback_isolated", syntheticScopeCrossReadbackVerified)
+                    .put("guest_application_registered_with_activity_thread", false)
+                    .put("guest_application_registered_with_package_manager", false)
+                    .put("full_guest_application_lifecycle_verified", false)
+                    .put("source_commit", sourceCommit)
+                    .put("probe_apk_sha256", probeApkSha256)
+                    .put("payload_apk_sha256", payloadApkSha256)
                     .put("synthetic_component_dispatch_verified", syntheticComponentDispatchVerified)
                     .put("dispatch_ticket_private_apk_sha256", dispatchTicketPrivateApkSha256)
                     .put("production_clone_accepted", false)
@@ -447,6 +663,25 @@ public final class SyntheticGuestUiProbeActivity extends Activity {
                 .put("private_component_catalog_verified", privateComponentCatalogVerified)
                 .put("private_activity_class_preflight_verified", privateActivityClassVerified)
                 .put("private_activity_constructor_preflight_verified", privateActivityConstructorPreflightVerified)
+                .put("private_application_class_preflight_verified", privateApplicationClassPreflightVerified)
+                .put("synthetic_guest_application_attached", syntheticApplicationAttached)
+                .put("synthetic_guest_application_on_create_verified", syntheticApplicationOnCreateVerified)
+                .put("synthetic_guest_application_on_main_thread", syntheticApplicationMainThreadVerified)
+                .put("synthetic_guest_application_instances_distinct", syntheticApplicationInstancesDistinct)
+                .put("synthetic_application_on_create_once_per_scope", syntheticApplicationOnCreateVerified)
+                .put("synthetic_application_class_name", syntheticApplicationClassName)
+                .put("synthetic_scope_a_id", syntheticScopeAId)
+                .put("synthetic_scope_b_id", syntheticScopeBId)
+                .put("synthetic_scope_a_preferences_file_sqlite_verified", syntheticScopeAStorageVerified)
+                .put("synthetic_scope_b_preferences_file_sqlite_verified", syntheticScopeBStorageVerified)
+                .put("synthetic_scope_persistence_after_context_reconstruction_verified", syntheticScopePersistenceVerified)
+                .put("synthetic_scope_cross_readback_isolated", syntheticScopeCrossReadbackVerified)
+                .put("guest_application_registered_with_activity_thread", false)
+                .put("guest_application_registered_with_package_manager", false)
+                .put("full_guest_application_lifecycle_verified", false)
+                .put("source_commit", sourceCommit)
+                .put("probe_apk_sha256", probeApkSha256)
+                .put("payload_apk_sha256", payloadApkSha256)
                 .put("synthetic_component_dispatch_verified", syntheticComponentDispatchVerified)
                 .put("dispatch_ticket_private_apk_sha256", dispatchTicketPrivateApkSha256)
                 .put("production_clone_accepted", false)

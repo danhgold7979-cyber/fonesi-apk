@@ -36,6 +36,22 @@ data class LoadedGuestCode(val clusterId: String, val packageName: String, val v
         return SignedPrivateExplicitActivityResolver.select(componentInventory, packageName, className, caller)
     }
 
+    /** Exact signed PRIVATE Application class; never initialize, attach or call callbacks. */
+    fun preflightApplicationClass(): PrivateGuestApplicationClassHandle {
+        check(componentInventory.clusterId == clusterId &&
+            componentInventory.packageName == packageName &&
+            componentInventory.versionCode == version) {
+            "Loaded private code and signed Application manifest have different identity"
+        }
+        val signedName = requireNotNull(componentInventory.applicationClass) {
+            "Signed PRIVATE base has no explicit Application class"
+        }
+        val loaded = PrivateGuestApplicationClassPreflight.resolve(
+            signedName, classLoader, Application::class.java)
+        @Suppress("UNCHECKED_CAST")
+        return PrivateGuestApplicationClassHandle(signedName, loaded as Class<out Application>)
+    }
+
     /**
      * Class ownership/type preflight only. Never instantiate/attach the Activity or return
      * a launch-success result; actual Android lifecycle and guest UID mediation are absent.
@@ -52,6 +68,12 @@ data class LoadedGuestCode(val clusterId: String, val packageName: String, val v
         return PrivateGuestActivityClassHandle(signed, type)
     }
 }
+
+/** Signed class proof only; not Android Application registration or execution. */
+data class PrivateGuestApplicationClassHandle(
+    val signedName: String,
+    val applicationClass: Class<out Application>,
+)
 
 /** Class type proof only; NOT an Android guest execution/permission token. */
 data class PrivateGuestActivityClassHandle(

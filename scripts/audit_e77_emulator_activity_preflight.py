@@ -14,12 +14,12 @@ assert '"e77"' in runner.split('parser.add_argument("--proof-level"', 1)[1].spli
 assert "private_activity_constructor_preflight_verified" in runner
 assert "PASS_E77_SIGNED_PRIVATE_ACTIVITY_CONSTRUCTOR_PREFLIGHT_ONLY" in runner
 assert "args.source_commit" in runner and "sha256(file)" in runner
-assert '("e24", "e25", "e29", "e74", "e77")' in runner
+assert '("e24", "e25", "e29", "e74", "e77", "e78")' in runner
 assert 'report.get("private_activity_constructor_preflight_verified") is not True' in runner
 assert "privateActivityConstructorPreflightVerified = true" in probe
-assert 'if ("e77".equals(proofLevel)) privateActivityConstructorPreflightVerified = true;' in probe
+assert 'if ("e77".equals(proofLevel) || "e78".equals(proofLevel))\n                    privateActivityConstructorPreflightVerified = true;' in probe
 assert 'ProbeData.check(privateActivityConstructorPreflightVerified,' in probe
-assert 'if ("e74".equals(proofLevel) || "e77".equals(proofLevel))' in probe
+assert 'if ("e74".equals(proofLevel) || "e77".equals(proofLevel) || "e78".equals(proofLevel))' in probe
 assert 'Class.forName(selection.targetActivityName, false, privateLoader)' in preflight
 assert "candidate.getConstructor()" in preflight
 assert ".newInstance(" not in preflight and "constructor.newInstance(" not in preflight
@@ -40,8 +40,8 @@ for required in (
     assert required in workflow, "E77 workflow is not strict enough: " + required
 assert "run_native_probe.py --audit-only" in workflow, "Static audit retained, but emulator must also execute"
 assert workflow.index("python3 scripts/prepare_native_emulator.py --install --image aosp34") < workflow.index("--proof-level e77")
-assert "if not has_kvm and not (args.proof_level == \"e77\" and args.allow_software_emulation)" in runner
-assert "args.allow_software_emulation and args.proof_level != \"e77\"" in runner
+assert "if not has_kvm and not (software_emulation_proof_allowed(args.proof_level) and args.allow_software_emulation)" in runner
+assert "args.allow_software_emulation and not software_emulation_proof_allowed(args.proof_level)" in runner
 assert "const val supportsSplits = false" in read("app/src/candidate/java/vn/fonesi/app/runtime/RuntimeBindings.kt")
 assert "def read_ui_configuration(device" in runner
 assert "UI_CONFIGURATION_READ_TIMEOUT_SECONDS = 20" in runner

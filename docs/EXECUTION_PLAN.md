@@ -1,3 +1,12 @@
+## E78 — exact-source technical PASS (30/10/2026)
+
+Product **Phase 1 steps 7–8**, controlled-app portion of step 8; prepares Phase 2 steps 9–12. Development branch `phase/e78-synthetic-application-lifecycle-20261030`, Draft PR #52 stacked on E77 Draft PR #51. Exact source/test SHA `57d60cb80d6cece692b2898afd15d8668fd14883` passed [CI #40998462184](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40998462184) **SUCCESS**, 17 substantive workflow steps. Cloud/candidate each passed 510 tests; source-engine 63 JVM tests; Python 13 receipt/fingerprint tests; AAR/native host integration, E40–E78 audits and signed synthetic APK build/lint passed.
+
+[E78 pre-code plan](phases/E78_SYNTHETIC_APPLICATION_LIFECYCLE_PLAN.md) | [E78 results](phases/E78_SYNTHETIC_APPLICATION_LIFECYCLE_RESULTS.md) | [test-only artifact #12952618461](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40998462184/artifacts/12952618461).
+
+AOSP API 34 x86_64 software emulator booted and installed both signed synthetic APKs. Receipt bound to source SHA and host/payload APK SHA-256 values proves two instances of signed PRIVATE `SyntheticGuestApplication` attached via public Instrumentation and onCreate on Android main thread; both UUID scopes passed SharedPreferences/files/SQLite read/write, Context-wrapper reconstruction persistence and cross-scope readback. It explicitly denies ActivityThread/PackageManager registration, real guest Activity, third-party execution, UID/account isolation and production clone acceptance. Candidate `supportsSplits=false`; no physical-device test. Product readiness stays **28.00%**, 0 accepted real clones; keep PR #52/#51 Draft and `main` unchanged.
+
+
 # Kế hoạch thực thi và đối chiếu yêu cầu
 
 ## E77 — exact-source technical PASS (30/10/2026)
