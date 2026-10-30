@@ -658,7 +658,7 @@ def main():
                     "real_guest_activity_registered", "production_clone_accepted",
                     "third_party_component_executed",
                 )
-            if args.proof_level in ("e74", "e77"):
+            if args.proof_level in ("e74", "e77", "e78"):
                 expected_true = expected_true + ("private_activity_class_preflight_verified",)
                 expected_false = expected_false + (
                     "real_guest_activity_registered", "production_clone_accepted",
