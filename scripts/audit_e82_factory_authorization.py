@@ -58,7 +58,8 @@ for marker in (
     "candidate.getClassLoader() != ticket.getPrivateClassLoader()",
     "Application.getProcessName()",
     "Process.myUid()",
-    "getConstructor().newInstance()",
+    "candidate.getConstructor()",
+    "constructor.newInstance()",
 ):
     assert marker in factory, "E82 factory invariant missing: " + marker
 assert "throw new SecurityException" in stub and "super.onCreate(savedInstanceState)" in stub
