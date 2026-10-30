@@ -1015,7 +1015,19 @@ def main():
             time.sleep(2)
         if report is None:
             raise RuntimeError("No complete Android synthetic receipt before timeout")
-        if args.proof_level in ("e24", "e25", "e29", "e74", "e77", "e78", "e79", "e80"):
+        if args.proof_level == "e82":
+            (reports / "e82-factory-host-stub-receipt.json").write_text(json.dumps(report, indent=2) + "\n")
+            validate_e82_receipt(report, args.source_commit, args.expected_probe_sha256,
+                                 args.expected_payload_sha256, expected_run_id)
+            evidence["android_e82_factory_authorization_consumed"] = True
+            evidence["android_e82_host_stub_context_verified"] = True
+            evidence["android_e82_framework_activity_lifecycle_verified"] = True
+            evidence["result"] = "PASS_E82_HOST_STUB_FRAMEWORK_ACTIVITY_LIFECYCLE_ONLY"
+            print("PASS: Android framework created and attached the signed PRIVATE synthetic Activity " +
+                  "through the registered non-exported host stub and one-shot AppComponentFactory ticket. " +
+                  "The Activity ran with the host package/UID/Context; no guest package registration, " +
+                  "independent UID/account, third-party app or production clone was accepted.", flush=True)
+        elif args.proof_level in ("e24", "e25", "e29", "e74", "e77", "e78", "e79", "e80"):
             (reports / "synthetic-ui-receipt.json").write_text(json.dumps(report, indent=2) + "\n")
             expected_true = (
                 "complete", "passed", "real_host_activity_lifecycle_verified",
