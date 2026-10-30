@@ -190,6 +190,29 @@ class CatalogSqlTests(unittest.TestCase):
                 row = self.db.execute(self.sql['FINAL_META']).fetchone()
                 self.assertEqual(int(type(revision) is int and revision >= 0), row['revision_valid'])
 
+    def test_creator_full_synchronous_effective_setting_and_source_order(self):
+        reader = SOURCE.with_name('CatalogReader.java').read_text()
+        initialize = reader.split('private static void initialize(', 1)[1].split('private static StructStat stat(', 1)[0]
+        setting = 'db.execSQL("PRAGMA synchronous=FULL");'
+        check = 'require(number(db, "PRAGMA main.synchronous", cancel) == 2);'
+        self.assertEqual(1, initialize.count(setting))
+        self.assertEqual(1, initialize.count(check))
+        self.assertIn(setting + '\n            ' + check, initialize)
+        self.assertLess(initialize.index(check), initialize.index('db.beginTransaction();'))
+        # Execute the exact setting/query literals on one synthetic connection.
+        # This is configuration evidence, not Android or power-loss acceptance.
+        with sqlite3.connect(':memory:') as connection:
+            connection.execute('PRAGMA synchronous=OFF')
+            self.assertEqual([(0,)], connection.execute('PRAGMA main.synchronous').fetchall())
+            connection.execute(re.search(r'db.execSQL\("([^"\n]+)"\);', setting).group(1))
+            query = re.search(r'number\(db, "([^"\n]+)", cancel\)', check).group(1)
+            rows = connection.execute(query).fetchall()
+            self.assertEqual([(2,)], rows)
+            self.assertIs(type(rows[0][0]), int)
+            connection.execute('BEGIN')
+            self.assertEqual([(2,)], connection.execute(query).fetchall())
+            connection.rollback()
+
     def test_final_metadata_query_exposes_revision_change(self):
         self.row()
         old = self.page()[0]

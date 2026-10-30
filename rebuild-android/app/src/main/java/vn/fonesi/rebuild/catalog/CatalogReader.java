@@ -80,6 +80,7 @@ public final class CatalogReader {
                 require(c.moveToNext() && "delete".equals(text(c, 0, 16)) && !c.moveToNext());
             }
             db.execSQL("PRAGMA synchronous=FULL");
+            require(number(db, "PRAGMA main.synchronous", cancel) == 2);
             db.execSQL("PRAGMA encoding='UTF-8'");
             db.beginTransaction();
             try {
