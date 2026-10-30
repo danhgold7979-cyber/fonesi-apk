@@ -106,7 +106,7 @@ def synthetic_install_failure(apk, result):
 
 def software_emulation_proof_allowed(proof_level):
     """Only bounded synthetic E77/E78/E79 proofs may use software AVD."""
-    return proof_level in ("e77", "e78", "e79", "e80")
+    return proof_level in ("e77", "e78", "e79", "e80", "e82")
 
 
 def validate_e78_receipt(report, source_commit, probe_apk_sha256, payload_apk_sha256):
@@ -332,6 +332,64 @@ def validate_e81_receipts(write_report, verify_report, source_commit, probe_apk_
     _validate_e81_scoped_stage(write)
     _validate_e81_scoped_stage(verify)
     return write, verify
+
+
+def validate_e82_receipt(report, source_commit, probe_apk_sha256, payload_apk_sha256, expected_run_id):
+    """Require an actual framework-created host-stub Activity; never label it a guest package."""
+    if not isinstance(report, dict):
+        raise RuntimeError("E82 receipt must be a JSON object")
+    required_true = (
+        "complete", "passed", "factory_authorization_consumed",
+        "framework_on_create_called", "framework_on_resume_called",
+        "base_context_non_null", "window_non_null",
+        "private_activity_classloader_distinct_from_host",
+        "payload_source_fixture_package_installed",
+    )
+    required_false = (
+        "guest_component_registered_with_host_package_manager",
+        "guest_uid_isolation", "third_party_component_executed",
+        "social_accounts_tested", "production_clone_accepted",
+        "physical_device_tested",
+    )
+    missing_true = [key for key in required_true if report.get(key) is not True]
+    missing_false = [key for key in required_false if report.get(key) is not False]
+    if missing_true or missing_false:
+        raise RuntimeError("E82 host-stub receipt assertions failed: true=" +
+                           ",".join(missing_true) + "; false=" + ",".join(missing_false))
+    if report.get("proof_level") != "e82":
+        raise RuntimeError("E82 receipt proof level mismatch")
+    if report.get("run_id") != expected_run_id or str(uuid.UUID(expected_run_id)) != expected_run_id:
+        raise RuntimeError("E82 receipt run UUID mismatch or noncanonical UUID")
+    if report.get("source_commit") != source_commit:
+        raise RuntimeError("E82 receipt source SHA differs from checked-out source")
+    if report.get("probe_apk_sha256") != probe_apk_sha256:
+        raise RuntimeError("E82 receipt host APK SHA-256 mismatch")
+    if report.get("payload_apk_sha256") != payload_apk_sha256:
+        raise RuntimeError("E82 receipt payload fixture APK SHA-256 mismatch")
+    if report.get("private_activity_class_name") != PAYLOAD_PACKAGE + ".PayloadActivity":
+        raise RuntimeError("E82 receipt did not instantiate the exact signed PRIVATE Activity class")
+    if report.get("host_package") != PROBE_PACKAGE or report.get("host_stub_component") != (
+            PROBE_PACKAGE + "/" + PROBE_PACKAGE + ".E82HostActivityStub"):
+        raise RuntimeError("E82 receipt host package or stub ComponentName mismatch")
+    if report.get("api") != 34 or report.get("process_name") != PROBE_PACKAGE + ":fonesi_guest_ui":
+        raise RuntimeError("E82 receipt Android API/process identity mismatch")
+    if report.get("host_stub_activity_info_package") != PROBE_PACKAGE or (
+            report.get("host_stub_activity_info_name") != PROBE_PACKAGE + ".E82HostActivityStub") or (
+            report.get("host_stub_activity_info_process") != PROBE_PACKAGE + ":fonesi_guest_ui") or (
+            report.get("host_stub_activity_info_exported") is not False):
+        raise RuntimeError("E82 PackageManager host-stub ActivityInfo mismatch")
+    pid, uid = report.get("pid"), report.get("uid")
+    if type(pid) is not int or pid <= 0 or type(uid) is not int or uid < 0:
+        raise RuntimeError("E82 host process PID/UID is invalid")
+    if report.get("host_uid") != uid or report.get("host_stub_activity_info_uid") != uid:
+        raise RuntimeError("E82 Activity, host Application and registered stub UID differ")
+    nonce = report.get("nonce")
+    if not isinstance(nonce, str) or re.fullmatch(r"[0-9a-f]{32}", nonce) is None:
+        raise RuntimeError("E82 one-shot nonce is missing or malformed")
+    cluster_id = report.get("private_cluster_id")
+    if not isinstance(cluster_id, str) or str(uuid.UUID(cluster_id)) != cluster_id:
+        raise RuntimeError("E82 signed PRIVATE cluster UUID is invalid")
+    return report
 
 
 def read_e79_stage_receipt(device, run_id, timeout_seconds):
