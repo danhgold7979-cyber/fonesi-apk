@@ -226,7 +226,7 @@ class PayloadActivity : Activity() {
         receipt.put("framework_on_resume_called", true)
             .put("complete", true)
             .put("passed", true)
-        writeE82Receipt()
+        if (Build.VERSION.SDK_INT >= 28) writeE82Receipt()
         finish()
     }
 
