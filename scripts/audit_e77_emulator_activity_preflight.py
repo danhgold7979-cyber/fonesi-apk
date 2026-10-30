@@ -17,7 +17,7 @@ assert "args.source_commit" in runner and "sha256(file)" in runner
 assert '("e24", "e25", "e29", "e74", "e77", "e78")' in runner
 assert 'report.get("private_activity_constructor_preflight_verified") is not True' in runner
 assert "privateActivityConstructorPreflightVerified = true" in probe
-assert 'if ("e77".equals(proofLevel) || "e78".equals(proofLevel)) privateActivityConstructorPreflightVerified = true;' in probe
+assert 'if ("e77".equals(proofLevel) || "e78".equals(proofLevel))\n                    privateActivityConstructorPreflightVerified = true;' in probe
 assert 'ProbeData.check(privateActivityConstructorPreflightVerified,' in probe
 assert 'if ("e74".equals(proofLevel) || "e77".equals(proofLevel) || "e78".equals(proofLevel))' in probe
 assert 'Class.forName(selection.targetActivityName, false, privateLoader)' in preflight
