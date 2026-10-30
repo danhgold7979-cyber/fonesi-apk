@@ -43,6 +43,8 @@ jobs:
           python3 scripts/audit_e82_factory_authorization.py
       - name: Bootstrap pinned Android SDK, JDK and Gradle
         run: python3 scripts/bootstrap_android.py --accept-sdk-license
+      - name: Install pinned NDK and CMake required by source-engine Gradle configuration
+        run: python3 scripts/prepare_source_engine.py --install-tools
       - name: Run E82 JVM authorization state-machine tests
         run: |
           ./scripts/gradle.sh -PincludeNativeRuntimeProbe=true -PsourceEngineAbi=x86_64 :native-runtime-probe:testDebugUnitTest --console=plain
