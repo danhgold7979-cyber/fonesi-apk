@@ -1,3 +1,9 @@
+
+
+## E82 implementation refinement committed before source changes (30/10/2026)
+
+Detailed source-by-source implementation, one-shot authorization state machine, host-stub factory dispatch, signed payload lifecycle receipt, negative-claim validator, exact manifest allowlist, test order and stop conditions are recorded in [E82 implementation refinement](phases/E82_PUBLIC_COMPONENT_FACTORY_FEASIBILITY_PLAN.md#e82-implementation-refinement--before-code-30102026). The refinement is committed at `a0fce936080bfcdc4d47ba9d5a7b2f2df1fccf36` before code. Continue on the existing E82 branch; base it on E81 reporting SHA, keep the PR Draft and `main` unchanged. E82 can only pass with an actual AOSP API 34 framework-created host-stub Activity receipt; manual attach/callbacks or audit-only CI are insufficient. Product readiness remains 28.00%, with zero accepted real third-party clones.
+
 ## E82 — pre-code public AppComponentFactory feasibility plan (30/10/2026)
 
 Original **Product Phase 1 steps 7–8**, preparing Phase 3 step 15; technical E82 is not new Product Phase. E81 implementation SHA `35ebb2119fb771762865ec02a6d9a9a38b28f4dc` [CI #41024151911](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/41024151911) **SUCCESS**; E81 report SHA `af9c51edd9d103fad6049db06fd0554ffb2f660e` [CI #41026248376](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/41026248376) pending at plan time.
