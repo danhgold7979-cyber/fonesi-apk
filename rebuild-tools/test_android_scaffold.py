@@ -17,6 +17,20 @@ class ScaffoldTests(unittest.TestCase):
         self.assertEqual([node.tag for node in app], ["activity"])
         self.assertEqual(app.find("activity").get(A + "name"), ".ManagerActivity")
 
+    def test_all_backup_domains_explicitly_excluded(self):
+        app = ET.parse(MAIN / "AndroidManifest.xml").getroot().find("application")
+        self.assertEqual(app.get(A + "fullBackupContent"), "@xml/backup_exclusions")
+        self.assertEqual(app.get(A + "dataExtractionRules"), "@xml/data_extraction_rules")
+        expected = {"root", "file", "database", "sharedpref", "external", "device_root",
+                    "device_file", "device_database", "device_sharedpref"}
+        legacy = ET.parse(MAIN / "res/xml/backup_exclusions.xml").getroot()
+        modern = ET.parse(MAIN / "res/xml/data_extraction_rules.xml").getroot()
+        self.assertEqual([x.tag for x in modern], ["cloud-backup", "device-transfer"])
+        for section in [legacy, *modern]:
+            self.assertEqual(len(section), 9)
+            self.assertEqual({x.get("domain") for x in section}, expected)
+            self.assertTrue(all(x.tag == "exclude" and x.get("path") == "." for x in section))
+
     def test_all_four_actions_disabled_without_handlers(self):
         root = ET.parse(MAIN / "res/layout/manager.xml").getroot()
         buttons = list(root.iter("Button"))
