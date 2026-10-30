@@ -1,0 +1,68 @@
+name: E78 signed private Application preflight interim build (NOT lifecycle acceptance)
+
+on:
+  push:
+    branches:
+      - phase/e78-synthetic-application-lifecycle-20261030
+  pull_request:
+    branches:
+      - phase/e77-emulator-activity-preflight-proof-20261030
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: fonesi-e78-interim-preflight-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  source-preflight-only:
+    runs-on: ubuntu-latest
+    timeout-minutes: 50
+    env:
+      FONESI_TOOLS_DIR: /tmp/fonesi-tools
+      ANDROID_HOME: /tmp/fonesi-tools/android-sdk
+      ANDROID_SDK_ROOT: /tmp/fonesi-tools/android-sdk
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - name: Verify exact source
+        run: test "$(git rev-parse HEAD)" = "${{ github.event.pull_request.head.sha || github.sha }}"
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Audit E78 preflight without lifecycle claims
+        run: |
+          python3 scripts/audit_e78_synthetic_application_lifecycle.py
+          python3 scripts/audit_e77_emulator_activity_preflight.py
+          python3 -m py_compile scripts/audit_e78_synthetic_application_lifecycle.py
+      - name: Bootstrap pinned Android toolchain
+        run: python3 scripts/bootstrap_android.py --accept-sdk-license
+      - name: Cloud JVM test build lint and APK audit
+        run: ./scripts/check.sh
+      - name: Candidate SDK APK integrity and lint
+        run: ./scripts/check.sh --with-engine-candidate
+      - name: Source-engine AAR and E78 signed class JVM regressions
+        run: |
+          python3 scripts/prepare_source_engine.py --install-tools
+          python3 scripts/check_source_engine.py
+          python3 - <<'PY'
+          from pathlib import Path
+          import xml.etree.ElementTree as ET
+          matches = list(Path("engine-source/build/test-results/testDebugUnitTest").glob("*PrivateGuestApplicationClassPreflightTest.xml"))
+          assert len(matches) == 1, "E78 source class tests did not run exactly once"
+          root = ET.parse(matches[0]).getroot()
+          assert int(root.attrib.get("tests", "0")) >= 4
+          assert all(int(root.attrib.get(x, "0")) == 0 for x in ("errors", "failures", "skipped"))
+          cases = {case.attrib.get("name") for case in root.findall("testcase")}
+          required = {
+              "exactPrivateConcreteClassPassesWithoutRunningConstructor",
+              "delegatedParentClassAndMissingSignedNameFailClosed",
+              "invalidTypesAndConstructorsAreRefused",
+              "staticInitializerIsNotRunOnSuccessfulOrFailedPreflight",
+          }
+          assert required <= cases, f"Missing executed tests: {required - cases}"
+          print("PASS E78 interim JVM preflight only; Android synthetic Application attach/onCreate remains NOT VERIFIED")
+          PY
