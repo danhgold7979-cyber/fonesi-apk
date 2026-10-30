@@ -7,17 +7,36 @@ import org.junit.Assert.assertThrows
 import org.junit.Test
 
 class EngineCapabilitiesTest {
+    private val signer = "e".repeat(64)
+
+    private fun identityWithDigest(identity: GuestApkClusterIdentity) =
+        identity.copy(clusterDigest = identity.computeCanonicalDigest())
+
     private fun validClusterIdentity(): GuestApkClusterIdentity {
-        val base = GuestApkClusterMemberIdentity(null, "a".repeat(64), false)
-        val alpha = GuestApkClusterMemberIdentity("feature.alpha", "b".repeat(64), true)
-        val beta = GuestApkClusterMemberIdentity("feature.beta", "c".repeat(64), true,
-            dependencies = setOf("feature.alpha"))
-        val french = GuestApkClusterMemberIdentity("feature.alpha.fr", "d".repeat(64), false,
-            configForSplit = "feature.alpha")
-        return GuestApkClusterIdentity(
-            "vn.fonesi.fixture", 1, setOf("e".repeat(64)),
-            listOf(base, alpha, french, beta), "f".repeat(64),
+        val base = GuestApkClusterMemberIdentity(
+            splitName = null, sha256 = "a".repeat(64), feature = false,
+            byteLength = 100, signerDigests = setOf(signer),
+            requiredTypes = setOf("base__abi"),
         )
+        val alpha = GuestApkClusterMemberIdentity(
+            splitName = "feature.alpha", sha256 = "b".repeat(64), feature = true,
+            byteLength = 200, signerDigests = setOf(signer),
+        )
+        val french = GuestApkClusterMemberIdentity(
+            splitName = "feature.alpha.fr", sha256 = "d".repeat(64), feature = false,
+            byteLength = 300, signerDigests = setOf(signer),
+            configForSplit = "feature.alpha", dependencies = setOf("feature.alpha"),
+        )
+        val beta = GuestApkClusterMemberIdentity(
+            splitName = "feature.beta", sha256 = "c".repeat(64), feature = true,
+            byteLength = 400, signerDigests = setOf(signer),
+            providedTypes = setOf("base__abi"), dependencies = setOf("feature.alpha"),
+        )
+        val unsigned = GuestApkClusterIdentity(
+            "vn.fonesi.fixture", 1, setOf(signer),
+            listOf(base, alpha, french, beta), "",
+        )
+        return identityWithDigest(unsigned)
     }
 
     @Test fun unavailableEngineExposesNoOperationalOrAcceptedCapabilities() {
@@ -104,10 +123,11 @@ class EngineCapabilitiesTest {
         val french = identity.members.single { it.splitName == "feature.alpha.fr" }
         assertEquals(identity, identity.requireStructurallyValid())
         assertThrows(IllegalArgumentException::class.java) {
-            identity.copy(members = listOf(alpha, french, beta)).requireStructurallyValid()
+            identityWithDigest(identity.copy(members = listOf(alpha, french, beta))).requireStructurallyValid()
         }
         assertThrows(IllegalArgumentException::class.java) {
-            identity.copy(members = listOf(base, alpha, alpha, french, beta)).requireStructurallyValid()
+            identityWithDigest(identity.copy(members = listOf(base, alpha, alpha, french, beta)))
+                .requireStructurallyValid()
         }
         val cyclic = listOf(
             base,
@@ -115,10 +135,10 @@ class EngineCapabilitiesTest {
             beta.copy(dependencies = setOf("feature.alpha")),
         )
         assertThrows(IllegalArgumentException::class.java) {
-            identity.copy(members = cyclic).requireStructurallyValid()
+            identityWithDigest(identity.copy(members = cyclic)).requireStructurallyValid()
         }
         assertThrows(IllegalArgumentException::class.java) {
-            identity.copy(members = listOf(base, alpha, beta.copy(dependencies = setOf("missing"))))
+            identityWithDigest(identity.copy(members = listOf(base, alpha, beta.copy(dependencies = setOf("missing")))))
                 .requireStructurallyValid()
         }
     }
@@ -130,19 +150,90 @@ class EngineCapabilitiesTest {
         val beta = identity.members.single { it.splitName == "feature.beta" }
         val french = identity.members.single { it.splitName == "feature.alpha.fr" }
         assertThrows(IllegalArgumentException::class.java) {
-            identity.copy(packageName = "invalid package").requireStructurallyValid()
+            identityWithDigest(identity.copy(packageName = "invalid package")).requireStructurallyValid()
         }
         assertThrows(IllegalArgumentException::class.java) {
-            identity.copy(members = listOf(base, beta, alpha, french)).requireStructurallyValid()
+            identityWithDigest(identity.copy(members = listOf(base, beta, alpha, french))).requireStructurallyValid()
         }
         assertThrows(IllegalArgumentException::class.java) {
-            identity.copy(members = listOf(base, alpha.copy(configForSplit = "feature.beta"), french, beta))
+            identityWithDigest(identity.copy(members = listOf(base, alpha.copy(configForSplit = "feature.beta"), french, beta)))
                 .requireStructurallyValid()
         }
         assertThrows(IllegalArgumentException::class.java) {
-            identity.copy(members = listOf(base, alpha, french.copy(configForSplit = "feature.missing"), beta))
+            identityWithDigest(identity.copy(members = listOf(base, alpha, french.copy(configForSplit = "feature.missing"), beta)))
                 .requireStructurallyValid()
         }
+        val numericSegment = alpha.copy(splitName = "feature.1")
+        assertThrows(IllegalArgumentException::class.java) {
+            identityWithDigest(identity.copy(members = listOf(base, numericSegment, alpha, french, beta)))
+                .requireStructurallyValid()
+        }
+    }
+
+    @Test fun splitIdentityMatchesAuditorConfigDependencyAndSplitTypeRules() {
+        val identity = validClusterIdentity()
+        val base = identity.members.first()
+        val alpha = identity.members.single { it.splitName == "feature.alpha" }
+        val french = identity.members.single { it.splitName == "feature.alpha.fr" }
+        val beta = identity.members.single { it.splitName == "feature.beta" }
+
+        // ApkSetAuditor permits an empty configForSplit on a non-feature config split.
+        val emptyConfig = identityWithDigest(identity.copy(
+            members = listOf(base, alpha, french.copy(configForSplit = ""), beta),
+        ))
+        assertEquals(emptyConfig, emptyConfig.requireStructurallyValid())
+
+        // uses-split dependencies are valid on non-feature splits too.
+        assertEquals(setOf("feature.alpha"), french.dependencies)
+        assertEquals(identity, identity.requireStructurallyValid())
+
+        assertThrows(IllegalArgumentException::class.java) {
+            identityWithDigest(identity.copy(
+                members = listOf(base.copy(splitRequired = true, requiredTypes = emptySet())),
+            )).requireStructurallyValid()
+        }
+        assertThrows(IllegalArgumentException::class.java) {
+            identityWithDigest(identity.copy(
+                members = listOf(base, alpha, french, beta.copy(providedTypes = emptySet())),
+            )).requireStructurallyValid()
+        }
+        assertThrows(IllegalArgumentException::class.java) {
+            identityWithDigest(identity.copy(packageName = "a".repeat(256) + ".x")).requireStructurallyValid()
+        }
+        assertThrows(IllegalArgumentException::class.java) {
+            identityWithDigest(identity.copy(
+                members = listOf(base.copy(byteLength = 0), alpha, french, beta),
+            )).requireStructurallyValid()
+        }
+        assertThrows(IllegalArgumentException::class.java) {
+            identityWithDigest(identity.copy(
+                members = listOf(base, alpha.copy(signerDigests = setOf("9".repeat(64))), french, beta),
+            )).requireStructurallyValid()
+        }
+        assertThrows(IllegalArgumentException::class.java) {
+            identityWithDigest(identity.copy(
+                members = listOf(base, alpha.copy(configForSplit = ""), french, beta),
+            )).requireStructurallyValid()
+        }
+    }
+
+    @Test fun splitIdentityDigestCommitsEveryMetadataFieldAndMemberLength() {
+        val identity = validClusterIdentity()
+        val changedMetadata = identity.members.mapIndexed { index, member ->
+            if (index == 2) member.copy(isolatedSplits = true) else member
+        }
+        val changedLength = identity.members.mapIndexed { index, member ->
+            if (index == 1) member.copy(byteLength = member.byteLength + 1) else member
+        }
+        assertThrows(IllegalArgumentException::class.java) {
+            identity.copy(members = changedMetadata).requireStructurallyValid()
+        }
+        assertThrows(IllegalArgumentException::class.java) {
+            identity.copy(members = changedLength).requireStructurallyValid()
+        }
+        val recomputed = identityWithDigest(identity.copy(members = changedMetadata))
+        assertTrue(recomputed.clusterDigest != identity.clusterDigest)
+        assertEquals(recomputed, recomputed.requireStructurallyValid())
     }
 
     @Test fun splitClusterReadbackRequiresExactIdentityAndCompleteSdkOwnedMemberSet() {
@@ -177,14 +268,23 @@ class EngineCapabilitiesTest {
         assertThrows(IllegalArgumentException::class.java) {
             EngineCapabilities(splitClusterImportSupported = true)
         }
-        val complete = EngineCapabilities(
+        assertThrows(IllegalArgumentException::class.java) {
+            EngineCapabilities(splitClusterCodeExecutionVerified = true)
+        }
+        val import = EngineCapabilities(
             splitClusterPreflightSupported = true,
             splitClusterInstallDispatchSupported = true,
             splitClusterReadbackVerified = true,
             splitClusterImportSupported = true,
         )
-        assertTrue(complete.splitClusterImportSupported)
-        assertFalse(complete.splitClusterCodeExecutionVerified)
+        assertTrue(import.splitClusterImportSupported)
+        assertThrows(IllegalArgumentException::class.java) {
+            import.copy(splitClusterAtomicUpdateVerified = true)
+        }
+        val executable = import.copy(splitClusterCodeExecutionVerified = true)
+        val atomic = executable.copy(splitClusterAtomicUpdateVerified = true)
+        assertTrue(executable.splitClusterCodeExecutionVerified)
+        assertTrue(atomic.splitClusterAtomicUpdateVerified)
     }
 
 }
