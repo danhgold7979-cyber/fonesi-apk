@@ -1,5 +1,6 @@
 package vn.fonesi.payload
 
+import android.annotation.TargetApi
 import android.app.Activity
 import android.app.Application
 import android.content.Context
@@ -117,6 +118,7 @@ class PayloadActivity : Activity() {
     }
 
     /** E82 records only the host-stub lifecycle; this is not a guest package/UID lifecycle. */
+    @TargetApi(28)
     private fun beginE82HostStubLifecycle() {
         check(Build.VERSION.SDK_INT >= 28) { "E82 requires public AppComponentFactory API 28+" }
         check(intent.getBooleanExtra("e82_factory_authorized", false)) {
