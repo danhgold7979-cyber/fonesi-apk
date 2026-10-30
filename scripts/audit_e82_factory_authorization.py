@@ -80,6 +80,8 @@ for marker in (
 ):
     assert marker in host, "E82 host controller gate missing: " + marker
 for marker in (
+    "import android.annotation.TargetApi",
+    "@TargetApi(28)",
     "beginE82HostStubLifecycle()",
     "framework_on_create_called",
     "framework_on_resume_called",
