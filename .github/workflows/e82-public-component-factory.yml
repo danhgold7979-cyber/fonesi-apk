@@ -262,7 +262,7 @@ jobs:
               assert forbidden not in queue
           print("PASS: E80 is only an unattached Java Activity constructor; production split and real guest execution remain disabled")
           PY
-      - name: Upload E80 constructor/process-restart receipt, generated schema and sanitized tests
+      - name: Upload E82 host-stub lifecycle receipt, generated schema and sanitized tests
         if: always()
         uses: actions/upload-artifact@v4
         with:
@@ -281,7 +281,6 @@ jobs:
             native-runtime-probe/build/reports/lint-results-debug.xml
             probe-payload/build/reports/lint-results-debug.xml
             app/build/reports/e82-emulator/e11-evidence.json
-            app/build/reports/e82-emulator/e82-factory-host-stub-receipt.json
             app/build/reports/e82-emulator/e82-factory-host-stub-receipt.json
           if-no-files-found: warn
           retention-days: 7
