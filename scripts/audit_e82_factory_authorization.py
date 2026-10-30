@@ -83,6 +83,7 @@ for marker in (
 for marker in (
     "import androidx.annotation.RequiresApi",
     "@RequiresApi(28)",
+    "check(Build.VERSION.SDK_INT >= 28) { \"E82 requires Android API 28+\" }",
     "beginE82HostStubLifecycle()",
     "private fun writeE82Receipt()",
     "if (Build.VERSION.SDK_INT >= 28) writeE82Receipt()",
