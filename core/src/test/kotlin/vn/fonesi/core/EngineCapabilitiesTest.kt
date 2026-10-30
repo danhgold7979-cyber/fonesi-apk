@@ -2,6 +2,7 @@ package vn.fonesi.core
 
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
+import org.junit.Assert.assertThrows
 import org.junit.Test
 
 class EngineCapabilitiesTest {
@@ -55,4 +56,76 @@ class EngineCapabilitiesTest {
         assertTrue(guestOs.satisfiesIsolation(EngineIsolationLevel.SEPARATE_GUEST_OS))
         assertFalse(unknown.satisfiesIsolation(EngineIsolationLevel.HOST_UID_NAMESPACE))
     }
+    @Test fun splitProviderCapabilitiesRequirePreflightDispatchAndCompleteReadback() {
+        val none = GuestBackendCapabilities()
+        assertFalse(none.splitClusterImportSupported)
+        val preflightOnly = GuestBackendCapabilities(splitClusterPreflightSupported = true)
+        assertFalse(preflightOnly.splitClusterImportSupported)
+        val dispatchWithoutReadback = GuestBackendCapabilities(
+            splitClusterPreflightSupported = true,
+            splitClusterInstallDispatchSupported = true,
+        )
+        assertFalse(dispatchWithoutReadback.splitClusterImportSupported)
+        val completeImport = GuestBackendCapabilities(
+            splitClusterPreflightSupported = true,
+            splitClusterInstallDispatchSupported = true,
+            splitClusterReadbackVerified = true,
+        )
+        assertTrue(completeImport.splitClusterImportSupported)
+        assertFalse(completeImport.splitClusterCodeExecutionVerified)
+        assertFalse(completeImport.splitClusterAtomicUpdateVerified)
+        assertThrows(IllegalArgumentException::class.java) {
+            GuestBackendCapabilities(splitClusterCodeExecutionVerified = true)
+        }
+        assertThrows(IllegalArgumentException::class.java) {
+            GuestBackendCapabilities(splitClusterAtomicUpdateVerified = true)
+        }
+    }
+
+    @Test fun splitClusterIdentityRequiresOneBaseUniqueMembersAndAcyclicDependencies() {
+        val base = GuestApkClusterMemberIdentity(null, "a".repeat(64), false)
+        val alpha = GuestApkClusterMemberIdentity("feature.alpha", "b".repeat(64), true)
+        val beta = GuestApkClusterMemberIdentity("feature.beta", "c".repeat(64), true,
+            dependencies = setOf("feature.alpha"))
+        val french = GuestApkClusterMemberIdentity("feature.alpha.fr", "d".repeat(64), false,
+            configForSplit = "feature.alpha")
+        val identity = GuestApkClusterIdentity(
+            "vn.fonesi.fixture", 1, setOf("e".repeat(64)),
+            listOf(base, alpha, beta, french), "f".repeat(64),
+        )
+        assertEquals(identity, identity.requireStructurallyValid())
+        assertThrows(IllegalArgumentException::class.java) {
+            identity.copy(members = listOf(alpha, beta, french)).requireStructurallyValid()
+        }
+        assertThrows(IllegalArgumentException::class.java) {
+            identity.copy(members = listOf(base, alpha, alpha, beta, french)).requireStructurallyValid()
+        }
+        val cyclic = listOf(
+            base,
+            alpha.copy(dependencies = setOf("feature.beta")),
+            beta.copy(dependencies = setOf("feature.alpha")),
+        )
+        assertThrows(IllegalArgumentException::class.java) {
+            identity.copy(members = cyclic).requireStructurallyValid()
+        }
+        assertThrows(IllegalArgumentException::class.java) {
+            identity.copy(members = listOf(base, alpha, beta.copy(dependencies = setOf("missing"))))
+                .requireStructurallyValid()
+        }
+    }
+
+    @Test fun engineCannotClaimSplitImportWithoutCompleteProviderEvidence() {
+        assertThrows(IllegalArgumentException::class.java) {
+            EngineCapabilities(splitClusterImportSupported = true)
+        }
+        val complete = EngineCapabilities(
+            splitClusterPreflightSupported = true,
+            splitClusterInstallDispatchSupported = true,
+            splitClusterReadbackVerified = true,
+            splitClusterImportSupported = true,
+        )
+        assertTrue(complete.splitClusterImportSupported)
+        assertFalse(complete.splitClusterCodeExecutionVerified)
+    }
+
 }
