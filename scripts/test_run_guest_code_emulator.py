@@ -14,6 +14,7 @@ from run_guest_code_emulator import (
     validate_e79_receipts,
     validate_e80_receipts,
     validate_e81_receipts,
+    synthetic_install_failure,
 )
 
 
@@ -467,6 +468,23 @@ class E81SignedPrivateScopedActivityMethodReceiptTests(unittest.TestCase):
         w, v = self.stages()
         with self.assertRaisesRegex(RuntimeError, "payload APK"):
             validate_e81_receipts(w, v, "a" * 40, "b" * 64, "d" * 64)
+
+
+class SyntheticInstallDiagnosticsTests(unittest.TestCase):
+    def test_install_failure_preserves_bounded_adb_reason(self):
+        result = SimpleNamespace(returncode=1, stdout="Failure [INSTALL_FAILED_INVALID_APK]", stderr="signature mismatch")
+        message = synthetic_install_failure("/tmp/probe-payload-debug.apk", result)
+        self.assertIn("probe-payload-debug.apk", message)
+        self.assertIn("exit=1", message)
+        self.assertIn("INSTALL_FAILED_INVALID_APK", message)
+        self.assertIn("signature mismatch", message)
+
+    def test_install_failure_bounds_untrusted_adb_output(self):
+        result = SimpleNamespace(returncode=1, stdout="x" * 5000, stderr="y" * 5000)
+        message = synthetic_install_failure("payload.apk", result)
+        self.assertLess(len(message), 4200)
+        self.assertIn("payload.apk", message)
+
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)

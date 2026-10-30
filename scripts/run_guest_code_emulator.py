@@ -92,6 +92,18 @@ def read_ui_configuration(device, timeout_seconds=UI_CONFIGURATION_READ_TIMEOUT_
     return snapshot
 
 
+def synthetic_install_failure(apk, result):
+    """Keep bounded ADB install diagnostics so a failed emulator install is actionable."""
+    stdout = str(getattr(result, "stdout", "") or "")[-2000:]
+    stderr = str(getattr(result, "stderr", "") or "")[-2000:]
+    return (
+        "Synthetic APK install failed for " + Path(apk).name +
+        " (exit=" + str(getattr(result, "returncode", "unknown")) + ")" +
+        "; stdout=" + (stdout.strip() or "<empty>") +
+        "; stderr=" + (stderr.strip() or "<empty>")
+    )
+
+
 def software_emulation_proof_allowed(proof_level):
     """Only bounded synthetic E77/E78/E79 proofs may use software AVD."""
     return proof_level in ("e77", "e78", "e79", "e80")
@@ -631,7 +643,7 @@ def main():
         for apk in (payload_apk, probe_apk):
             installed = device("install", "-r", apk, timeout=90, check=False)
             if installed.returncode or "Success" not in installed.stdout:
-                raise RuntimeError("Synthetic APK install failed")
+                raise RuntimeError(synthetic_install_failure(apk, installed))
         evidence["android_apks_installed"] = True
         if args.proof_level in ("e24", "e25", "e29", "e74", "e77", "e78", "e79", "e80"):
             # AOSP first boot can deliver late display/locale configuration changes after
