@@ -19,6 +19,8 @@ public final class E82AppComponentFactory extends AppComponentFactory {
     public static final String EXTRA_SOURCE_COMMIT = "e82_source_commit";
     public static final String EXTRA_HOST_APK_SHA256 = "e82_host_apk_sha256";
     public static final String EXTRA_PAYLOAD_APK_SHA256 = "e82_payload_apk_sha256";
+    public static final String EXTRA_CLUSTER_ID = "e82_private_cluster_id";
+    public static final String EXTRA_ACTIVITY_CLASS = "e82_private_activity_class";
     public static final String EXTRA_AUTHORIZED = "e82_factory_authorized";
     public static final String EXTRA_AUTHORIZED_CLASS = "e82_factory_authorized_class";
 
@@ -67,6 +69,8 @@ public final class E82AppComponentFactory extends AppComponentFactory {
         try {
             Constructor<?> constructor = candidate.getConstructor();
             Activity activity = (Activity) constructor.newInstance();
+            intent.putExtra(EXTRA_CLUSTER_ID, ticket.getClusterId());
+            intent.putExtra(EXTRA_ACTIVITY_CLASS, ticket.getActivityClassName());
             intent.putExtra(EXTRA_AUTHORIZED, true);
             intent.putExtra(EXTRA_AUTHORIZED_CLASS, candidate.getName());
             return activity;
