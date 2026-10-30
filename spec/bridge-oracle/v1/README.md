@@ -17,3 +17,7 @@ All factory classifications say `ACCEPTED_OBSERVATION_ONLY` rather than PASS. Ex
 - **Defect/undecided observations:** malformed surrogates alias each other and ordinary valid `p?` scope namespace despite distinct journal bytes; embedded NUL and NBSP-only identity acceptance. Retained to reproduce and review—not approved as valid bridge input.
 
 State construction alone is not authorization; VERIFIED value construction does not permit journal CREATE or provider dispatch. Codec/private-method observations are distinct from public journal validation. Negative journal cases exercise public `read` so its length/file/identity checks are included.
+
+## Historical archive after B1b
+
+The original manifest paths resolve relative to `source/` here, not current production. All four archived files are byte-identical pinned B1a sources. `check.sh` compiles them with BridgeOracleTest into a separate temporary class directory, never current production output. The original manifest and observations remain unchanged. Current production deliberately rejects unsafe historical acceptance; see `../b1b/README.md`.

@@ -127,3 +127,11 @@ Blocking D1: accepted unpaired-surrogate provider IDs alias the scope directory 
 
 
 B1a independent review corrections before freeze: include malformed-to-valid `p?` alias, not just two malformed IDs; isolate kernel compilation in a fresh temporary output so stale class files cannot execute; reject duplicate observation keys. All four production hashes remain unchanged. Root approved the precise desired identity contract for a later separate hardening step only after this checkpoint's hosted CI; v1 defect observations remain historical, never rewritten as desired vectors.
+
+## B1b approved standalone identity hardening — 2026-10-30 19:51 UTC
+
+B1a exact-head run41117815149 SUCCESS. Pre-code plan commit1a80405 records approved provider ID/revision/environment scalar/Cc/fixed-whitespace/exact-text bounds. Shared validator now rejects malformed surrogates (including aliases to valid `p?`), controls and edge/NBSP-only whitespace without normalization. Valid Unicode and v2 journal/hash framing unchanged. This closes D1 in current standalone constructors, not a guest isolation claim.
+
+Historical v1 four-source archive, hash manifest and99 observations are retained byte-identically, compiled/run separately. Current five-source B1b manifest is checked before compilation. Local11471 desired identity/parity/no-replay checks +208 original checks +42 legacy oracle checks pass. Invalid historical records in all three fields/PREPARED and DISPATCHED reject and remain unchanged with zero callbacks; quarantine-required, not migrated or remapped.108 model/76 controller checks (localJDK21 behavior only),51 SQLite and33 tooling tests also pass. Hosted exact new-head CI pending root publication. Android/provider bridge/source replacement/device acceptance remain gated.
+
+Independent review clarified streaming inspection: valid rows may be observed before a later invalid file aborts inspection; invalid rows are never delivered. Added mixed valid/invalid history test proving no external preflight/mutation/readback executes after incomplete history scan; both records remain unchanged. All 2,048 individual surrogate code units are rejected at every identity entry point.

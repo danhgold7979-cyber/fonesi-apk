@@ -96,7 +96,7 @@ public final class BridgeOracleTest {
     public static void main(String[] args) throws Exception {
         Path repo = Path.of("..").toAbsolutePath().normalize(); // check.sh runs from rebuild-kernel
         Path fixtures = repo.resolve("spec/bridge-oracle/v1");
-        verifySources(repo, fixtures); // fail before executing any drifted oracle
+        verifySources(fixtures.resolve("source"), fixtures); // fail before executing any drifted oracle
         Method encode = OperationJournal.class.getDeclaredMethod("encode", Operation.class);
         Method decode = OperationJournal.class.getDeclaredMethod("decode", byte[].class);
         Method scope = SharedUpdateDispatcher.class.getDeclaredMethod("scopeDirectory", SharedUpdateDispatcher.Request.class);

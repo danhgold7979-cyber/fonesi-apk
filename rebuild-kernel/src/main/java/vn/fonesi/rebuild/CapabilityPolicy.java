@@ -61,7 +61,6 @@ public final class CapabilityPolicy {
         if (value == null || !value.matches("[0-9a-f]{64}")) throw new IllegalArgumentException("Invalid cluster digest");
     }
     private static void requireText(String value) {
-        if (value == null || value.isBlank() || !value.equals(value.trim()) || value.length() > 256)
-            throw new IllegalArgumentException("Invalid identity field");
+        IdentityText.require(value);
     }
 }

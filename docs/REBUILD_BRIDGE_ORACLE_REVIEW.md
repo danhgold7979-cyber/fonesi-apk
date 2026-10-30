@@ -54,3 +54,7 @@ Persisted identity policy: when a trusted decoder/recovery path sees old malform
 
 
 Root approved the proposed scalar/Cc/fixed-whitespace edge contract for provider ID, provider revision **and** environment for a separate new-kernel hardening checkpoint, after B1a freeze and exact CI. This does not modify the v1 oracle or authorize Android/provider integration. Clarifications: Cc rejection takes precedence (internal TAB/newline rejected; internal NBSP can remain); Cf-only strings such as zero-width space remain permitted unless separately prohibited, so this is not a promise to reject every visually blank identity.768 UTF-8 bytes is derived from256 valid UTF-16 units; boundary tests use256 three-byte BMP characters/128 supplementary pairs, not an impossible over768-within256 case.
+
+## B1b disposition (standalone only)
+
+After green B1a run41117815149, root approved the proposed scalar/Cc/fixed-whitespace/exact-text contract for provider ID, revision and environment. B1b current constructors reject D1 malformed-scalar aliases and D2 controls/edge whitespace; valid `p?` remains distinct accepted text. Historical v1 observations and source hashes are unchanged and run from an isolated archive. This is not retroactive approval of their unsafe acceptances. Checksummed invalid old records reject/retain with no external provider callbacks or invalid-record observer delivery; automatic repair/remapping/deletion/dispatch is forbidden. Actual Android quarantine ownership/durability and bridge/provider acceptance remain unresolved.

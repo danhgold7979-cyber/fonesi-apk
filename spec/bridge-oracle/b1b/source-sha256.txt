@@ -1,0 +1,5 @@
+cf43d599dd2d22d3e844ca64e0cb45bfda1a9c7292198eb3b4560878184e13b3  rebuild-kernel/src/main/java/vn/fonesi/rebuild/CapabilityPolicy.java
+60a7674712204faee9503ef73853c7881b2af69a4391e1205c3706779dc68810  rebuild-kernel/src/main/java/vn/fonesi/rebuild/IdentityText.java
+920fd2215116fda3ae212cd34c56a0a7df6cb9bb6da87466d39e929807c272ed  rebuild-kernel/src/main/java/vn/fonesi/rebuild/OperationJournal.java
+53e0d98816e2f4c71c27c245096afc8aa1ad66f58161469cbb579043bc15759f  rebuild-kernel/src/main/java/vn/fonesi/rebuild/OperationProtocol.java
+ade1a7fb74ac9dd08e04f5e9adfcc6772c33ba2e0e3392fe736860238dd33b8f  rebuild-kernel/src/main/java/vn/fonesi/rebuild/SharedUpdateDispatcher.java
