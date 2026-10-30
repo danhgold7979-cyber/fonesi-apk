@@ -31,21 +31,26 @@ def verify(repo, sdk):
     apk = repo / "rebuild-android/app/build/outputs/apk/debug/app-debug.apk"
     tools = sdk / "build-tools/36.0.0"
     def run(*args):
-        return subprocess.run(args, check=True, text=True, capture_output=True).stdout
+        result = subprocess.run(args, check=True, text=True, capture_output=True)
+        print("SDK EVIDENCE: " + " ".join(args[1:]), flush=True)
+        print(result.stdout, flush=True)
+        if result.stderr:
+            print(result.stderr, flush=True)
+        return result.stdout
     badging = run(str(tools / "aapt2"), "dump", "badging", str(apk))
+    manifest = run(str(tools / "aapt2"), "dump", "xmltree", str(apk), "--file", "AndroidManifest.xml")
+    run(str(tools / "zipalign"), "-c", "4", str(apk))
+    layout = run(str(tools / "aapt2"), "dump", "xmltree", str(apk), "--file", "res/layout/manager.xml")
+    signature = run(str(tools / "apksigner"), "verify", "--verbose", "--print-certs", str(apk))
     for text in ("package: name='vn.fonesi.rebuild.debug'", "sdkVersion:'26'", "targetSdkVersion:'36'",
                  "application-debuggable", "launchable-activity: name='vn.fonesi.rebuild.ManagerActivity'"):
         require(text in badging, "Missing APK evidence: " + text)
     require("uses-permission" not in badging, "Unexpected APK permission")
-    manifest = run(str(tools / "aapt2"), "dump", "xmltree", str(apk), "--file", "AndroidManifest.xml")
     require("allowBackup" in manifest and "allowBackup(0x01010280)=false" in manifest,
             "APK backup must be disabled")
     components = re.findall(r"(?m)^\s*E: (activity|activity-alias|service|receiver|provider) ", manifest)
     require(components == ["activity"], "Unexpected packaged component set")
-    run(str(tools / "zipalign"), "-c", "4", str(apk))
-    layout = run(str(tools / "aapt2"), "dump", "xmltree", str(apk), "--file", "res/layout/manager.xml")
     verify_disabled_buttons(layout)
-    signature = run(str(tools / "apksigner"), "verify", "--verbose", "--print-certs", str(apk))
     require("CN=Android Debug" in signature, "Expected debug signer, never release")
     with zipfile.ZipFile(apk) as archive:
         names = archive.namelist()

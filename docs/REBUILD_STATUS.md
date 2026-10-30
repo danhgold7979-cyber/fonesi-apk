@@ -78,3 +78,7 @@ Local: 208 JVM/journal/dispatcher checks + 51 synthetic SQLite cases still pass.
 ## Hosted compile succeeds; lint correction prepared — 2026-10-30 18:26 UTC
 
 Exact-head run41106541395 (`dddc9b5d9524cc208bb4e39f155c1f11c9b821e1`) confirms actual preinstalled API36 rev2/buildtools36.0.0/JDK17.0.21 and successful Java/DEX/package/assembleDebug. Job FAILED on fatal `DataExtractionRules` lint; APK audit skipped, so Android acceptance is not yet green. JVM and SQLite jobs succeeded. Correction adds explicit all-domain cloud/device-transfer/legacy backup exclusions without lint suppression; 25 tooling tests pass locally. Await root publication and hosted rerun. No SDK/license installation or device deployment.
+
+## Hosted lint passes; APK diagnostic correction — 2026-10-30 18:33 UTC
+
+Run41107404505/head `97173a1a38070658db215c08e05a87a7bca26f82` compiled and passed fatal lint (BUILD SUCCESSFUL); JVM/storage jobs succeeded. APK verifier then rejected missing literal `sdkVersion:'26'`. Captured tool output had been printed only after assertions, so underlying badging values/format are not yet evidenced. Correction collects and prints installed-tool badging/XML/alignment/signature evidence before assertions, retaining every strict gate unchanged. 25 local tests pass. Next hosted run must establish actual output before any parser correction; no fabricated acceptance or fallback.
