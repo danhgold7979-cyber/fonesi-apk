@@ -80,6 +80,8 @@ public final class E82FactoryAuthorizationTest {
             {"wrong-source", SOURCE},
             {"wrong-host-apk", HOST_APK},
             {"wrong-payload-apk", PAYLOAD_APK},
+            {"wrong-uid", "10142"},
+            {"wrong-run", RUN},
         };
         for (String[] mismatch : mismatches) {
             E82FactoryAuthorization.resetForTest();
@@ -115,6 +117,16 @@ public final class E82FactoryAuthorizationTest {
                     E82FactoryAuthorization.HOST_PACKAGE, E82FactoryAuthorization.STUB_CLASS,
                     E82FactoryAuthorization.HOST_PACKAGE + "/" + E82FactoryAuthorization.STUB_CLASS,
                     E82FactoryAuthorization.HOST_PROCESS, 10142, SOURCE, HOST_APK, "d".repeat(64));
+            } else if ("wrong-uid".equals(mismatch[0])) {
+                d = new E82FactoryAuthorization.Dispatch(RUN, NONCE,
+                    E82FactoryAuthorization.HOST_PACKAGE, E82FactoryAuthorization.STUB_CLASS,
+                    E82FactoryAuthorization.HOST_PACKAGE + "/" + E82FactoryAuthorization.STUB_CLASS,
+                    E82FactoryAuthorization.HOST_PROCESS, 10143, SOURCE, HOST_APK, PAYLOAD_APK);
+            } else if ("wrong-run".equals(mismatch[0])) {
+                d = new E82FactoryAuthorization.Dispatch("bbbbbbbb-cccc-4ddd-8eee-ffffffffffff", NONCE,
+                    E82FactoryAuthorization.HOST_PACKAGE, E82FactoryAuthorization.STUB_CLASS,
+                    E82FactoryAuthorization.HOST_PACKAGE + "/" + E82FactoryAuthorization.STUB_CLASS,
+                    E82FactoryAuthorization.HOST_PROCESS, 10142, SOURCE, HOST_APK, PAYLOAD_APK);
             }
             final E82FactoryAuthorization.Dispatch attempt = d;
             expectSecurityFailure(() -> E82FactoryAuthorization.consume(attempt));
@@ -131,6 +143,14 @@ public final class E82FactoryAuthorizationTest {
                 "not-a-uuid", E82FactoryAuthorization.PRIVATE_ACTIVITY_CLASS,
                 PayloadActivity.class.getClassLoader(), PayloadActivity.class, loadedImage);
         expectSecurityFailure(() -> E82FactoryAuthorization.arm(invalid));
+        E82FactoryAuthorization.Ticket wrongLoader = new E82FactoryAuthorization.Ticket(
+                RUN, NONCE, E82FactoryAuthorization.HOST_PACKAGE,
+                E82FactoryAuthorization.STUB_CLASS,
+                E82FactoryAuthorization.HOST_PACKAGE + "/" + E82FactoryAuthorization.STUB_CLASS,
+                E82FactoryAuthorization.HOST_PROCESS, 10142, SOURCE, HOST_APK, PAYLOAD_APK,
+                CLUSTER, E82FactoryAuthorization.PRIVATE_ACTIVITY_CLASS,
+                new ClassLoader() { }, PayloadActivity.class, loadedImage);
+        expectSecurityFailure(() -> E82FactoryAuthorization.arm(wrongLoader));
         E82FactoryAuthorization.arm(ticket());
         assertReplayDenied();
     }
