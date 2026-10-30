@@ -34,3 +34,7 @@ This proposal is not acceptance of B3 implementation, Android durability, provid
 ## Independent review corrections before freeze
 
 Separate the journal.read exception classification from reflective re-encoding: a successful read followed by encode failure now fails the harness, never mislabeled rejected. Original truncation/padded cases also fail checksum; additional correctly sealed35/36/262144/262145byte cases distinguish actual outer length rejection (35/262145) from EOF(36) and trailing-body rejection(262144). No valid262144byte envelope is claimed. Final343checks/408observations remain under32KiB; two fresh JVM emissions match.
+
+## Approved B3b disposition (host checkpoint)
+
+Root approved strict canonical rejection after exact B3a CI41137171301 success; pre-code plan d2b31a9. Current host now bounds/copies caller input, verifies semantic/checksum and compares canonical re-encode to that owned snapshot. Historical B1c sources/B3a harness/observations remain byte-identical and isolated. Canonical bytes remain unchanged; invalid originals retained, no rewriting/replay. PureJava17codec implementation still awaits separately reviewed/published host checkpoint. Independent review found no blocker; exact new-head CI pending.

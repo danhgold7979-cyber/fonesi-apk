@@ -193,3 +193,9 @@ R2 nowaccepted narrowly per full detailedcriteria: standaloneLinux/JVM durableop
 Root-approved precodeplan3d9c5aa; allfive correctedhost sourcehashes unchanged.343checks/408compactpinned observations characterize canonicalv2bytes/supplementarymodifiedUTF/signedUUIDorder/keyframing and malformedpublicread/UUID/bounds with bytesretained.14overlongUTFvariants across7fields plus reversedpeerorder are accepted as the same value but re-encode differently (D4representationambiguity, notproven auth/data/isolationbypass). Historical-only labels exclude them from desiredportacceptance.
 
 Proposed strictcanonical rejection after boundedsemanticparse, preserving exactvalidv2bytes and retainedinvalidoriginals, awaitsrootreview in REBUILD_B3_AMBIGUITY_LEDGER.md. No productioncodec/hosthardening/Androidwire implemented; nooldgoldensregenerated. Newfixture20,903bytes (32KiBcap) SHA b59a9b9356ce5b62a193516d75bf720672324de1487cc2ec0413457761dbd7ea; CIcompares only. Independentreview catch-boundary correction and resealed length cases applied.
+
+## B3b strict canonical host validation prepared — 2026-10-30 22:23 UTC
+
+B3a exact f776841b/run41137171301 SUCCESS. Root-approved pre-codepland2b31a9: hostdecoder now bounded-owned-snapshot→checksum/semanticparse→exactcanonicalreencode equality; IOException for noncanonicalUTF/order, no persisted/callerbyte rewrite. PublicUUIDbinding and emittedv2bytes unchanged; D1/D3 retained. This is newvalidationrevision, notnewwireversion or authenticatedstorage.
+
+495 desired canonical/rejection/retention tests PASS plus all existingkernel suites. Byte-identical B1c5sources andB3a harness/343checks408observations run on isolatedhistoricalclasspath, neverdesiredunsafeacceptance. Only OperationJournal production source changes; B2logical module remains unchanged. No pureJava17codec implementation/Androidwire/provider/storageadapter begun. Independentreview/new-headhostedCI required before nextport.

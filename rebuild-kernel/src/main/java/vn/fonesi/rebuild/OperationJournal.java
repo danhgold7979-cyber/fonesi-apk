@@ -159,8 +159,12 @@ public final class OperationJournal {
         payload.writeBytes(digest(body)); return payload.toByteArray();
     }
     private static Operation decode(byte[] bytes) throws IOException {
-        byte[] body = Arrays.copyOf(bytes, bytes.length - 32);
-        if (!MessageDigest.isEqual(digest(body), Arrays.copyOfRange(bytes, bytes.length - 32, bytes.length)))
+        Objects.requireNonNull(bytes);
+        if (bytes.length < 36 || bytes.length > MAX_BYTES) throw new IOException("Journal length invalid");
+        // B3b: all validation operates on this bounded owned snapshot, never a mutable caller array.
+        byte[] owned = bytes.clone();
+        byte[] body = Arrays.copyOf(owned, owned.length - 32);
+        if (!MessageDigest.isEqual(digest(body), Arrays.copyOfRange(owned, owned.length - 32, owned.length)))
             throw new IOException("Journal checksum mismatch");
         try (DataInputStream in = new DataInputStream(new ByteArrayInputStream(body))) {
             if (in.readInt() != MAGIC || in.readInt() != 2) throw new IOException("Unknown journal format");
@@ -175,7 +179,10 @@ public final class OperationJournal {
             for (int n = 0; n < count; n++) if (!peers.add(readUuid(in))) throw new IOException("Duplicate peer");
             State state = State.valueOf(in.readUTF()); long revision = in.readLong();
             if (in.available() != 0) throw new IOException("Trailing journal bytes");
-            return new Operation(new Identity(operation, provider, packageName, environment, scope, clone, cluster, peers), state, revision);
+            Operation result = new Operation(new Identity(operation, provider, packageName, environment, scope, clone, cluster, peers), state, revision);
+            // Reject alternate wire representations; never rewrite or normalize persisted input.
+            if (!Arrays.equals(owned, encode(result))) throw new IOException("Noncanonical journal encoding");
+            return result;
         } catch (IllegalArgumentException e) { throw new IOException("Invalid journal value", e); }
     }
     private static void writeUuid(DataOutputStream out, UUID value) throws IOException {

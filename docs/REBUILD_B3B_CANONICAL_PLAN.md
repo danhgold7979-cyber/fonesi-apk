@@ -1,0 +1,9 @@
+# B3b host canonical validation — approved before code, 2026-10-30 22:20 UTC
+
+Prerequisite B3a exact f776841b47d220802e8d4c364d6fe5910d9e7127/run41137171301 SUCCESS, including343checks/408pinned observations. Root approved strict canonical rule and requires separate host checkpoint review/publication before pureJava17port.
+
+1. Archive unchanged B1c five production sources and B3a test harness/sourcepins/408observations. Run historical harness on isolated archived classes and temporary fixture-root layout; do not rewrite observations or pretend unsafe acceptances are desired.
+2. Host private decoder validates existing36..262144 input length before copying, takes an owned byte-array snapshot, then existingchecksum/semanticdecode plus exact canonicalencoder equality before returning. Reject noncanonicalUTF/order withIOException, emittedv2bytes/keyhashes unchanged. Publicread expectedUUID binding retained. No input/file rewrite, migration, dispatch or deletion.
+3. Independent current tests: all14overlongUTF fields/widths +reorderedpeers reject on publicread, originalbytes unchanged; journalinspect and dispatcher cannot proceed with invalidhistory; validcanonical oldASCII/supplementary/highbitUUID/states/4096peer bytes/hash remain identical. Existingidentity/policy/negative/race suites remain intact. Test publicbounds/expectedUUID, independentcanonicalfieldconstruction and ownedarray isolation. Newvalidationrevision B3b recorded without wireversionbump.
+4. Preserve B3a historical source/hash/output as separate acceptance category. Current source manifests updated explicitly for journal-onlyproductionchange; other4productionfiles unchanged. ExistingB2logical sourcepins need no change since policy/protocol/identity unchanged.
+5. Independentreview, localtests and rootpublished exactCI before any purecodecport. No Android/storageadapter/provider/auth/cleanup scope. Unexpected unrelated byte/classification drift stops work.
