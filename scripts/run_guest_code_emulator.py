@@ -167,6 +167,139 @@ def validate_e78_receipt(report, source_commit, probe_apk_sha256, payload_apk_sh
     return scope_a, scope_b
 
 
+def _validate_e79_stage(report, stage, source_commit, probe_apk_sha256, payload_apk_sha256):
+    if not isinstance(report, dict):
+        raise RuntimeError("E79 stage receipt must be a JSON object")
+    required_true = (
+        "complete", "passed", "real_host_activity_lifecycle_verified",
+        "signed_private_guest_view_rendered", "private_guest_view_attached_to_window",
+        "private_guest_lifecycle_relay_verified", "signed_private_resources_verified",
+        "signed_private_image_rechecked", "same_android_uid",
+        "private_activity_class_preflight_verified",
+        "private_activity_constructor_preflight_verified",
+        "private_application_class_preflight_verified",
+        "synthetic_guest_application_attached", "synthetic_guest_application_on_create_verified",
+        "synthetic_guest_application_on_main_thread", "synthetic_guest_application_instances_distinct",
+        "synthetic_application_on_create_once_per_scope",
+        "synthetic_scope_a_preferences_file_sqlite_verified",
+        "synthetic_scope_b_preferences_file_sqlite_verified",
+        "synthetic_scope_persistence_after_context_reconstruction_verified",
+        "synthetic_scope_cross_readback_isolated",
+    )
+    required_false = (
+        "guest_application_registered_with_activity_thread",
+        "guest_application_registered_with_package_manager",
+        "full_guest_application_lifecycle_verified", "actual_guest_activity_attached",
+        "real_guest_activity_registered", "third_party_component_executed",
+        "third_party_guest_components_tested", "kernel_uid_isolation",
+        "social_accounts_tested", "production_clone_accepted",
+    )
+    missing_true = [key for key in required_true if report.get(key) is not True]
+    missing_false = [key for key in required_false if report.get(key) is not False]
+    if missing_true or missing_false:
+        raise RuntimeError("E79 stage assertions failed: true=" + ",".join(missing_true) +
+                           "; false=" + ",".join(missing_false))
+    if report.get("proof_level") != "e79" or report.get("e79_stage") != stage:
+        raise RuntimeError("E79 proof/stage identity mismatch")
+    if report.get("source_commit") != source_commit:
+        raise RuntimeError("E79 receipt source SHA mismatch")
+    if report.get("probe_apk_sha256") != probe_apk_sha256:
+        raise RuntimeError("E79 host APK SHA-256 mismatch")
+    if report.get("payload_apk_sha256") != payload_apk_sha256:
+        raise RuntimeError("E79 payload APK SHA-256 mismatch")
+    if report.get("synthetic_application_class_name") != PAYLOAD_PACKAGE + ".SyntheticGuestApplication":
+        raise RuntimeError("E79 signed Application class identity mismatch")
+    if report.get("api") != 34 or report.get("process_name") != PROBE_PACKAGE + ":fonesi_guest_ui":
+        raise RuntimeError("E79 Android API/process identity mismatch")
+    for key in ("pid", "uid"):
+        if type(report.get(key)) is not int or report[key] < (1 if key == "pid" else 0):
+            raise RuntimeError("E79 receipt has invalid " + key)
+    if report.get("lifecycle_transcript") != "CREATE,START,RESUME,PAUSE,STOP,DESTROY":
+        raise RuntimeError("E79 host Activity lifecycle transcript incomplete")
+    for key in ("run_id", "synthetic_scope_a_id", "synthetic_scope_b_id", "e79_process_token"):
+        value = report.get(key)
+        if not isinstance(value, str) or str(uuid.UUID(value)) != value:
+            raise RuntimeError("E79 receipt has noncanonical UUID: " + key)
+    if report["synthetic_scope_a_id"] == report["synthetic_scope_b_id"]:
+        raise RuntimeError("E79 scope UUIDs are not distinct")
+    for key in ("e79_marker_a", "e79_marker_b"):
+        if not isinstance(report.get(key), str) or re.fullmatch(r"[0-9a-f]{32}", report[key]) is None:
+            raise RuntimeError("E79 receipt marker is invalid: " + key)
+    if report["e79_marker_a"] == report["e79_marker_b"]:
+        raise RuntimeError("E79 scope markers are not distinct")
+    expected_starts = 1 if stage == "write" else 2
+    for key in ("e79_start_count_a", "e79_start_count_b"):
+        if report.get(key) != expected_starts:
+            raise RuntimeError("E79 Application onCreate count mismatch: " + key)
+    if stage == "write":
+        if report.get("e79_process_restart_verified") is not False or report.get("e79_scoped_data_after_process_restart_verified") is not False:
+            raise RuntimeError("E79 write stage cannot claim a process restart")
+    else:
+        if report.get("e79_process_restart_verified") is not True or report.get("e79_scoped_data_after_process_restart_verified") is not True:
+            raise RuntimeError("E79 verify stage lacks process-restart persistence evidence")
+        if type(report.get("e79_prior_pid")) is not int or report["e79_prior_pid"] <= 0:
+            raise RuntimeError("E79 verify receipt prior PID invalid")
+        for key in ("e79_prior_process_token", "e79_prior_run_id"):
+            value = report.get(key)
+            if not isinstance(value, str) or str(uuid.UUID(value)) != value:
+                raise RuntimeError("E79 verify receipt prior UUID invalid: " + key)
+    return report
+
+
+def validate_e79_receipts(write_report, verify_report, source_commit, probe_apk_sha256, payload_apk_sha256):
+    write = _validate_e79_stage(write_report, "write", source_commit, probe_apk_sha256, payload_apk_sha256)
+    verify = _validate_e79_stage(verify_report, "verify", source_commit, probe_apk_sha256, payload_apk_sha256)
+    if write["run_id"] == verify["run_id"]:
+        raise RuntimeError("E79 stages must have different run UUIDs")
+    if write["pid"] == verify["pid"] or write["e79_process_token"] == verify["e79_process_token"]:
+        raise RuntimeError("E79 verify stage reused the original process identity")
+    if write["uid"] != verify["uid"]:
+        raise RuntimeError("E79 same-package host UID changed across process restart")
+    for key in ("synthetic_scope_a_id", "synthetic_scope_b_id", "e79_marker_a", "e79_marker_b"):
+        if write[key] != verify[key]:
+            raise RuntimeError("E79 process restart changed persisted scope identity/marker: " + key)
+    if verify.get("e79_prior_pid") != write["pid"] or verify.get("e79_prior_process_token") != write["e79_process_token"] or verify.get("e79_prior_run_id") != write["run_id"]:
+        raise RuntimeError("E79 verify receipt is not bound to completed write-stage process")
+    return write, verify
+
+
+def read_e79_stage_receipt(device, run_id, timeout_seconds):
+    deadline = time.monotonic() + timeout_seconds
+    while time.monotonic() < deadline:
+        raw = device("exec-out", "run-as", PROBE_PACKAGE, "cat",
+                     "files/guest-ui-probe/" + run_id + ".json", timeout=12, check=False)
+        if raw.returncode == 0 and len(raw.stdout) <= 16384:
+            try:
+                report = json.loads(raw.stdout)
+                if report.get("complete") is True:
+                    if report.get("run_id") != run_id:
+                        raise RuntimeError("E79 stage receipt UUID mismatch")
+                    return report
+            except json.JSONDecodeError:
+                pass
+        time.sleep(2)
+    raise RuntimeError("E79 stage receipt missing before bounded timeout: " + run_id)
+
+
+def launch_e79_stage(device, stage, run_id, args, extras=None):
+    launch = [
+        "shell", "am", "start", "-W", "-n",
+        PROBE_PACKAGE + "/.SyntheticGuestUiProbeActivity",
+        "--es", "run_id", run_id,
+        "--es", "proof_level", "e79",
+        "--es", "e79_stage", stage,
+        "--es", "source_commit", args.source_commit,
+        "--es", "probe_apk_sha256", args.expected_probe_sha256,
+        "--es", "payload_apk_sha256", args.expected_payload_sha256,
+    ]
+    for key, value in (extras or {}).items():
+        launch.extend(["--ei" if isinstance(value, int) else "--es", key, str(value)])
+    started = device(*launch, timeout=90, check=False)
+    if started.returncode:
+        raise RuntimeError("E79 " + stage + " Activity launch failed")
+    return read_e79_stage_receipt(device, run_id, args.probe_timeout)
+
+
 def sha256(file):
     digest = hashlib.sha256()
     with file.open("rb") as source:
