@@ -44,6 +44,8 @@ data class EngineCapabilities(
     val singleApkInstallSupported: Boolean = false,
     val packageIdentityReadbackSupported: Boolean = false,
     val splitClusterImportSupported: Boolean = false,
+    val splitClusterCodeExecutionVerified: Boolean = false,
+    val splitClusterAtomicUpdateVerified: Boolean = false,
     val guestActivityLifecycleVerified: Boolean = false,
     val guestServiceLifecycleVerified: Boolean = false,
     val guestReceiverLifecycleVerified: Boolean = false,
@@ -54,6 +56,15 @@ data class EngineCapabilities(
     val isolationLevel: EngineIsolationLevel = EngineIsolationLevel.UNKNOWN,
     val evidenceRefs: Set<String> = emptySet(),
 ) {
+    init {
+        require(!splitClusterImportSupported || splitClusterCodeExecutionVerified) {
+            "Split import cannot be accepted without verified split code execution"
+        }
+        require(!splitClusterAtomicUpdateVerified || splitClusterImportSupported) {
+            "Atomic split update requires an accepted split import provider"
+        }
+    }
+
     /** True only when a stronger, explicit isolation boundary has been accepted. */
     fun satisfiesIsolation(required: EngineIsolationLevel): Boolean = when (required) {
         EngineIsolationLevel.HOST_UID_NAMESPACE -> isolationLevel != EngineIsolationLevel.UNKNOWN
