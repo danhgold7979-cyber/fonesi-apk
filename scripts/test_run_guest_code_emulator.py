@@ -71,7 +71,7 @@ country=US
 
     def test_empty_fingerprint_fails_closed(self):
         def empty_device(*args, **kwargs):
-            return SimpleNamespace(returncode=0, stdout="\\n  \\n")
+            return SimpleNamespace(returncode=0, stdout="\n  \n")
 
         with self.assertRaisesRegex(RuntimeError, "fingerprint is empty"):
             read_ui_configuration(empty_device)
@@ -81,7 +81,7 @@ country=US
 
         def fake_device(*args, **kwargs):
             calls.append(kwargs)
-            return SimpleNamespace(returncode=0, stdout="locale=en-US\\n")
+            return SimpleNamespace(returncode=0, stdout="locale=en-US\n")
 
         read_ui_configuration(fake_device, timeout_seconds=3)
         self.assertEqual(calls, [{"timeout": 3, "check": False}])
@@ -91,7 +91,7 @@ country=US
 
         def fake_device(*args, **kwargs):
             calls.append((args, kwargs))
-            return SimpleNamespace(returncode=0, stdout="locale=en-US\\n")
+            return SimpleNamespace(returncode=0, stdout="locale=en-US\n")
 
         with self.assertRaises(ValueError):
             read_ui_configuration(fake_device, timeout_seconds=21)
