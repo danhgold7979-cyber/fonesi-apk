@@ -106,7 +106,6 @@ public final class E82FactoryAuthorization {
             this.clusterId = clusterId;
             this.activityClassName = activityClassName;
             this.privateClassLoader = privateClassLoader;
-            this.hostClassLoader = hostClassLoader;
             this.privateActivityClass = privateActivityClass;
             this.loadedGuestCode = loadedGuestCode;
         }

@@ -85,6 +85,7 @@ public final class E82FactoryAuthorizationTest {
             {"wrong-payload-apk", PAYLOAD_APK},
             {"wrong-uid", "10142"},
             {"wrong-run", RUN},
+            {"wrong-loader", "different"},
         };
         for (String[] mismatch : mismatches) {
             E82FactoryAuthorization.resetForTest();
@@ -100,7 +101,8 @@ public final class E82FactoryAuthorizationTest {
                 d = new E82FactoryAuthorization.Dispatch(RUN, NONCE,
                     E82FactoryAuthorization.HOST_PACKAGE, E82FactoryAuthorization.STUB_CLASS,
                     E82FactoryAuthorization.HOST_PACKAGE + "/" + E82FactoryAuthorization.STUB_CLASS,
-                    "vn.fonesi.nativeprobe:other", 10142, SOURCE, HOST_APK, PAYLOAD_APK);
+                    "vn.fonesi.nativeprobe:other", 10142, E82FactoryAuthorizationTest.class.getClassLoader(),
+                    SOURCE, HOST_APK, PAYLOAD_APK);
             } else if ("wrong-package".equals(mismatch[0])) {
                 d = new E82FactoryAuthorization.Dispatch(RUN, NONCE,
                     "vn.fonesi.attacker", E82FactoryAuthorization.STUB_CLASS,
@@ -136,7 +138,13 @@ public final class E82FactoryAuthorizationTest {
                     E82FactoryAuthorization.HOST_PACKAGE, E82FactoryAuthorization.STUB_CLASS,
                     E82FactoryAuthorization.HOST_PACKAGE + "/" + E82FactoryAuthorization.STUB_CLASS,
                     E82FactoryAuthorization.HOST_PROCESS, 10142, E82FactoryAuthorizationTest.class.getClassLoader(),
-                SOURCE, HOST_APK, PAYLOAD_APK);
+                    SOURCE, HOST_APK, PAYLOAD_APK);
+            } else if ("wrong-loader".equals(mismatch[0])) {
+                d = new E82FactoryAuthorization.Dispatch(RUN, NONCE,
+                    E82FactoryAuthorization.HOST_PACKAGE, E82FactoryAuthorization.STUB_CLASS,
+                    E82FactoryAuthorization.HOST_PACKAGE + "/" + E82FactoryAuthorization.STUB_CLASS,
+                    E82FactoryAuthorization.HOST_PROCESS, 10142, new ClassLoader() { },
+                    SOURCE, HOST_APK, PAYLOAD_APK);
             }
             final E82FactoryAuthorization.Dispatch attempt = d;
             expectSecurityFailure(() -> E82FactoryAuthorization.consume(attempt));
