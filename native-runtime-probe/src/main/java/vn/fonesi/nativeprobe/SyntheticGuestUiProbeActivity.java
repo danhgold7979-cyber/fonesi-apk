@@ -579,8 +579,6 @@ public final class SyntheticGuestUiProbeActivity extends Activity {
             new SyntheticGuestScopedContext(getApplicationContext(), image, scopeA);
         final SyntheticGuestScopedContext contextB =
             new SyntheticGuestScopedContext(getApplicationContext(), image, scopeB);
-        final SyntheticGuestScopedContext contextB =
-            new SyntheticGuestScopedContext(getApplicationContext(), image, scopeB);
         if (e81ScopedMode)
             verifyE81PrivateScopedMethodBinding(image, verifiedStore, verifiedCluster,
                 contextA, contextB, scopeA, scopeB);
