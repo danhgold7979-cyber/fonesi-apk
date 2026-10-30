@@ -387,7 +387,11 @@ def validate_e82_receipt(report, source_commit, probe_apk_sha256, payload_apk_sh
     if not isinstance(nonce, str) or re.fullmatch(r"[0-9a-f]{32}", nonce) is None:
         raise RuntimeError("E82 one-shot nonce is missing or malformed")
     cluster_id = report.get("private_cluster_id")
-    if not isinstance(cluster_id, str) or str(uuid.UUID(cluster_id)) != cluster_id:
+    try:
+        canonical_cluster = isinstance(cluster_id, str) and str(uuid.UUID(cluster_id)) == cluster_id
+    except (ValueError, AttributeError):
+        canonical_cluster = False
+    if not canonical_cluster:
         raise RuntimeError("E82 signed PRIVATE cluster UUID is invalid")
     return report
 
