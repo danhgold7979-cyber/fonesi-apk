@@ -13,7 +13,7 @@ Date: 2026-10-30. Repository `danhgold7979-cyber/fonesi-apk`.
 
 ## Goal
 
-Find whether the **Android framework** can legitimately create and attach a **project-owned, signed PRIVATE** synthetic Activity Java instance through a **registered host-app, non-exported Activity stub** using the **public** `AppComponentFactory.instantiateActivity` hook on the owned AOSP API34 emulator. Treat any success strictly as a **host-stub/host-UID/context** Activity lifecycle; the Android PackageManager still registers ONLY the host stub, not the guest `vn.fonesi.payload` component. Test both positive lifecycle and negative eligibility before concluding feasibility.
+Find whether the **Android framework** can legitimately create and attach a **project-owned, signed PRIVATE** synthetic Activity Java instance through a **registered host-app, non-exported Activity stub** using the **public** `AppComponentFactory.instantiateActivity` hook on the owned AOSP API34 emulator. Treat any success strictly as a **host-stub/host-UID/context** Activity lifecycle; the host package's component identity for this launch is the non-exported stub. The signed `vn.fonesi.payload` APK is installed separately as a test-source fixture, so PackageManager may list that fixture package and its own manifest; do not claim the fixture package is globally absent. Test both positive lifecycle and negative eligibility before concluding feasibility.
 
 ## Ordered implementation and required gates
 
@@ -52,12 +52,12 @@ This refinement is committed before any E82 source modification. It narrows the 
    - Arm the process-local authorization only after these checks, then launch the exact non-exported host stub explicitly with matching one-shot nonce and run identity. The original Activity polls for a receipt after the stub Activity finishes.
 4. Add an E82-only branch to signed test payload PayloadActivity.
    - In onCreate, call super first, then require the expected E82 Intent identity and a real non-null framework base Context and Window.
-   - Read PackageManager metadata for the exact registered host stub and record host package, host UID, host ActivityInfo class/process and that the guest package is not registered.
+   - Read PackageManager metadata for the exact registered host stub and record host package, host UID and host ActivityInfo class/process; prove the host package's launch component is only the non-exported stub. The separately installed signed payload fixture may appear in PackageManager and is not evidence of guest execution.
    - In onResume, record a separate lifecycle marker and finish the synthetic Activity; do not render the legacy interactive form or accept external APK/account data in E82 mode.
 5. Extend scripts/run_guest_code_emulator.py and its Python tests with a separate E82 runner/receipt validator.
    - The receipt must bind the exact source SHA, both signed APK SHA-256 values, run UUID, nonce, private cluster, exact signed class and host stub ComponentName.
-   - Require factory authorization armed/consumed once, framework onCreate and onResume, non-null base Context/Window, exact host PackageManager ActivityInfo, and same host package/UID/process.
-   - Explicitly require guest package registration, guest UID isolation, third-party execution, real social accounts, production clone acceptance and physical-device acceptance to remain false.
+   - Require factory authorization armed/consumed once, framework onCreate and onResume, non-null base Context/Window, exact host PackageManager ActivityInfo, and same host package/UID/process. Record the signed payload APK as an installed source fixture.
+   - Explicitly require guest component registration inside the host package, guest UID isolation, third-party execution, real social accounts, production clone acceptance and physical-device acceptance to remain false. Do not assert that the separately installed source-fixture package is globally absent from PackageManager.
    - Add negative tests for missing/replayed nonce, wrong component/class/loader/process, duplicate consume, wrong source/APK hashes, missing lifecycle, null Context/Window and every forbidden overclaim.
 6. Extend scripts/run_native_probe.py with an exact allowlist entry for the new non-exported stub and exact appComponentFactory value. Keep the existing five exported Activity assertions, five internal service assertions, zero-permission policy, ABI/ELF checks and backup/network restrictions.
 7. Add a dedicated E82 exact-source workflow based on E81. It must run the inherited E40–E81 audits/tests, cloud and candidate checks, source-engine AAR/JVM checks, synthetic host/payload build/lint/manifest audit, then boot the owned AOSP API 34 x86_64 emulator and run the E82 receipt. No audit-only fallback can satisfy the Android receipt.
@@ -67,7 +67,7 @@ This refinement is committed before any E82 source modification. It narrows the 
 - First prove ordinary host Activity construction delegates unchanged to the default factory; prove the exact stub is non-exported and isolated to :fonesi_guest_ui.
 - The positive path passes only if the Android framework invokes the factory for the registered stub and subsequently invokes the signed PRIVATE Activity's real onCreate and onResume with non-null host Context and Window.
 - If Android rejects a foreign-loader Activity, factory selection is skipped, framework attachment fails, or the exact receipt cannot be collected, preserve the failure evidence and mark E82 BLOCKED/NOT PASS. Do not replace the framework path with manual attachment or synthetic callback calls.
-- The payload class must remain a project-owned synthetic fixture. The Android component remains registered as vn.fonesi.nativeprobe.E82HostActivityStub under the host package/UID/Context; the private payload package is not PackageManager-registered.
+- The payload class must remain a project-owned synthetic fixture. The Android component remains registered as vn.fonesi.nativeprobe.E82HostActivityStub under the host package/UID/Context; the host package does not register the private payload Activity as a host component. The signed payload fixture remains separately installed for source acquisition; its own package entry is not a guest-runtime receipt.
 - No production candidate binding, split capability change, main merge, release APK, account test or product-readiness increase is authorized by this experiment.
 
 ### Verification sequence
