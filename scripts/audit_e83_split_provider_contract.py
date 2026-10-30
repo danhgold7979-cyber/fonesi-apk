@@ -34,8 +34,18 @@ for marker in (
     "data class GuestApkClusterIdentity(",
     "fun requireStructurallyValid(): GuestApkClusterIdentity",
     "Split dependency graph contains a cycle",
-    "splitClusterImportSupported = backendCapabilities.splitClusterImportSupported",
-    "Backend cannot claim split import without implementing the typed cluster provider contract",
+    "splitClusterPreflightSupported = false",
+    "splitClusterInstallDispatchSupported = false",
+    "splitClusterReadbackVerified = false",
+    "splitClusterImportSupported = false",
+    "splitClusterCodeExecutionVerified = false",
+    "splitClusterAtomicUpdateVerified = false",
+    "reported.splitClusterPreflightSupported ||",
+    "backend is SplitClusterGuestBackend",
+    "fun requireMatches(expected: GuestApkClusterIdentity): GuestApkClusterReadback",
+    "identity == expected",
+    "sdkOwnedPrivateStorageVerified",
+    "completeMemberSetVerified",
     "interface SplitClusterGuestBackend : GuestBackend",
     "if (source.apkPaths.size != 1) throw UnsupportedSourceException()",
 ):
@@ -56,7 +66,11 @@ assert "const val supportsSplits = false" in bindings
 for marker in (
     "splitProviderCapabilitiesRequirePreflightDispatchAndCompleteReadback",
     "splitClusterIdentityRequiresOneBaseUniqueMembersAndAcyclicDependencies",
+    "splitClusterIdentityRequiresCanonicalNamesAndFeatureConfigRelationships",
+    "splitClusterReadbackRequiresExactIdentityAndCompleteSdkOwnedMemberSet",
     "engineCannotClaimSplitImportWithoutCompleteProviderEvidence",
+    "splitSourceIsRejectedBeforeSharedUpdateMutation",
+    "backendCannotAdvertiseSplitCapabilityWithoutTypedProvider",
 ):
     assert marker in tests, "E83 regression test missing: " + marker
 

@@ -1,11 +1,25 @@
 package vn.fonesi.core
 
+import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Assert.assertThrows
 import org.junit.Test
 
 class EngineCapabilitiesTest {
+    private fun validClusterIdentity(): GuestApkClusterIdentity {
+        val base = GuestApkClusterMemberIdentity(null, "a".repeat(64), false)
+        val alpha = GuestApkClusterMemberIdentity("feature.alpha", "b".repeat(64), true)
+        val beta = GuestApkClusterMemberIdentity("feature.beta", "c".repeat(64), true,
+            dependencies = setOf("feature.alpha"))
+        val french = GuestApkClusterMemberIdentity("feature.alpha.fr", "d".repeat(64), false,
+            configForSplit = "feature.alpha")
+        return GuestApkClusterIdentity(
+            "vn.fonesi.fixture", 1, setOf("e".repeat(64)),
+            listOf(base, alpha, beta, french), "f".repeat(64),
+        )
+    }
+
     @Test fun unavailableEngineExposesNoOperationalOrAcceptedCapabilities() {
         val engine = UnavailableCloneEngine()
         assertFalse(engine.capabilities.singleApkPreflightSupported)
@@ -83,16 +97,11 @@ class EngineCapabilitiesTest {
     }
 
     @Test fun splitClusterIdentityRequiresOneBaseUniqueMembersAndAcyclicDependencies() {
-        val base = GuestApkClusterMemberIdentity(null, "a".repeat(64), false)
-        val alpha = GuestApkClusterMemberIdentity("feature.alpha", "b".repeat(64), true)
-        val beta = GuestApkClusterMemberIdentity("feature.beta", "c".repeat(64), true,
-            dependencies = setOf("feature.alpha"))
-        val french = GuestApkClusterMemberIdentity("feature.alpha.fr", "d".repeat(64), false,
-            configForSplit = "feature.alpha")
-        val identity = GuestApkClusterIdentity(
-            "vn.fonesi.fixture", 1, setOf("e".repeat(64)),
-            listOf(base, alpha, beta, french), "f".repeat(64),
-        )
+        val identity = validClusterIdentity()
+        val base = identity.members[0]
+        val alpha = identity.members[1]
+        val beta = identity.members[2]
+        val french = identity.members[3]
         assertEquals(identity, identity.requireStructurallyValid())
         assertThrows(IllegalArgumentException::class.java) {
             identity.copy(members = listOf(alpha, beta, french)).requireStructurallyValid()
@@ -111,6 +120,56 @@ class EngineCapabilitiesTest {
         assertThrows(IllegalArgumentException::class.java) {
             identity.copy(members = listOf(base, alpha, beta.copy(dependencies = setOf("missing"))))
                 .requireStructurallyValid()
+        }
+    }
+
+    @Test fun splitClusterIdentityRequiresCanonicalNamesAndFeatureConfigRelationships() {
+        val identity = validClusterIdentity()
+        val base = identity.members[0]
+        val alpha = identity.members[1]
+        val beta = identity.members[2]
+        val french = identity.members[3]
+        assertThrows(IllegalArgumentException::class.java) {
+            identity.copy(packageName = "invalid package").requireStructurallyValid()
+        }
+        assertThrows(IllegalArgumentException::class.java) {
+            identity.copy(members = listOf(base, beta, alpha, french)).requireStructurallyValid()
+        }
+        assertThrows(IllegalArgumentException::class.java) {
+            identity.copy(members = listOf(base, alpha.copy(configForSplit = "feature.beta"), beta, french))
+                .requireStructurallyValid()
+        }
+        assertThrows(IllegalArgumentException::class.java) {
+            identity.copy(members = listOf(base, alpha, beta, french.copy(configForSplit = "feature.missing")))
+                .requireStructurallyValid()
+        }
+    }
+
+    @Test fun splitClusterReadbackRequiresExactIdentityAndCompleteSdkOwnedMemberSet() {
+        val identity = validClusterIdentity()
+        val valid = GuestApkClusterReadback(identity, true, true)
+        assertEquals(valid, valid.requireMatches(identity))
+
+        val changedMember = identity.members.mapIndexed { index, member ->
+            if (index == 1) member.copy(sha256 = "9".repeat(64)) else member
+        }
+        val mismatches = listOf(
+            identity.copy(packageName = "vn.fonesi.other"),
+            identity.copy(versionCode = 2),
+            identity.copy(signerDigests = setOf("9".repeat(64))),
+            identity.copy(members = changedMember),
+            identity.copy(members = identity.members.dropLast(1)),
+        )
+        mismatches.forEach { mismatch ->
+            assertThrows(IllegalArgumentException::class.java) {
+                GuestApkClusterReadback(mismatch, true, true).requireMatches(identity)
+            }
+        }
+        assertThrows(IllegalArgumentException::class.java) {
+            valid.copy(sdkOwnedPrivateStorageVerified = false).requireMatches(identity)
+        }
+        assertThrows(IllegalArgumentException::class.java) {
+            valid.copy(completeMemberSetVerified = false).requireMatches(identity)
         }
     }
 

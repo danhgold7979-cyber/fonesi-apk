@@ -23,6 +23,28 @@ class ManagedGuestEngineTest {
         assertThrows(UnsupportedSourceException::class.java) { engine().create(source.copy(apkPaths = listOf("base", "split")), "A") }
         assertTrue(registry.list().isEmpty()); assertTrue(backend.installs.isEmpty()); assertEquals(0, snapshots.prepares)
     }
+    @Test fun splitSourceIsRejectedBeforeSharedUpdateMutation() {
+        val clone = engine().create(source, "A")
+        val installsBefore = backend.installs.size
+        val packagesBefore = backend.packages.toMap()
+        val registryBefore = registry.list()
+        val splitSource = source.copy(versionCode = 2, apkPaths = listOf("/frozen/base.apk", "/frozen/feature.apk"))
+        assertThrows(UnsupportedSourceException::class.java) {
+            engine().update(UpdateTarget(splitSource, listOf(clone.id)))
+        }
+        assertEquals(installsBefore, backend.installs.size)
+        assertEquals(packagesBefore, backend.packages)
+        assertEquals(registryBefore, registry.list())
+        assertTrue(backend.uninstalls.isEmpty())
+    }
+
+    @Test fun backendCannotAdvertiseSplitCapabilityWithoutTypedProvider() {
+        backend.capabilities = GuestBackendCapabilities(splitClusterPreflightSupported = true)
+        assertThrows(IllegalStateException::class.java) { engine().capabilities }
+        assertTrue(registry.list().isEmpty())
+        assertTrue(backend.installs.isEmpty())
+    }
+
     @Test fun failedSnapshotVerificationDoesNotEnterSdk() {
         snapshots.valid = false
         assertThrows(IllegalStateException::class.java) { engine().create(source, "A") }
@@ -647,6 +669,7 @@ private class SnapshotDouble : SourceSnapshotter {
 }
 private class BackendDouble : GuestBackend {
     override var ready = true
+    override var capabilities = GuestBackendCapabilities()
     val userIds = mutableSetOf<Int>()
     val packages = mutableMapOf<Pair<Int, String>, GuestPackage>()
     val installs = mutableListOf<Pair<Int, InstalledSource>>()

@@ -48,17 +48,24 @@ data class GuestApkClusterIdentity(
     /** Validates identity completeness only; signature verification remains the provider's duty. */
     fun requireStructurallyValid(): GuestApkClusterIdentity {
         val digest = Regex("^[0-9a-f]{64}$")
-        val splitPattern = Regex("^[A-Za-z_][A-Za-z0-9_.]*$")
-        require(packageName.isNotBlank() && versionCode >= 0 && signerDigests.isNotEmpty())
+        val packagePattern = Regex("^[A-Za-z_][A-Za-z0-9_]*(\\.[A-Za-z_][A-Za-z0-9_]*)+$")
+        val splitPattern = Regex("^[A-Za-z_][A-Za-z0-9_]*(\\.[A-Za-z0-9_]+)*$")
+        require((packageName == "android" || packagePattern.matches(packageName)) &&
+            versionCode >= 0 && signerDigests.isNotEmpty())
         require(signerDigests.all(digest::matches) && digest.matches(clusterDigest))
-        require(members.isNotEmpty() && members.count { it.splitName == null } == 1)
+        require(members.isNotEmpty() && members.first().splitName == null &&
+            members.count { it.splitName == null } == 1)
         require(members.all { digest.matches(it.sha256) })
         val splits = members.mapNotNull { it.splitName }
-        require(splits.distinct().size == splits.size && splits.all(splitPattern::matches))
+        require(splits == splits.sorted() && splits.distinct().size == splits.size &&
+            splits.all(splitPattern::matches))
         val featureNames = members.filter { it.feature }.mapNotNull { it.splitName }.toSet()
-        require(members.filter { it.splitName == null }.all { it.feature.not() && it.configForSplit == null && it.dependencies.isEmpty() })
+        require(members.filter { it.splitName == null }.all {
+            it.feature.not() && it.configForSplit == null && it.dependencies.isEmpty()
+        })
         require(members.all { member ->
-            (member.configForSplit == null || member.configForSplit in featureNames) &&
+            (member.configForSplit == null || (!member.feature && member.splitName != null &&
+                member.configForSplit in featureNames)) &&
                 member.dependencies.all { it in featureNames } &&
                 (member.feature || member.dependencies.isEmpty())
         })
@@ -84,7 +91,17 @@ data class GuestApkClusterReadback(
     val identity: GuestApkClusterIdentity,
     val sdkOwnedPrivateStorageVerified: Boolean,
     val completeMemberSetVerified: Boolean,
-)
+) {
+    /** Rejects partial or identity-drifted provider readback; never infer success from install return. */
+    fun requireMatches(expected: GuestApkClusterIdentity): GuestApkClusterReadback {
+        expected.requireStructurallyValid()
+        identity.requireStructurallyValid()
+        require(identity == expected) { "Provider cluster readback differs from expected source identity" }
+        require(sdkOwnedPrivateStorageVerified) { "Provider readback is not from SDK-owned private storage" }
+        require(completeMemberSetVerified) { "Provider readback does not cover every cluster member" }
+        return this
+    }
+}
 
 interface SplitClusterGuestBackend : GuestBackend {
     /** Must verify every member's signature, package, version, split graph and SHA before mutation. */
@@ -142,9 +159,12 @@ class ManagedGuestEngine(
      * native page-size support or account isolation.
      */
     private val backendCapabilities: GuestBackendCapabilities get() = backend.capabilities.also { reported ->
-        if (reported.splitClusterImportSupported) {
+        val advertisesSplitProvider = reported.splitClusterPreflightSupported ||
+            reported.splitClusterInstallDispatchSupported || reported.splitClusterReadbackVerified ||
+            reported.splitClusterCodeExecutionVerified || reported.splitClusterAtomicUpdateVerified
+        if (advertisesSplitProvider) {
             check(backend is SplitClusterGuestBackend) {
-                "Backend cannot claim split import without implementing the typed cluster provider contract"
+                "Backend cannot advertise split capabilities without implementing the typed cluster provider contract"
             }
         }
     }
@@ -153,12 +173,14 @@ class ManagedGuestEngine(
         singleApkPreflightSupported = backendCapabilities.singleApkPreflightSupported,
         singleApkInstallSupported = backendCapabilities.singleApkInstallSupported,
         packageIdentityReadbackSupported = backendCapabilities.packageIdentityReadbackSupported,
-        splitClusterPreflightSupported = backendCapabilities.splitClusterPreflightSupported,
-        splitClusterInstallDispatchSupported = backendCapabilities.splitClusterInstallDispatchSupported,
-        splitClusterReadbackVerified = backendCapabilities.splitClusterReadbackVerified,
-        splitClusterImportSupported = backendCapabilities.splitClusterImportSupported,
-        splitClusterCodeExecutionVerified = backendCapabilities.splitClusterCodeExecutionVerified,
-        splitClusterAtomicUpdateVerified = backendCapabilities.splitClusterAtomicUpdateVerified,
+        // The typed provider API is only a contract today; ManagedGuestEngine does not yet
+        // orchestrate cluster import/readback, so no split capability is surfaced as usable.
+        splitClusterPreflightSupported = false,
+        splitClusterInstallDispatchSupported = false,
+        splitClusterReadbackVerified = false,
+        splitClusterImportSupported = false,
+        splitClusterCodeExecutionVerified = false,
+        splitClusterAtomicUpdateVerified = false,
         guestActivityLifecycleVerified = false,
         guestServiceLifecycleVerified = false,
         guestReceiverLifecycleVerified = false,
