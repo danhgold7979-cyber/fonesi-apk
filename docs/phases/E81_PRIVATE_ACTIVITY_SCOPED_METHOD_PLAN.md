@@ -29,3 +29,10 @@ Demonstrate that a **real instance method** defined by a project-owned signed PR
 ## Non-acceptance and blockers
 
 This proof would **not** attach `PayloadActivity` to Android ActivityThread, invoke its actual Android lifecycle/onCreate, show its own Activity Window, register components, execute Facebook/Zalo/TikTok, isolate kernel UID/accounts, enable production split install/import/update or replace required Samsung/other-device testing. Preserve the original **8 Product Phases/32 steps/4 device acceptance milestones**, weighted completion **28.00%** and real accepted clones **0**. No production release or merge for synthetic results.
+
+
+## E81 focused JVM fixture correction (pre-code amendment, 30/10/2026)
+
+An independent JDK21 smoke execution of the E81 `SyntheticActivityScopedBindingRules.nextBoundScope` behavior found a **test-fixture error** before emulator acceptance: the original A UUID (`11111111-1111-4111-8111-111111111111`) contains only digits, so `A.toUpperCase()` is identical to the valid canonical A UUID and must correctly be accepted. The test incorrectly expected rejection. This is not evidence of a production runtime or UUID parser defect.
+
+**Planned narrow fix:** replace only the E81 test's A UUID constant with a canonical UUID containing lowercase hex letters (for example `11111111-1111-4aaa-8bbb-cccccccccccc`). Its uppercase variant then actually differs from canonical `UUID.toString()`. Keep `SyntheticActivityScopedBindingRules`, all rejection assertions, runtime guard and acceptance criteria unchanged. Recompile and run the local Java21 smoke suite using a genuinely noncanonical variant, then rerun all exact-source E81 gates and emulator; no PASS claim for the preceding source.
