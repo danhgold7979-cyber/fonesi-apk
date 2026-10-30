@@ -12,7 +12,8 @@ audit73 = read("scripts/audit_e73_private_activity_bytecode_preflight.py")
 
 for required in (
     'private static final String SIGNED_ACTIVITY = GUEST_PACKAGE + ".PayloadActivity";',
-    '!"e29".equals(proofLevel) && !"e74".equals(proofLevel) && !"e77".equals(proofLevel) && !"e78".equals(proofLevel)',
+    '!"e29".equals(proofLevel) && !"e74".equals(proofLevel) &&',
+    '!"e77".equals(proofLevel) && !"e78".equals(proofLevel)',
     'if ("e74".equals(proofLevel) || "e77".equals(proofLevel) || "e78".equals(proofLevel)) {',
     "PrivateGuestActivityClassHandle activityProof = image.preflightExplicitActivityClass(",
     "SIGNED_ACTIVITY, ExplicitActivityCaller.TRUSTED_INTERNAL",
