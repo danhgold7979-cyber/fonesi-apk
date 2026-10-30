@@ -1,6 +1,6 @@
 package vn.fonesi.payload
 
-import android.annotation.RequiresApi
+import androidx.annotation.RequiresApi
 import android.app.Activity
 import android.app.Application
 import android.content.Context
