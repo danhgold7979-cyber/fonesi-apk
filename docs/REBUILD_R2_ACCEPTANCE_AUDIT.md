@@ -39,3 +39,9 @@ Add dispatcher-level probes supplying peer providerID/revision mismatch and capa
 ## Boundary of eventual R2 acceptance
 
 Closing G1/G2 with independent review and exact-head actual CI would support the **bounded standalone shared-update kernel** gate, not full Android manager/runtime, storage migration, engine/provider, whole-app concurrency or hostile-guest/device isolation. R3/R4/R5/R6/R7 retain their own requirements; no source deletion equivalence follows automatically.
+
+## Closure and narrow acceptance — 2026-10-30 21:46 UTC
+
+Initial verdict above records the pre-closure audit; it is superseded for G1/G2 by approved test-only commit66aee97. Independent reviewer verified all25 source/target records construct validly before actualCAS invocation (4legal,21reject with unchangedbytes/state), and all18 dispatcher binding/stagecases assert zero mutation/readback, exactretainedstate, duplicate/no-replay barriers. Allfiveproduction source hashes remain unchanged.
+
+Published dc19cdd57b41a97ce3787589815a104b136a41dc, exacttree035f9df60a07c5579ae169a65df0861920c2db4a; run41133142565 completedSUCCESS. Actual hosted159journal/227dispatcher checks and fullkernelpolicy/identity/history/parity suites pass, including installedJDK17.0.21. Root authorized narrow acceptance after reviewedgreen; **R2 is now ACCEPTED under its detailed standaloneLinux/JVM/shared-update scope**. This does not accept Androidfilesystem/durability/auth, provider/readbackauthenticity, whole-app launch/create/delete concurrency, actualhostileguestisolation or source-replacement equivalence. The optionalfutureGradleentrypoint remains explicitly partial/unverified, not the canonical acceptance runner. No product percentage is derived.

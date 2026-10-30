@@ -8,3 +8,7 @@ The16 historical scripts remain and may directly fetch/build before Gradle; do n
 
 ## Local implementation / pending hosted gate
 Exactly rootbuild.gradle.kts andgradle.properties removed; settings replaced by explicit GradleException marker. Root wrapper, all legacy runtime/test/probe/schema/scripts/notices and production rebuild classes unchanged.10new focused source/log-verifier tests pass (67tooling total); generic buildfailure,zero exit,source-quoted marker,tasks/download,oversize andinvalidUTF8 reject. Actual offline rootrefusal only runs afterfresh hosted compile has established cachedverifiedGradle; local noGradle execution.16legacycommandpaths remain as disclosed.
+
+## Exact hosted refusal acceptance — 2026-10-30 21:46 UTC
+
+Published dc19cdd57b41a97ce3787589815a104b136a41dc/run41133142565 SUCCESS. FreshAndroid scoped compile/lint succeeded; subsequent cachedwrapper `--offline` roothelp failed with exact FONESI_LEGACY_ROOT_BUILD_DISABLED diagnostic and no root tasks/download. Verifier PASS; packageddebugsemanticgate alsoPASS. This proves only the approved rootentrypoint retirement;16historical scripts and allruntime/probe/test/notices still retained.

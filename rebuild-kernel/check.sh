@@ -12,6 +12,7 @@ java -cp "$OUT" vn.fonesi.rebuild.PolicyModeTest
 java -cp "$OUT" vn.fonesi.rebuild.JournalTest
 java -cp "$OUT" vn.fonesi.rebuild.DispatcherTest
 java -cp "$OUT" vn.fonesi.rebuild.IdentityTextTest
+java -cp "$OUT" vn.fonesi.rebuild.CodecObservationTest
 mkdir "$OUT/legacy"
 mapfile -t pinned < <(sed 's/^[0-9a-f]*  //' ../spec/bridge-oracle/v1/source-sha256.txt | sort)
 mapfile -t found < <(cd ../spec/bridge-oracle/v1/source && find . -type f -name '*.java' -printf '%P\n' | sort)

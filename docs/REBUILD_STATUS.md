@@ -179,3 +179,17 @@ Root-approved test-only planf67aa6a: journal matrix now reachesCAS for all25 val
 ## Stage A root-build retirement prepared — 2026-10-30 21:38 UTC
 
 Separate root-approved planf39291a: removed only rootbuild.gradle.kts+gradle.properties; replaced rootsettings with explicit fail-closed refusal directing to -p rebuild-android. Preservedwrapper hashes/alllegacyruntime/tests/probes/scripts/schemas/notices andallrequirements.67tooling tests PASS. Hosted workflow now demands exact intentional rootfailure offline afterfreshbuild, not anynonzeroexit; then strict APKgate. Actualnew-head rootrefusal/freshbuildCI pending.16historical scripts remain separatelegacy entrypoints; no whole-source replacement claim.
+
+## R2 bounded gate ACCEPTED; StageA hosted proof PASS — 2026-10-30 21:46 UTC
+
+Exact published dc19cdd57b41a97ce3787589815a104b136a41dc/tree035f9df60a07c5579ae169a65df0861920c2db4a; [run41133142565](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/41133142565) allthreejobsSUCCESS. Independentlyreviewed G1/G2 closures execute159journal/227dispatcher checks;65kernel,6,200policy,11,471identity,42v1oracle/history and70value/6,200policy/17,317JDK17logicalparity pass.67tooling,51SQLite,108model/76controller checks pass.
+
+Actual freshAndroid compile/lint succeeded; subsequentoffline roothelp printed exactintentionalguard and failed, verifierPASS, thenstrictAPKsemanticgatePASS. DebugAPK SHA256192063ed855f0ac84fb47699a52dc13e711a3670d9b692e1e2a772af1921503d (notrelease/deployment).
+
+R2 nowaccepted narrowly per full detailedcriteria: standaloneLinux/JVM durableoperation/shared-updatekernel. R0 remains separatelyaccepted. No fullproductpercentage, engine/provider/Androiddurability/actualUI/phone/whole-appconcurrency acceptance; R1/R3–R7 retainindependentgates. StageA removedonly2rootconfigfiles andguardedsettings;16legacycommandentrypoints andoldsource remain, sourceequivalencecleanupstillpending.
+
+## B3a test-only codec observations / D4 decision pending — 2026-10-30 22:05 UTC
+
+Root-approved precodeplan3d9c5aa; allfive correctedhost sourcehashes unchanged.343checks/408compactpinned observations characterize canonicalv2bytes/supplementarymodifiedUTF/signedUUIDorder/keyframing and malformedpublicread/UUID/bounds with bytesretained.14overlongUTFvariants across7fields plus reversedpeerorder are accepted as the same value but re-encode differently (D4representationambiguity, notproven auth/data/isolationbypass). Historical-only labels exclude them from desiredportacceptance.
+
+Proposed strictcanonical rejection after boundedsemanticparse, preserving exactvalidv2bytes and retainedinvalidoriginals, awaitsrootreview in REBUILD_B3_AMBIGUITY_LEDGER.md. No productioncodec/hosthardening/Androidwire implemented; nooldgoldensregenerated. Newfixture20,903bytes (32KiBcap) SHA b59a9b9356ce5b62a193516d75bf720672324de1487cc2ec0413457761dbd7ea; CIcompares only. Independentreview catch-boundary correction and resealed length cases applied.
