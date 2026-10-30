@@ -34,6 +34,8 @@ for name in (
 assert '"e79".equals(proofLevel)' in probe
 assert '"write".equals(e79Stage)' in probe and '"verify".equals(e79Stage)' in probe
 assert "verifyE79SyntheticApplication(image, localStore, localCluster)" in probe
+assert 'localStore.open(e79PrivateClusterId, Build.VERSION.SDK_INT)' in probe
+assert 'e79_private_cluster_id' in probe
 assert "Instrumentation instrumentationA = new Instrumentation()" in probe
 assert "callApplicationOnCreate(applications[0])" in probe and "callApplicationOnCreate(applications[1])" in probe
 assert "e79ScopedDataAfterRestartVerified = true" in probe

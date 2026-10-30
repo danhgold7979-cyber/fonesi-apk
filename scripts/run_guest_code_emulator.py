@@ -216,7 +216,7 @@ def _validate_e79_stage(report, stage, source_commit, probe_apk_sha256, payload_
             raise RuntimeError("E79 receipt has invalid " + key)
     if report.get("lifecycle_transcript") != "CREATE,START,RESUME,PAUSE,STOP,DESTROY":
         raise RuntimeError("E79 host Activity lifecycle transcript incomplete")
-    for key in ("run_id", "synthetic_scope_a_id", "synthetic_scope_b_id", "e79_process_token"):
+    for key in ("run_id", "synthetic_scope_a_id", "synthetic_scope_b_id", "e79_private_cluster_id", "e79_process_token"):
         value = report.get(key)
         if not isinstance(value, str) or str(uuid.UUID(value)) != value:
             raise RuntimeError("E79 receipt has noncanonical UUID: " + key)
@@ -255,7 +255,7 @@ def validate_e79_receipts(write_report, verify_report, source_commit, probe_apk_
         raise RuntimeError("E79 verify stage reused the original process identity")
     if write["uid"] != verify["uid"]:
         raise RuntimeError("E79 same-package host UID changed across process restart")
-    for key in ("synthetic_scope_a_id", "synthetic_scope_b_id", "e79_marker_a", "e79_marker_b"):
+    for key in ("e79_private_cluster_id", "synthetic_scope_a_id", "synthetic_scope_b_id", "e79_marker_a", "e79_marker_b"):
         if write[key] != verify[key]:
             raise RuntimeError("E79 process restart changed persisted scope identity/marker: " + key)
     if verify.get("e79_prior_pid") != write["pid"] or verify.get("e79_prior_process_token") != write["e79_process_token"] or verify.get("e79_prior_run_id") != write["run_id"]:
@@ -663,6 +663,7 @@ def main():
             stage = "E79 relaunch fresh process and verify persisted scopes"
             verify_run_id = str(uuid.uuid4())
             handoff = {
+                "e79_private_cluster_id": e79_write_report["e79_private_cluster_id"],
                 "e79_scope_a": e79_write_report["synthetic_scope_a_id"],
                 "e79_scope_b": e79_write_report["synthetic_scope_b_id"],
                 "e79_marker_a": e79_write_report["e79_marker_a"],

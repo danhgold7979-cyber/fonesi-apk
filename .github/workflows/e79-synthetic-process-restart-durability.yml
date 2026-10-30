@@ -217,6 +217,7 @@ jobs:
           assert write.get("pid") != verify.get("pid")
           assert write.get("e79_process_token") != verify.get("e79_process_token")
           assert write.get("uid") == verify.get("uid")
+          assert write.get("e79_private_cluster_id") == verify.get("e79_private_cluster_id")
           assert write.get("synthetic_scope_a_id") == verify.get("synthetic_scope_a_id")
           assert write.get("synthetic_scope_b_id") == verify.get("synthetic_scope_b_id")
           assert write.get("e79_marker_a") == verify.get("e79_marker_a")
