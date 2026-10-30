@@ -271,17 +271,17 @@ class EngineCapabilitiesTest {
         assertThrows(IllegalArgumentException::class.java) {
             EngineCapabilities(splitClusterCodeExecutionVerified = true)
         }
-        val import = EngineCapabilities(
+        val imported = EngineCapabilities(
             splitClusterPreflightSupported = true,
             splitClusterInstallDispatchSupported = true,
             splitClusterReadbackVerified = true,
             splitClusterImportSupported = true,
         )
-        assertTrue(import.splitClusterImportSupported)
+        assertTrue(imported.splitClusterImportSupported)
         assertThrows(IllegalArgumentException::class.java) {
-            import.copy(splitClusterAtomicUpdateVerified = true)
+            imported.copy(splitClusterAtomicUpdateVerified = true)
         }
-        val executable = import.copy(splitClusterCodeExecutionVerified = true)
+        val executable = imported.copy(splitClusterCodeExecutionVerified = true)
         val atomic = executable.copy(splitClusterAtomicUpdateVerified = true)
         assertTrue(executable.splitClusterCodeExecutionVerified)
         assertTrue(atomic.splitClusterAtomicUpdateVerified)
