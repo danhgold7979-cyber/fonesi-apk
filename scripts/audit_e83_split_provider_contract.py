@@ -34,7 +34,9 @@ for marker in (
     "data class GuestApkClusterIdentity(",
     "fun requireStructurallyValid(): GuestApkClusterIdentity",
     "Split dependency graph contains a cycle",
-    "splitClusterImportSupported = backend.capabilities.splitClusterImportSupported",
+    "splitClusterImportSupported = backendCapabilities.splitClusterImportSupported",
+    "Backend cannot claim split import without implementing the typed cluster provider contract",
+    "interface SplitClusterGuestBackend : GuestBackend",
     "if (source.apkPaths.size != 1) throw UnsupportedSourceException()",
 ):
     assert marker in backend, "E83 typed backend contract missing: " + marker
