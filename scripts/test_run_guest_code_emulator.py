@@ -13,6 +13,7 @@ from run_guest_code_emulator import (
     validate_e78_receipt,
     validate_e79_receipts,
     validate_e80_receipts,
+    validate_e81_receipts,
 )
 
 
@@ -403,6 +404,69 @@ class E80PrivateActivityConstructorReceiptTests(unittest.TestCase):
         with self.assertRaisesRegex(RuntimeError, "proof/stage identity mismatch"):
             validate_e80_receipts(w, v, "a" * 40, "b" * 64, "c" * 64)
 
+
+
+class E81SignedPrivateScopedActivityMethodReceiptTests(unittest.TestCase):
+    def stages(self):
+        write, verify = E80PrivateActivityConstructorReceiptTests().stages()
+        for report in (write, verify):
+            report.update({
+                "e81_scoped_mode": True,
+                "e81_private_activity_scope_bound_verified": True,
+                "e81_private_activity_rebinding_rejected": True,
+                "e81_private_activity_scoped_readback_verified": True,
+                "e81_private_activity_base_context_null": True,
+                "e81_bound_scope_id": report["synthetic_scope_a_id"],
+                "e81_guest_activity_oncreate_called": False,
+                "e81_framework_activity_attached": False,
+            })
+        return write, verify
+
+    def test_exact_two_process_signed_scoped_activity_methods_pass(self):
+        w, v = self.stages()
+        self.assertEqual(
+            validate_e81_receipts(w, v, "a" * 40, "b" * 64, "c" * 64), (w, v))
+
+    def test_old_e80_receipts_cannot_be_relabelled_as_e81(self):
+        w, v = E80PrivateActivityConstructorReceiptTests().stages()
+        with self.assertRaisesRegex(RuntimeError, "E81 scoped PRIVATE Activity method proof missing"):
+            validate_e81_receipts(w, v, "a" * 40, "b" * 64, "c" * 64)
+
+    def test_b_scope_or_missing_immutable_rebinding_proof_is_denied(self):
+        w, v = self.stages()
+        v["e81_bound_scope_id"] = v["synthetic_scope_b_id"]
+        with self.assertRaisesRegex(RuntimeError, "must equal signed A scope"):
+            validate_e81_receipts(w, v, "a" * 40, "b" * 64, "c" * 64)
+        w, v = self.stages()
+        w["e81_private_activity_rebinding_rejected"] = False
+        with self.assertRaisesRegex(RuntimeError, "proof missing"):
+            validate_e81_receipts(w, v, "a" * 40, "b" * 64, "c" * 64)
+
+    def test_no_private_readback_or_null_framework_context_is_denied(self):
+        for key in ("e81_private_activity_scoped_readback_verified",
+                    "e81_private_activity_base_context_null"):
+            with self.subTest(key=key):
+                w, v = self.stages()
+                v[key] = False
+                with self.assertRaisesRegex(RuntimeError, "proof missing"):
+                    validate_e81_receipts(w, v, "a" * 40, "b" * 64, "c" * 64)
+
+    def test_framework_guest_activity_overclaim_is_denied(self):
+        for key in ("e81_guest_activity_oncreate_called", "e81_framework_activity_attached"):
+            with self.subTest(key=key):
+                w, v = self.stages()
+                v[key] = True
+                with self.assertRaisesRegex(RuntimeError, "must not claim guest Activity"):
+                    validate_e81_receipts(w, v, "a" * 40, "b" * 64, "c" * 64)
+
+    def test_e79_e80_source_hash_and_process_continuity_are_mandatory(self):
+        w, v = self.stages()
+        v["pid"] = w["pid"]
+        with self.assertRaisesRegex(RuntimeError, "reused the original process identity"):
+            validate_e81_receipts(w, v, "a" * 40, "b" * 64, "c" * 64)
+        w, v = self.stages()
+        with self.assertRaisesRegex(RuntimeError, "payload APK"):
+            validate_e81_receipts(w, v, "a" * 40, "b" * 64, "d" * 64)
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)
