@@ -28,6 +28,37 @@ class PrivateApkStoreTest {
     private fun rejectOpen(id: String) { assertThrows(Exception::class.java) { PrivateApkStore(root).open(id, 34) } }
     private fun children(path: Path = root) = Files.list(path).use { it.iterator().asSequence().map { f -> f.fileName.toString() }.toSet() }
     private fun hex(bytes: ByteArray) = bytes.joinToString("") { "%02x".format(it.toInt() and 255) }
+
+    /** Independent copy of the pre-E83 store algorithm to prove byte-for-byte v1 compatibility. */
+    private fun legacyClusterDigest(apks: AuditedApkSet): String {
+        val digest = MessageDigest.getInstance("SHA-256")
+        fun field(value: String) {
+            val bytes = value.toByteArray(Charsets.UTF_8)
+            digest.update(java.nio.ByteBuffer.allocate(4).putInt(bytes.size).array())
+            digest.update(bytes)
+        }
+        field("fonesi-package-cluster-v1")
+        field(apks.base.packageName)
+        field(apks.base.version.toString())
+        apks.base.signers.sorted().forEach { field("signer:$it") }
+        val members = listOf(apks.base) + apks.splits.sortedBy { it.splitName.orEmpty() }
+        members.forEach { member ->
+            field(if (member.splitName == null) "BASE" else "SPLIT")
+            field(member.splitName.orEmpty())
+            field(member.feature.toString())
+            field(member.configFor.orEmpty())
+            member.dependencies.sorted().forEach { field("dependency:$it") }
+            member.requiredTypes.sorted().forEach { field("requires:$it") }
+            member.providedTypes.sorted().forEach { field("provides:$it") }
+            field(member.splitRequired.toString())
+            field(member.isolatedSplits.toString())
+            member.signers.sorted().forEach { field("member-signer:$it") }
+            field(member.sha256)
+            field(member.file.length().toString())
+        }
+        return hex(digest.digest())
+    }
+
     private fun change(file: File, bytes: ByteArray) { check(file.setWritable(true)); file.writeBytes(bytes) }
 
     @Test fun clusterDigestIsStableAcrossReadbackAndInputOrder() {
@@ -42,6 +73,41 @@ class PrivateApkStoreTest {
         assertEquals(64, first.clusterDigest.length)
         assertEquals(first.clusterDigest, store.open(first.id, 34).clusterDigest)
         assertEquals(first.clusterDigest, second.clusterDigest)
+    }
+
+    @Test fun identityMatchesAllAuditorMetadataAndPreservesLegacyDigestBytes() {
+        val published = cluster()
+        val identity = published.identity.requireStructurallyValid()
+        assertEquals(legacyClusterDigest(published.apks), identity.clusterDigest)
+        assertEquals(identity.clusterDigest, published.clusterDigest)
+        val audited = listOf(published.apks.base) + published.apks.splits.sortedBy { it.splitName.orEmpty() }
+        assertEquals(audited.size, identity.members.size)
+        audited.zip(identity.members).forEach { (source, actual) ->
+            assertEquals(source.splitName, actual.splitName)
+            assertEquals(source.sha256, actual.sha256)
+            assertEquals(source.feature, actual.feature)
+            assertEquals(source.file.length(), actual.byteLength)
+            assertEquals(source.signers, actual.signerDigests)
+            assertEquals(source.splitRequired, actual.splitRequired)
+            assertEquals(source.requiredTypes, actual.requiredTypes)
+            assertEquals(source.providedTypes, actual.providedTypes)
+            assertEquals(source.isolatedSplits, actual.isolatedSplits)
+            assertEquals(source.configFor, actual.configForSplit)
+            assertEquals(source.dependencies, actual.dependencies)
+        }
+    }
+
+    @Test fun requiredTypesSplitRequiredAndIsolatedFlagsSurvivePrivateReadback() {
+        val store = PrivateApkStore(root)
+        val typed = store.publish(source("requires-abi-type", "provides-abi-type"), 34)
+        val typedIdentity = store.open(typed.id, 34).identity
+        val base = typedIdentity.members.first()
+        assertTrue(base.splitRequired)
+        assertEquals(setOf("base__abi"), base.requiredTypes)
+        assertEquals(setOf("base__abi"), typedIdentity.members.single { it.splitName == "config.arm64_v8a" }.providedTypes)
+
+        val isolated = store.publish(source("isolated-base"), 34)
+        assertTrue(store.open(isolated.id, 34).identity.members.single().isolatedSplits)
     }
 
     @Test fun clusterDigestChangesWhenVerifiedClusterMembersChange() {
