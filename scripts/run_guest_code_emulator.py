@@ -92,6 +92,76 @@ def read_ui_configuration(device, timeout_seconds=UI_CONFIGURATION_READ_TIMEOUT_
     return snapshot
 
 
+def validate_e78_receipt(report, source_commit, probe_apk_sha256, payload_apk_sha256):
+    """Strict exact-source receipt validation for synthetic Application attach and A/B data only."""
+    if not isinstance(report, dict):
+        raise RuntimeError("E78 receipt must be a JSON object")
+    required_true = (
+        "complete", "passed", "real_host_activity_lifecycle_verified",
+        "signed_private_guest_view_rendered", "private_guest_view_attached_to_window",
+        "private_guest_lifecycle_relay_verified", "signed_private_resources_verified",
+        "signed_private_image_rechecked", "same_android_uid",
+        "private_activity_class_preflight_verified",
+        "private_activity_constructor_preflight_verified",
+        "private_application_class_preflight_verified",
+        "synthetic_guest_application_attached",
+        "synthetic_guest_application_on_create_verified",
+        "synthetic_guest_application_on_main_thread",
+        "synthetic_guest_application_instances_distinct",
+        "synthetic_application_on_create_once_per_scope",
+        "synthetic_scope_a_preferences_file_sqlite_verified",
+        "synthetic_scope_b_preferences_file_sqlite_verified",
+        "synthetic_scope_persistence_after_context_reconstruction_verified",
+        "synthetic_scope_cross_readback_isolated",
+    )
+    required_false = (
+        "guest_application_registered_with_activity_thread",
+        "guest_application_registered_with_package_manager",
+        "full_guest_application_lifecycle_verified",
+        "actual_guest_activity_attached",
+        "real_guest_activity_registered",
+        "third_party_component_executed",
+        "third_party_guest_components_tested",
+        "kernel_uid_isolation",
+        "social_accounts_tested",
+        "production_clone_accepted",
+    )
+    missing_true = [key for key in required_true if report.get(key) is not True]
+    missing_false = [key for key in required_false if report.get(key) is not False]
+    if missing_true or missing_false:
+        raise RuntimeError(
+            "E78 receipt assertions failed: true=" + ",".join(missing_true) +
+            "; false=" + ",".join(missing_false)
+        )
+    if report.get("proof_level") != "e78":
+        raise RuntimeError("E78 receipt proof level mismatch")
+    if report.get("source_commit") != source_commit:
+        raise RuntimeError("E78 receipt source SHA differs from checked-out source")
+    if report.get("probe_apk_sha256") != probe_apk_sha256:
+        raise RuntimeError("E78 receipt host probe APK SHA-256 mismatch")
+    if report.get("payload_apk_sha256") != payload_apk_sha256:
+        raise RuntimeError("E78 receipt signed payload APK SHA-256 mismatch")
+    if report.get("synthetic_application_class_name") != PAYLOAD_PACKAGE + ".SyntheticGuestApplication":
+        raise RuntimeError("E78 receipt signed Application class identity mismatch")
+    if report.get("api") != 34 or report.get("process_name") != PROBE_PACKAGE + ":fonesi_guest_ui":
+        raise RuntimeError("E78 receipt Android API/process identity mismatch")
+    if type(report.get("pid")) is not int or report["pid"] <= 0:
+        raise RuntimeError("E78 receipt PID is invalid")
+    if type(report.get("uid")) is not int or report["uid"] < 0:
+        raise RuntimeError("E78 receipt UID is invalid")
+    run_id = report.get("run_id")
+    if not isinstance(run_id, str) or str(uuid.UUID(run_id)) != run_id:
+        raise RuntimeError("E78 receipt run UUID is not canonical")
+    scope_a, scope_b = report.get("synthetic_scope_a_id"), report.get("synthetic_scope_b_id")
+    if not isinstance(scope_a, str) or not isinstance(scope_b, str):
+        raise RuntimeError("E78 receipt lacks both synthetic scope UUIDs")
+    if str(uuid.UUID(scope_a)) != scope_a or str(uuid.UUID(scope_b)) != scope_b or scope_a == scope_b:
+        raise RuntimeError("E78 receipt scope IDs must be distinct canonical UUIDs")
+    if report.get("lifecycle_transcript") != "CREATE,START,RESUME,PAUSE,STOP,DESTROY":
+        raise RuntimeError("E78 host Activity lifecycle transcript is incomplete")
+    return scope_a, scope_b
+
+
 def sha256(file):
     digest = hashlib.sha256()
     with file.open("rb") as source:
@@ -127,14 +197,14 @@ def main():
     parser.add_argument("--boot-timeout", type=int, default=480)
     parser.add_argument("--probe-timeout", type=int, default=180)
     parser.add_argument("--allow-software-emulation", action="store_true",
-                        help="E77-only bounded fallback when GitHub has no KVM; never guest Activity execution")
-    parser.add_argument("--proof-level", choices=("e11", "e12", "e13", "e14", "e15", "e16", "e17", "e21", "e22", "e23", "e24", "e25", "e29", "e74", "e77"), default="e11",
+                        help="E77/E78-only bounded synthetic proof fallback when GitHub has no KVM")
+    parser.add_argument("--proof-level", choices=("e11", "e12", "e13", "e14", "e15", "e16", "e17", "e21", "e22", "e23", "e24", "e25", "e29", "e74", "e77", "e78"), default="e11",
                         help="E13 additionally verifies independent synthetic native file/SQLite routes")
     args = parser.parse_args()
     if args.boot_timeout not in range(30, 601) or args.probe_timeout not in range(15, 301):
         parser.error("Timeout out of bounded range")
-    if args.allow_software_emulation and args.proof_level != "e77":
-        parser.error("Software-emulation fallback is restricted to E77 metadata preflight")
+    if args.allow_software_emulation and args.proof_level not in ("e77", "e78"):
+        parser.error("Software-emulation fallback is restricted to bounded E77/E78 synthetic proofs")
     for digest in (args.expected_probe_sha256, args.expected_payload_sha256):
         if re.fullmatch(r"[0-9a-f]{64}", digest) is None:
             parser.error("Expected SHA-256 must be 64 lowercase hexadecimal characters")
@@ -176,6 +246,11 @@ def main():
         "android_internal_binder_verified": False,
         "android_binder_private_bytecode_verified": False,
         "android_synthetic_application_on_create_verified": False,
+        "android_private_application_class_preflight_verified": False,
+        "android_synthetic_application_attached": False,
+        "android_synthetic_scoped_storage_ab_verified": False,
+        "android_synthetic_scope_persistence_verified": False,
+        "android_synthetic_scope_cross_readback_verified": False,
         "android_private_isolated_split_code_verified": False,
         "android_private_isolated_split_resources_verified": False,
         "android_dependent_feature_code_verified": False,
@@ -285,12 +360,12 @@ def main():
         if not adb.is_file() or not emulator_binary.is_file() or not image_path.is_file():
             raise RuntimeError("Pinned emulator, AOSP image or adb is missing")
         has_kvm = Path("/dev/kvm").exists() and os.access("/dev/kvm", os.R_OK | os.W_OK)
-        if not has_kvm and not (args.proof_level == "e77" and args.allow_software_emulation):
+        if not has_kvm and not (args.proof_level in ("e77", "e78") and args.allow_software_emulation):
             evidence["result"] = "BLOCKED"
             raise RuntimeError("GitHub runner has no accessible KVM; Android boot not attempted")
-        # Keep older proof levels fail-closed without KVM. E77 can run only its
-        # bounded metadata preflight on QEMU software emulation; it never claims
-        # guest Activity execution or physical-device compatibility.
+        # Keep older proof levels fail-closed without KVM. E77 verifies signed Activity
+        # constructor shape; E78 executes only a project-owned synthetic Application and
+        # two same-UID scopes. Neither proves guest Activity execution or phone compatibility.
         evidence["emulator_acceleration"] = "KVM" if has_kvm else "software"
 
         stage = "create isolated emulator"
@@ -355,7 +430,7 @@ def main():
             if installed.returncode or "Success" not in installed.stdout:
                 raise RuntimeError("Synthetic APK install failed")
         evidence["android_apks_installed"] = True
-        if args.proof_level in ("e24", "e25", "e29", "e74", "e77"):
+        if args.proof_level in ("e24", "e25", "e29", "e74", "e77", "e78"):
             # AOSP first boot can deliver late display/locale configuration changes after
             # sys.boot_completed. Preserve the complete seven-value fingerprint and require
             # four identical consecutive snapshots before dispatching the host Activity.
@@ -421,7 +496,7 @@ def main():
             evidence["android_isolated_fixture_installed"] = True
         save()
 
-        if args.proof_level in ("e24", "e25", "e29", "e74", "e77"):
+        if args.proof_level in ("e24", "e25", "e29", "e74", "e77", "e78"):
             stage = "launch dedicated synthetic UI Activity with signed private View factory"
             expected_run_id = str(uuid.uuid4())
             started = device("shell", "am", "start", "-W", "-n",
@@ -469,7 +544,7 @@ def main():
         deadline = time.monotonic() + args.probe_timeout
         report = None
         while time.monotonic() < deadline:
-            if args.proof_level in ("e24", "e25", "e29", "e74", "e77"):
+            if args.proof_level in ("e24", "e25", "e29", "e74", "e77", "e78"):
                 raw = device("exec-out", "run-as", PROBE_PACKAGE, "cat",
                              "files/guest-ui-probe/" + expected_run_id + ".json",
                              timeout=12, check=False)
@@ -551,7 +626,7 @@ def main():
             time.sleep(2)
         if report is None:
             raise RuntimeError("No complete Android synthetic receipt before timeout")
-        if args.proof_level in ("e24", "e25", "e29", "e74", "e77"):
+        if args.proof_level in ("e24", "e25", "e29", "e74", "e77", "e78"):
             (reports / "synthetic-ui-receipt.json").write_text(json.dumps(report, indent=2) + "\n")
             expected_true = (
                 "complete", "passed", "real_host_activity_lifecycle_verified",
