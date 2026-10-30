@@ -836,6 +836,22 @@ def main():
             save()
         if args.proof_level in ("e79", "e80"):
             pass
+        elif args.proof_level == "e82":
+            stage = "launch E82 host controller for process-local AppComponentFactory authorization"
+            expected_run_id = str(uuid.uuid4())
+            launch_args = [
+                "shell", "am", "start", "-W", "-n",
+                PROBE_PACKAGE + "/.SyntheticGuestUiProbeActivity",
+                "--es", "run_id", expected_run_id,
+                "--es", "proof_level", "e82",
+                "--es", "source_commit", args.source_commit,
+                "--es", "probe_apk_sha256", args.expected_probe_sha256,
+                "--es", "payload_apk_sha256", args.expected_payload_sha256,
+            ]
+            started = device(*launch_args, timeout=90, check=False)
+            if started.returncode:
+                raise RuntimeError("E82 host controller Activity dispatch failed")
+            stage = "read Android framework-created E82 host-stub Activity receipt"
         elif args.proof_level in ("e24", "e25", "e29", "e74", "e77", "e78"):
             stage = "launch dedicated synthetic UI Activity with signed private View factory"
             expected_run_id = str(uuid.uuid4())
@@ -893,7 +909,31 @@ def main():
         deadline = time.monotonic() if args.proof_level in ("e79", "e80") else time.monotonic() + args.probe_timeout
         report = report if args.proof_level in ("e79", "e80") else None
         while time.monotonic() < deadline:
-            if args.proof_level in ("e24", "e25", "e29", "e74", "e77", "e78"):
+            if args.proof_level == "e82":
+                raw = device("exec-out", "run-as", PROBE_PACKAGE, "cat",
+                             "files/e82-factory-receipts/" + expected_run_id + ".json",
+                             timeout=12, check=False)
+                if raw.returncode == 0 and len(raw.stdout) <= 16384:
+                    try:
+                        found = json.loads(raw.stdout)
+                        if found.get("complete") is True:
+                            report = found
+                            break
+                    except json.JSONDecodeError:
+                        pass
+                failed = device("exec-out", "run-as", PROBE_PACKAGE, "cat",
+                                "files/guest-ui-probe/" + expected_run_id + ".json",
+                                timeout=12, check=False)
+                if failed.returncode == 0 and len(failed.stdout) <= 16384:
+                    try:
+                        failure_report = json.loads(failed.stdout)
+                        if failure_report.get("complete") is True and failure_report.get("passed") is False:
+                            raise RuntimeError("E82 host preparation failed at " +
+                                               str(failure_report.get("failure_stage", "unknown")) + ": " +
+                                               str(failure_report.get("failure_type", "unknown")))
+                    except json.JSONDecodeError:
+                        pass
+            elif args.proof_level in ("e24", "e25", "e29", "e74", "e77", "e78"):
                 raw = device("exec-out", "run-as", PROBE_PACKAGE, "cat",
                              "files/guest-ui-probe/" + expected_run_id + ".json",
                              timeout=12, check=False)
