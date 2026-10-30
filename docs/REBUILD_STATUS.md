@@ -1,0 +1,44 @@
+# Fonesi APK rebuild — trạng thái 30/10/2026
+
+**Đã hoàn thành recovery/reconcile; đang xây foundation mới độc lập, chưa thay sản phẩm Android hoặc xóa source cũ.** Đỏ là marker chat, không đổi thương hiệu app. Repo APK riêng, không thay Auto/Edit.
+
+## Baseline đúng
+
+- Checkout rebuild bắt đầu từ main `c055df600f87ee9ddf0cd5d6bfc67d80d145e79d`; không gọi đây là trạng thái mới nhất.
+- Latest reviewed development/report head: `phase/e82-public-component-factory-feasibility-20261030@2fac016e3b28e4d9f21390c221cad1df7a382c86`.
+- Latest recorded exact source/test PASS: `58d52f4aa05c8c8d5256e7125b522815418b1e02` (E83). CI receipts chưa được audit độc lập trong lượt này.
+- 14 remote heads không là tổ tiên latest head đã được preserve và semantic reconcile riêng; xem REBUILD_RECONCILIATION.md.
+- Full bundle `/tmp/fonesi-apk-pre-rebuild-20261030.bundle`, SHA-256 `d0516e03126dd60b20e5dc954065dd694469d0d6b3689691cbc7e4717866404a`, 65 advertised refs. All-ref restoration VERIFIED: wildcard fetch vào bare repo mới khớp chính xác 64 refs; HEAD riêng khớp main. Bản workspace tại `/workspace/shared/fonesi-apk-recovery-20261030/` có bundle, restore.git và ref-manifest.json.
+
+## Đã làm trong lượt này
+
+Đọc main và latest branch, quan hệ Git mọi remote head, E35 threat model, E82/E83 results, E84 feasibility, E85 pre-code plan, schema/worker source và những mâu thuẫn trạng thái. Tạo [REBUILD_REVIEW.md](REBUILD_REVIEW.md). Tại checkpoint audit ban đầu chưa chạy APK/binary/scripts hoặc sửa/xóa code. Các lần compile/test foundation sau đó được ghi rõ phía dưới.
+
+## Kết luận hiện hành
+
+Có Android synthetic host-stub/Application/data/restart proof và nhiều contract/storage tests; không được nói toàn repo chưa chạy Android. Chưa có production split provider, third-party/social-account acceptance hoặc physical phone acceptance. SpaceCore vẫn single APK. E85 orchestration là kế hoạch, không phải đã implement. Room latest schema 6; background journal-only worker và clone color/badge đã tồn tại.
+
+## Đang chờ trước khi thay source
+
+1. ĐÃ ĐẠT: so khớp all-ref bundle restore và lưu bản workspace ngoài /tmp; không coi workspace là bảo đảm lưu vĩnh viễn.
+2. ĐÃ ĐẠT: semantic review 14 nhánh rẽ; giữ regression oracle riêng.
+3. ĐÃ CÓ: master/detailed rebuild plan có acceptance matrix; không dùng main-only gaps làm requirements.
+4. Sau đó mới tiến hành rebuild có regression oracle và fresh verification. Không tự tăng phần trăm từ lịch sử test.
+
+## Gate còn mở của sản phẩm
+
+Provider provenance/license, full signed split import/readback/atomic update, guest framework/Binder/permissions and adversarial isolation, phone/app compatibility, release signing/upgrade/data retention. Tiếp tục độc lập trong cloud; tài khoản thử do người dùng tự đăng nhập khi đến gate, không xin bí mật qua chat.
+
+## R2 foundation progress
+
+Recovery and semantic reconciliation complete; see REBUILD_RECONCILIATION.md. Plan checkpoints committed locally (`a066c17`, `5166d71`), no push. New independent `rebuild-kernel` compiled with installed Java 21 compiler module and passed **48 explicit checks**, zero failed checks. Local JRE image lacks ct.sym, so compile uses Java21 system modules with source/target21; no SDK build claim. No production provider or source deletion. Đây là trạng thái trung gian; kết quả review hoàn tất và số test hiện hành ở R2.1/R2.2 phía dưới.
+
+R2.1 independent review found and corrected missing lifecycle dependency, shared-peer readback and operation/attempt-binding gaps. Final local run: **64 explicit JVM checks PASS**, compiler `-Xlint:all -Werror`; policy now binds exact cluster/provider revision/environment, globally rejects unknown isolation claims, and validates every peer observation. This supersedes the interim 48-check count. No Android/provider/product completion claim.
+
+## R2.2 passing checkpoint — 2026-10-30
+
+Fresh rerun after resuming: `./rebuild-kernel/check.sh` exited 0, **64 kernel checks + 60 Linux filesystem journal checks**, no failures; compiler `-Xlint:all -Werror`. `git diff --check` passed. Journal tests include real second-JVM lock contention/forced child termination, atomic CAS/reopen, correctly checksummed malformed payloads, symlink/FIFO/directory refusal, pinned-root replacement, and injected pre-/post-rename failures. Pre-rename retains old state; post-rename remains uncertain and is durably quarantined, never permission to dispatch.
+
+Independent review findings were fixed or explicitly retained as integration blockers: journal is storage-only, not an execution lease or readback authenticator. A future trusted dispatcher must reserve overlapping clone/package operations throughout mutation/readback, verify live authorization/READY/stopped peers, and own validated transitions. Public record construction is not proof. Trusted private-directory ownership must prevent lock/root replacement; file identity checks are not a formal hostile-filesystem guarantee.
+
+No Android SDK/build, emulator, actual guest/provider, migration deployment or physical-device tests were run for this new module. No production capability was enabled and no old source was deleted. All-ref recovery and 14-head semantic reconciliation are complete; replacement still requires preservation of the documented oracle. Provider/license/native/hostile-guest isolation and phone acceptance remain unresolved. Gradle definition exists but Gradle execution was not performed; tests used installed Java21 compiler/JVM directly. No push by this worker; root coordinates publication.

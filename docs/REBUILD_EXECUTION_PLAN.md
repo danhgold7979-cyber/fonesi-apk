@@ -1,0 +1,45 @@
+# Rebuild execution ledger
+
+## R2.1 — before implementation: standalone capability and operation kernel
+
+Inputs: all-ref recovery PASS; original product scope; E35 hostile-guest model; E83 independent import/execution/atomic-update claims; E44–E67 authority/identity/uncertain-outcome protections. Old code will not be copied into the module.
+
+Implementation location: `rebuild-kernel/`, pure Java 21/JVM, no Android SDK, downloaded libraries, SDK AAR, network or account access. Kotlin/Android adapters can call Java later. Existing product modules remain untouched until replacement gates pass.
+
+1. Immutable provider identity and capability assessment. A typed evidence record binds provider ID/revision, environment and scope to a set of observed claims. Decision requires exact provider/environment; fail closed for unknown isolation, missing evidence, synthetic-only evidence on production requests, or incomplete dependency chain. Evidence objects are not cryptographic attestations and must be supplied only after external verification.
+2. Operations bind operation UUID, provider identity, clone UUID, cluster SHA-256 and immutable peer set. Explicit states PREPARED → DISPATCHED → VERIFIED or REVIEW_REQUIRED; pre-dispatch cancellation permitted, never after dispatch. On restart any dispatched-but-unverified outcome becomes REVIEW_REQUIRED, never auto-retry. Only exact provider/clone/cluster/peer readback can verify.
+3. Local tests compile production and test sources through installed JDK compiler module (`java -m jdk.compiler/com.sun.tools.javac.Main`) and execute an explicit test runner. Nonzero assertions/check count and any failure must fail process. No dependency/network/bootstrap needed. Add Gradle Java module build definition for future normal CI, without altering existing root build yet.
+4. Tests cover evidence provenance mismatch, synthetic vs real scope, unknown/same-UID isolation without adversarial proof, missing split import/execution/update prerequisite, defensive collection copying, invalid identities/digests, dispatch/cancel/verify ordering, post-dispatch identity drift and restart quarantine. No fake backend accepted as production.
+5. Document synthetic runtime test design for future R4: signed controlled guest A/B; original data unchanged; adversarial cross-path/FD/IPC/provider/URI/permission cases; lifecycle/restart/update/crash receipts; exact source/artifact/environment binding; physical-device gate remains separate.
+
+Acceptance: new JVM suite executes with real compiler/runtime, zero failed tests; no native/provider operations, no capability uplift in existing app, no source deletions, no push. This is R2 foundation only, not engine completion.
+
+## Following packages (plan before implementation)
+
+R2.2 persistence journal serialization/checksum and CAS protocol with corruption/duplicate-operation tests; R3 storage/schema and source-reference ownership; R4 provider decision and runtime harness; R5 UI integration. Each requires a separate detailed pre-code entry. Do not invent a provider or lower E35 threat requirements to unblock R4.
+
+### R2.1 toolchain correction before retry
+
+Local compiler is Java 21.0.12.1 but runtime image lacks `lib/ct.sym`; `javac --release 21` fails with “release version 21 not supported” and reports no supported release image. Use the actual Java 21 system modules with explicit `-source 21 -target 21`; this does not lower language/bytecode target or suppress warnings. Local evidence is Java21 host compile, not Android API compatibility. Future Android integration still needs its SDK/desugaring build gate.
+
+### R2.1 independent review corrections before code changes
+
+Reviewer found lifecycle evidence lacked signed-import/private-readback dependencies, and shared verification trusted a declared peer set rather than independently observed per-peer records. Fix: enforce lifecycle import/readback prerequisites; replace one-clone receipt with operation-bound exact map of UUID→provider/cluster/private-storage observations. Require every affected peer, reject missing/extra/stale peer and mismatched operation ID. Add negative tests, retaining all existing assertions.
+
+Further review: bind capability evidence/request to exact APK-cluster SHA-256 (one app result is not universal compatibility); globally reject claimed isolation with UNKNOWN level; bind readback to dispatched revision as well as operation UUID. Authorization, READY/stopped peers and durable CAS remain mandatory external dispatcher obligations, not implied by Identity equality.
+
+## R2.2 — before implementation: durable operation journal / CAS
+
+Prerequisite R2.1 committed f76c2f9; local 64 checks passed. New code stays inside independent rebuild-kernel, no production DB/provider wiring.
+
+Design: caller supplies existing trusted private directory; reject symlink root/journal/lock. One OS file lock serializes cooperating processes. UUID-named journal files contain a bounded deterministic binary envelope with SHA-256 corruption checksum, full identity/state/revision and exact peer set. Checksum detects corruption, not hostile rewriting or receipt authenticity. CREATE accepts PREPARED revision0 only. CAS requires full expected record equality and legal revision+state transition; cannot write VERIFIED directly from PREPARED or change identity. Persist unique staging file, force bytes, atomic rename, force directory. Never fall back to non-atomic replacement. If commit result is uncertain, reread before any provider action; IOException after rename cannot authorize repeat dispatch.
+
+Dispatch contract: caller commits DISPATCHED successfully before external SDK call; failure/uncertainty means do not dispatch. Restart reconciliation only converts durable DISPATCHED to REVIEW_REQUIRED. No guest mutation, snapshots or sensitive account content in this journal. UUID/namespace/cluster references are retained; no cleanup of user data.
+
+Tests: roundtrip/reopen, create duplicate, stale CAS, every illegal/terminal transition, identity drift, corrupted/truncated/trailing/oversized envelope, symlink target/lock/root rejection, busy lock, atomic replacement/reopen, readback after prior uncertain state. Cross-process contention and injected pre/post-rename durability failure must be tested before integration acceptance. Linux filesystem tests do not establish Android filesystem behavior; SQLite/migration adapter remains R3.
+
+### R2.2 review corrections before final verification
+
+A post-rename fsync failure means bytes visible on reread may still not be durable. Therefore **never dispatch after an uncertain commit**, even if reread shows DISPATCHED; persist REVIEW_REQUIRED with a successful durable CAS or stop pending reconciliation. Reread is diagnosis, not authorization. Also reject an existing non-regular lock target before open, preventing FIFO blocking; test FIFO/directory lock rejection. Trusted-private-root/cooperating-process boundary remains explicit; this is not an attacker-controlled filesystem sandbox.
+
+Review hardening: enforce currently reachable state/revision pairs (PREPARED0, DISPATCHED/CANCELLED1, VERIFIED/REVIEW_REQUIRED2); pin root directory file identity and reject replacement; add correctly checksummed malformed-envelope tests so decoding is exercised beyond checksum rejection. Journal CAS remains storage-only and cannot prove readback or serialize distinct overlapping operations; a trusted dispatcher with a full-lifetime execution lease is required before any real provider integration.
