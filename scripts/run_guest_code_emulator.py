@@ -645,6 +645,7 @@ def main():
                                 args.expected_probe_sha256, args.expected_payload_sha256)
             stage = "E79 force-stop original synthetic host process"
             device("shell", "am", "force-stop", PROBE_PACKAGE, timeout=30, check=False)
+            evidence["android_host_process_force_stop_requested"] = True
             process_deadline = time.monotonic() + 30
             process_stopped = False
             while time.monotonic() < process_deadline:
@@ -658,6 +659,7 @@ def main():
                 time.sleep(1)
             if not process_stopped:
                 raise RuntimeError("E79 force-stop did not terminate the dedicated host process")
+            evidence["android_host_process_absence_confirmed"] = True
             stage = "E79 relaunch fresh process and verify persisted scopes"
             verify_run_id = str(uuid.uuid4())
             handoff = {
@@ -673,7 +675,7 @@ def main():
             validate_e79_receipts(e79_write_report, report, args.source_commit,
                                   args.expected_probe_sha256, args.expected_payload_sha256)
             (reports / "e79-process-restart-receipt.json").write_text(
-                json.dumps({"write_stage": e79_write_report, "verify_stage": report}, indent=2) + "\n")
+                json.dumps({"force_stop_requested": True, "prior_process_absent_before_relaunch": process_stopped, "write_stage": e79_write_report, "verify_stage": report}, indent=2) + "\n")
             evidence["android_synthetic_scope_process_restart_verified"] = True
             evidence["android_synthetic_application_new_process_oncreate_verified"] = True
             evidence["android_synthetic_scope_data_after_process_restart_verified"] = True

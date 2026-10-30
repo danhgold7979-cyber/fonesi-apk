@@ -202,6 +202,10 @@ jobs:
           assert evidence.get("result") == "PASS_E79_SYNTHETIC_SCOPED_DATA_PROCESS_RESTART_ONLY"
           assert evidence.get("android_boot_verified") is True
           assert evidence.get("android_apks_installed") is True
+          assert evidence.get("android_host_process_force_stop_requested") is True
+          assert evidence.get("android_host_process_absence_confirmed") is True
+          assert combined.get("force_stop_requested") is True
+          assert combined.get("prior_process_absent_before_relaunch") is True
           assert evidence.get("android_synthetic_scope_process_restart_verified") is True
           assert evidence.get("android_synthetic_application_new_process_oncreate_verified") is True
           assert evidence.get("android_synthetic_scope_data_after_process_restart_verified") is True
