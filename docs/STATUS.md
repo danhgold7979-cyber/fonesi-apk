@@ -1,3 +1,15 @@
+# Fonesi APK — E81 exact-source synthetic PRIVATE Activity scoped-method technical PASS; guest lifecycle unaccepted (30/10/2026)
+
+**Repository:** [danhgold7979-cyber/fonesi-apk](https://github.com/danhgold7979-cyber/fonesi-apk). Development branch `phase/e81-private-activity-scoped-method-proof-20261030`, [Draft PR #55](https://github.com/danhgold7979-cyber/fonesi-apk/pull/55) stacked on E80 Draft PR #54. `main@c055df600f87ee9ddf0cd5d6bfc67d80d145e79d` unchanged.
+
+Original **Product Phase 1 steps 7–8** (bounded test-owned portion of step 8), preparing Phase 3 step 15 and Phase 2 phone steps 9–12. **E81 technical PASS** on exact source/test `35ebb2119fb771762865ec02a6d9a9a38b28f4dc`: [CI #41024151911](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/41024151911) **SUCCESS**, all 17 substantive gates. **510 cloud/candidate tests per gate**, 63 opt-in source-engine JVM tests, 33 Python tests and 14 payload JVM tests; pinned build/lint/signed APK audit, E40–E81 guards, and owned AOSP API 34 x86_64 emulator completed. [E81 results](phases/E81_PRIVATE_ACTIVITY_SCOPED_METHOD_RESULTS.md) | [TEST-ONLY artifact #12963223216](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/41024151911/artifacts/12963223216).
+
+Two host processes (PID **2620 → 3046**, same Android UID **10142**) shared the same verified signed PRIVATE cluster and two distinct UUID scopes. After package force-stop and positive prior-process absence check, the synthetic Application start counters advanced **1 → 2** in both scopes. The E80-constructed `vn.fonesi.payload.PayloadActivity` instance bound once to **scope A** by an explicit signed PRIVATE method; duplicate A and different B rebinding failed closed, and the PRIVATE method read back A's persisted SharedPreferences/files/SQLite marker in both processes, not B. Framework Activity `getBaseContext()==null`, `onCreate` not called, no real guest framework component attach/registration.
+
+**This is same-UID/test-owned delegation, NOT full guest Activity lifecycle, independent OS UID/account security, external apps, production split APK import or device acceptance.** Candidate `supportsSplits=false`, single APK guard remains; Samsung and real social app sessions untested. **Weighted product readiness stays 28.00%, accepted real third-party clones 0.** Keep PR Draft, `main` unchanged. Reporting commit after this source/test PASS requires its own independent CI; no release/merge. Next technical work: real guest component mediation/Android framework lifecycle feasibility with separate plan.
+
+---
+
 # Fonesi APK — E80 exact-source signed synthetic Activity constructor technical PASS; guest lifecycle unaccepted (30/10/2026)
 
 **Repository:** [danhgold7979-cyber/fonesi-apk](https://github.com/danhgold7979-cyber/fonesi-apk); branch `phase/e80-signed-private-activity-construction-20261030`, [Draft PR #54](https://github.com/danhgold7979-cyber/fonesi-apk/pull/54) stacked on E79 Draft PR #53. `main@c055df600f87ee9ddf0cd5d6bfc67d80d145e79d` unchanged.
