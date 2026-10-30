@@ -16,7 +16,7 @@ class EngineCapabilitiesTest {
             configForSplit = "feature.alpha")
         return GuestApkClusterIdentity(
             "vn.fonesi.fixture", 1, setOf("e".repeat(64)),
-            listOf(base, alpha, beta, french), "f".repeat(64),
+            listOf(base, alpha, french, beta), "f".repeat(64),
         )
     }
 
@@ -98,16 +98,16 @@ class EngineCapabilitiesTest {
 
     @Test fun splitClusterIdentityRequiresOneBaseUniqueMembersAndAcyclicDependencies() {
         val identity = validClusterIdentity()
-        val base = identity.members[0]
-        val alpha = identity.members[1]
-        val beta = identity.members[2]
-        val french = identity.members[3]
+        val base = identity.members.first()
+        val alpha = identity.members.single { it.splitName == "feature.alpha" }
+        val beta = identity.members.single { it.splitName == "feature.beta" }
+        val french = identity.members.single { it.splitName == "feature.alpha.fr" }
         assertEquals(identity, identity.requireStructurallyValid())
         assertThrows(IllegalArgumentException::class.java) {
             identity.copy(members = listOf(alpha, beta, french)).requireStructurallyValid()
         }
         assertThrows(IllegalArgumentException::class.java) {
-            identity.copy(members = listOf(base, alpha, alpha, beta, french)).requireStructurallyValid()
+            identity.copy(members = listOf(base, alpha, alpha, french, beta)).requireStructurallyValid()
         }
         val cyclic = listOf(
             base,
@@ -125,10 +125,10 @@ class EngineCapabilitiesTest {
 
     @Test fun splitClusterIdentityRequiresCanonicalNamesAndFeatureConfigRelationships() {
         val identity = validClusterIdentity()
-        val base = identity.members[0]
-        val alpha = identity.members[1]
-        val beta = identity.members[2]
-        val french = identity.members[3]
+        val base = identity.members.first()
+        val alpha = identity.members.single { it.splitName == "feature.alpha" }
+        val beta = identity.members.single { it.splitName == "feature.beta" }
+        val french = identity.members.single { it.splitName == "feature.alpha.fr" }
         assertThrows(IllegalArgumentException::class.java) {
             identity.copy(packageName = "invalid package").requireStructurallyValid()
         }
@@ -136,11 +136,11 @@ class EngineCapabilitiesTest {
             identity.copy(members = listOf(base, beta, alpha, french)).requireStructurallyValid()
         }
         assertThrows(IllegalArgumentException::class.java) {
-            identity.copy(members = listOf(base, alpha.copy(configForSplit = "feature.beta"), beta, french))
+            identity.copy(members = listOf(base, alpha.copy(configForSplit = "feature.beta"), french, beta))
                 .requireStructurallyValid()
         }
         assertThrows(IllegalArgumentException::class.java) {
-            identity.copy(members = listOf(base, alpha, beta, french.copy(configForSplit = "feature.missing")))
+            identity.copy(members = listOf(base, alpha, french.copy(configForSplit = "feature.missing"), beta))
                 .requireStructurallyValid()
         }
     }
