@@ -108,3 +108,13 @@ Run41111859787/head `3e09e62b0c7258c60868f0d5a7295762a663a6fc`: installed JDK17 
 New dependency-free controller binds events to foreground epoch/view revision, cancels pending refresh on pause, hides inactive metadata, clears selection and rejects late/duplicate callbacks. Native Activity wires search/exact-group/select-visible metadata controls and truthful unconnected/loading/failed/empty/quarantined states. No adapter or seeded rows exists; no clone/import/migration operation is enabled. Original four unsupported Buttons and strict APK gate remain unchanged. Render recursion is blocked in both layers.
 
 Local108 model +76 fake-view controller checks and30 tooling tests pass; localJDK21 behavior only. Hosted installedJDK17 and Android compile/lint/APK gate required for this new source. Actual UI/TalkBack/rotation/insets/device tests remain NOT RUN. Before any external metadata adapter, execution plan requires stable snapshot pages, measured byte/field/time budgets, fail-closed over-budget handling and normalized-search caching, without a product clone-count cap. No source deletion or data migration.
+
+## minSdk26/API and bridge audit checkpoint — 2026-10-30 19:25 UTC
+
+Reviewed exact new Model/Controller/Activity source against primary Android API references and actual Gradle configuration. No unsupported call evidenced; no production-code/minSdk/dependency changes needed. Current app uses Java17 language output with no core-library desugaring; source/API review is distinct from javac/D8 and still not API26 device execution. API matrix and ordered kernel bridge are in `REBUILD_MINSDK26_API_AUDIT.md`.
+
+Standalone Java21 kernel remains unimported: Set.of API30; Map/Set.copyOf API31; String.isBlank and additionally discovered ByteArrayOutputStream.writeBytes API33; HexFormat/Stream.toList API34, plus records/output shape and Android filesystem ownership/fsync/atomic-rename/lock proof remain bridge gates. Capability/auth/private readback cannot be supplied by presentation selection or foreground tokens. No provider guessed or storage mutation attempted.
+
+Added three focused source/config tripwire tests (not a general API analyzer).33 tooling tests +108 model/76 controller host checks pass locally; production source unchanged from Android-green run41114110538. Exact new test/docs checkpoint CI still pending root publication. API26 runtime/UI/device/isolation acceptance remains NOT RUN.
+
+Independent API review agrees no additional unsupported new-app call. Audit clarifies language/class-file handling separately from library availability, and bridge golden vectors must cover signed UUID ordering and supplementary Unicode/UTF-16-length/UTF-8 hash semantics. This is a planning constraint, not a newly implemented bridge.

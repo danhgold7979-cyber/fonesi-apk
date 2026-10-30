@@ -1,4 +1,6 @@
-# Android compatibility inventory — 2026-10-30
+# Android compatibility inventory — historical pre-scaffold snapshot
+
+Current source/API26 audit and exact remaining kernel bridge: [REBUILD_MINSDK26_API_AUDIT.md](REBUILD_MINSDK26_API_AUDIT.md). The environment/next-gate sections below describe the earlier pre-scaffold checkpoint, not current hosted capability.
 
 ## Actual local environment
 

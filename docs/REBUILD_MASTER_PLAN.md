@@ -1,6 +1,6 @@
 # Fonesi APK — master rebuild plan
 
-Date: 2026-10-30. Rebuild authorized; no push/release yet. This ordered plan supersedes execution ordering, not the original product requirements or historical evidence. Red is a conversation marker only.
+Date: 2026-10-30. Rebuild authorized; reviewed checkpoints published on `rebuild` only, no release or main merge. This ordered plan supersedes execution ordering, not the original product requirements or historical evidence. Red is a conversation marker only.
 
 ## Frozen product scope
 
