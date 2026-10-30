@@ -1,0 +1,45 @@
+name: Rebuild JVM kernel and Linux journal
+
+on:
+  push:
+    branches: [rebuild]
+  pull_request:
+    branches: [rebuild]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: rebuild-kernel-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  standalone-linux:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Checkout exact source without stored credentials
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+          fetch-depth: 2
+      - name: Verify exact source and use installed Java 21
+        env:
+          EXPECTED_SOURCE: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$EXPECTED_SOURCE"
+          test -n "${JAVA_HOME_21_X64:-}"
+          test -x "$JAVA_HOME_21_X64/bin/java"
+          echo "JAVA_HOME=$JAVA_HOME_21_X64" >> "$GITHUB_ENV"
+          echo "$JAVA_HOME_21_X64/bin" >> "$GITHUB_PATH"
+      - name: Compile warning-free and run standalone contract/filesystem/dispatcher suites
+        run: ./rebuild-kernel/check.sh
+      - name: Source whitespace check
+        run: git diff-tree --check HEAD
+      - name: Explicit evidence boundary
+        run: |
+          echo 'JVM contracts and Linux private-filesystem tests only.' >> "$GITHUB_STEP_SUMMARY"
+          echo 'No Android build, actual provider, hostile-guest isolation or physical-device acceptance.' >> "$GITHUB_STEP_SUMMARY"

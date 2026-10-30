@@ -7,3 +7,4 @@ mapfile -t sources < <(find src/main/java src/test/java -type f -name '*.java' |
 java -m jdk.compiler/com.sun.tools.javac.Main -source 21 -target 21 -Xlint:all -Werror -d build/classes "${sources[@]}"
 java -cp build/classes vn.fonesi.rebuild.KernelTest
 java -cp build/classes vn.fonesi.rebuild.JournalTest
+java -cp build/classes vn.fonesi.rebuild.DispatcherTest

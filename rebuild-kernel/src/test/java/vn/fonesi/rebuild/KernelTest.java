@@ -56,7 +56,7 @@ public final class KernelTest {
         rejects(() -> new Provider("provider", " revision"));
         rejects(() -> new Evidence(P, "", DIGEST, Scope.SYNTHETIC, Isolation.UNKNOWN, all));
     }
-    private static Identity identity(Set<UUID> affected) { return new Identity(A, P, A, DIGEST, affected); }
+    private static Identity identity(Set<UUID> affected) { return new Identity(A, P, "example.app", "api34-arm64-4k", Scope.SYNTHETIC, A, DIGEST, affected); }
     private static Readback readback(Provider provider, UUID clone, String digest, Set<UUID> peers, boolean privateStorage) {
         Map<UUID, PeerObservation> observations = new HashMap<>();
         for (UUID peer : peers) observations.put(peer, new PeerObservation(provider, digest, privateStorage));
@@ -109,8 +109,8 @@ public final class KernelTest {
         check(cancelled.state() == State.CANCELLED && cancelled.recover().equals(cancelled));
         rejects(() -> cancelled.dispatch(1, id));
         rejects(() -> identity(Set.of(B)));
-        rejects(() -> new Identity(A, P, A, "short", Set.of(A)));
-        rejects(() -> new Identity(A, P, A, "A".repeat(64), Set.of(A)));
+        rejects(() -> new Identity(A, P, "example.app", "api34-arm64-4k", Scope.SYNTHETIC, A, "short", Set.of(A)));
+        rejects(() -> new Identity(A, P, "example.app", "api34-arm64-4k", Scope.SYNTHETIC, A, "A".repeat(64), Set.of(A)));
         rejects(() -> new Operation(id, State.PREPARED, -1));
         rejects(() -> new Operation(id, State.PREPARED, Long.MAX_VALUE).dispatch(Long.MAX_VALUE, id));
         HashSet<UUID> peers = new HashSet<>(Set.of(A, B));

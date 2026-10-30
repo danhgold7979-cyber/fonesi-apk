@@ -20,7 +20,7 @@ public final class JournalTest {
     private static final CapabilityPolicy.Provider PROVIDER = new CapabilityPolicy.Provider("test", "revision");
     private static Operation initial() {
         UUID id = UUID.randomUUID();
-        return Operation.prepare(new Identity(id, PROVIDER, id, "a".repeat(64), Set.of(id)));
+        return Operation.prepare(new Identity(id, PROVIDER, "example.app", "api34-arm64-4k", CapabilityPolicy.Scope.SYNTHETIC, id, "a".repeat(64), Set.of(id)));
     }
     public static void main(String[] args) throws Exception {
         if (args.length == 2 && args[0].equals("hold-lock")) {
@@ -125,15 +125,16 @@ public final class JournalTest {
         check(journal.read(first.identity().operation()).equals(recovered));
         Files.delete(data); // Remove only the test-owned symlink before malformed fixtures.
         for (byte[] malformed : List.of(
-            fixture(third, 0, 1, "test", "PREPARED", 0, "a".repeat(64), false, false),
-            fixture(third, 0x464f4e32, 2, "test", "PREPARED", 0, "a".repeat(64), false, false),
-            fixture(third, 0x464f4e32, 1, " ", "PREPARED", 0, "a".repeat(64), false, false),
-            fixture(third, 0x464f4e32, 1, "test", "UNKNOWN", 0, "a".repeat(64), false, false),
-            fixture(third, 0x464f4e32, 1, "test", "VERIFIED", 0, "a".repeat(64), false, false),
-            fixture(third, 0x464f4e32, 1, "test", "PREPARED", 99, "a".repeat(64), false, false),
-            fixture(third, 0x464f4e32, 1, "test", "PREPARED", 0, "short", false, false),
-            fixture(third, 0x464f4e32, 1, "test", "PREPARED", 0, "a".repeat(64), true, false),
-            fixture(third, 0x464f4e32, 1, "test", "PREPARED", 0, "a".repeat(64), false, true))) {
+            fixture(third, 0, 2, "test", "PREPARED", 0, "a".repeat(64), false, false),
+            fixture(third, 0x464f4e32, 1, "test", "PREPARED", 0, "a".repeat(64), false, false),
+            fixture(third, 0x464f4e32, 3, "test", "PREPARED", 0, "a".repeat(64), false, false),
+            fixture(third, 0x464f4e32, 2, " ", "PREPARED", 0, "a".repeat(64), false, false),
+            fixture(third, 0x464f4e32, 2, "test", "UNKNOWN", 0, "a".repeat(64), false, false),
+            fixture(third, 0x464f4e32, 2, "test", "VERIFIED", 0, "a".repeat(64), false, false),
+            fixture(third, 0x464f4e32, 2, "test", "PREPARED", 99, "a".repeat(64), false, false),
+            fixture(third, 0x464f4e32, 2, "test", "PREPARED", 0, "short", false, false),
+            fixture(third, 0x464f4e32, 2, "test", "PREPARED", 0, "a".repeat(64), true, false),
+            fixture(third, 0x464f4e32, 2, "test", "PREPARED", 0, "a".repeat(64), false, true))) {
             Files.write(data, malformed); rejects(() -> journal.read(third.identity().operation()));
         }
         Path replaceRoot = Files.createTempDirectory("fonesi-journal-root-pin-");
@@ -151,7 +152,9 @@ public final class JournalTest {
         ByteArrayOutputStream bytes = new ByteArrayOutputStream();
         try (DataOutputStream out = new DataOutputStream(bytes)) {
             out.writeInt(magic); out.writeInt(version); uuid(out, operation.identity().operation());
-            out.writeUTF(provider); out.writeUTF("revision"); uuid(out, operation.identity().cloneId()); out.writeUTF(digest);
+            out.writeUTF(provider); out.writeUTF("revision"); out.writeUTF(operation.identity().packageName());
+            out.writeUTF(operation.identity().environment()); out.writeUTF(operation.identity().scope().name());
+            uuid(out, operation.identity().cloneId()); out.writeUTF(digest);
             out.writeInt(duplicate ? 2 : 1); uuid(out, operation.identity().cloneId());
             if (duplicate) uuid(out, operation.identity().cloneId());
             out.writeUTF(state); out.writeLong(revision); if (trailing) out.writeByte(1);

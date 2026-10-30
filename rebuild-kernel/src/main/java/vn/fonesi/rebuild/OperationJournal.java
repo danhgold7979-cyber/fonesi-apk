@@ -36,6 +36,24 @@ public final class OperationJournal {
         try (Lease lease = acquire()) {
             lease.requireValid(); return readLocked(operation); }
     }
+    /** Streaming complete history inspection; observer must be trusted, read-only and non-reentrant. */
+    public void inspect(java.util.function.Consumer<Operation> observer) throws IOException {
+        Objects.requireNonNull(observer);
+        try (Lease lease = acquire()) {
+            lease.requireValid();
+            try (DirectoryStream<Path> files = Files.newDirectoryStream(root, "*.journal")) {
+                for (Path file : files) {
+                    String name = file.getFileName().toString();
+                    String raw = name.substring(0, name.length() - ".journal".length());
+                    UUID id;
+                    try { id = UUID.fromString(raw); }
+                    catch (IllegalArgumentException e) { throw new IOException("Invalid journal filename", e); }
+                    if (!id.toString().equals(raw)) throw new IOException("Noncanonical journal filename");
+                    observer.accept(readLocked(id));
+                }
+            }
+        }
+    }
     public void create(Operation initial) throws IOException {
         if (initial.state() != State.PREPARED || initial.revision() != 0)
             throw new IllegalArgumentException("Initial state must be PREPARED revision zero");
@@ -128,8 +146,9 @@ public final class OperationJournal {
         if (id.affectedClones().size() > MAX_PEERS) throw new IOException("Journal peer budget exceeded");
         ByteArrayOutputStream payload = new ByteArrayOutputStream();
         try (DataOutputStream out = new DataOutputStream(payload)) {
-            out.writeInt(MAGIC); out.writeInt(1);
+            out.writeInt(MAGIC); out.writeInt(2);
             writeUuid(out, id.operation()); out.writeUTF(id.provider().id()); out.writeUTF(id.provider().revision());
+            out.writeUTF(id.packageName()); out.writeUTF(id.environment()); out.writeUTF(id.scope().name());
             writeUuid(out, id.cloneId()); out.writeUTF(id.clusterSha256());
             List<UUID> peers = id.affectedClones().stream().sorted().toList();
             out.writeInt(peers.size()); for (UUID peer : peers) writeUuid(out, peer);
@@ -144,9 +163,11 @@ public final class OperationJournal {
         if (!MessageDigest.isEqual(digest(body), Arrays.copyOfRange(bytes, bytes.length - 32, bytes.length)))
             throw new IOException("Journal checksum mismatch");
         try (DataInputStream in = new DataInputStream(new ByteArrayInputStream(body))) {
-            if (in.readInt() != MAGIC || in.readInt() != 1) throw new IOException("Unknown journal format");
+            if (in.readInt() != MAGIC || in.readInt() != 2) throw new IOException("Unknown journal format");
             UUID operation = readUuid(in);
             CapabilityPolicy.Provider provider = new CapabilityPolicy.Provider(in.readUTF(), in.readUTF());
+            String packageName = in.readUTF(); String environment = in.readUTF();
+            CapabilityPolicy.Scope scope = CapabilityPolicy.Scope.valueOf(in.readUTF());
             UUID clone = readUuid(in); String cluster = in.readUTF();
             int count = in.readInt();
             if (count < 1 || count > MAX_PEERS) throw new IOException("Invalid peer count");
@@ -154,7 +175,7 @@ public final class OperationJournal {
             for (int n = 0; n < count; n++) if (!peers.add(readUuid(in))) throw new IOException("Duplicate peer");
             State state = State.valueOf(in.readUTF()); long revision = in.readLong();
             if (in.available() != 0) throw new IOException("Trailing journal bytes");
-            return new Operation(new Identity(operation, provider, clone, cluster, peers), state, revision);
+            return new Operation(new Identity(operation, provider, packageName, environment, scope, clone, cluster, peers), state, revision);
         } catch (IllegalArgumentException e) { throw new IOException("Invalid journal value", e); }
     }
     private static void writeUuid(DataOutputStream out, UUID value) throws IOException {

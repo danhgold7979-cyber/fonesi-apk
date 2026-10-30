@@ -12,3 +12,9 @@ tasks.register<JavaExec>("journalTest") {
     mainClass.set("vn.fonesi.rebuild.JournalTest")
 }
 tasks.check { dependsOn("journalTest") }
+tasks.register<JavaExec>("dispatcherTest") {
+    dependsOn(tasks.testClasses)
+    classpath = sourceSets.test.get().runtimeClasspath
+    mainClass.set("vn.fonesi.rebuild.DispatcherTest")
+}
+tasks.check { dependsOn("dispatcherTest") }

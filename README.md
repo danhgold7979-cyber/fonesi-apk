@@ -1,3 +1,15 @@
+# Fonesi APK — rebuild đang triển khai
+
+**Luồng rebuild hiện hành:** [master plan](docs/REBUILD_MASTER_PLAN.md), [execution plan](docs/REBUILD_EXECUTION_PLAN.md), [status](docs/REBUILD_STATUS.md), [audit/recovery](docs/REBUILD_REVIEW.md). `rebuild-kernel/` là implementation mới độc lập; chạy `./rebuild-kernel/check.sh` để kiểm tra JVM/Linux. Chưa phải engine clone hoặc APK hoàn thiện; chưa tích hợp vào ứng dụng Android.
+
+Toàn bộ source cũ được phục hồi đủ refs; phần Android bên dưới còn giữ làm reference/regression oracle, không phải thành quả rebuild. Không coi test kernel là bằng chứng chạy/cách ly tài khoản. Màu đỏ chỉ nhận diện luồng trao đổi APK, không phải yêu cầu đổi thương hiệu.
+
+---
+
+## Tài liệu ứng dụng cũ — baseline main E9, không phải trạng thái mới nhất
+
+Latest historical development evidence nằm ở `phase/e82-public-component-factory-feasibility-20261030@2fac016e3b28e4d9f21390c221cad1df7a382c86`; main E9 bên dưới là snapshot cũ. Xem audit rebuild trước khi dùng báo cáo/test count hoặc đường build lịch sử.
+
 # Fonesi
 
 Ứng dụng Android dự kiến quản lý nhiều bản clone của các ứng dụng trên điện thoại, ưu tiên mạng xã hội, không yêu cầu root.
