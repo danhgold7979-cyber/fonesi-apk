@@ -44,3 +44,22 @@ The observed failure is specifically the inherited pre-lifecycle stability gate.
 6. Update E77 results, STATUS and PRODUCT_PROGRESS only from the resulting exact-source CI. Product readiness remains 28.00% unless product acceptance evidence changes; no guest Activity, UID/account, split-provider or physical-device claims are introduced. Keep PR #51 Draft and `main` unchanged.
 
 This is an E77 corrective implementation, not a new product Phase or a new E-number. E78 must not start until E77's exact-source acceptance gate is resolved.
+
+
+## Follow-up remediation 2 — correct ADB shell invocation and PR trigger (pre-code, 30/10/2026)
+
+The exact E77 source `622778aa266f14104ce5f6d133c5ea3658d0837c` passed the E77 audit, all five Python helper tests, cloud tests/build/lint/APK audit, candidate SDK/APK audit, E76 non-initialization regressions, source-engine AAR/JVM checks, signed host/payload APK build/lint, and AOSP API 34 image installation. [CI #40988898506](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40988898506) then failed in the emulator stage before Activity dispatch.
+
+The downloaded exact-run artifact shows `android_boot_verified=true`, `android_apks_installed=true`, `android_ui_configuration_sample_count=7`, and zero equal transitions. Crucially, `android_ui_configuration_last_fingerprint` begins with shell environment entries such as `BASHPID`, `EPOCHREALTIME`, `RANDOM`, and `SECONDS` before `[wm-size]`. The final ADB command then timed out with 12 seconds remaining. This demonstrates that the `adb shell sh -c <script>` argument form did not return only the intended fingerprint in this environment; volatile shell state contaminated the samples. It is not evidence that Android display settings themselves kept changing.
+
+A second workflow wiring issue was found: PR #51 targets `phase/e76-activity-preflight-no-class-init-20261030`, while the E77 workflow's `pull_request.branches` filter still names E74. Push CI runs, but the PR event filter does not match its actual base branch.
+
+### Ordered corrective work (plan before code)
+
+1. Invoke the Android shell script as one remote command argument: `adb -s <serial> shell <single-script-string>`. Remove the `sh -c` wrapper so ADB's remote shell receives the complete script as one command. Keep the same seven display/locale fields and labels.
+2. Make the fingerprint parser strict: first output line must be `[wm-size]`; `[wm-density]`, `font-scale=`, `user-rotation=`, `locale=`, `language=`, and `country=` must each appear exactly once and in order. Reject any leading environment dump, missing label, duplicate label or empty output. Keep the full normalized display/density lines between their labels.
+3. Extend fake-ADB tests to verify the exact single-argument invocation, all seven values, and fail-closed rejection of shell-environment contamination, missing labels, empty output and non-zero exit. Retain the 20-second per-command cap, 120-second overall stability window and four identical consecutive snapshots; do not skip the gate.
+4. Correct the E77 workflow's `pull_request.branches` filter to the actual PR #51 base, `phase/e76-activity-preflight-no-class-init-20261030`. Extend the E77 static audit to enforce that filter and the no-`sh -c` call form.
+5. Run exact-source Python tests and static audits, then the full E77 cloud/candidate/source-AAR/Android emulator workflow. A successful run must still boot API 34, install both signed APKs, dispatch the controlled host Activity, and emit a fresh exact-source/hash-bound E77 receipt with guest Activity, third-party execution, UID/account isolation and production-acceptance flags false.
+6. Update E77 results, STATUS and PRODUCT_PROGRESS only from the new exact-source run. Product readiness remains 28.00%, 0 accepted real third-party clones. Keep PR #51 Draft and `main` unchanged; do not start E78 until E77 resolves.
+
