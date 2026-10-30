@@ -47,8 +47,11 @@ assert "applications[0].onCreate()" not in probe and "applications[1].onCreate()
 # Payload checks the signed code/resources and records exactly one onCreate per fresh scope.
 assert "getBaseContext()" in payload_app
 assert "getClass().getClassLoader() != base.getClassLoader()" in payload_app
-assert "prefs.getInt(\"starts\", 0) != 0" in payload_app
-assert "putInt(\"starts\", 1).commit()" in payload_app
+assert "SyntheticApplicationProcessMarker.advance(" in payload_app
+assert "private static final String PROCESS_TOKEN = UUID.randomUUID().toString()" in payload_app
+assert 'putInt("starts", next.getStarts())' in payload_app
+assert 'putInt("last_pid", next.getPid())' in payload_app
+assert 'putString("last_process_token", next.getProcessToken())' in payload_app
 assert "SYNTHETIC TEST PAYLOAD ONLY" in scoped_context
 assert "Same UID means this is" in scoped_context
 assert "ScopedProbeEntrypoint.class.getClassLoader() != guest.getClassLoader()" in scoped_entry
@@ -69,7 +72,7 @@ for name in (
     "test_missing_application_or_scope_evidence_fails_closed",
     "test_guest_registration_or_uid_isolation_overclaim_fails_closed",
     "test_scope_ids_must_be_distinct_canonical_uuids",
-    "test_software_emulation_is_limited_to_e77_and_e78",
+    "test_software_emulation_is_limited_to_e77_e78_and_e79",
 ):
     assert name in runner_tests, "Missing E78 runner regression: " + name
 assert "def validate_e78_receipt(" in runner

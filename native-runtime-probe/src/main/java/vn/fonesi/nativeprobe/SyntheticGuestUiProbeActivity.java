@@ -76,6 +76,18 @@ public final class SyntheticGuestUiProbeActivity extends Activity {
     private volatile String sourceCommit;
     private volatile String probeApkSha256;
     private volatile String payloadApkSha256;
+    private volatile String e79Stage;
+    private volatile String e79PrivateClusterId;
+    private volatile String e79ProcessToken;
+    private volatile String e79MarkerA;
+    private volatile String e79MarkerB;
+    private volatile String e79PriorProcessToken;
+    private volatile String e79PriorRunId;
+    private volatile int e79PriorPid = -1;
+    private volatile int e79StartCountA;
+    private volatile int e79StartCountB;
+    private volatile boolean e79ProcessRestartVerified;
+    private volatile boolean e79ScopedDataAfterRestartVerified;
     private volatile boolean syntheticComponentDispatchVerified;
     private volatile boolean dispatchOnly;
     private boolean dispatchReceiver;
@@ -109,16 +121,39 @@ public final class SyntheticGuestUiProbeActivity extends Activity {
             if (requestedProof != null) proofLevel = requestedProof;
             if (!"e24".equals(proofLevel) && !"e25".equals(proofLevel) &&
                 !"e29".equals(proofLevel) && !"e74".equals(proofLevel) &&
-                !"e77".equals(proofLevel) && !"e78".equals(proofLevel))
+                !"e77".equals(proofLevel) && !"e78".equals(proofLevel) && !"e79".equals(proofLevel))
                 throw new IllegalArgumentException("Unsupported synthetic host screen proof");
-            if ("e78".equals(proofLevel)) {
+            if ("e78".equals(proofLevel) || "e79".equals(proofLevel)) {
                 sourceCommit = getIntent().getStringExtra("source_commit");
                 probeApkSha256 = getIntent().getStringExtra("probe_apk_sha256");
                 payloadApkSha256 = getIntent().getStringExtra("payload_apk_sha256");
                 if (sourceCommit == null || !sourceCommit.matches("[0-9a-f]{40}") ||
                     probeApkSha256 == null || !probeApkSha256.matches("[0-9a-f]{64}") ||
                     payloadApkSha256 == null || !payloadApkSha256.matches("[0-9a-f]{64}"))
-                    throw new IllegalArgumentException("E78 source/APK SHA-256 binding is missing or malformed");
+                    throw new IllegalArgumentException("E78/E79 source/APK SHA-256 binding is missing or malformed");
+            }
+            if ("e79".equals(proofLevel)) {
+                e79Stage = getIntent().getStringExtra("e79_stage");
+                if (!"write".equals(e79Stage) && !"verify".equals(e79Stage))
+                    throw new IllegalArgumentException("E79 requires an explicit write/verify stage");
+                if ("verify".equals(e79Stage)) {
+                    e79PrivateClusterId = getIntent().getStringExtra("e79_private_cluster_id");
+                    syntheticScopeAId = getIntent().getStringExtra("e79_scope_a");
+                    syntheticScopeBId = getIntent().getStringExtra("e79_scope_b");
+                    e79MarkerA = getIntent().getStringExtra("e79_marker_a");
+                    e79MarkerB = getIntent().getStringExtra("e79_marker_b");
+                    e79PriorPid = getIntent().getIntExtra("e79_prior_pid", -1);
+                    e79PriorProcessToken = getIntent().getStringExtra("e79_prior_process_token");
+                    e79PriorRunId = getIntent().getStringExtra("e79_prior_run_id");
+                    ProbeData.check(canonicalUuid(e79PrivateClusterId) &&
+                        canonicalUuid(syntheticScopeAId) && canonicalUuid(syntheticScopeBId) &&
+                        !syntheticScopeAId.equals(syntheticScopeBId) &&
+                        e79MarkerA != null && e79MarkerA.matches("[0-9a-f]{32}") &&
+                        e79MarkerB != null && e79MarkerB.matches("[0-9a-f]{32}") &&
+                        !e79MarkerA.equals(e79MarkerB) && e79PriorPid > 0 &&
+                        canonicalUuid(e79PriorProcessToken) && canonicalUuid(e79PriorRunId),
+                        "E79 verify-stage handoff fields are invalid");
+                }
             }
             dispatchTicketJson = getIntent().getStringExtra("dispatch_ticket");
             if (dispatchTicketJson != null) {
@@ -171,11 +206,16 @@ public final class SyntheticGuestUiProbeActivity extends Activity {
                 preparationStage = stage;
                 dispatchTicket = SyntheticComponentDispatchTicket.Companion.fromJson(dispatchTicketJson);
                 localCluster = localStore.open(dispatchTicket.getClusterId(), Build.VERSION.SDK_INT);
+            } else if ("e79".equals(proofLevel) && "verify".equals(e79Stage)) {
+                stage = "e79_reopen_same_signed_private_cluster_after_process_restart";
+                preparationStage = stage;
+                localCluster = localStore.open(e79PrivateClusterId, Build.VERSION.SDK_INT);
             } else {
                 stage = "private_signed_apk_publish_and_readback";
                 preparationStage = stage;
                 localCluster = localStore.publish(
                     SyntheticSignedPayloadSource.fromInstalled(this), Build.VERSION.SDK_INT);
+                if ("e79".equals(proofLevel)) e79PrivateClusterId = localCluster.getId();
             }
             ProbeData.check(localStore.open(localCluster.getId(), Build.VERSION.SDK_INT).equals(localCluster) &&
                 localCluster.getApks().getBase().getPackageName().equals(GUEST_PACKAGE) &&
@@ -263,10 +303,11 @@ public final class SyntheticGuestUiProbeActivity extends Activity {
                 .load(localCluster.getId());
             ProbeData.check(GUEST_PACKAGE.equals(image.getPackageName()),
                 "Signed private payload package mismatch");
-            if ("e74".equals(proofLevel) || "e77".equals(proofLevel) || "e78".equals(proofLevel)) {
-                stage = "e78".equals(proofLevel) ? "e78_signed_private_activity_and_application_preflight" :
-                    ("e77".equals(proofLevel) ? "e77_signed_private_activity_constructor_preflight" :
-                        "e74_signed_private_activity_class_preflight");
+            if ("e74".equals(proofLevel) || "e77".equals(proofLevel) || "e78".equals(proofLevel) || "e79".equals(proofLevel)) {
+                stage = "e79".equals(proofLevel) ? "e79_signed_private_activity_and_application_preflight" :
+                    ("e78".equals(proofLevel) ? "e78_signed_private_activity_and_application_preflight" :
+                        ("e77".equals(proofLevel) ? "e77_signed_private_activity_constructor_preflight" :
+                            "e74_signed_private_activity_class_preflight"));
                 preparationStage = stage;
                 PrivateGuestActivityClassHandle activityProof = image.preflightExplicitActivityClass(
                     SIGNED_ACTIVITY, ExplicitActivityCaller.TRUSTED_INTERNAL);
@@ -285,7 +326,7 @@ public final class SyntheticGuestUiProbeActivity extends Activity {
                 ProbeData.check(localStore.open(localCluster.getId(), Build.VERSION.SDK_INT)
                     .equals(localCluster), "Private signed APK changed during Activity class preflight");
                 privateActivityClassVerified = true;
-                if ("e77".equals(proofLevel) || "e78".equals(proofLevel))
+                if ("e77".equals(proofLevel) || "e78".equals(proofLevel) || "e79".equals(proofLevel))
                     privateActivityConstructorPreflightVerified = true;
             }
             int marker = image.getResources().getIdentifier(
@@ -307,6 +348,12 @@ public final class SyntheticGuestUiProbeActivity extends Activity {
                 verifyE78SyntheticApplication(image, localStore, localCluster);
                 ProbeData.check(localStore.open(localCluster.getId(), Build.VERSION.SDK_INT)
                     .equals(localCluster), "Signed private APK changed after E78 Application/scope proof");
+            } else if ("e79".equals(proofLevel)) {
+                stage = "e79_signed_private_application_process_restart_data_proof";
+                preparationStage = stage;
+                verifyE79SyntheticApplication(image, localStore, localCluster);
+                ProbeData.check(localStore.open(localCluster.getId(), Build.VERSION.SDK_INT)
+                    .equals(localCluster), "Signed private APK changed after E79 process restart proof");
             }
             preparationStage = "private_dex_ready_ui_callback_queued";
             PrivateApkCluster verifiedCluster = localCluster;
@@ -460,6 +507,157 @@ public final class SyntheticGuestUiProbeActivity extends Activity {
             "Signed private APK changed during E78 scoped data verification");
     }
 
+    /**
+     * E79 only: write in one host process, force-stop it externally, then verify in a new process.
+     * Both Application objects are still project-owned synthetic code in the host UID.
+     */
+    private void verifyE79SyntheticApplication(LoadedGuestCode image,
+            PrivateApkStore verifiedStore, PrivateApkCluster verifiedCluster) throws Exception {
+        if (Looper.myLooper() == Looper.getMainLooper())
+            throw new IllegalStateException("E79 scoped storage work must remain off Android main Looper");
+        final var applicationProof = image.preflightApplicationClass();
+        ProbeData.check(SIGNED_APPLICATION.equals(applicationProof.getSignedName()) &&
+            applicationProof.getApplicationClass().getName().equals(SIGNED_APPLICATION) &&
+            applicationProof.getApplicationClass().getClassLoader() == image.getClassLoader() &&
+            Application.class.isAssignableFrom(applicationProof.getApplicationClass()),
+            "E79 signed PRIVATE Application class was not owned by exact private loader");
+        try { getClassLoader().loadClass(SIGNED_APPLICATION);
+            throw new SecurityException("E79 PRIVATE Application leaked into host classloader");
+        } catch (ClassNotFoundException expected) { /* no host/original package fallback */ }
+        ProbeData.check(verifiedStore.open(verifiedCluster.getId(), Build.VERSION.SDK_INT).equals(verifiedCluster),
+            "E79 private APK changed before process lifecycle proof");
+        privateApplicationClassPreflightVerified = true;
+        syntheticApplicationClassName = applicationProof.getSignedName();
+
+        final String scopeA;
+        final String scopeB;
+        final String markerA;
+        final String markerB;
+        if ("write".equals(e79Stage)) {
+            scopeA = UUID.randomUUID().toString();
+            scopeB = UUID.randomUUID().toString();
+            markerA = randomHex();
+            markerB = randomHex();
+        } else if ("verify".equals(e79Stage)) {
+            scopeA = syntheticScopeAId;
+            scopeB = syntheticScopeBId;
+            markerA = e79MarkerA;
+            markerB = e79MarkerB;
+            ProbeData.check(Process.myPid() != e79PriorPid,
+                "E79 verify stage did not start in a different host process PID");
+        } else {
+            throw new IllegalArgumentException("E79 stage must be write or verify");
+        }
+        ProbeData.check(canonicalUuid(scopeA) && canonicalUuid(scopeB) && !scopeA.equals(scopeB) &&
+            markerA != null && markerA.matches("[0-9a-f]{32}") &&
+            markerB != null && markerB.matches("[0-9a-f]{32}") && !markerA.equals(markerB),
+            "E79 requires two canonical scopes and distinct non-secret markers");
+        syntheticScopeAId = scopeA;
+        syntheticScopeBId = scopeB;
+        final SyntheticGuestScopedContext contextA =
+            new SyntheticGuestScopedContext(getApplicationContext(), image, scopeA);
+        final SyntheticGuestScopedContext contextB =
+            new SyntheticGuestScopedContext(getApplicationContext(), image, scopeB);
+        Class<?> scopedEntrypoint = image.getClassLoader().loadClass(SCOPED_ENTRY);
+        ProbeData.check(scopedEntrypoint.getClassLoader() == image.getClassLoader(),
+            "E79 scoped storage helper must be loaded from signed PRIVATE DEX");
+        java.lang.reflect.Method write = scopedEntrypoint.getMethod("write", Context.class, String.class);
+        java.lang.reflect.Method read = scopedEntrypoint.getMethod("read", Context.class);
+        if ("write".equals(e79Stage)) {
+            ProbeData.check("EMPTY".equals(read.invoke(null, contextA)) &&
+                "EMPTY".equals(read.invoke(null, contextB)), "E79 write stage requires fresh empty scopes");
+        }
+
+        final Application[] applications = new Application[2];
+        final Throwable[] attachFailure = new Throwable[1];
+        final CountDownLatch attached = new CountDownLatch(1);
+        runOnUiThread(() -> {
+            try {
+                ProbeData.check(Looper.myLooper() == Looper.getMainLooper(),
+                    "E79 Instrumentation attach/onCreate must execute on Android main thread");
+                Instrumentation instrumentationA = new Instrumentation();
+                applications[0] = instrumentationA.newApplication(image.getClassLoader(), SIGNED_APPLICATION, contextA);
+                ProbeData.check(applications[0].getClass() == applicationProof.getApplicationClass() &&
+                    applications[0].getBaseContext() == contextA, "E79 Application A attach Context mismatch");
+                instrumentationA.callApplicationOnCreate(applications[0]);
+                Instrumentation instrumentationB = new Instrumentation();
+                applications[1] = instrumentationB.newApplication(image.getClassLoader(), SIGNED_APPLICATION, contextB);
+                ProbeData.check(applications[1].getClass() == applicationProof.getApplicationClass() &&
+                    applications[1].getBaseContext() == contextB, "E79 Application B attach Context mismatch");
+                instrumentationB.callApplicationOnCreate(applications[1]);
+            } catch (Throwable failure) { attachFailure[0] = failure; }
+            finally { attached.countDown(); }
+        });
+        if (!attached.await(45, TimeUnit.SECONDS))
+            throw new IllegalStateException("E79 public Instrumentation attach/onCreate timed out");
+        if (attachFailure[0] != null)
+            throw new IllegalStateException("E79 public Instrumentation attach/onCreate failed", attachFailure[0]);
+        ProbeData.check(applications[0] != null && applications[1] != null && applications[0] != applications[1] &&
+            applications[0].getClass().getClassLoader() == image.getClassLoader() &&
+            applications[1].getClass().getClassLoader() == image.getClassLoader() &&
+            applications[0].getResources() == image.getResources() && applications[1].getResources() == image.getResources(),
+            "E79 Application object/classloader/resource identity mismatch");
+        java.lang.reflect.Method tokenMethod = applicationProof.getApplicationClass().getMethod("processToken");
+        String tokenA = (String) tokenMethod.invoke(applications[0]);
+        String tokenB = (String) tokenMethod.invoke(applications[1]);
+        ProbeData.check(canonicalUuid(tokenA) && tokenA.equals(tokenB),
+            "E79 Application instances must share one canonical per-process token");
+        e79ProcessToken = tokenA;
+        e79StartCountA = contextA.getSharedPreferences("synthetic_application", Context.MODE_PRIVATE).getInt("starts", 0);
+        e79StartCountB = contextB.getSharedPreferences("synthetic_application", Context.MODE_PRIVATE).getInt("starts", 0);
+        int lastPidA = contextA.getSharedPreferences("synthetic_application", Context.MODE_PRIVATE).getInt("last_pid", -1);
+        int lastPidB = contextB.getSharedPreferences("synthetic_application", Context.MODE_PRIVATE).getInt("last_pid", -1);
+        String lastTokenA = contextA.getSharedPreferences("synthetic_application", Context.MODE_PRIVATE).getString("last_process_token", null);
+        String lastTokenB = contextB.getSharedPreferences("synthetic_application", Context.MODE_PRIVATE).getString("last_process_token", null);
+        int expectedStarts = "write".equals(e79Stage) ? 1 : 2;
+        ProbeData.check(e79StartCountA == expectedStarts && e79StartCountB == expectedStarts &&
+            lastPidA == Process.myPid() && lastPidB == Process.myPid() &&
+            tokenA.equals(lastTokenA) && tokenA.equals(lastTokenB),
+            "E79 persisted Application onCreate count/process marker is not exact");
+        if ("verify".equals(e79Stage)) {
+            ProbeData.check(!tokenA.equals(e79PriorProcessToken) && Process.myPid() != e79PriorPid,
+                "E79 process token/PID did not change after force-stop and relaunch");
+            e79ProcessRestartVerified = true;
+        }
+        syntheticApplicationAttached = true;
+        syntheticApplicationOnCreateVerified = true;
+        syntheticApplicationMainThreadVerified = true;
+        syntheticApplicationInstancesDistinct = true;
+        if ("write".equals(e79Stage)) {
+            write.invoke(null, contextA, markerA);
+            write.invoke(null, contextB, markerB);
+        }
+        ProbeData.check(markerA.equals((String) read.invoke(null, contextA)) &&
+            markerB.equals((String) read.invoke(null, contextB)),
+            "E79 preferences/file/SQLite markers differ from expected process handoff values");
+        syntheticScopeAStorageVerified = true;
+        syntheticScopeBStorageVerified = true;
+        SyntheticGuestScopedContext reopenedA = new SyntheticGuestScopedContext(getApplicationContext(), image, scopeA);
+        SyntheticGuestScopedContext reopenedB = new SyntheticGuestScopedContext(getApplicationContext(), image, scopeB);
+        ProbeData.check(markerA.equals((String) read.invoke(null, reopenedA)) &&
+            markerB.equals((String) read.invoke(null, reopenedB)) &&
+            reopenedA.getSharedPreferences("synthetic_application", Context.MODE_PRIVATE).getInt("starts", 0) == expectedStarts &&
+            reopenedB.getSharedPreferences("synthetic_application", Context.MODE_PRIVATE).getInt("starts", 0) == expectedStarts,
+            "E79 data did not survive Context reconstruction in current process");
+        syntheticScopePersistenceVerified = true;
+        ProbeData.check(markerA.equals((String) read.invoke(null, reopenedA)) &&
+            markerB.equals((String) read.invoke(null, reopenedB)) &&
+            !markerB.equals((String) read.invoke(null, reopenedA)) &&
+            !markerA.equals((String) read.invoke(null, reopenedB)),
+            "E79 cross-scope readback detected data leakage");
+        syntheticScopeCrossReadbackVerified = true;
+        if ("verify".equals(e79Stage)) e79ScopedDataAfterRestartVerified = true;
+        e79MarkerA = markerA;
+        e79MarkerB = markerB;
+        ProbeData.check(verifiedStore.open(verifiedCluster.getId(), Build.VERSION.SDK_INT).equals(verifiedCluster),
+            "E79 signed private APK changed during process restart data verification");
+    }
+    private static boolean canonicalUuid(String value) {
+        if (value == null) return false;
+        try { return UUID.fromString(value).toString().equals(value); }
+        catch (IllegalArgumentException ignored) { return false; }
+    }
+
     private static String randomHex() {
         byte[] value = new byte[16];
         new SecureRandom().nextBytes(value);
@@ -561,10 +759,10 @@ public final class SyntheticGuestUiProbeActivity extends Activity {
                     ProbeData.check(syntheticComponentDispatchVerified,
                         "E29 private component dispatch ticket was not validated before private code load");
                 verificationStage = "final_e74_private_activity_class_preflight";
-                if ("e74".equals(proofLevel) || "e77".equals(proofLevel) || "e78".equals(proofLevel))
+                if ("e74".equals(proofLevel) || "e77".equals(proofLevel) || "e78".equals(proofLevel) || "e79".equals(proofLevel))
                     ProbeData.check(privateActivityClassVerified,
                         "Signed PRIVATE Activity class was not preflighted before hosted View");
-                if ("e77".equals(proofLevel) || "e78".equals(proofLevel))
+                if ("e77".equals(proofLevel) || "e78".equals(proofLevel) || "e79".equals(proofLevel))
                     ProbeData.check(privateActivityConstructorPreflightVerified,
                         "E77 public no-argument constructor preflight was not verified");
                 if ("e78".equals(proofLevel)) {
@@ -578,6 +776,23 @@ public final class SyntheticGuestUiProbeActivity extends Activity {
                         syntheticScopeAId != null && syntheticScopeBId != null &&
                         !syntheticScopeAId.equals(syntheticScopeBId),
                         "E78 signed Application attach/onCreate or two-scope data proof is incomplete");
+                }
+                if ("e79".equals(proofLevel)) {
+                    verificationStage = "final_e79_process_restart_and_scoped_data";
+                    int expectedStarts = "write".equals(e79Stage) ? 1 : 2;
+                    ProbeData.check(privateApplicationClassPreflightVerified &&
+                        syntheticApplicationAttached && syntheticApplicationOnCreateVerified &&
+                        syntheticApplicationMainThreadVerified && syntheticApplicationInstancesDistinct &&
+                        syntheticScopeAStorageVerified && syntheticScopeBStorageVerified &&
+                        syntheticScopePersistenceVerified && syntheticScopeCrossReadbackVerified &&
+                        SIGNED_APPLICATION.equals(syntheticApplicationClassName) &&
+                        canonicalUuid(syntheticScopeAId) && canonicalUuid(syntheticScopeBId) &&
+                        !syntheticScopeAId.equals(syntheticScopeBId) &&
+                        canonicalUuid(e79ProcessToken) &&
+                        e79StartCountA == expectedStarts && e79StartCountB == expectedStarts &&
+                        ("write".equals(e79Stage) || ("verify".equals(e79Stage) &&
+                            e79ProcessRestartVerified && e79ScopedDataAfterRestartVerified)),
+                        "E79 process restart or two-scope persistence proof is incomplete");
                 }
                 verificationStage = "final_android_host_lifecycle";
                 ProbeData.check(COMPLETE.equals(androidEvents),
@@ -619,6 +834,18 @@ public final class SyntheticGuestUiProbeActivity extends Activity {
                     .put("synthetic_scope_b_preferences_file_sqlite_verified", syntheticScopeBStorageVerified)
                     .put("synthetic_scope_persistence_after_context_reconstruction_verified", syntheticScopePersistenceVerified)
                     .put("synthetic_scope_cross_readback_isolated", syntheticScopeCrossReadbackVerified)
+                    .put("e79_stage", e79Stage)
+                    .put("e79_private_cluster_id", e79PrivateClusterId)
+                    .put("e79_process_token", e79ProcessToken)
+                    .put("e79_marker_a", e79MarkerA)
+                    .put("e79_marker_b", e79MarkerB)
+                    .put("e79_prior_pid", e79PriorPid)
+                    .put("e79_prior_process_token", e79PriorProcessToken)
+                    .put("e79_prior_run_id", e79PriorRunId)
+                    .put("e79_start_count_a", e79StartCountA)
+                    .put("e79_start_count_b", e79StartCountB)
+                    .put("e79_process_restart_verified", e79ProcessRestartVerified)
+                    .put("e79_scoped_data_after_process_restart_verified", e79ScopedDataAfterRestartVerified)
                     .put("guest_application_registered_with_activity_thread", false)
                     .put("guest_application_registered_with_package_manager", false)
                     .put("full_guest_application_lifecycle_verified", false)
@@ -676,6 +903,18 @@ public final class SyntheticGuestUiProbeActivity extends Activity {
                 .put("synthetic_scope_b_preferences_file_sqlite_verified", syntheticScopeBStorageVerified)
                 .put("synthetic_scope_persistence_after_context_reconstruction_verified", syntheticScopePersistenceVerified)
                 .put("synthetic_scope_cross_readback_isolated", syntheticScopeCrossReadbackVerified)
+                .put("e79_stage", e79Stage)
+                .put("e79_private_cluster_id", e79PrivateClusterId)
+                .put("e79_process_token", e79ProcessToken)
+                .put("e79_marker_a", e79MarkerA)
+                .put("e79_marker_b", e79MarkerB)
+                .put("e79_prior_pid", e79PriorPid)
+                .put("e79_prior_process_token", e79PriorProcessToken)
+                .put("e79_prior_run_id", e79PriorRunId)
+                .put("e79_start_count_a", e79StartCountA)
+                .put("e79_start_count_b", e79StartCountB)
+                .put("e79_process_restart_verified", e79ProcessRestartVerified)
+                .put("e79_scoped_data_after_process_restart_verified", e79ScopedDataAfterRestartVerified)
                 .put("guest_application_registered_with_activity_thread", false)
                 .put("guest_application_registered_with_package_manager", false)
                 .put("full_guest_application_lifecycle_verified", false)

@@ -11,6 +11,7 @@ from run_guest_code_emulator import (
     read_ui_configuration,
     software_emulation_proof_allowed,
     validate_e78_receipt,
+    validate_e79_receipts,
 )
 
 
@@ -211,11 +212,123 @@ class E78ReceiptValidationTests(unittest.TestCase):
         with self.assertRaisesRegex(RuntimeError, "distinct canonical UUIDs"):
             validate_e78_receipt(report, "a" * 40, "b" * 64, "c" * 64)
 
-    def test_software_emulation_is_limited_to_e77_and_e78(self):
+    def test_software_emulation_is_limited_to_e77_e78_and_e79(self):
         self.assertTrue(software_emulation_proof_allowed("e77"))
         self.assertTrue(software_emulation_proof_allowed("e78"))
+        self.assertTrue(software_emulation_proof_allowed("e79"))
         for proof in ("e17", "e24", "e74", "e76"):
             self.assertFalse(software_emulation_proof_allowed(proof))
+
+
+
+class E79ProcessRestartReceiptTests(unittest.TestCase):
+    def stage(self, stage):
+        write = stage == "write"
+        report = {
+            "complete": True, "passed": True, "proof_level": "e79", "e79_stage": stage,
+            "real_host_activity_lifecycle_verified": True,
+            "signed_private_guest_view_rendered": True, "private_guest_view_attached_to_window": True,
+            "private_guest_lifecycle_relay_verified": True, "signed_private_resources_verified": True,
+            "signed_private_image_rechecked": True, "same_android_uid": True,
+            "private_activity_class_preflight_verified": True,
+            "private_activity_constructor_preflight_verified": True,
+            "private_application_class_preflight_verified": True,
+            "synthetic_guest_application_attached": True,
+            "synthetic_guest_application_on_create_verified": True,
+            "synthetic_guest_application_on_main_thread": True,
+            "synthetic_guest_application_instances_distinct": True,
+            "synthetic_application_on_create_once_per_scope": True,
+            "synthetic_scope_a_preferences_file_sqlite_verified": True,
+            "synthetic_scope_b_preferences_file_sqlite_verified": True,
+            "synthetic_scope_persistence_after_context_reconstruction_verified": True,
+            "synthetic_scope_cross_readback_isolated": True,
+            "guest_application_registered_with_activity_thread": False,
+            "guest_application_registered_with_package_manager": False,
+            "full_guest_application_lifecycle_verified": False,
+            "actual_guest_activity_attached": False, "real_guest_activity_registered": False,
+            "third_party_component_executed": False, "third_party_guest_components_tested": False,
+            "kernel_uid_isolation": False, "social_accounts_tested": False,
+            "production_clone_accepted": False,
+            "source_commit": "a" * 40, "probe_apk_sha256": "b" * 64, "payload_apk_sha256": "c" * 64,
+            "synthetic_application_class_name": PAYLOAD_PACKAGE + ".SyntheticGuestApplication",
+            "api": 34, "pid": 1001 if write else 1002, "uid": 10101,
+            "process_name": PROBE_PACKAGE + ":fonesi_guest_ui",
+            "run_id": "aaaaaaaa-bbbb-4ccc-8ddd-eeeeeeeeeeee" if write else "bbbbbbbb-cccc-4ddd-8eee-ffffffffffff",
+            "synthetic_scope_a_id": "11111111-1111-4111-8111-111111111111",
+            "synthetic_scope_b_id": "22222222-2222-4222-8222-222222222222",
+            "lifecycle_transcript": "CREATE,START,RESUME,PAUSE,STOP,DESTROY",
+            "e79_private_cluster_id": "55555555-5555-4555-8555-555555555555",
+            "e79_process_token": "33333333-3333-4333-8333-333333333333" if write else "44444444-4444-4444-8444-444444444444",
+            "e79_marker_a": "a" * 32, "e79_marker_b": "b" * 32,
+            "e79_start_count_a": 1 if write else 2,
+            "e79_start_count_b": 1 if write else 2,
+            "e79_process_restart_verified": not write,
+            "e79_scoped_data_after_process_restart_verified": not write,
+        }
+        if not write:
+            report.update({
+                "e79_prior_pid": 1001,
+                "e79_prior_process_token": "33333333-3333-4333-8333-333333333333",
+                "e79_prior_run_id": "aaaaaaaa-bbbb-4ccc-8ddd-eeeeeeeeeeee",
+            })
+        return report
+
+    def test_valid_two_process_receipts_pass(self):
+        write, verify = self.stage("write"), self.stage("verify")
+        self.assertEqual(
+            validate_e79_receipts(write, verify, "a" * 40, "b" * 64, "c" * 64),
+            (write, verify),
+        )
+
+    def test_same_pid_or_process_token_fails_closed(self):
+        write, verify = self.stage("write"), self.stage("verify")
+        verify["pid"] = write["pid"]
+        with self.assertRaisesRegex(RuntimeError, "reused the original process identity"):
+            validate_e79_receipts(write, verify, "a" * 40, "b" * 64, "c" * 64)
+        verify = self.stage("verify")
+        verify["e79_process_token"] = write["e79_process_token"]
+        with self.assertRaisesRegex(RuntimeError, "reused the original process identity"):
+            validate_e79_receipts(write, verify, "a" * 40, "b" * 64, "c" * 64)
+
+    def test_changed_scope_or_marker_after_restart_fails_closed(self):
+        write, verify = self.stage("write"), self.stage("verify")
+        verify["e79_marker_b"] = "c" * 32
+        with self.assertRaisesRegex(RuntimeError, "changed persisted scope identity/marker"):
+            validate_e79_receipts(write, verify, "a" * 40, "b" * 64, "c" * 64)
+
+    def test_different_private_cluster_after_restart_fails_closed(self):
+        write, verify = self.stage("write"), self.stage("verify")
+        verify["e79_private_cluster_id"] = "66666666-6666-4666-8666-666666666666"
+        with self.assertRaisesRegex(RuntimeError, "changed persisted scope identity/marker"):
+            validate_e79_receipts(write, verify, "a" * 40, "b" * 64, "c" * 64)
+
+    def test_nonincrementing_application_start_count_fails_closed(self):
+        write, verify = self.stage("write"), self.stage("verify")
+        verify["e79_start_count_a"] = 1
+        with self.assertRaisesRegex(RuntimeError, "onCreate count mismatch"):
+            validate_e79_receipts(write, verify, "a" * 40, "b" * 64, "c" * 64)
+
+    def test_wrong_prior_process_binding_fails_closed(self):
+        write, verify = self.stage("write"), self.stage("verify")
+        verify["e79_prior_run_id"] = "cccccccc-dddd-4eee-8fff-000000000000"
+        with self.assertRaisesRegex(RuntimeError, "not bound to completed write-stage process"):
+            validate_e79_receipts(write, verify, "a" * 40, "b" * 64, "c" * 64)
+
+    def test_forbidden_guest_or_account_overclaim_fails_closed(self):
+        write, verify = self.stage("write"), self.stage("verify")
+        verify["guest_application_registered_with_activity_thread"] = True
+        with self.assertRaisesRegex(RuntimeError, "E79 stage assertions failed"):
+            validate_e79_receipts(write, verify, "a" * 40, "b" * 64, "c" * 64)
+
+    def test_source_or_apk_hash_mismatch_fails_closed(self):
+        write, verify = self.stage("write"), self.stage("verify")
+        with self.assertRaisesRegex(RuntimeError, "source SHA"):
+            validate_e79_receipts(write, verify, "d" * 40, "b" * 64, "c" * 64)
+        with self.assertRaisesRegex(RuntimeError, "host APK SHA"):
+            validate_e79_receipts(write, verify, "a" * 40, "d" * 64, "c" * 64)
+        with self.assertRaisesRegex(RuntimeError, "payload APK SHA"):
+            validate_e79_receipts(write, verify, "a" * 40, "b" * 64, "d" * 64)
+
 
 
 if __name__ == "__main__":
