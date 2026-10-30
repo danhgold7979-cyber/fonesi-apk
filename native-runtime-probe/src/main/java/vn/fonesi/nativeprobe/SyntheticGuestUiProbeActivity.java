@@ -751,10 +751,10 @@ public final class SyntheticGuestUiProbeActivity extends Activity {
                     ProbeData.check(syntheticComponentDispatchVerified,
                         "E29 private component dispatch ticket was not validated before private code load");
                 verificationStage = "final_e74_private_activity_class_preflight";
-                if ("e74".equals(proofLevel) || "e77".equals(proofLevel) || "e78".equals(proofLevel))
+                if ("e74".equals(proofLevel) || "e77".equals(proofLevel) || "e78".equals(proofLevel) || "e79".equals(proofLevel))
                     ProbeData.check(privateActivityClassVerified,
                         "Signed PRIVATE Activity class was not preflighted before hosted View");
-                if ("e77".equals(proofLevel) || "e78".equals(proofLevel))
+                if ("e77".equals(proofLevel) || "e78".equals(proofLevel) || "e79".equals(proofLevel))
                     ProbeData.check(privateActivityConstructorPreflightVerified,
                         "E77 public no-argument constructor preflight was not verified");
                 if ("e78".equals(proofLevel)) {
@@ -768,6 +768,23 @@ public final class SyntheticGuestUiProbeActivity extends Activity {
                         syntheticScopeAId != null && syntheticScopeBId != null &&
                         !syntheticScopeAId.equals(syntheticScopeBId),
                         "E78 signed Application attach/onCreate or two-scope data proof is incomplete");
+                }
+                if ("e79".equals(proofLevel)) {
+                    verificationStage = "final_e79_process_restart_and_scoped_data";
+                    int expectedStarts = "write".equals(e79Stage) ? 1 : 2;
+                    ProbeData.check(privateApplicationClassPreflightVerified &&
+                        syntheticApplicationAttached && syntheticApplicationOnCreateVerified &&
+                        syntheticApplicationMainThreadVerified && syntheticApplicationInstancesDistinct &&
+                        syntheticScopeAStorageVerified && syntheticScopeBStorageVerified &&
+                        syntheticScopePersistenceVerified && syntheticScopeCrossReadbackVerified &&
+                        SIGNED_APPLICATION.equals(syntheticApplicationClassName) &&
+                        canonicalUuid(syntheticScopeAId) && canonicalUuid(syntheticScopeBId) &&
+                        !syntheticScopeAId.equals(syntheticScopeBId) &&
+                        canonicalUuid(e79ProcessToken) &&
+                        e79StartCountA == expectedStarts && e79StartCountB == expectedStarts &&
+                        ("write".equals(e79Stage) || ("verify".equals(e79Stage) &&
+                            e79ProcessRestartVerified && e79ScopedDataAfterRestartVerified)),
+                        "E79 process restart or two-scope persistence proof is incomplete");
                 }
                 verificationStage = "final_android_host_lifecycle";
                 ProbeData.check(COMPLETE.equals(androidEvents),
