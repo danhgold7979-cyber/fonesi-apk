@@ -4,7 +4,8 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
-import java.util.UUID;
+import java.util.HashSet;
+import vn.fonesi.rebuild.model.ManagerModel.CatalogKey;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -24,10 +25,42 @@ public final class ManagerModelTest {
         try { action.run(); } catch (IllegalArgumentException | NullPointerException | ArithmeticException expected) { return; }
         throw new AssertionError("expected rejection " + checks);
     }
+    private static int nextId;
     private static Entry entry(String name, String group, Status status) {
-        return new Entry(UUID.randomUUID(), "unverified-provider", "example.test", name, group, status);
+        return new Entry(new CatalogKey("unverified-provider", "fixture-" + (++nextId)), "example.test", name, group, status);
     }
     public static void main(String[] args) throws Exception {
+        CatalogKey equalA = new CatalogKey("engine", "clone");
+        CatalogKey equalB = new CatalogKey(new String("engine"), new String("clone"));
+        check(equalA.equals(equalB) && equalB.equals(equalA));
+        check(equalA.hashCode() == equalB.hashCode());
+        check(!equalA.equals(null) && !equalA.equals("engine:clone"));
+        check(!equalA.equals(new CatalogKey("other", "clone")));
+        check(!equalA.equals(new CatalogKey("engine", "other")));
+        check(!new CatalogKey("a:b", "c").equals(new CatalogKey("a", "b:c")));
+        List<CatalogKey> opaque = Arrays.asList(new CatalogKey("", ""), new CatalogKey(" ", " "),
+                new CatalogKey("engine", "00000000-0000-0000-0000-000000000001"),
+                new CatalogKey("engine", "legacy:not-a-uuid"), new CatalogKey("engine", "é"),
+                new CatalogKey("engine", "e\u0301"), new CatalogKey("é", "same"), new CatalogKey("e\u0301", "same"),
+                new CatalogKey("engine", " clone "),new CatalogKey("engine", "clone"),new CatalogKey("Aa", "same"),new CatalogKey("BB", "same"));
+        check(new CatalogKey("Aa", "same").hashCode() == new CatalogKey("BB", "same").hashCode());
+        check(!new CatalogKey("Aa", "same").equals(new CatalogKey("BB", "same")));
+        check(new HashSet<>(opaque).size() == opaque.size());
+        ManagerModel opaqueModel = new ManagerModel();
+        List<Entry> opaqueEntries = new ArrayList<>();
+        for (CatalogKey key : opaque) opaqueEntries.add(new Entry(key,"example.test","Opaque","",Status.QUARANTINED));
+        check(opaqueModel.publish(opaqueModel.beginRefresh(),opaqueEntries));
+        check(opaqueModel.snapshot().totalCount == opaque.size());
+        check(opaqueModel.selectVisible(opaqueModel.snapshot().revision,true));
+        check(opaqueModel.snapshot().selected.equals(new HashSet<>(opaque)));
+        check(opaque.get(0).engineKey.equals("") && opaque.get(1).cloneId.equals(" "));
+        check(opaque.get(5).cloneId.equals("e\u0301") && opaque.get(8).cloneId.equals(" clone "));
+        check(opaqueModel.select(opaqueModel.snapshot().revision,new CatalogKey("Aa","same"),false));
+        check(!opaqueModel.snapshot().selected.contains(new CatalogKey("Aa","same")));
+        check(opaqueModel.snapshot().selected.contains(new CatalogKey("BB","same")));
+        check(opaqueModel.select(opaqueModel.snapshot().revision,new CatalogKey("Aa","same"),true));
+        check(opaqueModel.snapshot().selected.size() == opaque.size());
+        check(!opaqueModel.snapshot().operationsEnabled());
         ManagerModel model = new ManagerModel();
         check(model.snapshot().phase == Phase.IDLE);
         check(model.snapshot().visible.isEmpty());
@@ -63,10 +96,10 @@ public final class ManagerModelTest {
         check(model.filter(model.snapshot().revision, "", "Cong viec").visible.isEmpty());
         model.filter(model.snapshot().revision, "", null);
         long view = model.snapshot().revision;
-        check(model.select(view, a.id, true));
-        check(!model.select(view, a.id, true)); // old event cannot toggle/reapply
+        check(model.select(view, a.key, true));
+        check(!model.select(view, a.key, true)); // old event cannot toggle/reapply
         long selectedView = model.snapshot().revision;
-        check(model.select(selectedView, a.id, true));
+        check(model.select(selectedView, a.key, true));
         check(model.snapshot().revision == selectedView);
         check(model.snapshot().selected.size() == 1);
         ManagerModel.Snapshot frozen = model.snapshot();
@@ -75,9 +108,9 @@ public final class ManagerModelTest {
         check(frozen.selected.size() == 1);
         model.filter(model.snapshot().revision, "Istanbul", null);
         check(model.snapshot().selected.size() == 1);
-        check(model.snapshot().selected.contains(b.id));
-        check(!model.select(model.snapshot().revision, a.id, true));
-        check(!model.select(model.snapshot().revision, UUID.randomUUID(), true));
+        check(model.snapshot().selected.contains(b.key));
+        check(!model.select(model.snapshot().revision, a.key, true));
+        check(!model.select(model.snapshot().revision, new CatalogKey("missing", "missing"), true));
         check(model.selectVisible(model.snapshot().revision, false));
         check(model.snapshot().selected.isEmpty());
         try { frozen.visible.clear(); throw new AssertionError(); }
@@ -100,12 +133,13 @@ public final class ManagerModelTest {
         check(model.publish(empty, Collections.emptyList()));
         check(model.snapshot().phase == Phase.LOADED);
         check(model.snapshot().totalCount == 0);
-        rejects(() -> new Entry(null, "p", "pkg", "name", "", Status.UNVERIFIED));
-        rejects(() -> new Entry(UUID.randomUUID(), " ", "pkg", "name", "", Status.UNVERIFIED));
-        rejects(() -> new Entry(UUID.randomUUID(), "p", "", "name", "", Status.UNVERIFIED));
-        rejects(() -> new Entry(UUID.randomUUID(), "p", "pkg", "", "", Status.UNVERIFIED));
-        rejects(() -> new Entry(UUID.randomUUID(), "p", "pkg", "name", null, Status.UNVERIFIED));
-        rejects(() -> new Entry(UUID.randomUUID(), "p", "pkg", "name", "", null));
+        rejects(() -> new Entry(null, "pkg", "name", "", Status.UNVERIFIED));
+        rejects(() -> new CatalogKey(null, "id"));
+        rejects(() -> new CatalogKey("engine", null));
+        rejects(() -> new Entry(new CatalogKey("engine", "clone"), "", "name", "", Status.UNVERIFIED));
+        rejects(() -> new Entry(new CatalogKey("engine", "clone"), "pkg", "", "", Status.UNVERIFIED));
+        rejects(() -> new Entry(new CatalogKey("engine", "clone"), "pkg", "name", null, Status.UNVERIFIED));
+        rejects(() -> new Entry(new CatalogKey("engine", "clone"), "pkg", "name", "", null));
         rejects(() -> model.filter(model.snapshot().revision, null, null));
         for (String fieldName : Arrays.asList("revision", "generation")) {
             ManagerModel overflow = new ManagerModel();
@@ -141,11 +175,33 @@ public final class ManagerModelTest {
         check(race.snapshot().totalCount == 1);
         check(!race.snapshot().operationsEnabled());
         long duplicate = race.beginRefresh();
-        Entry otherNamespace = new Entry(a.id, "different-provider", "other.package", "Other", "", Status.UNVERIFIED);
-        rejects(() -> race.publish(duplicate, Arrays.asList(a, otherNamespace)));
+        Entry otherNamespace = new Entry(new CatalogKey("different-provider", a.key.cloneId), "other.package", "Other", "", Status.UNVERIFIED);
+        check(race.publish(duplicate, Arrays.asList(a, otherNamespace)));
+        check(race.snapshot().phase == Phase.LOADED);
+        check(race.snapshot().totalCount == 2);
+        check(a.key.engineKey.equals("unverified-provider") && a.packageName.equals("example.test"));
+        check(race.select(race.snapshot().revision, a.key, true));
+        ManagerModel.Snapshot firstEngineSelected = race.snapshot();
+        check(firstEngineSelected.selected.contains(a.key));
+        check(!firstEngineSelected.selected.contains(otherNamespace.key));
+        check(race.select(race.snapshot().revision, otherNamespace.key, true));
+        check(race.snapshot().selected.size() == 2);
+        check(firstEngineSelected.selected.size() == 1);
+        check(race.select(race.snapshot().revision, new CatalogKey(a.key.engineKey,a.key.cloneId), false));
+        check(race.snapshot().selected.equals(Collections.singleton(otherNamespace.key)));
+        check(race.select(race.snapshot().revision,a.key,true));
+        check(race.snapshot().selected.size() == 2);
+        race.filter(race.snapshot().revision,"Đặng Ánh",null);
+        check(race.snapshot().visible.size() == 1 && race.snapshot().visible.get(0) == a);
+        check(race.snapshot().selected.equals(Collections.singleton(a.key)));
+        check(!race.select(race.snapshot().revision,otherNamespace.key,true));
+        race.filter(race.snapshot().revision,"",null);
+        check(race.snapshot().selected.equals(Collections.singleton(a.key)));
+        long exactDuplicate = race.beginRefresh();
+        Entry changedPayload = new Entry(new CatalogKey(a.key.engineKey,a.key.cloneId), "different.package", "Changed", "other", Status.UNAVAILABLE);
+        rejects(() -> race.publish(exactDuplicate, Arrays.asList(a,changedPayload)));
         check(race.snapshot().phase == Phase.LOADING);
         check(race.snapshot().totalCount == 0);
-        check(a.provider.equals("unverified-provider") && a.packageName.equals("example.test"));
         long staleFilter = model.snapshot().revision;
         model.filter(staleFilter, "newer", null);
         model.filter(staleFilter, "older", null);
@@ -165,7 +221,7 @@ public final class ManagerModelTest {
                     case "publish": overflow.publish(token, Arrays.asList(a)); break;
                     case "fail": overflow.fail(token); break;
                     case "filter": overflow.filter(Long.MAX_VALUE, "change", null); break;
-                    case "select": overflow.select(Long.MAX_VALUE, a.id, true); break;
+                    case "select": overflow.select(Long.MAX_VALUE, a.key, true); break;
                     case "selectVisible": overflow.selectVisible(Long.MAX_VALUE, true); break;
                     default: throw new AssertionError();
                 }
@@ -182,7 +238,7 @@ public final class ManagerModelTest {
         check(pending.snapshot().visible.size() == 1 && pending.snapshot().visible.get(0) == a);
         long beforeFilter = pending.snapshot().revision;
         pending.filter(beforeFilter, "Istanbul", null);
-        check(!pending.select(beforeFilter, a.id, true));
+        check(!pending.select(beforeFilter, a.key, true));
         long stable = pending.snapshot().revision;
         check(pending.selectVisible(stable, false));
         check(pending.snapshot().revision == stable);
@@ -191,7 +247,22 @@ public final class ManagerModelTest {
         long replacementToken = pending.beginRefresh();
         check(!pending.publish(failedToken, Arrays.asList(a)));
         check(pending.publish(replacementToken, Arrays.asList(b)));
-        if (checks < 108) throw new AssertionError("missing tests");
+        ManagerModel namespaceRefresh = new ManagerModel();
+        long originalGeneration = namespaceRefresh.beginRefresh();
+        check(namespaceRefresh.publish(originalGeneration,Arrays.asList(a)));
+        check(namespaceRefresh.select(namespaceRefresh.snapshot().revision,a.key,true));
+        long originalRevision = namespaceRefresh.snapshot().revision;
+        long replacementGeneration = namespaceRefresh.beginRefresh();
+        check(namespaceRefresh.snapshot().selected.isEmpty());
+        check(namespaceRefresh.publish(replacementGeneration,Arrays.asList(otherNamespace)));
+        check(namespaceRefresh.snapshot().selected.isEmpty());
+        check(!namespaceRefresh.select(originalRevision,a.key,true));
+        check(!namespaceRefresh.select(namespaceRefresh.snapshot().revision,a.key,true));
+        check(namespaceRefresh.select(namespaceRefresh.snapshot().revision,otherNamespace.key,true));
+        check(namespaceRefresh.snapshot().selected.equals(Collections.singleton(otherNamespace.key)));
+        check(!namespaceRefresh.publish(originalGeneration,Arrays.asList(a)));
+        check(namespaceRefresh.snapshot().visible.size() == 1 && namespaceRefresh.snapshot().visible.get(0) == otherNamespace);
+        if (checks < 158) throw new AssertionError("missing tests");
         System.out.println("PASS " + checks + " manager presentation checks; no provider/data/UI execution");
     }
 }

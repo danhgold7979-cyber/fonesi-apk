@@ -1,6 +1,6 @@
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.UUID;
+import vn.fonesi.rebuild.model.ManagerModel.CatalogKey;
 import vn.fonesi.rebuild.model.ManagerController;
 import vn.fonesi.rebuild.model.ManagerModel;
 
@@ -56,7 +56,7 @@ public final class ManagerControllerTest {
         check(first != second);
         check(!controller.fail(first));
         check(!controller.publish(first, Collections.emptyList()));
-        ManagerModel.Entry row = new ManagerModel.Entry(UUID.randomUUID(), "unknown", "example.test",
+        ManagerModel.Entry row = new ManagerModel.Entry(new CatalogKey("unknown", "legacy-row-1"), "example.test",
                 "Name", "group", ManagerModel.Status.QUARANTINED);
         check(controller.publish(second, Arrays.asList(row)));
         check(resumed.state.phase == ManagerModel.Phase.LOADED);
@@ -66,15 +66,15 @@ public final class ManagerControllerTest {
         check(!controller.publish(second, Collections.emptyList()));
         check(!controller.fail(second));
         ManagerController.Token beforeSelection = resumed.state.token;
-        check(controller.select(beforeSelection, row.id, true));
-        check(resumed.state.selected.contains(row.id));
-        check(!controller.select(beforeSelection, row.id, false));
+        check(controller.select(beforeSelection, row.key, true));
+        check(resumed.state.selected.contains(row.key));
+        check(!controller.select(beforeSelection, row.key, false));
         ManagerController.Token beforeFilter = resumed.state.token;
         check(controller.filter(beforeFilter, "absent", null));
         check(resumed.state.visible.isEmpty());
         check(resumed.state.totalCount == 1);
         check(resumed.state.selected.isEmpty());
-        check(!controller.select(beforeFilter, row.id, true));
+        check(!controller.select(beforeFilter, row.key, true));
         check(controller.filter(resumed.state.token, "", null));
         check(controller.selectVisible(resumed.state.token, true));
         check(resumed.state.selected.size() == 1);
@@ -84,7 +84,7 @@ public final class ManagerControllerTest {
         check(!resumed.state.active);
         check(resumed.state.visible.isEmpty());
         check(replacement.state.selected.isEmpty());
-        check(!controller.select(oldEpoch, row.id, true));
+        check(!controller.select(oldEpoch, row.key, true));
         check(replacement.state.visible.size() == 1);
         check(!replacement.state.operationsEnabled());
         ManagerController.RefreshTicket empty = controller.beginRefresh(replacement.state.token);
@@ -129,7 +129,36 @@ public final class ManagerControllerTest {
         check(deliveries[0] == 2);
         check(throwing.current().query.equals("after-render-failure"));
         check(!throwing.current().operationsEnabled());
-        if (checks < 76) throw new AssertionError("test coverage missing");
+        ManagerController composite = new ManagerController();
+        FakeView compositeView = new FakeView(); composite.attach(compositeView);
+        ManagerModel.Entry sameClone = new ManagerModel.Entry(new CatalogKey("other-engine", row.key.cloneId),
+                "example.other", "Other", "", ManagerModel.Status.UNAVAILABLE);
+        ManagerController.RefreshTicket catalog = composite.beginRefresh(compositeView.state.token);
+        check(composite.publish(catalog,Arrays.asList(row,sameClone)));
+        check(compositeView.state.visible.size() == 2);
+        ManagerController.Token beforeCompositeSelection = compositeView.state.token;
+        check(composite.select(beforeCompositeSelection,row.key,true));
+        ManagerController.Render frozenComposite = compositeView.state;
+        check(!composite.select(beforeCompositeSelection,sameClone.key,true));
+        check(compositeView.state.selected.equals(Collections.singleton(row.key)));
+        check(composite.select(compositeView.state.token,sameClone.key,true));
+        check(compositeView.state.selected.size() == 2);
+        check(frozenComposite.selected.equals(Collections.singleton(row.key)));
+        check(!composite.select(right.current().token,row.key,false));
+        ManagerController.Token oldCompositeEpoch = compositeView.state.token;
+        composite.detach(); composite.attach(new FakeView());
+        check(!composite.select(oldCompositeEpoch,sameClone.key,true));
+        check(composite.current().selected.isEmpty());
+        check(!composite.current().operationsEnabled());
+        ManagerController.RefreshTicket compositeDuplicate = composite.beginRefresh(composite.current().token);
+        ManagerModel.Entry payloadDrift = new ManagerModel.Entry(new CatalogKey(row.key.engineKey,row.key.cloneId),
+                "different.package", "Changed", "other", ManagerModel.Status.UNVERIFIED);
+        try { composite.publish(compositeDuplicate,Arrays.asList(row,payloadDrift)); throw new AssertionError(); }
+        catch (IllegalArgumentException expected) { checks++; }
+        check(composite.current().phase == ManagerModel.Phase.LOADING);
+        check(composite.current().totalCount == 0);
+        check(composite.fail(compositeDuplicate));
+        if (checks < 92) throw new AssertionError("test coverage missing");
         System.out.println("PASS " + checks + " controller checks; fake view only, no Android UI execution");
     }
 }

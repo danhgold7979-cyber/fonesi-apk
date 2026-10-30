@@ -85,9 +85,9 @@ public final class ManagerActivity extends Activity implements ManagerController
                 CheckBox row = new CheckBox(this);
                 row.setSaveEnabled(false);
                 row.setText(getString(R.string.metadata_row, entry.name, entry.group, status(entry.status)));
-                row.setChecked(next.selected.contains(entry.id));
+                row.setChecked(next.selected.contains(entry.key));
                 // Captured token binds a row event to the exact view revision and foreground epoch.
-                row.setOnCheckedChangeListener((button, checked) -> controller.select(next.token, entry.id, checked));
+                row.setOnCheckedChangeListener((button, checked) -> controller.select(next.token, entry.key, checked));
                 rows.addView(row);
             }
         } finally {

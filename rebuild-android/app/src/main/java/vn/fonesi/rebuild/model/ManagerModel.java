@@ -9,24 +9,43 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.Set;
-import java.util.UUID;
 
 /** Metadata presentation only: selection never confers provider or operation authority. */
 public final class ManagerModel {
     public enum Phase { IDLE, LOADING, LOADED, FAILED }
     public enum Status { UNVERIFIED, QUARANTINED, UNAVAILABLE }
 
+    /** Exact opaque catalog reference, not a verified provider, operation ID or authority. */
+    public static final class CatalogKey {
+        public final String engineKey;
+        public final String cloneId;
+
+        public CatalogKey(String engineKey, String cloneId) {
+            this.engineKey = Objects.requireNonNull(engineKey, "engineKey");
+            this.cloneId = Objects.requireNonNull(cloneId, "cloneId");
+        }
+
+        @Override public boolean equals(Object other) {
+            if (this == other) return true;
+            if (!(other instanceof CatalogKey)) return false;
+            CatalogKey key = (CatalogKey) other;
+            return engineKey.equals(key.engineKey) && cloneId.equals(key.cloneId);
+        }
+
+        @Override public int hashCode() {
+            return 31 * engineKey.hashCode() + cloneId.hashCode();
+        }
+    }
+
     public static final class Entry {
-        public final UUID id;
-        public final String provider;
+        public final CatalogKey key;
         public final String packageName;
         public final String name;
         public final String group;
         public final Status status;
 
-        public Entry(UUID id, String provider, String packageName, String name, String group, Status status) {
-            this.id = Objects.requireNonNull(id, "id");
-            this.provider = required(provider);
+        public Entry(CatalogKey key, String packageName, String name, String group, Status status) {
+            this.key = Objects.requireNonNull(key, "key");
             this.packageName = required(packageName);
             this.name = required(name);
             this.group = Objects.requireNonNull(group, "group");
@@ -41,11 +60,11 @@ public final class ManagerModel {
         /** Null means all groups; empty means exactly the ungrouped metadata entries. */
         public final String group;
         public final List<Entry> visible;
-        public final Set<UUID> selected;
+        public final Set<CatalogKey> selected;
         public final int totalCount;
 
         private Snapshot(long revision, Phase phase, String query, String group,
-                         List<Entry> visible, Set<UUID> selected, int totalCount) {
+                         List<Entry> visible, Set<CatalogKey> selected, int totalCount) {
             this.revision = revision;
             this.phase = phase;
             this.query = query;
@@ -64,7 +83,7 @@ public final class ManagerModel {
     private String query = "";
     private String group;
     private List<Entry> entries = Collections.emptyList();
-    private final Set<UUID> selected = new LinkedHashSet<>();
+    private final Set<CatalogKey> selected = new LinkedHashSet<>();
 
     /** Supersedes pending work and invalidates every prior row/selection. */
     public synchronized long beginRefresh() {
@@ -83,10 +102,10 @@ public final class ManagerModel {
         if (phase != Phase.LOADING || token != generation) return false;
         Objects.requireNonNull(incoming, "incoming");
         List<Entry> copy = new ArrayList<>();
-        Set<UUID> ids = new HashSet<>();
+        Set<CatalogKey> ids = new HashSet<>();
         for (Entry entry : incoming) {
             Objects.requireNonNull(entry, "entry");
-            if (!ids.add(entry.id)) throw new IllegalArgumentException("duplicate UUID");
+            if (!ids.add(entry.key)) throw new IllegalArgumentException("duplicate catalog key");
             copy.add(entry);
         }
         long nextRevision = Math.addExact(revision, 1);
@@ -114,8 +133,8 @@ public final class ManagerModel {
             long nextRevision = Math.addExact(revision, 1);
             query = newQuery;
             group = newGroup;
-            Set<UUID> visibleIds = new HashSet<>();
-            for (Entry entry : visible()) visibleIds.add(entry.id);
+            Set<CatalogKey> visibleIds = new HashSet<>();
+            for (Entry entry : visible()) visibleIds.add(entry.key);
             selected.retainAll(visibleIds);
             revision = nextRevision;
         }
@@ -123,23 +142,23 @@ public final class ManagerModel {
     }
 
     /** Explicit desired state makes repeated input idempotent; stale view input never toggles. */
-    public synchronized boolean select(long expectedRevision, UUID id, boolean value) {
-        Objects.requireNonNull(id, "id");
+    public synchronized boolean select(long expectedRevision, CatalogKey key, boolean value) {
+        Objects.requireNonNull(key, "key");
         if (phase != Phase.LOADED || revision != expectedRevision) return false;
         boolean found = false;
-        for (Entry entry : visible()) if (entry.id.equals(id)) found = true;
+        for (Entry entry : visible()) if (entry.key.equals(key)) found = true;
         if (!found) return false;
-        if (selected.contains(id) == value) return true;
+        if (selected.contains(key) == value) return true;
         long nextRevision = Math.addExact(revision, 1);
-        if (value) selected.add(id); else selected.remove(id);
+        if (value) selected.add(key); else selected.remove(key);
         revision = nextRevision;
         return true;
     }
 
     public synchronized boolean selectVisible(long expectedRevision, boolean value) {
         if (phase != Phase.LOADED || revision != expectedRevision) return false;
-        Set<UUID> next = new LinkedHashSet<>();
-        if (value) for (Entry entry : visible()) next.add(entry.id);
+        Set<CatalogKey> next = new LinkedHashSet<>();
+        if (value) for (Entry entry : visible()) next.add(entry.key);
         if (!selected.equals(next)) {
             long nextRevision = Math.addExact(revision, 1);
             selected.clear();

@@ -55,7 +55,7 @@ class ScaffoldTests(unittest.TestCase):
             self.assertNotIn("R.id." + operation, source)
         self.assertIn("controller.attach(this)", source)
         self.assertIn("controller.detach()", source)
-        self.assertIn("controller.select(next.token, entry.id, checked)", source)
+        self.assertIn("controller.select(next.token, entry.key, checked)", source)
         self.assertIn("if (rendering || state == null)", source)
 
     def test_metadata_view_state_is_not_saved(self):

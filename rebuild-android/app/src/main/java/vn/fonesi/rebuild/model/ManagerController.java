@@ -4,7 +4,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
-import java.util.UUID;
+import vn.fonesi.rebuild.model.ManagerModel.CatalogKey;
 
 /** Foreground-bound presentation only. No storage/provider adapter or operation dispatch. */
 public final class ManagerController {
@@ -28,7 +28,7 @@ public final class ManagerController {
         public final boolean active;
         public final ManagerModel.Phase phase;
         public final List<ManagerModel.Entry> visible;
-        public final Set<UUID> selected;
+        public final Set<CatalogKey> selected;
         public final int totalCount;
         public final String query;
         public final String group;
@@ -88,8 +88,8 @@ public final class ManagerController {
         return true;
     }
 
-    public synchronized boolean select(Token token, UUID id, boolean selected) {
-        if (!valid(token) || !model.select(token.revision, id, selected)) return false;
+    public synchronized boolean select(Token token, CatalogKey key, boolean selected) {
+        if (!valid(token) || !model.select(token.revision, key, selected)) return false;
         render();
         return true;
     }

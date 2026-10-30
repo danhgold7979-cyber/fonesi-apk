@@ -37,3 +37,5 @@ Original import/clone/launch/migration buttons remain disabled.
 Fake-view lifecycle tests are not Android UI/device tests. Input/page budgets,
 normalized search caching and large-list virtualization are mandatory before a
 storage adapter is connected; current filtering applies to loaded metadata only.
+
+Manager row identity is the exact opaque `(engineKey, cloneId)` pair, matching the retained schema key rather than assuming globally unique UUIDs. It is display-only and carries no executable provider authority. No catalog reader is connected; external-data budgets/decoding/quarantine and real persistence remain separate gates. Empty/whitespace opaque keys are preserved according to the schema, not normalized into a different identity.
