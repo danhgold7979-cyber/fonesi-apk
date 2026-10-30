@@ -77,6 +77,7 @@ public final class SyntheticGuestUiProbeActivity extends Activity {
     private volatile String probeApkSha256;
     private volatile String payloadApkSha256;
     private volatile String e79Stage;
+    private volatile String e79PrivateClusterId;
     private volatile String e79ProcessToken;
     private volatile String e79MarkerA;
     private volatile String e79MarkerB;
@@ -136,6 +137,7 @@ public final class SyntheticGuestUiProbeActivity extends Activity {
                 if (!"write".equals(e79Stage) && !"verify".equals(e79Stage))
                     throw new IllegalArgumentException("E79 requires an explicit write/verify stage");
                 if ("verify".equals(e79Stage)) {
+                    e79PrivateClusterId = getIntent().getStringExtra("e79_private_cluster_id");
                     syntheticScopeAId = getIntent().getStringExtra("e79_scope_a");
                     syntheticScopeBId = getIntent().getStringExtra("e79_scope_b");
                     e79MarkerA = getIntent().getStringExtra("e79_marker_a");
@@ -143,7 +145,8 @@ public final class SyntheticGuestUiProbeActivity extends Activity {
                     e79PriorPid = getIntent().getIntExtra("e79_prior_pid", -1);
                     e79PriorProcessToken = getIntent().getStringExtra("e79_prior_process_token");
                     e79PriorRunId = getIntent().getStringExtra("e79_prior_run_id");
-                    ProbeData.check(canonicalUuid(syntheticScopeAId) && canonicalUuid(syntheticScopeBId) &&
+                    ProbeData.check(canonicalUuid(e79PrivateClusterId) &&
+                        canonicalUuid(syntheticScopeAId) && canonicalUuid(syntheticScopeBId) &&
                         !syntheticScopeAId.equals(syntheticScopeBId) &&
                         e79MarkerA != null && e79MarkerA.matches("[0-9a-f]{32}") &&
                         e79MarkerB != null && e79MarkerB.matches("[0-9a-f]{32}") &&
@@ -203,11 +206,16 @@ public final class SyntheticGuestUiProbeActivity extends Activity {
                 preparationStage = stage;
                 dispatchTicket = SyntheticComponentDispatchTicket.Companion.fromJson(dispatchTicketJson);
                 localCluster = localStore.open(dispatchTicket.getClusterId(), Build.VERSION.SDK_INT);
+            } else if ("e79".equals(proofLevel) && "verify".equals(e79Stage)) {
+                stage = "e79_reopen_same_signed_private_cluster_after_process_restart";
+                preparationStage = stage;
+                localCluster = localStore.open(e79PrivateClusterId, Build.VERSION.SDK_INT);
             } else {
                 stage = "private_signed_apk_publish_and_readback";
                 preparationStage = stage;
                 localCluster = localStore.publish(
                     SyntheticSignedPayloadSource.fromInstalled(this), Build.VERSION.SDK_INT);
+                if ("e79".equals(proofLevel)) e79PrivateClusterId = localCluster.getId();
             }
             ProbeData.check(localStore.open(localCluster.getId(), Build.VERSION.SDK_INT).equals(localCluster) &&
                 localCluster.getApks().getBase().getPackageName().equals(GUEST_PACKAGE) &&
@@ -827,6 +835,7 @@ public final class SyntheticGuestUiProbeActivity extends Activity {
                     .put("synthetic_scope_persistence_after_context_reconstruction_verified", syntheticScopePersistenceVerified)
                     .put("synthetic_scope_cross_readback_isolated", syntheticScopeCrossReadbackVerified)
                     .put("e79_stage", e79Stage)
+                    .put("e79_private_cluster_id", e79PrivateClusterId)
                     .put("e79_process_token", e79ProcessToken)
                     .put("e79_marker_a", e79MarkerA)
                     .put("e79_marker_b", e79MarkerB)
@@ -895,6 +904,7 @@ public final class SyntheticGuestUiProbeActivity extends Activity {
                 .put("synthetic_scope_persistence_after_context_reconstruction_verified", syntheticScopePersistenceVerified)
                 .put("synthetic_scope_cross_readback_isolated", syntheticScopeCrossReadbackVerified)
                 .put("e79_stage", e79Stage)
+                .put("e79_private_cluster_id", e79PrivateClusterId)
                 .put("e79_process_token", e79ProcessToken)
                 .put("e79_marker_a", e79MarkerA)
                 .put("e79_marker_b", e79MarkerB)
