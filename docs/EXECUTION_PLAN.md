@@ -1,3 +1,9 @@
+## E79 — synthetic scoped data durability across actual host-process death/restart (pre-code, 30/10/2026)
+
+Product **Phase 1 steps 7–8**, controlled-app portion of step 8; not a new Product Phase. E78 passed at exact source/test SHA `57d60cb80d6cece692b2898afd15d8668fd14883`, [CI #40998462184](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40998462184). E78 proves synthetic Application attach/onCreate and two same-UID scopes across Context-wrapper reconstruction, but not process death. E79 will force-stop the host probe process after writing two synthetic scopes, verify that process is gone, relaunch a new process, reload the signed private payload, reattach fresh Application objects and verify persisted preferences/files/SQLite plus per-process onCreate markers.
+
+[Detailed E79 pre-code plan](phases/E79_SYNTHETIC_PROCESS_RESTART_DURABILITY_PLAN.md). Keep the proof synthetic and same-UID: no ActivityThread/PackageManager registration, guest Activity, third-party app, account isolation or product acceptance. Preserve `RuntimeBindings.supportsSplits=false`, product readiness 28.00%, Draft PRs and `main` unchanged. E79 implementation must not begin until this plan is committed and reviewed against the current source.
+
 ## E78 — exact-source technical PASS (30/10/2026)
 
 Product **Phase 1 steps 7–8**, controlled-app portion of step 8; prepares Phase 2 steps 9–12. Development branch `phase/e78-synthetic-application-lifecycle-20261030`, Draft PR #52 stacked on E77 Draft PR #51. Exact source/test SHA `57d60cb80d6cece692b2898afd15d8668fd14883` passed [CI #40998462184](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40998462184) **SUCCESS**, 17 substantive workflow steps. Cloud/candidate each passed 510 tests; source-engine 63 JVM tests; Python 13 receipt/fingerprint tests; AAR/native host integration, E40–E78 audits and signed synthetic APK build/lint passed.
