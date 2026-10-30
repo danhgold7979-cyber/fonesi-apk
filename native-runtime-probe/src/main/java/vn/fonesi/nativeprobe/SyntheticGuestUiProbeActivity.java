@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.app.Application;
 import android.app.Instrumentation;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.os.Build;
@@ -352,6 +353,8 @@ public final class SyntheticGuestUiProbeActivity extends Activity {
             UUID.fromString(scopeA).toString().equals(scopeA) &&
             UUID.fromString(scopeB).toString().equals(scopeB),
             "E78 requires two distinct canonical UUID data scopes");
+        syntheticScopeAId = scopeA;
+        syntheticScopeBId = scopeB;
         final String markerA = randomHex();
         final String markerB = randomHex();
         ProbeData.check(!markerA.equals(markerB), "E78 synthetic markers must be distinct and non-secret");
@@ -449,8 +452,6 @@ public final class SyntheticGuestUiProbeActivity extends Activity {
             !markerA.equals((String) read.invoke(null, reopenedB)),
             "E78 cross-scope readback detected data leakage");
         syntheticScopeCrossReadbackVerified = true;
-        syntheticScopeAId = scopeA;
-        syntheticScopeBId = scopeB;
         ProbeData.check(verifiedStore.open(verifiedCluster.getId(), Build.VERSION.SDK_INT).equals(verifiedCluster),
             "Signed private APK changed during E78 scoped data verification");
     }
@@ -556,12 +557,24 @@ public final class SyntheticGuestUiProbeActivity extends Activity {
                     ProbeData.check(syntheticComponentDispatchVerified,
                         "E29 private component dispatch ticket was not validated before private code load");
                 verificationStage = "final_e74_private_activity_class_preflight";
-                if ("e74".equals(proofLevel) || "e77".equals(proofLevel))
+                if ("e74".equals(proofLevel) || "e77".equals(proofLevel) || "e78".equals(proofLevel))
                     ProbeData.check(privateActivityClassVerified,
                         "Signed PRIVATE Activity class was not preflighted before hosted View");
-                if ("e77".equals(proofLevel))
+                if ("e77".equals(proofLevel) || "e78".equals(proofLevel))
                     ProbeData.check(privateActivityConstructorPreflightVerified,
                         "E77 public no-argument constructor preflight was not verified");
+                if ("e78".equals(proofLevel)) {
+                    verificationStage = "final_e78_synthetic_application_and_scoped_data";
+                    ProbeData.check(privateApplicationClassPreflightVerified &&
+                        syntheticApplicationAttached && syntheticApplicationOnCreateVerified &&
+                        syntheticApplicationMainThreadVerified && syntheticApplicationInstancesDistinct &&
+                        syntheticScopeAStorageVerified && syntheticScopeBStorageVerified &&
+                        syntheticScopePersistenceVerified && syntheticScopeCrossReadbackVerified &&
+                        SIGNED_APPLICATION.equals(syntheticApplicationClassName) &&
+                        syntheticScopeAId != null && syntheticScopeBId != null &&
+                        !syntheticScopeAId.equals(syntheticScopeBId),
+                        "E78 signed Application attach/onCreate or two-scope data proof is incomplete");
+                }
                 verificationStage = "final_android_host_lifecycle";
                 ProbeData.check(COMPLETE.equals(androidEvents),
                     "Actual Android Activity lifecycle was incomplete");
@@ -589,6 +602,25 @@ public final class SyntheticGuestUiProbeActivity extends Activity {
                     .put("private_component_manifest_verified", privateComponentCatalogVerified)
                     .put("private_activity_class_preflight_verified", privateActivityClassVerified)
                     .put("private_activity_constructor_preflight_verified", privateActivityConstructorPreflightVerified)
+                    .put("private_application_class_preflight_verified", privateApplicationClassPreflightVerified)
+                    .put("synthetic_guest_application_attached", syntheticApplicationAttached)
+                    .put("synthetic_guest_application_on_create_verified", syntheticApplicationOnCreateVerified)
+                    .put("synthetic_guest_application_on_main_thread", syntheticApplicationMainThreadVerified)
+                    .put("synthetic_guest_application_instances_distinct", syntheticApplicationInstancesDistinct)
+                    .put("synthetic_application_on_create_once_per_scope", syntheticApplicationOnCreateVerified)
+                    .put("synthetic_application_class_name", syntheticApplicationClassName)
+                    .put("synthetic_scope_a_id", syntheticScopeAId)
+                    .put("synthetic_scope_b_id", syntheticScopeBId)
+                    .put("synthetic_scope_a_preferences_file_sqlite_verified", syntheticScopeAStorageVerified)
+                    .put("synthetic_scope_b_preferences_file_sqlite_verified", syntheticScopeBStorageVerified)
+                    .put("synthetic_scope_persistence_after_context_reconstruction_verified", syntheticScopePersistenceVerified)
+                    .put("synthetic_scope_cross_readback_isolated", syntheticScopeCrossReadbackVerified)
+                    .put("guest_application_registered_with_activity_thread", false)
+                    .put("guest_application_registered_with_package_manager", false)
+                    .put("full_guest_application_lifecycle_verified", false)
+                    .put("source_commit", sourceCommit)
+                    .put("probe_apk_sha256", probeApkSha256)
+                    .put("payload_apk_sha256", payloadApkSha256)
                     .put("synthetic_component_dispatch_verified", syntheticComponentDispatchVerified)
                     .put("dispatch_ticket_private_apk_sha256", dispatchTicketPrivateApkSha256)
                     .put("production_clone_accepted", false)
@@ -627,6 +659,25 @@ public final class SyntheticGuestUiProbeActivity extends Activity {
                 .put("private_component_catalog_verified", privateComponentCatalogVerified)
                 .put("private_activity_class_preflight_verified", privateActivityClassVerified)
                 .put("private_activity_constructor_preflight_verified", privateActivityConstructorPreflightVerified)
+                .put("private_application_class_preflight_verified", privateApplicationClassPreflightVerified)
+                .put("synthetic_guest_application_attached", syntheticApplicationAttached)
+                .put("synthetic_guest_application_on_create_verified", syntheticApplicationOnCreateVerified)
+                .put("synthetic_guest_application_on_main_thread", syntheticApplicationMainThreadVerified)
+                .put("synthetic_guest_application_instances_distinct", syntheticApplicationInstancesDistinct)
+                .put("synthetic_application_on_create_once_per_scope", syntheticApplicationOnCreateVerified)
+                .put("synthetic_application_class_name", syntheticApplicationClassName)
+                .put("synthetic_scope_a_id", syntheticScopeAId)
+                .put("synthetic_scope_b_id", syntheticScopeBId)
+                .put("synthetic_scope_a_preferences_file_sqlite_verified", syntheticScopeAStorageVerified)
+                .put("synthetic_scope_b_preferences_file_sqlite_verified", syntheticScopeBStorageVerified)
+                .put("synthetic_scope_persistence_after_context_reconstruction_verified", syntheticScopePersistenceVerified)
+                .put("synthetic_scope_cross_readback_isolated", syntheticScopeCrossReadbackVerified)
+                .put("guest_application_registered_with_activity_thread", false)
+                .put("guest_application_registered_with_package_manager", false)
+                .put("full_guest_application_lifecycle_verified", false)
+                .put("source_commit", sourceCommit)
+                .put("probe_apk_sha256", probeApkSha256)
+                .put("payload_apk_sha256", payloadApkSha256)
                 .put("synthetic_component_dispatch_verified", syntheticComponentDispatchVerified)
                 .put("dispatch_ticket_private_apk_sha256", dispatchTicketPrivateApkSha256)
                 .put("production_clone_accepted", false)
