@@ -84,6 +84,7 @@ for marker in (
     "@RequiresApi(28)",
     "beginE82HostStubLifecycle()",
     "private fun writeE82Receipt()",
+    "if (Build.VERSION.SDK_INT >= 28) writeE82Receipt()",
     "framework_on_create_called",
     "framework_on_resume_called",
     "base_context_non_null",
