@@ -14,7 +14,7 @@ for required in (
     'private static final String SIGNED_ACTIVITY = GUEST_PACKAGE + ".PayloadActivity";',
     '!"e29".equals(proofLevel) && !"e74".equals(proofLevel) &&',
     '!"e77".equals(proofLevel) && !"e78".equals(proofLevel) && !("e79".equals(proofLevel) || "e80".equals(proofLevel))',
-    'if ("e74".equals(proofLevel) || "e77".equals(proofLevel) || "e78".equals(proofLevel) || ("e79".equals(proofLevel) || "e80".equals(proofLevel))) {',
+    'if ("e74".equals(proofLevel) || "e77".equals(proofLevel) || "e78".equals(proofLevel) || ("e79".equals(proofLevel) || "e80".equals(proofLevel) || e82Mode)) {',
     "PrivateGuestActivityClassHandle activityProof = image.preflightExplicitActivityClass(",
     "SIGNED_ACTIVITY, ExplicitActivityCaller.TRUSTED_INTERNAL",
     "activityProof.getSelection().getClusterId().equals(localCluster.getId())",
@@ -30,7 +30,7 @@ for required in (
     '.put("actual_guest_activity_attached", false)',
 ):
     assert required in probe, "E74 signed private Activity host probe missing: " + required
-segment = probe.split('if ("e74".equals(proofLevel) || "e77".equals(proofLevel) || "e78".equals(proofLevel) || ("e79".equals(proofLevel) || "e80".equals(proofLevel))) {', 1)[1].split("int marker =", 1)[0]
+segment = probe.split('if ("e74".equals(proofLevel) || "e77".equals(proofLevel) || "e78".equals(proofLevel) || ("e79".equals(proofLevel) || "e80".equals(proofLevel) || e82Mode)) {', 1)[1].split("int marker =", 1)[0]
 assert segment.index("image.preflightExplicitActivityClass(") < segment.index("privateActivityClassVerified = true")
 for forbidden in ("startActivity(", "getLaunchIntentForPackage(", "Instrumentation.newActivity(",
                   "onCreate(", "new PayloadActivity("):
