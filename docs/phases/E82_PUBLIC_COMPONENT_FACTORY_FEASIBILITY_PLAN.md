@@ -29,3 +29,59 @@ Find whether the **Android framework** can legitimately create and attach a **pr
 ## Critical non-acceptance
 
 Even an actual framework `onCreate` of the test-owned signed PRIVATE Java Activity instantiated via **host AppComponentFactory** does **not** register the guest package or supply a guest PackageManager/Context/permission model, dedicated OS UID/account, service/provider/Binder mediation, production split APK, real third-party application execution, or Samsung acceptance. Do not call a host-owned stub a production guest Activity or report a clone completed. Product rubric remains **28.00%**, 0 accepted third-party clones. Never turn E82 opt-in on for cloud/candidate product builds.
+
+## E82 implementation refinement — before code (30/10/2026)
+
+This refinement is committed before any E82 source modification. It narrows the experiment to one host-owned Activity instance created by Android through the registered factory. It does not attempt to register a guest package or emulate a guest UID.
+
+### Exact source changes
+
+1. native-runtime-probe/src/main/AndroidManifest.xml
+   - Declare .E82HostActivityStub as the single new non-exported Activity, in :fonesi_guest_ui, with no intent filter.
+   - Set android:appComponentFactory to the host factory class.
+   - Preserve all existing five exported Activities and five internal services exactly; add no permissions or exported entry points.
+2. Add E82AppComponentFactory and E82FactoryAuthorization under the native probe package.
+   - Delegate every non-E82 component to super.instantiateActivity(...); default paths must not inspect or load the payload.
+   - Accept only the exact stub class name and ComponentName, process, host UID/package, run UUID, nonce, source SHA and APK SHA values matching a process-local armed authorization.
+   - Authorization retains the exact LoadedGuestCode object and preflighted Activity Class in memory; neither the classloader nor authorization is reconstructed from Intent extras.
+   - Consume authorization atomically before construction. Replay, duplicate arm, stale nonce, different process/UID/package, wrong stub, wrong signed class/loader or failed construction is terminal and fail-closed.
+   - Instantiate only the already-preflighted public no-argument constructor. Do not call hidden APIs, Activity.attach, Instrumentation.callActivityOnCreate, framework reflection or original-app fallback.
+3. Add an opt-in E82 preparation/dispatch path to SyntheticGuestUiProbeActivity.
+   - Require API 28+, x86_64 test ABI, exact E82 proof mode, fresh run UUID and exact source/host APK/payload APK SHA-256 values.
+   - Publish/open the test-owned signed PRIVATE APK with PrivateApkStore, verify signer/cluster readback, initialize the native test runtime, load one LoadedGuestCode and preflight vn.fonesi.payload.PayloadActivity through the existing trusted-internal resolver.
+   - Arm the process-local authorization only after these checks, then launch the exact non-exported host stub explicitly with matching one-shot nonce and run identity. The original Activity polls for a receipt after the stub Activity finishes.
+4. Add an E82-only branch to signed test payload PayloadActivity.
+   - In onCreate, call super first, then require the expected E82 Intent identity and a real non-null framework base Context and Window.
+   - Read PackageManager metadata for the exact registered host stub and record host package, host UID, host ActivityInfo class/process and that the guest package is not registered.
+   - In onResume, record a separate lifecycle marker and finish the synthetic Activity; do not render the legacy interactive form or accept external APK/account data in E82 mode.
+5. Extend scripts/run_guest_code_emulator.py and its Python tests with a separate E82 runner/receipt validator.
+   - The receipt must bind the exact source SHA, both signed APK SHA-256 values, run UUID, nonce, private cluster, exact signed class and host stub ComponentName.
+   - Require factory authorization armed/consumed once, framework onCreate and onResume, non-null base Context/Window, exact host PackageManager ActivityInfo, and same host package/UID/process.
+   - Explicitly require guest package registration, guest UID isolation, third-party execution, real social accounts, production clone acceptance and physical-device acceptance to remain false.
+   - Add negative tests for missing/replayed nonce, wrong component/class/loader/process, duplicate consume, wrong source/APK hashes, missing lifecycle, null Context/Window and every forbidden overclaim.
+6. Extend scripts/run_native_probe.py with an exact allowlist entry for the new non-exported stub and exact appComponentFactory value. Keep the existing five exported Activity assertions, five internal service assertions, zero-permission policy, ABI/ELF checks and backup/network restrictions.
+7. Add a dedicated E82 exact-source workflow based on E81. It must run the inherited E40–E81 audits/tests, cloud and candidate checks, source-engine AAR/JVM checks, synthetic host/payload build/lint/manifest audit, then boot the owned AOSP API 34 x86_64 emulator and run the E82 receipt. No audit-only fallback can satisfy the Android receipt.
+
+### Acceptance and stop conditions
+
+- First prove ordinary host Activity construction delegates unchanged to the default factory; prove the exact stub is non-exported and isolated to :fonesi_guest_ui.
+- The positive path passes only if the Android framework invokes the factory for the registered stub and subsequently invokes the signed PRIVATE Activity's real onCreate and onResume with non-null host Context and Window.
+- If Android rejects a foreign-loader Activity, factory selection is skipped, framework attachment fails, or the exact receipt cannot be collected, preserve the failure evidence and mark E82 BLOCKED/NOT PASS. Do not replace the framework path with manual attachment or synthetic callback calls.
+- The payload class must remain a project-owned synthetic fixture. The Android component remains registered as vn.fonesi.nativeprobe.E82HostActivityStub under the host package/UID/Context; the private payload package is not PackageManager-registered.
+- No production candidate binding, split capability change, main merge, release APK, account test or product-readiness increase is authorized by this experiment.
+
+### Verification sequence
+
+1. Run the new pure-JVM authorization state tests and Python receipt/negative-claim tests.
+2. Run the strict manifest/APK audit and all inherited E40–E81 source audits.
+3. Run cloud and candidate test/build/lint/signature/permission checks.
+4. Build the opt-in signed synthetic host and payload APKs; verify the exact stub/factory manifest and no new permissions.
+5. Execute the actual AOSP API 34 x86_64 host-stub launch; retain the source/APK-bound raw receipt and logs as TEST-ONLY artifact.
+6. Re-run the full E82 workflow on the exact source SHA. Only then may an E82 results document be written and STATUS/README/PRODUCT_PROGRESS updated.
+
+### Branch and progress controls
+
+- Continue on phase/e82-public-component-factory-feasibility-20261030, based on the E81 reporting SHA; keep the new PR Draft and stack it on the existing E81 Draft PR.
+- Keep main at c055df600f87ee9ddf0cd5d6bfc67d80d145e79d.
+- Product mapping remains Product Phase 1 steps 7–8, preparing Phase 3 step 15; E82 is not a product Phase.
+- Weighted readiness remains 28.00%, accepted real third-party clones remain 0. No E82 technical PASS until every required gate and the actual emulator receipt pass on one exact source SHA.
