@@ -148,6 +148,7 @@ public final class E82FactoryAuthorization {
             this.stubComponent = stubComponent;
             this.processName = processName;
             this.hostUid = hostUid;
+            this.hostClassLoader = hostClassLoader;
             this.sourceCommit = sourceCommit;
             this.hostApkSha256 = hostApkSha256;
             this.payloadApkSha256 = payloadApkSha256;
