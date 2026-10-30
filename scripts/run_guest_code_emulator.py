@@ -295,6 +295,33 @@ def validate_e80_receipts(write_report, verify_report, source_commit, probe_apk_
     return write, verify
 
 
+def _validate_e81_scoped_stage(report):
+    """E81 method delegation is not Android Activity attachment."""
+    required_true = (
+        "e81_scoped_mode", "e81_private_activity_scope_bound_verified",
+        "e81_private_activity_rebinding_rejected",
+        "e81_private_activity_scoped_readback_verified",
+        "e81_private_activity_base_context_null",
+    )
+    missing = [key for key in required_true if report.get(key) is not True]
+    if missing:
+        raise RuntimeError("E81 scoped PRIVATE Activity method proof missing: " + ",".join(missing))
+    if report.get("e81_bound_scope_id") != report.get("synthetic_scope_a_id"):
+        raise RuntimeError("E81 PRIVATE Activity scope must equal signed A scope")
+    for key in ("e81_guest_activity_oncreate_called", "e81_framework_activity_attached"):
+        if report.get(key) is not False:
+            raise RuntimeError("E81 must not claim guest Activity onCreate/framework attachment")
+
+
+def validate_e81_receipts(write_report, verify_report, source_commit, probe_apk_sha256, payload_apk_sha256):
+    """Inherit E80/E79 source/APK/PID/scope constraints and positive E81 evidence."""
+    write, verify = validate_e80_receipts(
+        write_report, verify_report, source_commit, probe_apk_sha256, payload_apk_sha256)
+    _validate_e81_scoped_stage(write)
+    _validate_e81_scoped_stage(verify)
+    return write, verify
+
+
 def read_e79_stage_receipt(device, run_id, timeout_seconds):
     deadline = time.monotonic() + timeout_seconds
     while time.monotonic() < deadline:
@@ -324,6 +351,8 @@ def launch_e79_stage(device, stage, run_id, args, extras=None):
         "--es", "probe_apk_sha256", args.expected_probe_sha256,
         "--es", "payload_apk_sha256", args.expected_payload_sha256,
     ]
+    if args.e81_scoped_activity:
+        launch.extend(["--es", "e81_scoped_mode", "enabled"])
     for key, value in (extras or {}).items():
         launch.extend(["--ei" if isinstance(value, int) else "--es", key, str(value)])
     started = device(*launch, timeout=90, check=False)
@@ -368,9 +397,13 @@ def main():
     parser.add_argument("--probe-timeout", type=int, default=180)
     parser.add_argument("--allow-software-emulation", action="store_true",
                         help="E77/E78/E79/E80-only bounded synthetic proof fallback when GitHub has no KVM")
+    parser.add_argument("--e81-scoped-activity", action="store_true",
+                        help="Test-only PRIVATE Activity method scope proof; requires --proof-level e80")
     parser.add_argument("--proof-level", choices=("e11", "e12", "e13", "e14", "e15", "e16", "e17", "e21", "e22", "e23", "e24", "e25", "e29", "e74", "e77", "e78", "e79", "e80"), default="e11",
                         help="E13 additionally verifies independent synthetic native file/SQLite routes")
     args = parser.parse_args()
+    if args.e81_scoped_activity and args.proof_level != "e80":
+        parser.error("E81 scoped Activity method requires explicit e80 proof level")
     if args.boot_timeout not in range(30, 601) or args.probe_timeout not in range(15, 301):
         parser.error("Timeout out of bounded range")
     if args.allow_software_emulation and not software_emulation_proof_allowed(args.proof_level):
@@ -677,6 +710,8 @@ def main():
                                 args.expected_probe_sha256, args.expected_payload_sha256, args.proof_level)
             if args.proof_level == "e80":
                 _validate_e80_constructor_stage(e79_write_report)
+                if args.e81_scoped_activity:
+                    _validate_e81_scoped_stage(e79_write_report)
             stage = "E79 force-stop original synthetic host process"
             device("shell", "am", "force-stop", PROBE_PACKAGE, timeout=30, check=False)
             evidence["android_host_process_force_stop_requested"] = True
@@ -708,12 +743,18 @@ def main():
             }
             report = launch_e79_stage(device, "verify", verify_run_id, args, handoff)
             if args.proof_level == "e80":
-                validate_e80_receipts(e79_write_report, report, args.source_commit,
-                                      args.expected_probe_sha256, args.expected_payload_sha256)
+                if args.e81_scoped_activity:
+                    validate_e81_receipts(e79_write_report, report, args.source_commit,
+                                          args.expected_probe_sha256, args.expected_payload_sha256)
+                else:
+                    validate_e80_receipts(e79_write_report, report, args.source_commit,
+                                          args.expected_probe_sha256, args.expected_payload_sha256)
             else:
                 validate_e79_receipts(e79_write_report, report, args.source_commit,
                                       args.expected_probe_sha256, args.expected_payload_sha256)
-            (reports / (args.proof_level + "-process-restart-receipt.json")).write_text(
+            receipt_name = "e81-process-restart-receipt.json" if args.e81_scoped_activity else (
+                args.proof_level + "-process-restart-receipt.json")
+            (reports / receipt_name).write_text(
                 json.dumps({"force_stop_requested": True, "prior_process_absent_before_relaunch": process_stopped, "write_stage": e79_write_report, "verify_stage": report}, indent=2) + "\n")
             evidence["android_synthetic_scope_process_restart_verified"] = True
             evidence["android_synthetic_application_new_process_oncreate_verified"] = True
@@ -916,8 +957,12 @@ def main():
                 validate_e79_receipts(e79_write_report, report, args.source_commit,
                                       args.expected_probe_sha256, args.expected_payload_sha256)
             if args.proof_level == "e80":
-                validate_e80_receipts(e79_write_report, report, args.source_commit,
-                                      args.expected_probe_sha256, args.expected_payload_sha256)
+                if args.e81_scoped_activity:
+                    validate_e81_receipts(e79_write_report, report, args.source_commit,
+                                          args.expected_probe_sha256, args.expected_payload_sha256)
+                else:
+                    validate_e80_receipts(e79_write_report, report, args.source_commit,
+                                          args.expected_probe_sha256, args.expected_payload_sha256)
             if (report.get("lifecycle_transcript") != "CREATE,START,RESUME,PAUSE,STOP,DESTROY" or
                     report.get("process_name") != PROBE_PACKAGE + ":fonesi_guest_ui" or
                     report.get("api") != 34 or type(report.get("pid")) is not int or
@@ -980,8 +1025,12 @@ def main():
                 evidence["android_synthetic_scope_cross_readback_verified"] = True
                 if args.proof_level == "e80":
                     evidence["android_e80_private_synthetic_activity_constructor_verified"] = True
-                    evidence["result"] = "PASS_E80_SIGNED_SYNTHETIC_ACTIVITY_CONSTRUCTOR_ONLY"
-                    print("PASS: E80 constructed the exact signed PRIVATE synthetic Activity Java object once per "
+                    if args.e81_scoped_activity:
+                        evidence["android_e81_private_activity_scoped_method_verified"] = True
+                        evidence["result"] = "PASS_E81_SIGNED_PRIVATE_ACTIVITY_SCOPED_METHOD_ONLY"
+                    else:
+                        evidence["result"] = "PASS_E80_SIGNED_SYNTHETIC_ACTIVITY_CONSTRUCTOR_ONLY"
+                    print("PASS: E80/E81 constructed the exact signed PRIVATE synthetic Activity Java object once per "
                           "process on Android's main Looper without attach/onCreate, retained E79 force-stop "
                           "and scoped-data restart proofs. No real guest Activity, third-party app, "
                           "separate UID/account or production clone accepted.", flush=True)
