@@ -6,7 +6,11 @@ from types import SimpleNamespace
 from run_guest_code_emulator import (
     UI_CONFIGURATION_COMMAND,
     UI_CONFIGURATION_READ_TIMEOUT_SECONDS,
+    PAYLOAD_PACKAGE,
+    PROBE_PACKAGE,
     read_ui_configuration,
+    software_emulation_proof_allowed,
+    validate_e78_receipt,
 )
 
 
@@ -118,6 +122,100 @@ class UiConfigurationReaderTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             read_ui_configuration(fake_device, timeout_seconds=21)
         self.assertEqual(calls, [])
+
+
+
+class E78ReceiptValidationTests(unittest.TestCase):
+    def valid_receipt(self):
+        scope_a = "11111111-1111-4111-8111-111111111111"
+        scope_b = "22222222-2222-4222-8222-222222222222"
+        report = {
+            "complete": True,
+            "passed": True,
+            "proof_level": "e78",
+            "real_host_activity_lifecycle_verified": True,
+            "signed_private_guest_view_rendered": True,
+            "private_guest_view_attached_to_window": True,
+            "private_guest_lifecycle_relay_verified": True,
+            "signed_private_resources_verified": True,
+            "signed_private_image_rechecked": True,
+            "same_android_uid": True,
+            "private_activity_class_preflight_verified": True,
+            "private_activity_constructor_preflight_verified": True,
+            "private_application_class_preflight_verified": True,
+            "synthetic_guest_application_attached": True,
+            "synthetic_guest_application_on_create_verified": True,
+            "synthetic_guest_application_on_main_thread": True,
+            "synthetic_guest_application_instances_distinct": True,
+            "synthetic_application_on_create_once_per_scope": True,
+            "synthetic_scope_a_preferences_file_sqlite_verified": True,
+            "synthetic_scope_b_preferences_file_sqlite_verified": True,
+            "synthetic_scope_persistence_after_context_reconstruction_verified": True,
+            "synthetic_scope_cross_readback_isolated": True,
+            "guest_application_registered_with_activity_thread": False,
+            "guest_application_registered_with_package_manager": False,
+            "full_guest_application_lifecycle_verified": False,
+            "actual_guest_activity_attached": False,
+            "real_guest_activity_registered": False,
+            "third_party_component_executed": False,
+            "third_party_guest_components_tested": False,
+            "kernel_uid_isolation": False,
+            "social_accounts_tested": False,
+            "production_clone_accepted": False,
+            "source_commit": "a" * 40,
+            "probe_apk_sha256": "b" * 64,
+            "payload_apk_sha256": "c" * 64,
+            "synthetic_application_class_name": PAYLOAD_PACKAGE + ".SyntheticGuestApplication",
+            "api": 34,
+            "pid": 1234,
+            "uid": 10123,
+            "process_name": PROBE_PACKAGE + ":fonesi_guest_ui",
+            "run_id": "aaaaaaaa-bbbb-4ccc-8ddd-eeeeeeeeeeee",
+            "synthetic_scope_a_id": scope_a,
+            "synthetic_scope_b_id": scope_b,
+            "lifecycle_transcript": "CREATE,START,RESUME,PAUSE,STOP,DESTROY",
+        }
+        return report
+
+    def test_valid_exact_source_application_and_two_scope_receipt_passes(self):
+        report = self.valid_receipt()
+        self.assertEqual(
+            validate_e78_receipt(report, "a" * 40, "b" * 64, "c" * 64),
+            (report["synthetic_scope_a_id"], report["synthetic_scope_b_id"]),
+        )
+
+    def test_source_or_apk_hash_mismatch_fails_closed(self):
+        report = self.valid_receipt()
+        with self.assertRaisesRegex(RuntimeError, "source SHA"):
+            validate_e78_receipt(report, "d" * 40, "b" * 64, "c" * 64)
+        with self.assertRaisesRegex(RuntimeError, "host probe APK"):
+            validate_e78_receipt(report, "a" * 40, "d" * 64, "c" * 64)
+        with self.assertRaisesRegex(RuntimeError, "payload APK"):
+            validate_e78_receipt(report, "a" * 40, "b" * 64, "d" * 64)
+
+    def test_missing_application_or_scope_evidence_fails_closed(self):
+        report = self.valid_receipt()
+        report["synthetic_guest_application_on_create_verified"] = False
+        with self.assertRaisesRegex(RuntimeError, "synthetic_guest_application_on_create_verified"):
+            validate_e78_receipt(report, "a" * 40, "b" * 64, "c" * 64)
+
+    def test_guest_registration_or_uid_isolation_overclaim_fails_closed(self):
+        report = self.valid_receipt()
+        report["guest_application_registered_with_activity_thread"] = True
+        with self.assertRaisesRegex(RuntimeError, "guest_application_registered_with_activity_thread"):
+            validate_e78_receipt(report, "a" * 40, "b" * 64, "c" * 64)
+
+    def test_scope_ids_must_be_distinct_canonical_uuids(self):
+        report = self.valid_receipt()
+        report["synthetic_scope_b_id"] = report["synthetic_scope_a_id"]
+        with self.assertRaisesRegex(RuntimeError, "distinct canonical UUIDs"):
+            validate_e78_receipt(report, "a" * 40, "b" * 64, "c" * 64)
+
+    def test_software_emulation_is_limited_to_e77_and_e78(self):
+        self.assertTrue(software_emulation_proof_allowed("e77"))
+        self.assertTrue(software_emulation_proof_allowed("e78"))
+        for proof in ("e17", "e24", "e74", "e76"):
+            self.assertFalse(software_emulation_proof_allowed(proof))
 
 
 if __name__ == "__main__":
