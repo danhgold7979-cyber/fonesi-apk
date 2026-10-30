@@ -64,8 +64,12 @@ data class EngineCapabilities(
             splitClusterInstallDispatchSupported && splitClusterReadbackVerified)) {
             "Split import cannot be accepted without preflight, dispatch and complete readback"
         }
-        require(!splitClusterAtomicUpdateVerified || splitClusterImportSupported) {
-            "Atomic split update requires an accepted split import provider"
+        require(!splitClusterCodeExecutionVerified || splitClusterImportSupported) {
+            "Split code execution requires an accepted split import provider"
+        }
+        require(!splitClusterAtomicUpdateVerified ||
+            (splitClusterImportSupported && splitClusterCodeExecutionVerified)) {
+            "Atomic split update requires accepted import and code-execution proof"
         }
     }
 
