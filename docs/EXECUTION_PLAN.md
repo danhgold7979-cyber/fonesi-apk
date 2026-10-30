@@ -4,6 +4,12 @@ Product **Phase 1 steps 7–8**, controlled-app portion of step 8; not a new Pro
 
 [Detailed E79 pre-code plan](phases/E79_SYNTHETIC_PROCESS_RESTART_DURABILITY_PLAN.md). Keep the proof synthetic and same-UID: no ActivityThread/PackageManager registration, guest Activity, third-party app, account isolation or product acceptance. Preserve `RuntimeBindings.supportsSplits=false`, product readiness 28.00%, Draft PRs and `main` unchanged. E79 implementation must not begin until this plan is committed and reviewed against the current source.
 
+## E79 follow-up — CI compiler failure diagnosis and bounded fix (pre-code, 30/10/2026)
+
+Exact-source CI [#41002256866](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/41002256866) on `79051ef4f6b3ef7ee0b7196859f420eb4ce25576` passed E40–E79 audits, Python receipt tests, cloud/candidate and source-engine gates, then failed while compiling `probe-payload`: `SyntheticApplicationProcessMarker.java:29: reached end of file while parsing`. The emulator stages were skipped. Source inspection confirmed the nested `State` class closes but the outer marker class does not. The only planned code edit is one final closing brace; lifecycle semantics and assertions remain unchanged.
+
+[Follow-up plan](phases/E79_SYNTHETIC_PROCESS_RESTART_DURABILITY_PLAN.md). Verify all seven marker JVM tests, signed host/payload APK build/lint, E79 audit, then rerun the complete exact-source CI and AOSP API 34 process-death/restart receipt. Do not update STATUS/PRODUCT_PROGRESS or claim E79 PASS until the full receipt and every gate pass. Keep PR #53 Draft, split support disabled, weighted readiness **28.00%**, 0 accepted real clones and `main` unchanged.
+
 ## E78 — exact-source technical PASS (30/10/2026)
 
 Product **Phase 1 steps 7–8**, controlled-app portion of step 8; prepares Phase 2 steps 9–12. Development branch `phase/e78-synthetic-application-lifecycle-20261030`, Draft PR #52 stacked on E77 Draft PR #51. Exact source/test SHA `57d60cb80d6cece692b2898afd15d8668fd14883` passed [CI #40998462184](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40998462184) **SUCCESS**, 17 substantive workflow steps. Cloud/candidate each passed 510 tests; source-engine 63 JVM tests; Python 13 receipt/fingerprint tests; AAR/native host integration, E40–E78 audits and signed synthetic APK build/lint passed.
