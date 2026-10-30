@@ -53,3 +53,20 @@ No arbitrary third-party guest Activity/Service/Provider lifecycle, independent 
 - Continue on `phase/e82-public-component-factory-feasibility-20261030`; PR #56 stays Draft and stacked on E81. Do not create a duplicate branch.
 - Keep `main@c055df600f87ee9ddf0cd5d6bfc67d80d145e79d` unchanged.
 - Product readiness remains 28.00%; accepted real third-party clones remain 0.
+
+
+## E83 follow-up 1 — exact-source Kotlin test compilation failure and contract hardening plan (30/10/2026)
+
+Baseline source/reporting HEAD before remediation: `0075521db86e20a4498cb2615c9a68b79beee0c8`, branch `phase/e82-public-component-factory-feasibility-20261030`, Draft PR #56. Full workflow [#41060651194](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/41060651194) failed in `:core:compileTestKotlin` at `core/src/test/kotlin/vn/fonesi/core/EngineCapabilitiesTest.kt:96`: unresolved reference `assertEquals`. The E83 static audit and E78–E82 receipt regressions ran successfully before the Kotlin compile failure; later candidate/build/emulator gates were skipped. Authorization subgate [#41060651326](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/41060651326) passed but is not the full E83 acceptance gate.
+
+### Remediation scope, before source edits
+
+1. Add the missing JUnit `assertEquals` import; do not alter or weaken the assertion.
+2. Tighten `GuestApkClusterIdentity` structural checks to match the auditor's package/split naming constraints, require the base member first and split members in deterministic name order, and reject invalid feature/config relationships while retaining iterative cycle detection.
+3. Add `GuestApkClusterReadback.requireMatches(expected)`: validate both identities, require exact package/version/signers/member metadata/digest equality, and require both SDK-owned-private-storage and complete-member-set evidence. Add positive and negative regressions for changed member SHA, package/version/signers, incomplete member set and non-private readback.
+4. Require any backend that advertises a split-provider capability to implement `SplitClusterGuestBackend`; a partial Boolean claim without the typed API must fail closed.
+5. Keep engine-level split import/code execution/atomic-update acceptance false until `ManagedGuestEngine` actually orchestrates the typed provider. Preserve `SpaceCoreBackend` one-APK guard and `RuntimeBindings.supportsSplits=false`.
+6. Add a shared-update regression proving a multi-member source is rejected before any backend install or registry mutation. Retain create-time pre-SDK rejection.
+7. Run the exact-source cloud/candidate workflow and inherited E40–E83 audits. E83 remains a contract-boundary milestone only; no production provider, guest split execution, UID/account isolation or product acceptance is claimed.
+
+Stop if a real provider or SDK API is needed: do not invent an overload or enable a capability without source-verified SDK support and complete import/readback evidence.
