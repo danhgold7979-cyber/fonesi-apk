@@ -14,12 +14,12 @@ assert '"e77"' in runner.split('parser.add_argument("--proof-level"', 1)[1].spli
 assert "private_activity_constructor_preflight_verified" in runner
 assert "PASS_E77_SIGNED_PRIVATE_ACTIVITY_CONSTRUCTOR_PREFLIGHT_ONLY" in runner
 assert "args.source_commit" in runner and "sha256(file)" in runner
-assert '("e24", "e25", "e29", "e74", "e77", "e78", "e79")' in runner
+assert '("e24", "e25", "e29", "e74", "e77", "e78", "e79", "e80")' in runner
 assert 'report.get("private_activity_constructor_preflight_verified") is not True' in runner
 assert "privateActivityConstructorPreflightVerified = true" in probe
-assert 'if ("e77".equals(proofLevel) || "e78".equals(proofLevel) || "e79".equals(proofLevel))\n                    privateActivityConstructorPreflightVerified = true;' in probe
+assert 'if ("e77".equals(proofLevel) || "e78".equals(proofLevel) || ("e79".equals(proofLevel) || "e80".equals(proofLevel)))\n                    privateActivityConstructorPreflightVerified = true;' in probe
 assert 'ProbeData.check(privateActivityConstructorPreflightVerified,' in probe
-assert 'if ("e74".equals(proofLevel) || "e77".equals(proofLevel) || "e78".equals(proofLevel) || "e79".equals(proofLevel))' in probe
+assert 'if ("e74".equals(proofLevel) || "e77".equals(proofLevel) || "e78".equals(proofLevel) || ("e79".equals(proofLevel) || "e80".equals(proofLevel)))' in probe
 assert 'Class.forName(selection.targetActivityName, false, privateLoader)' in preflight
 assert "candidate.getConstructor()" in preflight
 assert ".newInstance(" not in preflight and "constructor.newInstance(" not in preflight

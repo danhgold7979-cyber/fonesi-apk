@@ -12,6 +12,7 @@ from run_guest_code_emulator import (
     software_emulation_proof_allowed,
     validate_e78_receipt,
     validate_e79_receipts,
+    validate_e80_receipts,
 )
 
 
@@ -216,6 +217,7 @@ class E78ReceiptValidationTests(unittest.TestCase):
         self.assertTrue(software_emulation_proof_allowed("e77"))
         self.assertTrue(software_emulation_proof_allowed("e78"))
         self.assertTrue(software_emulation_proof_allowed("e79"))
+        self.assertTrue(software_emulation_proof_allowed("e80"))
         for proof in ("e17", "e24", "e74", "e76"):
             self.assertFalse(software_emulation_proof_allowed(proof))
 
@@ -329,6 +331,77 @@ class E79ProcessRestartReceiptTests(unittest.TestCase):
         with self.assertRaisesRegex(RuntimeError, "payload APK SHA"):
             validate_e79_receipts(write, verify, "a" * 40, "b" * 64, "d" * 64)
 
+
+
+
+class E80PrivateActivityConstructorReceiptTests(unittest.TestCase):
+    def stages(self):
+        fixture = E79ProcessRestartReceiptTests()
+        write, verify = fixture.stage("write"), fixture.stage("verify")
+        for item in (write, verify):
+            item.update({
+                "proof_level": "e80",
+                "e80_private_activity_constructor_verified": True,
+                "e80_private_activity_main_thread_verified": True,
+                "e80_private_activity_private_loader_verified": True,
+                "e80_private_activity_unattached_verified": True,
+                "e80_private_activity_constructor_count": 1,
+                "e80_private_activity_class_name": PAYLOAD_PACKAGE + ".PayloadActivity",
+                "e80_guest_activity_oncreate_called": False,
+            })
+        return write, verify
+
+    def test_two_exact_signed_synthetic_constructors_pass(self):
+        w, v = self.stages()
+        self.assertEqual(validate_e80_receipts(w, v, "a" * 40, "b" * 64, "c" * 64), (w, v))
+
+    def test_missing_main_thread_private_loader_or_unattached_proof_is_denied(self):
+        for key in ("e80_private_activity_constructor_verified",
+                    "e80_private_activity_main_thread_verified",
+                    "e80_private_activity_private_loader_verified",
+                    "e80_private_activity_unattached_verified"):
+            with self.subTest(key=key):
+                w, v = self.stages()
+                v[key] = False
+                with self.assertRaisesRegex(RuntimeError, "E80 signed PRIVATE Activity proof missing"):
+                    validate_e80_receipts(w, v, "a" * 40, "b" * 64, "c" * 64)
+
+    def test_wrong_count_or_signed_class_is_denied(self):
+        w, v = self.stages()
+        w["e80_private_activity_constructor_count"] = 2
+        with self.assertRaisesRegex(RuntimeError, "executed exactly once"):
+            validate_e80_receipts(w, v, "a" * 40, "b" * 64, "c" * 64)
+        w, v = self.stages()
+        v["e80_private_activity_class_name"] = PAYLOAD_PACKAGE + ".FakeActivity"
+        with self.assertRaisesRegex(RuntimeError, "exact signed private class"):
+            validate_e80_receipts(w, v, "a" * 40, "b" * 64, "c" * 64)
+
+    def test_guest_oncreate_or_framework_attachment_overclaim_denied(self):
+        w, v = self.stages()
+        v["e80_guest_activity_oncreate_called"] = True
+        with self.assertRaisesRegex(RuntimeError, "must not report guest Activity attach/onCreate"):
+            validate_e80_receipts(w, v, "a" * 40, "b" * 64, "c" * 64)
+        w, v = self.stages()
+        v["actual_guest_activity_attached"] = True
+        with self.assertRaisesRegex(RuntimeError, "E79 stage assertions failed"):
+            validate_e80_receipts(w, v, "a" * 40, "b" * 64, "c" * 64)
+
+    def test_reused_process_and_source_or_apk_hash_drift_denied(self):
+        w, v = self.stages()
+        v["pid"] = w["pid"]
+        with self.assertRaisesRegex(RuntimeError, "reused the original process identity"):
+            validate_e80_receipts(w, v, "a" * 40, "b" * 64, "c" * 64)
+        w, v = self.stages()
+        with self.assertRaisesRegex(RuntimeError, "source SHA"):
+            validate_e80_receipts(w, v, "d" * 40, "b" * 64, "c" * 64)
+        with self.assertRaisesRegex(RuntimeError, "payload APK"):
+            validate_e80_receipts(w, v, "a" * 40, "b" * 64, "d" * 64)
+
+    def test_relabeling_old_e79_proof_to_e80_is_denied(self):
+        w, v = self.stages()
+        w["proof_level"] = "e79"
+        with self.assertRaisesRegex(RuntimeError, "proof/stage identity mismatch"):
+            validate_e80_receipts(w, v, "a" * 40, "b" * 64, "c" * 64)
 
 
 if __name__ == "__main__":

@@ -94,7 +94,7 @@ def read_ui_configuration(device, timeout_seconds=UI_CONFIGURATION_READ_TIMEOUT_
 
 def software_emulation_proof_allowed(proof_level):
     """Only bounded synthetic E77/E78/E79 proofs may use software AVD."""
-    return proof_level in ("e77", "e78", "e79")
+    return proof_level in ("e77", "e78", "e79", "e80")
 
 
 def validate_e78_receipt(report, source_commit, probe_apk_sha256, payload_apk_sha256):
@@ -167,7 +167,7 @@ def validate_e78_receipt(report, source_commit, probe_apk_sha256, payload_apk_sh
     return scope_a, scope_b
 
 
-def _validate_e79_stage(report, stage, source_commit, probe_apk_sha256, payload_apk_sha256):
+def _validate_e79_stage(report, stage, source_commit, probe_apk_sha256, payload_apk_sha256, expected_proof="e79"):
     if not isinstance(report, dict):
         raise RuntimeError("E79 stage receipt must be a JSON object")
     required_true = (
@@ -199,7 +199,7 @@ def _validate_e79_stage(report, stage, source_commit, probe_apk_sha256, payload_
     if missing_true or missing_false:
         raise RuntimeError("E79 stage assertions failed: true=" + ",".join(missing_true) +
                            "; false=" + ",".join(missing_false))
-    if report.get("proof_level") != "e79" or report.get("e79_stage") != stage:
+    if report.get("proof_level") != expected_proof or report.get("e79_stage") != stage:
         raise RuntimeError("E79 proof/stage identity mismatch")
     if report.get("source_commit") != source_commit:
         raise RuntimeError("E79 receipt source SHA mismatch")
@@ -246,9 +246,11 @@ def _validate_e79_stage(report, stage, source_commit, probe_apk_sha256, payload_
     return report
 
 
-def validate_e79_receipts(write_report, verify_report, source_commit, probe_apk_sha256, payload_apk_sha256):
-    write = _validate_e79_stage(write_report, "write", source_commit, probe_apk_sha256, payload_apk_sha256)
-    verify = _validate_e79_stage(verify_report, "verify", source_commit, probe_apk_sha256, payload_apk_sha256)
+def validate_e79_receipts(write_report, verify_report, source_commit, probe_apk_sha256, payload_apk_sha256, expected_proof="e79"):
+    if expected_proof not in ("e79", "e80"):
+        raise RuntimeError("Only E79/E80 exact synthetic process proofs are accepted")
+    write = _validate_e79_stage(write_report, "write", source_commit, probe_apk_sha256, payload_apk_sha256, expected_proof)
+    verify = _validate_e79_stage(verify_report, "verify", source_commit, probe_apk_sha256, payload_apk_sha256, expected_proof)
     if write["run_id"] == verify["run_id"]:
         raise RuntimeError("E79 stages must have different run UUIDs")
     if write["pid"] == verify["pid"] or write["e79_process_token"] == verify["e79_process_token"]:
@@ -260,6 +262,36 @@ def validate_e79_receipts(write_report, verify_report, source_commit, probe_apk_
             raise RuntimeError("E79 process restart changed persisted scope identity/marker: " + key)
     if verify.get("e79_prior_pid") != write["pid"] or verify.get("e79_prior_process_token") != write["e79_process_token"] or verify.get("e79_prior_run_id") != write["run_id"]:
         raise RuntimeError("E79 verify receipt is not bound to completed write-stage process")
+    return write, verify
+
+
+
+def _validate_e80_constructor_stage(report):
+    required = (
+        "e80_private_activity_constructor_verified",
+        "e80_private_activity_main_thread_verified",
+        "e80_private_activity_private_loader_verified",
+        "e80_private_activity_unattached_verified",
+    )
+    bad = [key for key in required if report.get(key) is not True]
+    if bad:
+        raise RuntimeError("E80 signed PRIVATE Activity proof missing: " + ",".join(bad))
+    if report.get("e80_private_activity_constructor_count") != 1 or type(report.get("e80_private_activity_constructor_count")) is not int:
+        raise RuntimeError("E80 constructor must be executed exactly once per process")
+    if report.get("e80_private_activity_class_name") != PAYLOAD_PACKAGE + ".PayloadActivity":
+        raise RuntimeError("E80 constructed Activity must match exact signed private class")
+    if report.get("e80_guest_activity_oncreate_called") is not False or report.get("actual_guest_activity_attached") is not False:
+        raise RuntimeError("E80 must not report guest Activity attach/onCreate")
+
+
+def validate_e80_receipts(write_report, verify_report, source_commit, probe_apk_sha256, payload_apk_sha256):
+    """Require real E80 stage identity and all inherited E79 process/data checks, plus constructor evidence."""
+    write, verify = validate_e79_receipts(
+        write_report, verify_report, source_commit, probe_apk_sha256, payload_apk_sha256,
+        expected_proof="e80",
+    )
+    for stage, report in (("write", write), ("verify", verify)):
+        _validate_e80_constructor_stage(report)
     return write, verify
 
 
@@ -286,7 +318,7 @@ def launch_e79_stage(device, stage, run_id, args, extras=None):
         "shell", "am", "start", "-W", "-n",
         PROBE_PACKAGE + "/.SyntheticGuestUiProbeActivity",
         "--es", "run_id", run_id,
-        "--es", "proof_level", "e79",
+        "--es", "proof_level", args.proof_level,
         "--es", "e79_stage", stage,
         "--es", "source_commit", args.source_commit,
         "--es", "probe_apk_sha256", args.expected_probe_sha256,
@@ -335,14 +367,14 @@ def main():
     parser.add_argument("--boot-timeout", type=int, default=480)
     parser.add_argument("--probe-timeout", type=int, default=180)
     parser.add_argument("--allow-software-emulation", action="store_true",
-                        help="E77/E78/E79-only bounded synthetic proof fallback when GitHub has no KVM")
-    parser.add_argument("--proof-level", choices=("e11", "e12", "e13", "e14", "e15", "e16", "e17", "e21", "e22", "e23", "e24", "e25", "e29", "e74", "e77", "e78", "e79"), default="e11",
+                        help="E77/E78/E79/E80-only bounded synthetic proof fallback when GitHub has no KVM")
+    parser.add_argument("--proof-level", choices=("e11", "e12", "e13", "e14", "e15", "e16", "e17", "e21", "e22", "e23", "e24", "e25", "e29", "e74", "e77", "e78", "e79", "e80"), default="e11",
                         help="E13 additionally verifies independent synthetic native file/SQLite routes")
     args = parser.parse_args()
     if args.boot_timeout not in range(30, 601) or args.probe_timeout not in range(15, 301):
         parser.error("Timeout out of bounded range")
     if args.allow_software_emulation and not software_emulation_proof_allowed(args.proof_level):
-        parser.error("Software-emulation fallback is restricted to bounded E77/E78 synthetic proofs")
+        parser.error("Software-emulation fallback is restricted to bounded E77-E80 synthetic proofs")
     for digest in (args.expected_probe_sha256, args.expected_payload_sha256):
         if re.fullmatch(r"[0-9a-f]{64}", digest) is None:
             parser.error("Expected SHA-256 must be 64 lowercase hexadecimal characters")
@@ -568,7 +600,7 @@ def main():
             if installed.returncode or "Success" not in installed.stdout:
                 raise RuntimeError("Synthetic APK install failed")
         evidence["android_apks_installed"] = True
-        if args.proof_level in ("e24", "e25", "e29", "e74", "e77", "e78", "e79"):
+        if args.proof_level in ("e24", "e25", "e29", "e74", "e77", "e78", "e79", "e80"):
             # AOSP first boot can deliver late display/locale configuration changes after
             # sys.boot_completed. Preserve the complete seven-value fingerprint and require
             # four identical consecutive snapshots before dispatching the host Activity.
@@ -637,12 +669,14 @@ def main():
         e79_write_report = None
         report = None
         expected_run_id = None
-        if args.proof_level == "e79":
+        if args.proof_level in ("e79", "e80"):
             stage = "E79 write-stage signed synthetic scopes and Application markers"
             write_run_id = str(uuid.uuid4())
             e79_write_report = launch_e79_stage(device, "write", write_run_id, args)
             _validate_e79_stage(e79_write_report, "write", args.source_commit,
-                                args.expected_probe_sha256, args.expected_payload_sha256)
+                                args.expected_probe_sha256, args.expected_payload_sha256, args.proof_level)
+            if args.proof_level == "e80":
+                _validate_e80_constructor_stage(e79_write_report)
             stage = "E79 force-stop original synthetic host process"
             device("shell", "am", "force-stop", PROBE_PACKAGE, timeout=30, check=False)
             evidence["android_host_process_force_stop_requested"] = True
@@ -673,16 +707,20 @@ def main():
                 "e79_prior_run_id": e79_write_report["run_id"],
             }
             report = launch_e79_stage(device, "verify", verify_run_id, args, handoff)
-            validate_e79_receipts(e79_write_report, report, args.source_commit,
-                                  args.expected_probe_sha256, args.expected_payload_sha256)
-            (reports / "e79-process-restart-receipt.json").write_text(
+            if args.proof_level == "e80":
+                validate_e80_receipts(e79_write_report, report, args.source_commit,
+                                      args.expected_probe_sha256, args.expected_payload_sha256)
+            else:
+                validate_e79_receipts(e79_write_report, report, args.source_commit,
+                                      args.expected_probe_sha256, args.expected_payload_sha256)
+            (reports / (args.proof_level + "-process-restart-receipt.json")).write_text(
                 json.dumps({"force_stop_requested": True, "prior_process_absent_before_relaunch": process_stopped, "write_stage": e79_write_report, "verify_stage": report}, indent=2) + "\n")
             evidence["android_synthetic_scope_process_restart_verified"] = True
             evidence["android_synthetic_application_new_process_oncreate_verified"] = True
             evidence["android_synthetic_scope_data_after_process_restart_verified"] = True
             evidence["android_synthetic_scope_cross_readback_verified"] = True
             save()
-        if args.proof_level == "e79":
+        if args.proof_level in ("e79", "e80"):
             pass
         elif args.proof_level in ("e24", "e25", "e29", "e74", "e77", "e78"):
             stage = "launch dedicated synthetic UI Activity with signed private View factory"
@@ -738,8 +776,8 @@ def main():
             if started.returncode:
                 raise RuntimeError("Guest code probe Activity dispatch failed")
             stage = "read exact dedicated process receipt"
-        deadline = time.monotonic() if args.proof_level == "e79" else time.monotonic() + args.probe_timeout
-        report = report if args.proof_level == "e79" else None
+        deadline = time.monotonic() if args.proof_level in ("e79", "e80") else time.monotonic() + args.probe_timeout
+        report = report if args.proof_level in ("e79", "e80") else None
         while time.monotonic() < deadline:
             if args.proof_level in ("e24", "e25", "e29", "e74", "e77", "e78"):
                 raw = device("exec-out", "run-as", PROBE_PACKAGE, "cat",
@@ -823,7 +861,7 @@ def main():
             time.sleep(2)
         if report is None:
             raise RuntimeError("No complete Android synthetic receipt before timeout")
-        if args.proof_level in ("e24", "e25", "e29", "e74", "e77", "e78", "e79"):
+        if args.proof_level in ("e24", "e25", "e29", "e74", "e77", "e78", "e79", "e80"):
             (reports / "synthetic-ui-receipt.json").write_text(json.dumps(report, indent=2) + "\n")
             expected_true = (
                 "complete", "passed", "real_host_activity_lifecycle_verified",
@@ -861,7 +899,7 @@ def main():
                     ",".join(missing_true) + "; false=" + ",".join(missing_false))
             if report.get("proof_level") != args.proof_level:
                 raise RuntimeError("E24/E25 private UI proof mode differs from requested mode")
-            if args.proof_level in ("e77", "e78", "e79") and report.get("private_activity_constructor_preflight_verified") is not True:
+            if args.proof_level in ("e77", "e78", "e79", "e80") and report.get("private_activity_constructor_preflight_verified") is not True:
                 raise RuntimeError("E77/E78 public no-argument Activity constructor preflight was not proven")
             if args.proof_level == "e25" and not (
                     report.get("private_component_manifest_verified") is True and
@@ -869,13 +907,16 @@ def main():
                 raise RuntimeError("E25 signed private component manifest preflight did not pass")
             if args.proof_level == "e29" and report.get("dispatch_ticket_private_apk_sha256") != args.expected_payload_sha256:
                 raise RuntimeError("E29 ticket did not bind the exact signed private payload SHA-256")
-            if args.proof_level in ("e74", "e77", "e78", "e79") and report.get("private_activity_class_preflight_verified") is not True:
+            if args.proof_level in ("e74", "e77", "e78", "e79", "e80") and report.get("private_activity_class_preflight_verified") is not True:
                 raise RuntimeError("E74 signed private Activity class was not proven by the private loader")
             if args.proof_level == "e78":
                 validate_e78_receipt(report, args.source_commit,
                                      args.expected_probe_sha256, args.expected_payload_sha256)
             if args.proof_level == "e79":
                 validate_e79_receipts(e79_write_report, report, args.source_commit,
+                                      args.expected_probe_sha256, args.expected_payload_sha256)
+            if args.proof_level == "e80":
+                validate_e80_receipts(e79_write_report, report, args.source_commit,
                                       args.expected_probe_sha256, args.expected_payload_sha256)
             if (report.get("lifecycle_transcript") != "CREATE,START,RESUME,PAUSE,STOP,DESTROY" or
                     report.get("process_name") != PROBE_PACKAGE + ":fonesi_guest_ui" or
@@ -928,7 +969,7 @@ def main():
                       "main thread, and verified independent persistent SharedPreferences/files/SQLite "
                       "scopes. No ActivityThread registration, guest Activity, third-party app, "
                       "separate UID/account or production clone was accepted.", flush=True)
-            elif args.proof_level == "e79":
+            elif args.proof_level in ("e79", "e80"):
                 evidence["android_private_activity_class_preflight_verified"] = True
                 evidence["android_private_activity_constructor_preflight_verified"] = True
                 evidence["android_private_application_class_preflight_verified"] = True
@@ -937,11 +978,19 @@ def main():
                 evidence["android_synthetic_scope_process_restart_verified"] = True
                 evidence["android_synthetic_scope_data_after_process_restart_verified"] = True
                 evidence["android_synthetic_scope_cross_readback_verified"] = True
-                evidence["result"] = "PASS_E79_SYNTHETIC_SCOPED_DATA_PROCESS_RESTART_ONLY"
-                print("PASS: E79 force-stopped the original Android host process, relaunched a new process, "
-                      "reattached signed synthetic Applications, and verified persisted SharedPreferences/files/SQLite "
-                      "markers and per-process onCreate counts. Same UID only; no guest Activity, third-party app, "
-                      "account isolation or production clone was accepted.", flush=True)
+                if args.proof_level == "e80":
+                    evidence["android_e80_private_synthetic_activity_constructor_verified"] = True
+                    evidence["result"] = "PASS_E80_SIGNED_SYNTHETIC_ACTIVITY_CONSTRUCTOR_ONLY"
+                    print("PASS: E80 constructed the exact signed PRIVATE synthetic Activity Java object once per "
+                          "process on Android's main Looper without attach/onCreate, retained E79 force-stop "
+                          "and scoped-data restart proofs. No real guest Activity, third-party app, "
+                          "separate UID/account or production clone accepted.", flush=True)
+                else:
+                    evidence["result"] = "PASS_E79_SYNTHETIC_SCOPED_DATA_PROCESS_RESTART_ONLY"
+                    print("PASS: E79 force-stopped the original Android host process, relaunched a new process, "
+                          "reattached signed synthetic Applications, and verified persisted SharedPreferences/files/SQLite "
+                          "markers and per-process onCreate counts. Same UID only; no guest Activity, third-party app, "
+                          "account isolation or production clone was accepted.", flush=True)
             else:
                 evidence["result"] = "PASS_E24_SIGNED_SYNTHETIC_PRIVATE_VIEW_LIFECYCLE_RELAY_ONLY"
                 print("PASS: Android 34 hosted an attached View created by signed private "
