@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent" android:layout_height="match_parent"
+    android:fillViewport="true">
+    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+        android:orientation="vertical" android:padding="24dp">
+        <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:text="@string/app_name" android:textAppearance="?android:attr/textAppearanceLarge" />
+        <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:text="@string/status" android:paddingTop="16dp" android:paddingBottom="16dp" />
+        <Button android:id="@+id/import_apk" android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:text="@string/import_apk" android:enabled="false" />
+        <Button android:id="@+id/create_clone" android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:text="@string/create_clone" android:enabled="false" />
+        <Button android:id="@+id/launch_clone" android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:text="@string/launch_clone" android:enabled="false" />
+        <Button android:id="@+id/migrate_data" android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:text="@string/migrate_data" android:enabled="false" />
+    </LinearLayout>
+</ScrollView>

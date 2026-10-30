@@ -2,6 +2,8 @@
 
 **Luồng rebuild hiện hành:** [master plan](docs/REBUILD_MASTER_PLAN.md), [execution plan](docs/REBUILD_EXECUTION_PLAN.md), [status](docs/REBUILD_STATUS.md), [audit/recovery](docs/REBUILD_REVIEW.md). `rebuild-kernel/` là implementation mới độc lập; chạy `./rebuild-kernel/check.sh` để kiểm tra JVM/Linux. Chưa phải engine clone hoặc APK hoàn thiện; chưa tích hợp vào ứng dụng Android.
 
+`rebuild-storage/` chứng minh bảo toàn/quarantine bằng SQLite tổng hợp. `rebuild-android/` là manager scaffold mới, độc lập, mọi thao tác clone/import/migration đều vô hiệu hóa; [kế hoạch compile hosted](docs/REBUILD_HOSTED_ANDROID_PLAN.md) yêu cầu SDK/JDK cài sẵn chính xác. Chưa có bằng chứng compile Android cho scaffold này tại checkpoint source.
+
 Toàn bộ source cũ được phục hồi đủ refs; phần Android bên dưới còn giữ làm reference/regression oracle, không phải thành quả rebuild. Không coi test kernel là bằng chứng chạy/cách ly tài khoản. Màu đỏ chỉ nhận diện luồng trao đổi APK, không phải yêu cầu đổi thương hiệu.
 
 ---

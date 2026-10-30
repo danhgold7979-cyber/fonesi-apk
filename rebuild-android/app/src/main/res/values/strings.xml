@@ -1,0 +1,8 @@
+<resources>
+    <string name="app_name">Fonesi rebuild — diagnostic</string>
+    <string name="status">Fresh manager scaffold. No runtime provider is connected. Import, cloning, launch and migration are unavailable. Existing app data is not accessed. A successful build does not prove guest isolation.</string>
+    <string name="import_apk">Import APK — unavailable</string>
+    <string name="create_clone">Create clone — unavailable</string>
+    <string name="launch_clone">Launch clone — unavailable</string>
+    <string name="migrate_data">Migrate existing data — unavailable</string>
+</resources>

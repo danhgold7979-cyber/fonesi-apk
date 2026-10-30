@@ -62,3 +62,15 @@ Independent review fixes: TEMP/attached-target shadowing, generated/hidden field
 Read-only tool inventory found no Android SDK/adb/sdkmanager/Gradle executable or configured SDK root. Official Android documentation audit is [REBUILD_ANDROID_COMPATIBILITY.md](REBUILD_ANDROID_COMPATIBILITY.md): Java21 host compilation is not Android API/desugaring compatibility. No SDK installation/license acceptance happened. **Android adapter, real migration, actual guest/provider, physical-device acceptance and source replacement remain pending.** Old source retained because tested JVM/SQLite contracts are not yet an Android replacement; full replacement is still tracked, not declared complete.
 
 Final local aggregate must include unchanged **64+61+83 JVM/filesystem/dispatcher checks** plus the 51 separately counted unittest cases. The standalone workflow now defines an additional synthetic-SQLite job; creation is not remote CI PASS. Root coordinates publication/monitoring; worker does not push.
+
+## Hosted Android feasibility — inventory pending
+
+Official runner inventory suggests a viable preinstalled API36/build-tools36/JDK17 route, but actual own-job SDK inventory is not yet observed. Verified local wrapper JAR and configured Gradle8.13 ZIP checksum against Gradle's official release-checksum page; wrapper shell inspected, no execution. Candidate experiment plan is [REBUILD_HOSTED_ANDROID_PLAN.md](REBUILD_HOSTED_ANDROID_PLAN.md).
+
+New read-only diagnostic job/script lists exact installed SDK properties/tool presence and JDK17 release, never invokes sdkmanager/Gradle or reads/writes licenses. Six local diagnostic fixture tests pass. Local real inventory correctly reports NOT_READY (SDK/JDK17 absent) with wrapper verification true. Root must publish diagnostic and inspect actual job output before approving bounded scaffold compile. No Android implementation or compile is claimed by this checkpoint.
+
+## Fresh Android compile experiment prepared — 2026-10-30 18:19 UTC
+
+Root conditionally authorized hosted compilation after exact same-job installed SDK inventory. Fresh `rebuild-android/` is independent Java17 native presentation, distinct `vn.fonesi.rebuild.debug`, no requested permissions, backup disabled, four unsupported actions disabled. No historical runtime copied or Java21 kernel/Python harness imported. Root verified wrapper reused with isolated `-p` project; both SDK and Java-toolchain auto-download disabled. Official pinned Gradle/AGP dependency resolution only after inventory passes. Missing SDK/JDK fails BLOCKED with no installer/license fallback.
+
+Local: 208 JVM/journal/dispatcher checks + 51 synthetic SQLite cases still pass. 24 Python tools tests pass (7 inventory + 6 source contracts + 11 synthetic APK-evidence gate cases); py_compile and whitespace checks pass. These tests do NOT compile Android. Local SDK/JDK17 absent; hosted `assembleDebug lintDebug` and actual APK permission/identity/debug-signature/disabled-layout verification remain PENDING. No APK deployed or release published. Old-source replacement remains pending corresponding tested functionality, legal/history/oracles preserved.

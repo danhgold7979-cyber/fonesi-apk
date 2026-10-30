@@ -63,3 +63,51 @@ jobs:
       - name: Explicit storage evidence boundary
         run: |
           echo 'Synthetic SQLite schema1-6 preservation/quarantine only; no real user database or Android migration.' >> "$GITHUB_STEP_SUMMARY"
+  hosted-android-inventory:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - name: Checkout exact source without stored credentials
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+          fetch-depth: 2
+      - name: Read installed SDK/JDK and verify wrapper without execution
+        env:
+          EXPECTED_SOURCE: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$EXPECTED_SOURCE"
+          python3 -m unittest discover -s rebuild-tools -v
+          python3 rebuild-tools/hosted_android_inventory.py | tee "$RUNNER_TEMP/fonesi-android-inventory.json"
+          echo 'Read-only installed SDK/JDK inventory; no SDK tool execution, installs, license actions or Gradle build.' >> "$GITHUB_STEP_SUMMARY"
+          echo 'A READY_FOR_BOUNDED_COMPILE_REVIEW result is not compile/runtime acceptance.' >> "$GITHUB_STEP_SUMMARY"
+      - name: Require exact installed packages before any build
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json, os
+          from pathlib import Path
+          report = json.loads((Path(os.environ['RUNNER_TEMP']) / 'fonesi-android-inventory.json').read_text())
+          if report['status'] != 'READY_FOR_BOUNDED_COMPILE_REVIEW':
+              raise SystemExit('BLOCKED: exact preinstalled SDK/JDK/wrapper checks failed; no install/license fallback')
+          with open(os.environ['GITHUB_ENV'], 'a') as env:
+              env.write('JAVA_HOME=' + report['jdk17_root'] + '\n')
+              env.write('ANDROID_HOME=' + report['sdk_root'] + '\n')
+          with open(os.environ['GITHUB_PATH'], 'a') as path:
+              path.write(report['jdk17_root'] + '/bin\n')
+          PY
+      - name: Compile fresh isolated debug manager and run Android lint
+        run: |
+          set -euo pipefail
+          ./gradlew -p rebuild-android --no-daemon --console=plain \
+            -Pandroid.builder.sdkDownload=false \
+            -Porg.gradle.java.installations.auto-download=false \
+            :app:assembleDebug :app:lintDebug
+      - name: Verify actual APK identity permissions disabled actions and debug signature
+        run: python3 rebuild-tools/verify_debug_apk.py
+      - name: Explicit Android scaffold evidence boundary
+        run: |
+          echo 'Fresh diagnostic manager compiled and packaged only; no device execution, clone engine, migration or isolation acceptance.' >> "$GITHUB_STEP_SUMMARY"
+          echo 'Distinct debug applicationId; APK not deployed or released. Historical implementation replacement remains pending.' >> "$GITHUB_STEP_SUMMARY"
