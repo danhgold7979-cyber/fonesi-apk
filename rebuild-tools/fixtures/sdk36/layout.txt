@@ -43,4 +43,3 @@ N: android=http://schemas.android.com/apk/res/android (line=4)
             A: http://schemas.android.com/apk/res/android:layout_width(0x010100f4)=-1
             A: http://schemas.android.com/apk/res/android:layout_height(0x010100f5)=-2
             A: http://schemas.android.com/apk/res/android:text(0x0101014f)=@0x7f040004
-

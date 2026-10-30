@@ -14,4 +14,3 @@ supports-screens: 'small' 'normal' 'large' 'xlarge'
 supports-any-density: 'true'
 locales: '--_--'
 densities: '160'
-

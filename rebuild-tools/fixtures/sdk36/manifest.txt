@@ -28,4 +28,3 @@ N: android=http://schemas.android.com/apk/res/android (line=2)
                     A: http://schemas.android.com/apk/res/android:name(0x01010003)="android.intent.action.MAIN" (Raw: "android.intent.action.MAIN")
                   E: category (line=27)
                     A: http://schemas.android.com/apk/res/android:name(0x01010003)="android.intent.category.LAUNCHER" (Raw: "android.intent.category.LAUNCHER")
-

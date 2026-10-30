@@ -15,4 +15,3 @@ Signer #1 key size (bits): 2048
 Signer #1 public key SHA-256 digest: a57b98b9f3fa14d3da011f2ed07becd508e26f2bc187cac43640e4c1ee218f9e
 Signer #1 public key SHA-1 digest: 38c1b4e53b4d1b50f059def97162f99131ee45bb
 Signer #1 public key MD5 digest: 2faeab7ef266799c63f4923558e34ef1
-
