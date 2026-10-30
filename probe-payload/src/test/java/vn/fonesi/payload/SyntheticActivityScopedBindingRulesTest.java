@@ -5,7 +5,7 @@ import org.junit.Test;
 
 /** E81: fail-closed immutable UUID binding without an Android Activity fixture. */
 public final class SyntheticActivityScopedBindingRulesTest {
-    private static final String A = "11111111-1111-4111-8111-111111111111";
+    private static final String A = "11111111-1111-4aaa-8bbb-cccccccccccc";
     private static final String B = "22222222-2222-4222-8222-222222222222";
 
     @Test public void freshCanonicalScopeAcceptedOnce() {
