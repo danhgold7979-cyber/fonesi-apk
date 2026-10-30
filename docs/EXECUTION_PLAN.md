@@ -1,3 +1,9 @@
+## E78 — signed synthetic Application attach/onCreate and scoped data-plane proof (pre-code, 30/10/2026)
+
+Product **Phase 1 steps 7–8**, specifically the controlled-app portion of step 8; prepares Phase 2 steps 9–12. E77 code/test SHA `6cfa12e83e66f191720b7dfb7601dcaf883f4fdc` passed [CI #40991321742](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40991321742), 19/19 steps and 510 cloud/candidate tests per gate. E77 documentation HEAD `bfd2d7d46bdddaad43041103c6acbcc341240c59` has a separate report-commit workflow #40993741596 still in progress at planning time; do not claim that SHA is CI-verified until its own run finishes. New branch `phase/e78-synthetic-application-lifecycle-20261030` stacks on E77; keep `main` unchanged.
+
+[Detailed pre-code plan](phases/E78_SYNTHETIC_APPLICATION_LIFECYCLE_PLAN.md): add exact signed PRIVATE Application class preflight; on AOSP API 34 manually attach the project-owned synthetic Application through public `Instrumentation.newApplication`/ `callApplicationOnCreate` on the main thread; test two fresh UUID-backed `SyntheticGuestScopedContext` scopes across SharedPreferences/files/SQLite and wrapper reconstruction. Add strict source/APK-hash-bound E78 receipt, JVM/Python tests, audit and exact-source emulator workflow. This is same-UID/same-process synthetic testing, not ActivityThread/PackageManager registration, real guest Activity, third-party execution, UID/account isolation or split-provider acceptance. Preserve `supportsSplits=false`; readiness stays 28.00%, 0 real third-party clones accepted. Keep E78/E77 PRs Draft and `main` unchanged.
+
 # Kế hoạch thực thi và đối chiếu yêu cầu
 
 ## E77 — exact-source technical PASS (30/10/2026)
