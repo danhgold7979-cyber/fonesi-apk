@@ -13,7 +13,7 @@ public final class OperationProtocol {
                            String clusterSha256, Set<UUID> affectedClones) {
         public Identity {
             Objects.requireNonNull(operation); Objects.requireNonNull(provider); Objects.requireNonNull(cloneId); Objects.requireNonNull(scope);
-            if (packageName == null || !packageName.matches("[A-Za-z][A-Za-z0-9_]*(\\.[A-Za-z][A-Za-z0-9_]*)+") || packageName.length() > 255)
+            if (packageName == null || packageName.length() > 255 || !packageName.matches("[A-Za-z][A-Za-z0-9_]*(\\.[A-Za-z][A-Za-z0-9_]*)+"))
                 throw new IllegalArgumentException("Invalid package identity");
             IdentityText.require(environment);
             if (clusterSha256 == null || !clusterSha256.matches("[0-9a-f]{64}"))

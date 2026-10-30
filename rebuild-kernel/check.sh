@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 cd "$(dirname "$0")"
-(cd .. && sha256sum --check spec/bridge-oracle/b3b/source-sha256.txt)
+(cd ../spec/package-bounds/d5/historical-source && sha256sum --check ../../../bridge-oracle/b3b/source-sha256.txt)
+(cd .. && sha256sum --check spec/package-bounds/d5/host-source-sha256.txt)
 OUT=$(mktemp -d)
 trap 'rm -rf "$OUT"' EXIT HUP INT TERM
 mapfile -t sources < <(find src/main/java src/test/java -type f -name '*.java' ! -name 'BridgeOracleTest.java' | sort)
@@ -13,6 +14,7 @@ java -cp "$OUT" vn.fonesi.rebuild.JournalTest
 java -cp "$OUT" vn.fonesi.rebuild.DispatcherTest
 java -cp "$OUT" vn.fonesi.rebuild.IdentityTextTest
 java -cp "$OUT" vn.fonesi.rebuild.CanonicalJournalTest
+java -cp "$OUT" vn.fonesi.rebuild.PackageBoundsTest
 mkdir "$OUT/legacy"
 mapfile -t pinned < <(sed 's/^[0-9a-f]*  //' ../spec/bridge-oracle/v1/source-sha256.txt | sort)
 mapfile -t found < <(cd ../spec/bridge-oracle/v1/source && find . -type f -name '*.java' -printf '%P\n' | sort)

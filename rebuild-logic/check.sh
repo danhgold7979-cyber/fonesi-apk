@@ -4,8 +4,10 @@ cd "$(dirname "$0")"
 ROOT=$(cd .. && pwd)
 OUT=$(mktemp -d)
 trap 'rm -rf "$OUT"' EXIT HUP INT TERM
-(cd "$ROOT" && sha256sum --check spec/logical-bridge/b2/host-source-sha256.txt)
-(cd "$ROOT" && sha256sum --check spec/logical-bridge/b2/portable-source-sha256.txt)
+(cd "$ROOT/spec/package-bounds/d5/historical-source" && sha256sum --check "$ROOT/spec/logical-bridge/b2/host-source-sha256.txt")
+(cd "$ROOT" && sha256sum --check spec/package-bounds/d5/host-source-sha256.txt)
+(cd "$ROOT/spec/package-bounds/d5/historical-source" && sha256sum --check "$ROOT/spec/logical-bridge/b2/portable-source-sha256.txt")
+(cd "$ROOT" && sha256sum --check spec/package-bounds/d5/portable-source-sha256.txt)
 HOST_JAVA=${JAVA_HOME_21_X64:+$JAVA_HOME_21_X64/bin/java}
 HOST_JAVA=${HOST_JAVA:-$(command -v java)}
 mkdir -p "$OUT/host" "$OUT/portable" "$OUT/source" "$OUT/portable-source"
@@ -37,6 +39,7 @@ else
     PORTABLE_JAVA="$HOST_JAVA"
 fi
 "$PORTABLE_JAVA" -cp "$OUT/portable" vn.fonesi.rebuild.logical.LogicalContractTest
+"$PORTABLE_JAVA" -cp "$OUT/portable" vn.fonesi.rebuild.logical.PackageBoundsTest
 "$PORTABLE_JAVA" -cp "$OUT/portable" vn.fonesi.rebuild.logical.PolicyModeTest
 "$PORTABLE_JAVA" -cp "$OUT/portable" vn.fonesi.rebuild.logical.LogicalVectors > "$OUT/portable.txt"
 cmp "$OUT/frozen.txt" "$OUT/portable.txt"

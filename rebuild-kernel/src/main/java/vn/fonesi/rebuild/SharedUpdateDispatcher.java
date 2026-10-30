@@ -18,7 +18,7 @@ public final class SharedUpdateDispatcher {
     public record Request(String packageName, Identity identity, String environment, Scope scope) {
         public Request {
             Objects.requireNonNull(identity); Objects.requireNonNull(scope);
-            if (packageName == null || !packageName.matches("[A-Za-z][A-Za-z0-9_]*(\\.[A-Za-z][A-Za-z0-9_]*)+") || packageName.length() > 255)
+            if (packageName == null || packageName.length() > 255 || !packageName.matches("[A-Za-z][A-Za-z0-9_]*(\\.[A-Za-z][A-Za-z0-9_]*)+"))
                 throw new IllegalArgumentException("Invalid package identity");
             if (!identity.packageName().equals(packageName) || !identity.environment().equals(environment) || identity.scope() != scope)
                 throw new IllegalArgumentException("Request differs from durable identity");
