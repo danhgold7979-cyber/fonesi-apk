@@ -88,6 +88,12 @@ public final class SyntheticGuestUiProbeActivity extends Activity {
     private volatile int e79StartCountB;
     private volatile boolean e79ProcessRestartVerified;
     private volatile boolean e79ScopedDataAfterRestartVerified;
+    private volatile boolean e80PrivateActivityConstructorVerified;
+    private volatile boolean e80PrivateActivityMainThreadVerified;
+    private volatile boolean e80PrivateActivityUnattachedVerified;
+    private volatile boolean e80PrivateActivityLoaderVerified;
+    private volatile String e80PrivateActivityClassName;
+    private volatile int e80PrivateActivityConstructorCount;
     private volatile boolean syntheticComponentDispatchVerified;
     private volatile boolean dispatchOnly;
     private boolean dispatchReceiver;
@@ -121,9 +127,9 @@ public final class SyntheticGuestUiProbeActivity extends Activity {
             if (requestedProof != null) proofLevel = requestedProof;
             if (!"e24".equals(proofLevel) && !"e25".equals(proofLevel) &&
                 !"e29".equals(proofLevel) && !"e74".equals(proofLevel) &&
-                !"e77".equals(proofLevel) && !"e78".equals(proofLevel) && !"e79".equals(proofLevel))
+                !"e77".equals(proofLevel) && !"e78".equals(proofLevel) && !("e79".equals(proofLevel) || "e80".equals(proofLevel)))
                 throw new IllegalArgumentException("Unsupported synthetic host screen proof");
-            if ("e78".equals(proofLevel) || "e79".equals(proofLevel)) {
+            if ("e78".equals(proofLevel) || ("e79".equals(proofLevel) || "e80".equals(proofLevel))) {
                 sourceCommit = getIntent().getStringExtra("source_commit");
                 probeApkSha256 = getIntent().getStringExtra("probe_apk_sha256");
                 payloadApkSha256 = getIntent().getStringExtra("payload_apk_sha256");
@@ -132,7 +138,7 @@ public final class SyntheticGuestUiProbeActivity extends Activity {
                     payloadApkSha256 == null || !payloadApkSha256.matches("[0-9a-f]{64}"))
                     throw new IllegalArgumentException("E78/E79 source/APK SHA-256 binding is missing or malformed");
             }
-            if ("e79".equals(proofLevel)) {
+            if (("e79".equals(proofLevel) || "e80".equals(proofLevel))) {
                 e79Stage = getIntent().getStringExtra("e79_stage");
                 if (!"write".equals(e79Stage) && !"verify".equals(e79Stage))
                     throw new IllegalArgumentException("E79 requires an explicit write/verify stage");
@@ -206,7 +212,7 @@ public final class SyntheticGuestUiProbeActivity extends Activity {
                 preparationStage = stage;
                 dispatchTicket = SyntheticComponentDispatchTicket.Companion.fromJson(dispatchTicketJson);
                 localCluster = localStore.open(dispatchTicket.getClusterId(), Build.VERSION.SDK_INT);
-            } else if ("e79".equals(proofLevel) && "verify".equals(e79Stage)) {
+            } else if (("e79".equals(proofLevel) || "e80".equals(proofLevel)) && "verify".equals(e79Stage)) {
                 stage = "e79_reopen_same_signed_private_cluster_after_process_restart";
                 preparationStage = stage;
                 localCluster = localStore.open(e79PrivateClusterId, Build.VERSION.SDK_INT);
@@ -215,7 +221,7 @@ public final class SyntheticGuestUiProbeActivity extends Activity {
                 preparationStage = stage;
                 localCluster = localStore.publish(
                     SyntheticSignedPayloadSource.fromInstalled(this), Build.VERSION.SDK_INT);
-                if ("e79".equals(proofLevel)) e79PrivateClusterId = localCluster.getId();
+                if (("e79".equals(proofLevel) || "e80".equals(proofLevel))) e79PrivateClusterId = localCluster.getId();
             }
             ProbeData.check(localStore.open(localCluster.getId(), Build.VERSION.SDK_INT).equals(localCluster) &&
                 localCluster.getApks().getBase().getPackageName().equals(GUEST_PACKAGE) &&
@@ -303,8 +309,8 @@ public final class SyntheticGuestUiProbeActivity extends Activity {
                 .load(localCluster.getId());
             ProbeData.check(GUEST_PACKAGE.equals(image.getPackageName()),
                 "Signed private payload package mismatch");
-            if ("e74".equals(proofLevel) || "e77".equals(proofLevel) || "e78".equals(proofLevel) || "e79".equals(proofLevel)) {
-                stage = "e79".equals(proofLevel) ? "e79_signed_private_activity_and_application_preflight" :
+            if ("e74".equals(proofLevel) || "e77".equals(proofLevel) || "e78".equals(proofLevel) || ("e79".equals(proofLevel) || "e80".equals(proofLevel))) {
+                stage = ("e79".equals(proofLevel) || "e80".equals(proofLevel)) ? "e79_signed_private_activity_and_application_preflight" :
                     ("e78".equals(proofLevel) ? "e78_signed_private_activity_and_application_preflight" :
                         ("e77".equals(proofLevel) ? "e77_signed_private_activity_constructor_preflight" :
                             "e74_signed_private_activity_class_preflight"));
@@ -326,7 +332,7 @@ public final class SyntheticGuestUiProbeActivity extends Activity {
                 ProbeData.check(localStore.open(localCluster.getId(), Build.VERSION.SDK_INT)
                     .equals(localCluster), "Private signed APK changed during Activity class preflight");
                 privateActivityClassVerified = true;
-                if ("e77".equals(proofLevel) || "e78".equals(proofLevel) || "e79".equals(proofLevel))
+                if ("e77".equals(proofLevel) || "e78".equals(proofLevel) || ("e79".equals(proofLevel) || "e80".equals(proofLevel)))
                     privateActivityConstructorPreflightVerified = true;
             }
             int marker = image.getResources().getIdentifier(
@@ -348,7 +354,7 @@ public final class SyntheticGuestUiProbeActivity extends Activity {
                 verifyE78SyntheticApplication(image, localStore, localCluster);
                 ProbeData.check(localStore.open(localCluster.getId(), Build.VERSION.SDK_INT)
                     .equals(localCluster), "Signed private APK changed after E78 Application/scope proof");
-            } else if ("e79".equals(proofLevel)) {
+            } else if (("e79".equals(proofLevel) || "e80".equals(proofLevel))) {
                 stage = "e79_signed_private_application_process_restart_data_proof";
                 preparationStage = stage;
                 verifyE79SyntheticApplication(image, localStore, localCluster);
@@ -528,6 +534,8 @@ public final class SyntheticGuestUiProbeActivity extends Activity {
             "E79 private APK changed before process lifecycle proof");
         privateApplicationClassPreflightVerified = true;
         syntheticApplicationClassName = applicationProof.getSignedName();
+        if ("e80".equals(proofLevel))
+            verifyE80UnattachedPrivateActivity(image, verifiedStore, verifiedCluster);
 
         final String scopeA;
         final String scopeB;
@@ -652,6 +660,64 @@ public final class SyntheticGuestUiProbeActivity extends Activity {
         ProbeData.check(verifiedStore.open(verifiedCluster.getId(), Build.VERSION.SDK_INT).equals(verifiedCluster),
             "E79 signed private APK changed during process restart data verification");
     }
+    /**
+     * E80 bounded proof: construct one project-owned signed PRIVATE Activity Java object on
+     * the Android main thread via public Instrumentation. No framework attach or onCreate.
+     */
+    private void verifyE80UnattachedPrivateActivity(LoadedGuestCode image,
+            PrivateApkStore verifiedStore, PrivateApkCluster verifiedCluster) throws Exception {
+        if (Looper.myLooper() == Looper.getMainLooper())
+            throw new IllegalStateException("E80 private Activity preparation must run off main Looper");
+        PrivateGuestActivityClassHandle signed = image.preflightExplicitActivityClass(
+            SIGNED_ACTIVITY, ExplicitActivityCaller.TRUSTED_INTERNAL);
+        ProbeData.check(signed.getSelection().getClusterId().equals(verifiedCluster.getId()) &&
+            signed.getSelection().getTargetActivityName().equals(SIGNED_ACTIVITY) &&
+            signed.getActivityClass().getClassLoader() == image.getClassLoader(),
+            "E80 signed Activity target was not owned by exact PRIVATE code image");
+        ProbeData.check(verifiedStore.open(verifiedCluster.getId(), Build.VERSION.SDK_INT)
+            .equals(verifiedCluster), "E80 signed PRIVATE image changed before construction");
+        final Throwable[] failure = new Throwable[1];
+        final CountDownLatch finished = new CountDownLatch(1);
+        runOnUiThread(() -> {
+            try {
+                ProbeData.check(Looper.myLooper() == Looper.getMainLooper(),
+                    "E80 Activity constructor must be called on Android main thread");
+                Class<?> tracker = image.getClassLoader().loadClass(
+                    "vn.fonesi.payload.SyntheticActivityConstructionProbe");
+                ProbeData.check(tracker.getClassLoader() == image.getClassLoader(),
+                    "E80 constructor tracker must be defined by signed PRIVATE image");
+                java.lang.reflect.Method count = tracker.getMethod("constructedCount");
+                ProbeData.check(((Number) count.invoke(null)).intValue() == 0,
+                    "E80 private Activity was constructed before authorized preflight");
+                Activity created = new Instrumentation().newActivity(
+                    image.getClassLoader(), SIGNED_ACTIVITY, new Intent());
+                int after = ((Number) count.invoke(null)).intValue();
+                ProbeData.check(created != null && created != SyntheticGuestUiProbeActivity.this &&
+                    created.getClass() == signed.getActivityClass() &&
+                    created.getClass().getClassLoader() == image.getClassLoader() && after == 1,
+                    "E80 exact signed PRIVATE Activity constructor did not run once");
+                ProbeData.check(created.getBaseContext() == null,
+                    "E80 synthetic private Activity unexpectedly received a framework Context");
+                e80PrivateActivityConstructorCount = after;
+                e80PrivateActivityClassName = created.getClass().getName();
+                e80PrivateActivityMainThreadVerified = true;
+                e80PrivateActivityLoaderVerified = true;
+                e80PrivateActivityUnattachedVerified = true;
+                e80PrivateActivityConstructorVerified = true;
+            } catch (Throwable error) {
+                failure[0] = error;
+            } finally {
+                finished.countDown();
+            }
+        });
+        if (!finished.await(45, TimeUnit.SECONDS))
+            throw new IllegalStateException("E80 public Instrumentation.newActivity timed out");
+        if (failure[0] != null)
+            throw new IllegalStateException("E80 signed PRIVATE constructor failed", failure[0]);
+        ProbeData.check(verifiedStore.open(verifiedCluster.getId(), Build.VERSION.SDK_INT)
+            .equals(verifiedCluster), "E80 signed PRIVATE image changed after constructor");
+    }
+
     private static boolean canonicalUuid(String value) {
         if (value == null) return false;
         try { return UUID.fromString(value).toString().equals(value); }
@@ -759,10 +825,10 @@ public final class SyntheticGuestUiProbeActivity extends Activity {
                     ProbeData.check(syntheticComponentDispatchVerified,
                         "E29 private component dispatch ticket was not validated before private code load");
                 verificationStage = "final_e74_private_activity_class_preflight";
-                if ("e74".equals(proofLevel) || "e77".equals(proofLevel) || "e78".equals(proofLevel) || "e79".equals(proofLevel))
+                if ("e74".equals(proofLevel) || "e77".equals(proofLevel) || "e78".equals(proofLevel) || ("e79".equals(proofLevel) || "e80".equals(proofLevel)))
                     ProbeData.check(privateActivityClassVerified,
                         "Signed PRIVATE Activity class was not preflighted before hosted View");
-                if ("e77".equals(proofLevel) || "e78".equals(proofLevel) || "e79".equals(proofLevel))
+                if ("e77".equals(proofLevel) || "e78".equals(proofLevel) || ("e79".equals(proofLevel) || "e80".equals(proofLevel)))
                     ProbeData.check(privateActivityConstructorPreflightVerified,
                         "E77 public no-argument constructor preflight was not verified");
                 if ("e78".equals(proofLevel)) {
@@ -777,7 +843,7 @@ public final class SyntheticGuestUiProbeActivity extends Activity {
                         !syntheticScopeAId.equals(syntheticScopeBId),
                         "E78 signed Application attach/onCreate or two-scope data proof is incomplete");
                 }
-                if ("e79".equals(proofLevel)) {
+                if (("e79".equals(proofLevel) || "e80".equals(proofLevel))) {
                     verificationStage = "final_e79_process_restart_and_scoped_data";
                     int expectedStarts = "write".equals(e79Stage) ? 1 : 2;
                     ProbeData.check(privateApplicationClassPreflightVerified &&
@@ -793,6 +859,16 @@ public final class SyntheticGuestUiProbeActivity extends Activity {
                         ("write".equals(e79Stage) || ("verify".equals(e79Stage) &&
                             e79ProcessRestartVerified && e79ScopedDataAfterRestartVerified)),
                         "E79 process restart or two-scope persistence proof is incomplete");
+                }
+                if ("e80".equals(proofLevel)) {
+                    verificationStage = "final_e80_private_activity_java_constructor_only";
+                    ProbeData.check(e80PrivateActivityConstructorVerified &&
+                        e80PrivateActivityMainThreadVerified &&
+                        e80PrivateActivityLoaderVerified &&
+                        e80PrivateActivityUnattachedVerified &&
+                        e80PrivateActivityConstructorCount == 1 &&
+                        SIGNED_ACTIVITY.equals(e80PrivateActivityClassName),
+                        "E80 signed PRIVATE synthetic Activity construction proof is incomplete");
                 }
                 verificationStage = "final_android_host_lifecycle";
                 ProbeData.check(COMPLETE.equals(androidEvents),
@@ -846,7 +922,14 @@ public final class SyntheticGuestUiProbeActivity extends Activity {
                     .put("e79_start_count_b", e79StartCountB)
                     .put("e79_process_restart_verified", e79ProcessRestartVerified)
                     .put("e79_scoped_data_after_process_restart_verified", e79ScopedDataAfterRestartVerified)
-                    .put("guest_application_registered_with_activity_thread", false)
+                    .put("e80_private_activity_constructor_verified", e80PrivateActivityConstructorVerified)
+                    .put("e80_private_activity_main_thread_verified", e80PrivateActivityMainThreadVerified)
+                    .put("e80_private_activity_private_loader_verified", e80PrivateActivityLoaderVerified)
+                    .put("e80_private_activity_unattached_verified", e80PrivateActivityUnattachedVerified)
+                    .put("e80_private_activity_constructor_count", e80PrivateActivityConstructorCount)
+                    .put("e80_private_activity_class_name", e80PrivateActivityClassName)
+                    .put("e80_guest_activity_oncreate_called", false)
+                                        .put("guest_application_registered_with_activity_thread", false)
                     .put("guest_application_registered_with_package_manager", false)
                     .put("full_guest_application_lifecycle_verified", false)
                     .put("source_commit", sourceCommit)
@@ -915,7 +998,14 @@ public final class SyntheticGuestUiProbeActivity extends Activity {
                 .put("e79_start_count_b", e79StartCountB)
                 .put("e79_process_restart_verified", e79ProcessRestartVerified)
                 .put("e79_scoped_data_after_process_restart_verified", e79ScopedDataAfterRestartVerified)
-                .put("guest_application_registered_with_activity_thread", false)
+                    .put("e80_private_activity_constructor_verified", e80PrivateActivityConstructorVerified)
+                    .put("e80_private_activity_main_thread_verified", e80PrivateActivityMainThreadVerified)
+                    .put("e80_private_activity_private_loader_verified", e80PrivateActivityLoaderVerified)
+                    .put("e80_private_activity_unattached_verified", e80PrivateActivityUnattachedVerified)
+                    .put("e80_private_activity_constructor_count", e80PrivateActivityConstructorCount)
+                    .put("e80_private_activity_class_name", e80PrivateActivityClassName)
+                    .put("e80_guest_activity_oncreate_called", false)
+                                    .put("guest_application_registered_with_activity_thread", false)
                 .put("guest_application_registered_with_package_manager", false)
                 .put("full_guest_application_lifecycle_verified", false)
                 .put("source_commit", sourceCommit)

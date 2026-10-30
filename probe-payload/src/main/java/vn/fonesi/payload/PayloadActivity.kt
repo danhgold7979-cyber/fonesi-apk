@@ -13,6 +13,9 @@ import java.util.UUID
 
 /** Synthetic data only: no credentials, network, contacts or third-party apps. */
 class PayloadActivity : Activity() {
+    // Test-owned signed PRIVATE constructor proof only. Never used by the production clone engine.
+    init { SyntheticActivityConstructionProbe.recordConstructor() }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val preferences = getSharedPreferences("isolation_probe", MODE_PRIVATE)
