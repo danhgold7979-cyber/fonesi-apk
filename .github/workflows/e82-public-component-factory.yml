@@ -84,6 +84,7 @@ jobs:
           python3 scripts/audit_e80_private_activity_construction.py
           python3 scripts/audit_e81_private_activity_scoped_method.py
           python3 scripts/audit_e82_factory_authorization.py
+          python3 scripts/audit_e83_split_provider_contract.py
       - name: Run inherited E81 and E82 host-stub receipt regression tests
         run: python3 scripts/test_run_guest_code_emulator.py
       - name: Bootstrap pinned Android SDK36 Gradle and JDK21
