@@ -8,14 +8,14 @@ import zipfile
 import verify_debug_apk as subject
 
 BADGING = """package: name='vn.fonesi.rebuild.debug'
-sdkVersion:'26'
+minSdkVersion:'26'
 targetSdkVersion:'36'
 application-debuggable
 launchable-activity: name='vn.fonesi.rebuild.ManagerActivity'
 """
 
 
-LAYOUT = "".join(f"E: Button (line=1)\n A: android:id(0x010100d0)=@0x7f08000{i}\n A: android:enabled(0x0101000e)=false\n" for i in range(4))
+LAYOUT = "".join(f"E: Button (line=1)\n A: http://schemas.android.com/apk/res/android:id(0x010100d0)=@0x7f08000{i}\n A: android:enabled(0x0101000e)=false\n" for i in range(4))
 
 
 class ApkGateTests(unittest.TestCase):
@@ -36,6 +36,20 @@ class ApkGateTests(unittest.TestCase):
 
     def test_synthetic_expected_evidence(self):
         self.exercise()
+
+    def test_captured_sdk36_evidence(self):
+        fixture = Path(__file__).parent / 'fixtures/sdk36'
+        self.exercise(**{key: (fixture / (name + '.txt')).read_text()
+                         for key, name in [('badging', 'badging'), ('manifest', 'manifest'),
+                                           ('layout', 'layout'), ('signer', 'signature')]})
+
+    def test_wrong_minimum_sdk_rejected(self):
+        with self.assertRaises(RuntimeError):
+            self.exercise(badging=BADGING.replace("minSdkVersion:'26'", "minSdkVersion:'25'"))
+
+    def test_wrong_target_sdk_rejected(self):
+        with self.assertRaises(RuntimeError):
+            self.exercise(badging=BADGING.replace("targetSdkVersion:'36'", "targetSdkVersion:'35'"))
 
     def test_wrong_identity_rejected(self):
         with self.assertRaises(RuntimeError):

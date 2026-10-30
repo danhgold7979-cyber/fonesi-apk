@@ -21,7 +21,7 @@ def verify_disabled_buttons(layout):
     ids = []
     for block in buttons:
         require("enabled(0x0101000e)=false" in block, "Packaged Button is not disabled")
-        match = re.search(r"android:id\(0x010100d0\)=@(0x[0-9a-fA-F]+)", block)
+        match = re.search(r"http://schemas\.android\.com/apk/res/android:id\(0x010100d0\)=@(0x[0-9a-fA-F]+)", block)
         require(match is not None, "Packaged Button lacks compiled ID")
         ids.append(match.group(1))
     require(len(set(ids)) == 4, "Packaged Button IDs must be distinct")
@@ -42,7 +42,7 @@ def verify(repo, sdk):
     run(str(tools / "zipalign"), "-c", "4", str(apk))
     layout = run(str(tools / "aapt2"), "dump", "xmltree", str(apk), "--file", "res/layout/manager.xml")
     signature = run(str(tools / "apksigner"), "verify", "--verbose", "--print-certs", str(apk))
-    for text in ("package: name='vn.fonesi.rebuild.debug'", "sdkVersion:'26'", "targetSdkVersion:'36'",
+    for text in ("package: name='vn.fonesi.rebuild.debug'", "minSdkVersion:'26'", "targetSdkVersion:'36'",
                  "application-debuggable", "launchable-activity: name='vn.fonesi.rebuild.ManagerActivity'"):
         require(text in badging, "Missing APK evidence: " + text)
     require("uses-permission" not in badging, "Unexpected APK permission")
