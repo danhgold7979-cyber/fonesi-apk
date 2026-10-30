@@ -1,6 +1,6 @@
 package vn.fonesi.payload
 
-import android.annotation.TargetApi
+import android.annotation.RequiresApi
 import android.app.Activity
 import android.app.Application
 import android.content.Context
@@ -118,7 +118,7 @@ class PayloadActivity : Activity() {
     }
 
     /** E82 records only the host-stub lifecycle; this is not a guest package/UID lifecycle. */
-    @TargetApi(28)
+    @RequiresApi(28)
     private fun beginE82HostStubLifecycle() {
         check(Build.VERSION.SDK_INT >= 28) { "E82 requires public AppComponentFactory API 28+" }
         check(intent.getBooleanExtra("e82_factory_authorized", false)) {
@@ -230,6 +230,7 @@ class PayloadActivity : Activity() {
         finish()
     }
 
+    @RequiresApi(28)
     private fun writeE82Receipt() {
         val file = e82ReceiptFile ?: error("E82 receipt path was not initialized")
         val receipt = e82Receipt ?: error("E82 receipt data was not initialized")
