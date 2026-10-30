@@ -1,6 +1,6 @@
 package vn.fonesi.nativeprobe;
 
-import android.annotation.RequiresApi;
+import androidx.annotation.RequiresApi;
 import android.app.Activity;
 import android.app.AppComponentFactory;
 import android.app.Application;
