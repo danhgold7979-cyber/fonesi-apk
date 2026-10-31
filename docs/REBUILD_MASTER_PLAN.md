@@ -13,7 +13,7 @@ The latest historical provider/specification reference is E82 branch `2fac016e3b
 | Gate | Deliverable | Required evidence / stop boundary |
 |---|---|---|
 | R0 Recovery — ACCEPTED (narrow gate, 2026-10-30) | All refs + hashes + independent restore + divergent-head oracle | Fresh empty-repository restore reverified64 refs/hash/fsck;14-head semantic ledger retained. See REBUILD_LEGACY_CLEANUP_PROPOSAL.md. This does not accept source replacement or any other gate. |
-| R1 Specification | Requirements, threat boundaries, acceptance ledger and detailed steps | Each requirement mapped to unit/Android/provider/phone evidence. Unknown is never PASS. |
+| R1 Specification | Requirements, threat boundaries, acceptance ledger and detailed steps | Each requirement mapped to unit/Android/provider/phone evidence. Unknown is never PASS. Atomic mapping/exit review remains OPEN: REBUILD_R1_TRACEABILITY_REVIEW.md. |
 | R2 Independent kernel — ACCEPTED (bounded Linux/JVM gate, 2026-10-30) | New capability decisions, durable operation journal and trusted shared-update dispatcher | Detailed R2.1–R2.3 audit plus G1/G2 closure independently reviewed; exact-head run41133142565 PASS. No Android/provider/whole-app concurrency or clone acceptance. |
 | R3 Persistence/integration | Fresh storage adapter and migrations 1–6 compatibility, immutable source ownership | SQLite transaction/crash tests, namespace-safe recovery; old guest data never silently reset. |
 | R4 Engine feasibility | Reviewed provider and exact signed cluster lifecycle | Source/license/native provenance; hostile cross-instance tests; synthetic Android execution then third-party proof. Provider unresolved blocks acceptance, not R2/R3/R5 independent work. |
@@ -32,3 +32,7 @@ Old source recovery is verified; later-branch tests/protocols remain regression 
 ## Reporting
 
 Separate historical CI, fresh local tests, Android synthetic receipts, real-provider execution and physical-device acceptance. Report counts per suite/configuration without double-counting. No claim of full completion, no fabricated provider, no inflated percentage. Record each plan before code and fix against evidence, not by weakening tests.
+
+## Current runtime evidence boundary
+
+Exact rebuild run41148595270/image20261018.96.1 observed no installed emulator or system images; KVM exists without current-account read/write access. See REBUILD_RUNTIME_GATE_HANDOFF.md for retained source/job-bound evidence and prerequisites, not provisioning permission. Compile PASS is not Android runtime acceptance; R4 provider remains independently unresolved.
