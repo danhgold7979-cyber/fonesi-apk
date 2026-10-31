@@ -261,3 +261,11 @@ CatalogOwnership now permits directory group-write only with matching ownerUID, 
 6153 direct permission truth-table checks PASS plus186model/92controller/237gate/62page/89actual-loader-host.103 tooling methods,56 existing storage and full kernel/history/logical/codec regressions PASS locally. Truth-table and source adapter checks are not Android lstat/ACL/OEM execution. New-head JDK17/AndroidCI pending; real Android directory/bootstrap/runtime acceptance remains NOTRUN. No additional legacy deletion, provider activation or denied experiment.
 
 Independent final read-only review PASS for the directory exception and native adapter. Reviewer separately ran6153 ownership checks, the existing presentation/page/gate/actual-loader-host suites and11 scaffold source tests. No remaining source blocker identified in this bounded correction; Android/OEM/runtime limitations remain unchanged.
+
+## Read-only hosted runtime inventory prepared — 2026-10-31 00:04 UTC
+
+Directory-mode remote16bcc575/run41147662078 is SUCCESS per root, including actualJDK17/6153ownership/103tooling and Android compile/package. Inventory plan9c06eaf and pre-code approvaldd06296 now yield only an additional bounded report in the existing inventory script; compile checks/status and workflow execution remain unchanged.
+
+128tooling methods PASS, including25new runtime-inventory fixtures and7existing compile-inventory tests. Independent review PASS. Scanner only stats bounded SDK image/emulator paths and KVM metadata/access, and reads bounded known source.properties fields. No subprocess/network/SDKtool invocation, image content/KVM open, AVD/user-session inspection, mutation, download/license/config/device action or automatic boot branch. A complete candidate-files report is not bootability, acceleration, provider or Android runtime acceptance. Missing/incomplete evidence remains distinct from proven absence. Actual hosted report pending root publication; runtime availability still UNKNOWN until that report is read.
+
+Unchanged local regression suites also PASS:186model/92controller/237gate/62page/6153ownership/89actual-loader-host,56storage, full kernel/historical/logical/codec tests. Local JDK21fallback is not a new exact-head JDK17/Android CI result.
