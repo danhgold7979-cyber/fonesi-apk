@@ -1,5 +1,13 @@
 # Fonesi APK rebuild — trạng thái 30/10/2026
 
+## Current R1 documentary acceptance — 2026-10-31
+
+**Current authoritative status — R1 DOCUMENTARY gate ACCEPTED by root on 2026-10-31**, based on reviewed candidate `13ac0bdcf45af2f0a4769991873e9bf7f8977f08` and independent re-review. Acceptance covers the specification/evidence map and ADR-R1-01, STYLE-R1-01 and EXEC-ID-R1-01 only. It is not product architecture, runtime or feature acceptance. R3–R7, Android/provider/phone evidence, source replacement and release remain open; no code, dependency, workflow, environment, license, provider or device action is authorized. No APK delivery is needed for this documentation update. Earlier candidate/pending wording below is historical preparation, superseded only for R1 documentary status.
+
+Documentary preparation checks: exact source objects and reviewed commit, unique IDs, relative document links and whitespace. The 352-row subtotal comprises 75 PLAN, 86 RM, 85 SUP and 106 SEC/SPL/EVD/REC rows; seven additional DM device IDs and three BRG correction IDs bring the full package to 362 unique IDs. These are integrity counts only, never a product percentage. No executable tests were rerun for this documentation update. Existing or publication-triggered CI remains its actual host/compile evidence, never Android runtime acceptance. Further implementation or runtime provisioning requires its own reviewed slice.
+
+## Historical progress entries
+
 **Đã hoàn thành recovery/reconcile; đang xây foundation mới độc lập, chưa thay sản phẩm Android hoặc xóa source cũ.** Đỏ là marker chat, không đổi thương hiệu app. Repo APK riêng, không thay Auto/Edit.
 
 ## Baseline đúng
@@ -275,3 +283,13 @@ Unchanged local regression suites also PASS:186model/92controller/237gate/62page
 Remote0d9e8d12fea00be6e77b6bc4b7b4e719d62ef72d/run41148595270 is SUCCESSallthree per root. Job124379453524 independently read: ubuntu-24.04 image20261018.96.1, x86_64, SDK/usr/local/lib/android/sdk; emulatorABSENT and system-imagesABSENT with complete scan/noAPI26candidate. KVM characterdevice0o660 exists but current account read/writeaccess=false. No SDKtool/runtime executed. This is observed absence for this exact runner, replacing UNKNOWN for that snapshot—not a claim about all future environments. Retained selected log SHA256faef6e351aaa538b957f6ca700f5b030e76433f6b7c16369a181f6a8c2a3f523.
 
 REBUILD_RUNTIME_GATE_HANDOFF.md binds source/job/image/evidence and exact blockers/options. Actual AndroidSQLite/CursorWindow/bootstrap/lifecycle/OEM testing remainsNOTRUN; eligible provider independently unresolved. No install/download/license/AVD/adb/KVM-permission/device action taken. R1 review found grouped requirements preserved but atomic source→test→acceptance traceability and detailed R1 exit not yet complete; REBUILD_R1_TRACEABILITY_REVIEW.md maps all32roadmapsteps and proposes only documentary closure for parent review. R1 remainsOPEN, no productpercentage or fullcode-completion claim.
+
+## R1 atomic documentary closure proposed — 2026-10-31
+
+The atomic package starts at [REBUILD_R1_REQUIREMENTS.md](REBUILD_R1_REQUIREMENTS.md), with separate ROADMAP/device, supplementary access/configuration/automation/style, and E35/E83/security ledgers. Each requirement has a pinned source citation, current evidence or explicit NOT IMPLEMENTED, and positive, negative, race/recovery and stop criteria. HOST and COMPILE evidence never accepts ANDROID, PROVIDER or PHONE behavior. Historical receipts are not fresh implementation.
+
+R1 remains OPEN until root reviews the coverage record and adjudicates the explicitly proposed architecture disposition. The old Kotlin/Compose/Room proposal is not silently declared satisfied by the bounded Java/View/SQLite slices. All behavior, migration, UX and hostile-guest requirements remain. No R3–R7 acceptance, provider selection, runtime provisioning, source removal or new code is part of this documentary checkpoint.
+
+### R1 requirement-level decisions recorded — 2026-10-31
+
+Root adjudicated the proposed stack direction, closed typed/plain-text style interpretation and display-versus-execution identity boundary in REBUILD_R1_DECISIONS.md. This supersedes the preceding pending-decision status only. Independent re-review and explicit root R1 acceptance remain required. Style implementation and the provider-selected execution mapping remain NOT IMPLEMENTED; runtime/provider/phone and source-replacement gates are unchanged. No code or environment action occurred.

@@ -1,5 +1,19 @@
 # Rebuild execution ledger
 
+## R1 — ACCEPTED documentary gate (2026-10-31)
+
+**Current authoritative status — R1 DOCUMENTARY gate ACCEPTED by root on 2026-10-31**, based on reviewed candidate `13ac0bdcf45af2f0a4769991873e9bf7f8977f08` and independent re-review. Acceptance covers the specification/evidence map and ADR-R1-01, STYLE-R1-01 and EXEC-ID-R1-01 only. It is not product architecture, runtime or feature acceptance. R3–R7, Android/provider/phone evidence, source replacement and release remain open; no code, dependency, workflow, environment, license, provider or device action is authorized. No APK delivery is needed for this documentation update. Earlier candidate/pending wording below is historical preparation, superseded only for R1 documentary status.
+
+### Historical closure preparation
+
+Inputs: pinned E82 PLAN/ROADMAP/device/access/configuration/automation/style contracts, E35 threat/acceptance, exact E83 provider contract, and the full 14-head reconciliation. Current implementation/evidence baseline is c0740ef; historical progress is not fresh acceptance.
+
+1. Read the four atomic ledgers beginning at [REBUILD_R1_REQUIREMENTS.md](REBUILD_R1_REQUIREMENTS.md). Each source obligation remains mapped to its own ID, explicit implementation/evidence status and positive, negative, race/recovery and stop criteria.
+2. Review exact source citations and independently check coverage, retaining any newly discovered architecture or interpretation conflict rather than inventing satisfaction. See REBUILD_R1_CLOSURE_REVIEW.md for findings and dispositions.
+3. Root has adjudicated ADR-R1-01, STYLE-R1-01 and EXEC-ID-R1-01 in REBUILD_R1_DECISIONS.md; independent re-review subsequently passed and root accepted R1 narrowly as specification traceability on 2026-10-31. Missing runtime/provider evidence remains an explicit implementation gate, not a reason to falsify documentary mapping.
+
+Historical proposed exit (now reviewed and accepted for R1 only): no omitted normative source obligation, no unexplained conflict, separate HOST/COMPILE/ANDROID/PROVIDER/PHONE status, independent coverage review and explicit root approval. Stop documentary acceptance on missing coverage or unresolved required interpretation. No code, provider choice, environment provisioning, device operation, new legal acceptance or legacy deletion follows from this package. R3–R7 remain independently open.
+
 ## R2.1 — before implementation: standalone capability and operation kernel
 
 Inputs: all-ref recovery PASS; original product scope; E35 hostile-guest model; E83 independent import/execution/atomic-update claims; E44–E67 authority/identity/uncertain-outcome protections. Old code will not be copied into the module.
