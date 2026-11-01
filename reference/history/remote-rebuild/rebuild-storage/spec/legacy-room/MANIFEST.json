@@ -1,0 +1,30 @@
+{
+  "source_commit": "2fac016e3b28e4d9f21390c221cad1df7a382c86",
+  "purpose": "Historical schema-only regression oracle, not reused implementation",
+  "files": {
+    "1.json": {
+      "git_path": "app/schemas/vn.fonesi.app.storage.FonesiDatabase/1.json",
+      "sha256": "f8e6a36035b4cc935144dbb0b5e1534c916fdf2a2947fa22698d5ebc81d2662e"
+    },
+    "2.json": {
+      "git_path": "app/schemas/vn.fonesi.app.storage.FonesiDatabase/2.json",
+      "sha256": "82d29d42367d498091792930cf6f05dd56e8dddfcc1efaf2817ee7b52232db8f"
+    },
+    "3.json": {
+      "git_path": "app/schemas/vn.fonesi.app.storage.FonesiDatabase/3.json",
+      "sha256": "05479b88b5964b6ee0839521152d01fe3560c0d3a2451355bf9f6fc0fb661bc6"
+    },
+    "4.json": {
+      "git_path": "app/schemas/vn.fonesi.app.storage.FonesiDatabase/4.json",
+      "sha256": "e5fcc73cc34819ea675833dab029adfc0a15d6566afa5aeaa96bd160a3fd53c8"
+    },
+    "5.json": {
+      "git_path": "app/schemas/vn.fonesi.app.storage.FonesiDatabase/5.json",
+      "sha256": "99efa438435d5af6685d8d58ce0089989e7c97b739ba4c70c5041af0bdcb7ab0"
+    },
+    "6.json": {
+      "git_path": "app/schemas/vn.fonesi.app.storage.FonesiDatabase/6.json",
+      "sha256": "5eba80cd1d64ac8e46a0aed5234c7967c0aa37d35e792427b9911130114bc52b"
+    }
+  }
+}

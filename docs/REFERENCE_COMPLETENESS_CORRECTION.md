@@ -1,0 +1,7 @@
+# Reference completeness correction — 2026-11-01
+
+The initial 644-reference extractor preserved every file it selected byte-for-byte, but its selection omitted `rebuild-storage/spec/legacy-room/{1..6,MANIFEST}.json` and the historical runtime inventory log from rebuild snapshots. All those bytes were always preserved in the verified durable Git bundle and untouched old checkout; there was no data/history loss. Nonetheless, archive recoverability did not satisfy the promised convenient in-tree schema/reference preservation.
+
+Corrected baseline retains 668 hashed historical reference files, including the 24 additional exact Git blobs across remote-rebuild, local-rebuild and reconciliation snapshots. None is active implementation or migration code; historical runtime log does not become fresh evidence. No fresh Java/Android/Gradle/runtime path changed.
+
+`reference/preservation-obligations.json` now lists all 380 KEEP documentary/UI/schema/notices obligations from the four audited snapshot inventories (infrastructure separately reviewed). `tools/check_plan.py` requires every obligation's exact commit/path/blob to be represented, validates Git blob IDs as well as SHA256, and rejects omission. Three new negative tests cover missing schema6, omitted obligation and changed source blob identity; documentary suite total21. This corrects the initial selection gap without changing 362 requirements/32 original tasks or any product acceptance counter.

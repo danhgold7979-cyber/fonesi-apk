@@ -1,0 +1,20 @@
+# E48 — Fail-closed private-source recovery and no false legacy engine success (pre-code plan)
+
+Date: 2026-10-29. Repo: `danhgold7979-cyber/fonesi-apk`. Branch `phase/e48-retained-recovery-quarantine-20261029` based on E45 reporting HEAD `3da43261747f28f49c86356cb79afb42699f6e3d`; [E45 source CI #40848683404](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40848683404) **SUCCESS**, 390 tests per cloud/candidate gate on source SHA `64e0a285da84360e3fdea57135367d5b9bd6f8b5`. E45 reporting HEAD has separate CI. Distinct parallel E46 foreground and E47 confirmation efforts are on their own branches; do not conflate their code, PRs or CI with E48. E48 is an engineering milestone under original **product Phase 4 steps 18–20**, not a new product Phase.
+
+## Issue
+
+E45 makes private-cluster tasks carry immutable `retainedSource=true` and blocks the ordinary `UpdateRunner.runNext()` before it consults the original APK `SourceCatalog`. However `UpdateRunner.recoverLocked()` still unconditionally recovers `PREPARING/APPLYING/VERIFYING/REVIEW_REQUIRED` states. A retained task or older pre-marker task with Room UPDATE_TASK/REVIEW_REQUIRED ownership could be mistakenly declared `SUCCEEDED` by `engine.listClones()` from the legacy provider, even though it is not a verified private-source install. Retained task snapshots may also be discarded before source authority is checked. This is a *real code-path gap*, not hypothetical accepted runtime evidence.
+
+## Planned implementation
+
+1. Reuse the existing `mayUseLegacySource(task)` predicate at the beginning of **recovery for each nonterminal recovered state**, while holding the existing OS-wide queue lock, before legacy engine readback or task snapshot deletion. Marker=true, older owner-only tasks (host policy false), or exceptions reading host ownership all fail closed. No source-authority override or fallback.
+2. Denied `APPLYING` and `VERIFYING` tasks enter durable `REVIEW_REQUIRED` with `TaskIssue.INTERRUPTED`, preserving immutable task marker and invoking E42 atomic UPDATE_TASK→REVIEW_REQUIRED owner transitions via the existing `store.replace` transaction. Denied `REVIEW_REQUIRED` remain untouched; denied `PREPARING` preserve their task snapshot and state for explicit reconciliation. Denied `QUEUED` are already handled in `runNext`, so no added recovery mutation.
+3. Add core/JVM regression tests: retained APPLYING with original engine version matching must not be marked SUCCEEDED; pre-marker, host-denied applying with matching version stays REVIEW_REQUIRED; policy-read exception fails closed; retained PREPARING leaves snapshot intact; legacy unassociated recovery test must continue to succeed. No skipped tests or nontestable success assumptions. An optional Room-native SQL integration can verify owner promotion if supported.
+4. Add E48 source audit and a dedicated pinned cloud/candidate workflow running E40–E45 plus E48 audit; unit/Robolectric test suite, build/lint, signed APK/permission and no-split/no-destructive-GC checks. Keep Room schema v6. No native engine activation, importing split APK into SpaceCore, file deletion, per-app account runtime claims or bypass.
+5. Commit/test on the correct E48 branch, verify source SHA and GitHub Actions + artifact, then record results and latest progress in `docs/STATUS.md`, `docs/PRODUCT_PROGRESS.md`, `docs/EXECUTION_PLAN.md`. Keep Draft PR, `main` unchanged, and avoid rewriting other agents' E46/E47 branches.
+6. E48 is **not** product Phase 4 acceptance. Weighted product score stays **28.00% (~30%)** and real social-app clones accepted **0**. Actual guest Activity, arbitrary full split import, independent UID/accounts, device/Samsung acceptance, real social-session updates and final signing remain blocked.
+
+## Regression constraints
+
+Do not disable legacy recovery for legitimate original-source tasks. Do not turn retained-source review into success based on installed original app or a synthetic fixture. If CI fails, identify actual source and fix without weakening assertions. Keep lower-level source/Room ownership safety unchanged.

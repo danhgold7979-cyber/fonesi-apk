@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fillViewport="true"
+    android:background="@color/page_background">
+    <LinearLayout
+        android:id="@+id/shell_content"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="@dimen/screen_spacing">
+        <TextView
+            style="@style/BodyText"
+            android:text="@string/foundation_label"
+            android:textColor="@color/brand_green"
+            android:textStyle="bold" />
+        <TextView
+            style="@style/BodyText"
+            android:text="@string/screen_title"
+            android:textColor="@color/text_primary"
+            android:textSize="28sp"
+            android:textStyle="bold" />
+        <TextView style="@style/BodyText" android:text="@string/build_limit" />
+        <TextView
+            style="@style/BodyText"
+            android:text="@string/empty_title"
+            android:textColor="@color/text_primary"
+            android:textSize="22sp"
+            android:textStyle="bold" />
+        <TextView style="@style/BodyText" android:text="@string/empty_description" />
+        <TextView
+            android:id="@+id/provider_reason"
+            style="@style/BodyText"
+            android:text="@string/provider_unavailable"
+            android:textStyle="bold" />
+        <Button
+            android:id="@+id/action_create"
+            style="@style/GuestAction"
+            android:text="@string/action_create"
+            android:contentDescription="@string/create_unavailable"
+            android:enabled="false" />
+        <Button
+            android:id="@+id/action_open"
+            style="@style/GuestAction"
+            android:text="@string/action_open"
+            android:contentDescription="@string/open_unavailable"
+            android:enabled="false" />
+        <Button
+            android:id="@+id/action_stop"
+            style="@style/GuestAction"
+            android:text="@string/action_stop"
+            android:contentDescription="@string/stop_unavailable"
+            android:enabled="false" />
+        <Button
+            android:id="@+id/action_delete"
+            style="@style/GuestAction"
+            android:text="@string/action_delete"
+            android:contentDescription="@string/delete_unavailable"
+            android:enabled="false" />
+        <TextView
+            style="@style/BodyText"
+            android:layout_marginTop="20dp"
+            android:text="@string/privacy_note" />
+    </LinearLayout>
+</ScrollView>

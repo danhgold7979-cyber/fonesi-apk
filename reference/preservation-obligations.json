@@ -1,0 +1,2282 @@
+[
+  {
+    "source_commit": "c055df600f87ee9ddf0cd5d6bfc67d80d145e79d",
+    "source_path": "app/src/main/res/drawable/ic_fonesi.xml",
+    "source_blob": "29c32ff30cabdbb3900814d9a7815087e4a12202",
+    "disposition": "KEEP_UI_REFERENCE_NOT_IMPLEMENTATION"
+  },
+  {
+    "source_commit": "c055df600f87ee9ddf0cd5d6bfc67d80d145e79d",
+    "source_path": "app/src/main/res/values/strings.xml",
+    "source_blob": "2f7a3970ab5a3710fcad183652e878d8fde82bbc",
+    "disposition": "KEEP_UI_REFERENCE_NOT_IMPLEMENTATION"
+  },
+  {
+    "source_commit": "c055df600f87ee9ddf0cd5d6bfc67d80d145e79d",
+    "source_path": "app/src/main/res/values/themes.xml",
+    "source_blob": "f9efac1e2630c3f6de197f912af6eb79a1bbbf7a",
+    "disposition": "KEEP_UI_REFERENCE_NOT_IMPLEMENTATION"
+  },
+  {
+    "source_commit": "c055df600f87ee9ddf0cd5d6bfc67d80d145e79d",
+    "source_path": "app/src/main/res/xml/data_extraction_rules.xml",
+    "source_blob": "b853a8d2452fe340b2e07d1899f3437e49fb123b",
+    "disposition": "KEEP_UI_REFERENCE_NOT_IMPLEMENTATION"
+  },
+  {
+    "source_commit": "c055df600f87ee9ddf0cd5d6bfc67d80d145e79d",
+    "source_path": "docs/ACCESS_CONTROL.md",
+    "source_blob": "753ef6854e30a6341b90c2babffc9397241da822",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "c055df600f87ee9ddf0cd5d6bfc67d80d145e79d",
+    "source_path": "docs/APK_SET_VALIDATION.md",
+    "source_blob": "e60ddad072e8e22ceb178ad140fd9f91fbf61f0e",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "c055df600f87ee9ddf0cd5d6bfc67d80d145e79d",
+    "source_path": "docs/CLOUD_BACKEND.md",
+    "source_blob": "0da5198f661fa5014745940a019c42c561159225",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "c055df600f87ee9ddf0cd5d6bfc67d80d145e79d",
+    "source_path": "docs/CLOUD_VALIDATION.md",
+    "source_blob": "8bfb8a81c9293796b5eb1bc830a48ad0d16b63bf",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "c055df600f87ee9ddf0cd5d6bfc67d80d145e79d",
+    "source_path": "docs/CODE_TEST_RULES.md",
+    "source_blob": "c58416da6a30c411bf769f960f0d26723d0c787e",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "c055df600f87ee9ddf0cd5d6bfc67d80d145e79d",
+    "source_path": "docs/CONFIGURATION.md",
+    "source_blob": "05795022b22f3d880c7d2becf517f7c2d6286546",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "c055df600f87ee9ddf0cd5d6bfc67d80d145e79d",
+    "source_path": "docs/DEVICE_MATRIX.md",
+    "source_blob": "d1eaad3486807080a1168f81ab823c9ce01baceb",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "c055df600f87ee9ddf0cd5d6bfc67d80d145e79d",
+    "source_path": "docs/ENGINE_SPLIT_AUDIT.md",
+    "source_blob": "f6fc680eadbde85c973d6b9c8b3b980cc0f08d8b",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "c055df600f87ee9ddf0cd5d6bfc67d80d145e79d",
+    "source_path": "docs/EXECUTION_PLAN.md",
+    "source_blob": "7351110b6a9b1f50a5e5a2626e6dfe277d7a4700",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "c055df600f87ee9ddf0cd5d6bfc67d80d145e79d",
+    "source_path": "docs/GUEST_CODE_VALIDATION.md",
+    "source_blob": "55a40b777be30840821371b4354eb68e1bfd02ba",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "c055df600f87ee9ddf0cd5d6bfc67d80d145e79d",
+    "source_path": "docs/INTEGRATED_CANDIDATE.md",
+    "source_blob": "2bfaa5cf4eba3cac98b997f805cba58436b430ee",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "c055df600f87ee9ddf0cd5d6bfc67d80d145e79d",
+    "source_path": "docs/PHASE1_ENGINE_AUDIT.md",
+    "source_blob": "457dd8eef3ba1a264949d888aae91150c91d1f6d",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "c055df600f87ee9ddf0cd5d6bfc67d80d145e79d",
+    "source_path": "docs/PHASE1_PHONE_TEST.md",
+    "source_blob": "b75065329b2e089f547d1adf40ae6ba7589ffdb0",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "c055df600f87ee9ddf0cd5d6bfc67d80d145e79d",
+    "source_path": "docs/PHASE1_VALIDATION.md",
+    "source_blob": "588ff607ecccbc1afa89fbcb94c4c0e710714acd",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "c055df600f87ee9ddf0cd5d6bfc67d80d145e79d",
+    "source_path": "docs/PHASE3_VALIDATION.md",
+    "source_blob": "15ae40af8af4e272e1dce31b6daf60cc30680534",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "c055df600f87ee9ddf0cd5d6bfc67d80d145e79d",
+    "source_path": "docs/PHASE6_VALIDATION.md",
+    "source_blob": "ca375b6e0431625ff7e8ff479db32dea3d7284b1",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "c055df600f87ee9ddf0cd5d6bfc67d80d145e79d",
+    "source_path": "docs/PHONE_TEST_GUIDE.md",
+    "source_blob": "76a97bb0ca489c8a0823e69bc11f3ccad6e27703",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "c055df600f87ee9ddf0cd5d6bfc67d80d145e79d",
+    "source_path": "docs/PLAN.md",
+    "source_blob": "00ad46c8f975e9f3d9906e133d4dfa5d718a4ae2",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "c055df600f87ee9ddf0cd5d6bfc67d80d145e79d",
+    "source_path": "docs/ROADMAP.md",
+    "source_blob": "849278235f2edec28e2a6e1d6b4f4c32c0433f2b",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "c055df600f87ee9ddf0cd5d6bfc67d80d145e79d",
+    "source_path": "docs/RUNTIME_INTEGRATION_VALIDATION.md",
+    "source_blob": "c7a2199e1352f320c55f1e1f07e2bf0834b8d7b3",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "c055df600f87ee9ddf0cd5d6bfc67d80d145e79d",
+    "source_path": "docs/SHORTCUTS.md",
+    "source_blob": "8a989c777a257583634a895d5f8b3993df35c2ac",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "c055df600f87ee9ddf0cd5d6bfc67d80d145e79d",
+    "source_path": "docs/SOURCE_ENGINE_VALIDATION.md",
+    "source_blob": "cef95d379f73611cc474486c0b537b85cfc54993",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "c055df600f87ee9ddf0cd5d6bfc67d80d145e79d",
+    "source_path": "docs/SOURCE_NATIVE_VALIDATION.md",
+    "source_blob": "21e89fe81e1867efeae96e4b31d754c021ced817",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "c055df600f87ee9ddf0cd5d6bfc67d80d145e79d",
+    "source_path": "docs/STATUS.md",
+    "source_blob": "2934aec80fda1634f81209496a7c21dea42b8448",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "c055df600f87ee9ddf0cd5d6bfc67d80d145e79d",
+    "source_path": "docs/UPDATE_AUTOMATION.md",
+    "source_blob": "eaa64695687d73dde8b4b3be787484757aaae555",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "c055df600f87ee9ddf0cd5d6bfc67d80d145e79d",
+    "source_path": "docs/VALIDATION.md",
+    "source_blob": "b12310210c56fec03129c10f6ace3a318dde6d41",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "c055df600f87ee9ddf0cd5d6bfc67d80d145e79d",
+    "source_path": "third_party/apksig/NOTICE.md",
+    "source_blob": "0cda112d9307b865174a68cb85f05b2d6ee38b8f",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "c055df600f87ee9ddf0cd5d6bfc67d80d145e79d",
+    "source_path": "third_party/source-engine/NOTICE.md",
+    "source_blob": "d763c48e324fc1357ca95d44b8d7d48a50091f06",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "c055df600f87ee9ddf0cd5d6bfc67d80d145e79d",
+    "source_path": "third_party/spacecore/NOTICE.md",
+    "source_blob": "2ae6df041dd727260d3a4d1b8143d0c159996014",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "d4aabacd7bf6f16b88b0e6db2bac8f3915ad839c",
+    "source_path": "app/src/main/res/drawable/ic_fonesi.xml",
+    "source_blob": "29c32ff30cabdbb3900814d9a7815087e4a12202",
+    "disposition": "KEEP_UI_REFERENCE_NOT_IMPLEMENTATION"
+  },
+  {
+    "source_commit": "d4aabacd7bf6f16b88b0e6db2bac8f3915ad839c",
+    "source_path": "app/src/main/res/values/strings.xml",
+    "source_blob": "2f7a3970ab5a3710fcad183652e878d8fde82bbc",
+    "disposition": "KEEP_UI_REFERENCE_NOT_IMPLEMENTATION"
+  },
+  {
+    "source_commit": "d4aabacd7bf6f16b88b0e6db2bac8f3915ad839c",
+    "source_path": "app/src/main/res/values/themes.xml",
+    "source_blob": "f9efac1e2630c3f6de197f912af6eb79a1bbbf7a",
+    "disposition": "KEEP_UI_REFERENCE_NOT_IMPLEMENTATION"
+  },
+  {
+    "source_commit": "d4aabacd7bf6f16b88b0e6db2bac8f3915ad839c",
+    "source_path": "app/src/main/res/xml/data_extraction_rules.xml",
+    "source_blob": "b853a8d2452fe340b2e07d1899f3437e49fb123b",
+    "disposition": "KEEP_UI_REFERENCE_NOT_IMPLEMENTATION"
+  },
+  {
+    "source_commit": "d4aabacd7bf6f16b88b0e6db2bac8f3915ad839c",
+    "source_path": "docs/ACCESS_CONTROL.md",
+    "source_blob": "753ef6854e30a6341b90c2babffc9397241da822",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "d4aabacd7bf6f16b88b0e6db2bac8f3915ad839c",
+    "source_path": "docs/APK_SET_VALIDATION.md",
+    "source_blob": "e60ddad072e8e22ceb178ad140fd9f91fbf61f0e",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "d4aabacd7bf6f16b88b0e6db2bac8f3915ad839c",
+    "source_path": "docs/CLOUD_BACKEND.md",
+    "source_blob": "0da5198f661fa5014745940a019c42c561159225",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "d4aabacd7bf6f16b88b0e6db2bac8f3915ad839c",
+    "source_path": "docs/CLOUD_VALIDATION.md",
+    "source_blob": "8bfb8a81c9293796b5eb1bc830a48ad0d16b63bf",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "d4aabacd7bf6f16b88b0e6db2bac8f3915ad839c",
+    "source_path": "docs/CODE_TEST_RULES.md",
+    "source_blob": "c58416da6a30c411bf769f960f0d26723d0c787e",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "d4aabacd7bf6f16b88b0e6db2bac8f3915ad839c",
+    "source_path": "docs/CONFIGURATION.md",
+    "source_blob": "05795022b22f3d880c7d2becf517f7c2d6286546",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "d4aabacd7bf6f16b88b0e6db2bac8f3915ad839c",
+    "source_path": "docs/DEVICE_MATRIX.md",
+    "source_blob": "d1eaad3486807080a1168f81ab823c9ce01baceb",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "d4aabacd7bf6f16b88b0e6db2bac8f3915ad839c",
+    "source_path": "docs/ENGINE_SPLIT_AUDIT.md",
+    "source_blob": "f6fc680eadbde85c973d6b9c8b3b980cc0f08d8b",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "d4aabacd7bf6f16b88b0e6db2bac8f3915ad839c",
+    "source_path": "docs/EXECUTION_PLAN.md",
+    "source_blob": "7351110b6a9b1f50a5e5a2626e6dfe277d7a4700",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "d4aabacd7bf6f16b88b0e6db2bac8f3915ad839c",
+    "source_path": "docs/GUEST_CODE_VALIDATION.md",
+    "source_blob": "55a40b777be30840821371b4354eb68e1bfd02ba",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "d4aabacd7bf6f16b88b0e6db2bac8f3915ad839c",
+    "source_path": "docs/INTEGRATED_CANDIDATE.md",
+    "source_blob": "2bfaa5cf4eba3cac98b997f805cba58436b430ee",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "d4aabacd7bf6f16b88b0e6db2bac8f3915ad839c",
+    "source_path": "docs/PHASE1_ENGINE_AUDIT.md",
+    "source_blob": "457dd8eef3ba1a264949d888aae91150c91d1f6d",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "d4aabacd7bf6f16b88b0e6db2bac8f3915ad839c",
+    "source_path": "docs/PHASE1_PHONE_TEST.md",
+    "source_blob": "b75065329b2e089f547d1adf40ae6ba7589ffdb0",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "d4aabacd7bf6f16b88b0e6db2bac8f3915ad839c",
+    "source_path": "docs/PHASE1_VALIDATION.md",
+    "source_blob": "588ff607ecccbc1afa89fbcb94c4c0e710714acd",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "d4aabacd7bf6f16b88b0e6db2bac8f3915ad839c",
+    "source_path": "docs/PHASE3_VALIDATION.md",
+    "source_blob": "15ae40af8af4e272e1dce31b6daf60cc30680534",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "d4aabacd7bf6f16b88b0e6db2bac8f3915ad839c",
+    "source_path": "docs/PHASE6_VALIDATION.md",
+    "source_blob": "ca375b6e0431625ff7e8ff479db32dea3d7284b1",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "d4aabacd7bf6f16b88b0e6db2bac8f3915ad839c",
+    "source_path": "docs/PHONE_TEST_GUIDE.md",
+    "source_blob": "76a97bb0ca489c8a0823e69bc11f3ccad6e27703",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "d4aabacd7bf6f16b88b0e6db2bac8f3915ad839c",
+    "source_path": "docs/PLAN.md",
+    "source_blob": "00ad46c8f975e9f3d9906e133d4dfa5d718a4ae2",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "d4aabacd7bf6f16b88b0e6db2bac8f3915ad839c",
+    "source_path": "docs/REBUILD_ANDROID_COMPATIBILITY.md",
+    "source_blob": "9b9edc03d6f818d05693301d28c9d12e0ea2feca",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "d4aabacd7bf6f16b88b0e6db2bac8f3915ad839c",
+    "source_path": "docs/REBUILD_B3B_CANONICAL_PLAN.md",
+    "source_blob": "052d4770c9acac7b64f3210f847bb85e52c8e3e3",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "d4aabacd7bf6f16b88b0e6db2bac8f3915ad839c",
+    "source_path": "docs/REBUILD_B3C_API_AUDIT.md",
+    "source_blob": "eb68b36d4f4fea7fdcdf4067181cf86dd24d2937",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "d4aabacd7bf6f16b88b0e6db2bac8f3915ad839c",
+    "source_path": "docs/REBUILD_B3C_PURE_PORT_PLAN.md",
+    "source_blob": "d9ae71f76eecf235aeb3396a875e96c9b58ee41c",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "d4aabacd7bf6f16b88b0e6db2bac8f3915ad839c",
+    "source_path": "docs/REBUILD_B3_AMBIGUITY_LEDGER.md",
+    "source_blob": "c37d4ac5a9e58cc0418bb8dd938ef45234880441",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "d4aabacd7bf6f16b88b0e6db2bac8f3915ad839c",
+    "source_path": "docs/REBUILD_B3_CODEC_PROPOSAL.md",
+    "source_blob": "81996bf5e2cf3692afcf3534f3519e0592b21cc3",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "d4aabacd7bf6f16b88b0e6db2bac8f3915ad839c",
+    "source_path": "docs/REBUILD_BRIDGE_ORACLE_REVIEW.md",
+    "source_blob": "d0ad142dc9765457f9e5e03f88bab9acd6d88d83",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "d4aabacd7bf6f16b88b0e6db2bac8f3915ad839c",
+    "source_path": "docs/REBUILD_CATALOG_API26_RECIPE_AUDIT.md",
+    "source_blob": "d7a85bdf7da61ba79c2561d2d4b779f338a1139e",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "d4aabacd7bf6f16b88b0e6db2bac8f3915ad839c",
+    "source_path": "docs/REBUILD_CATALOG_DIRECTORY_MODE_PLAN.md",
+    "source_blob": "96486cc1de03e7d3a59af67d955ac9354dd64a17",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "d4aabacd7bf6f16b88b0e6db2bac8f3915ad839c",
+    "source_path": "docs/REBUILD_CATALOG_QUERY_RECIPE.md",
+    "source_blob": "5a0e1298a3985fa619acc84fb44f862a2e95574a",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "d4aabacd7bf6f16b88b0e6db2bac8f3915ad839c",
+    "source_path": "docs/REBUILD_EXECUTION_PLAN.md",
+    "source_blob": "eb06c07e00aed037a48327e31a56779eeffb6275",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "d4aabacd7bf6f16b88b0e6db2bac8f3915ad839c",
+    "source_path": "docs/REBUILD_FIXTURE_TRANSPORT.md",
+    "source_blob": "4bcc3baf2a74827e2014c52c98933b48169c3102",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "d4aabacd7bf6f16b88b0e6db2bac8f3915ad839c",
+    "source_path": "docs/REBUILD_HOSTED_ANDROID_PLAN.md",
+    "source_blob": "f7289488f20b79e415184438bdfa933a3380a362",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "d4aabacd7bf6f16b88b0e6db2bac8f3915ad839c",
+    "source_path": "docs/REBUILD_HOSTED_RUNTIME_INVENTORY_PLAN.md",
+    "source_blob": "be5800d5f902056378c471ee8790870e53bec58b",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "d4aabacd7bf6f16b88b0e6db2bac8f3915ad839c",
+    "source_path": "docs/REBUILD_IDENTITY_HARDENING_PLAN.md",
+    "source_blob": "c27d5233c61c5a80fff3afcd6055dd7b00ff58c1",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "d4aabacd7bf6f16b88b0e6db2bac8f3915ad839c",
+    "source_path": "docs/REBUILD_LEGACY_CLEANUP_MANIFEST.json",
+    "source_blob": "81c697a55f53b5702a047017d8d0ce0678603197",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "d4aabacd7bf6f16b88b0e6db2bac8f3915ad839c",
+    "source_path": "docs/REBUILD_LEGACY_CLEANUP_PROPOSAL.md",
+    "source_blob": "118826740320a749909e766b196eefb8f805fec3",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "d4aabacd7bf6f16b88b0e6db2bac8f3915ad839c",
+    "source_path": "docs/REBUILD_LOGICAL_API_AUDIT.md",
+    "source_blob": "f0950a8fcb436439c304eb5af048ee351001d026",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "d4aabacd7bf6f16b88b0e6db2bac8f3915ad839c",
+    "source_path": "docs/REBUILD_LOGICAL_BRIDGE_PROPOSAL.md",
+    "source_blob": "55456dd480fb618cdc0434a4d1aecfa47f425942",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "d4aabacd7bf6f16b88b0e6db2bac8f3915ad839c",
+    "source_path": "docs/REBUILD_MASTER_PLAN.md",
+    "source_blob": "ec7450dd3b57291ee47976246dbba6d0431ce4e1",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "d4aabacd7bf6f16b88b0e6db2bac8f3915ad839c",
+    "source_path": "docs/REBUILD_MINSDK26_API_AUDIT.md",
+    "source_blob": "317a8eab90dce50d81632e1c088063ab043ef946",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "d4aabacd7bf6f16b88b0e6db2bac8f3915ad839c",
+    "source_path": "docs/REBUILD_PACKAGE_BOUNDS_DEFECT.md",
+    "source_blob": "e8d0ae59ffb44f796c54f2c6aae51baedc4230e8",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "d4aabacd7bf6f16b88b0e6db2bac8f3915ad839c",
+    "source_path": "docs/REBUILD_POLICY_D3_DECISION.md",
+    "source_blob": "5085f28de7125255284a69a88e4e06eee25e3eec",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "d4aabacd7bf6f16b88b0e6db2bac8f3915ad839c",
+    "source_path": "docs/REBUILD_R1_CLOSURE_REVIEW.md",
+    "source_blob": "b9cc6dcadec8df8ba1db2210840c7783088b0a68",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "d4aabacd7bf6f16b88b0e6db2bac8f3915ad839c",
+    "source_path": "docs/REBUILD_R1_DECISIONS.md",
+    "source_blob": "ceb36b72e5700b9b826ce8510360bbd266f63f6e",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "d4aabacd7bf6f16b88b0e6db2bac8f3915ad839c",
+    "source_path": "docs/REBUILD_R1_REQUIREMENTS.md",
+    "source_blob": "5fd4a4489dd3b81bab599e1386096717ba7649e8",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "d4aabacd7bf6f16b88b0e6db2bac8f3915ad839c",
+    "source_path": "docs/REBUILD_R1_ROADMAP_REQUIREMENTS.md",
+    "source_blob": "7a7c19a4f4fd3041333ac7824d2c1c0a46e19a89",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "d4aabacd7bf6f16b88b0e6db2bac8f3915ad839c",
+    "source_path": "docs/REBUILD_R1_SECURITY_REQUIREMENTS.md",
+    "source_blob": "13d98192248f7ca4ad89baec06b629fe019c5c2e",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "d4aabacd7bf6f16b88b0e6db2bac8f3915ad839c",
+    "source_path": "docs/REBUILD_R1_SUPPLEMENT_REQUIREMENTS.md",
+    "source_blob": "df9f22077b6caf700e0ca0a727bc58c5a82c33ee",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "d4aabacd7bf6f16b88b0e6db2bac8f3915ad839c",
+    "source_path": "docs/REBUILD_R1_TRACEABILITY_REVIEW.md",
+    "source_blob": "d3953e0d4cf52574e4a86cdf4d0bc500494cedec",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "d4aabacd7bf6f16b88b0e6db2bac8f3915ad839c",
+    "source_path": "docs/REBUILD_R2_ACCEPTANCE_AUDIT.md",
+    "source_blob": "e7975aec7ddfe672e577e1572d26d3067912fe40",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "d4aabacd7bf6f16b88b0e6db2bac8f3915ad839c",
+    "source_path": "docs/REBUILD_R2_CLOSURE_PLAN.md",
+    "source_blob": "979f2769f401d2dd0d942f8fcfec93d5ddcd6fb3",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "d4aabacd7bf6f16b88b0e6db2bac8f3915ad839c",
+    "source_path": "docs/REBUILD_R3_R5_CATALOG_READ_PLAN.md",
+    "source_blob": "02af7a6a364d03321ad037c85471cba595da6edb",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "d4aabacd7bf6f16b88b0e6db2bac8f3915ad839c",
+    "source_path": "docs/REBUILD_R5_CATALOG_KEY_PLAN.md",
+    "source_blob": "3f46170a0f5913be341a097570e1f8a46c482a7a",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "d4aabacd7bf6f16b88b0e6db2bac8f3915ad839c",
+    "source_path": "docs/REBUILD_RECONCILIATION.md",
+    "source_blob": "902bd87b578e75cc2c6e93ba6b95f9ea890d7438",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "d4aabacd7bf6f16b88b0e6db2bac8f3915ad839c",
+    "source_path": "docs/REBUILD_REVIEW.md",
+    "source_blob": "abc9762e7a3c1323d7aa7361cdab3b6b5917c87b",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "d4aabacd7bf6f16b88b0e6db2bac8f3915ad839c",
+    "source_path": "docs/REBUILD_RUNTIME_GATE_HANDOFF.md",
+    "source_blob": "227755170186ab3026030f2dc1b0c4d2069d2090",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "d4aabacd7bf6f16b88b0e6db2bac8f3915ad839c",
+    "source_path": "docs/REBUILD_RUNTIME_TEST_DESIGN.md",
+    "source_blob": "123db8c3e06a57ad6b3835aa80ae3ed8ba9029e1",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "d4aabacd7bf6f16b88b0e6db2bac8f3915ad839c",
+    "source_path": "docs/REBUILD_STAGE_A_PLAN.md",
+    "source_blob": "f48e7781c5072ac20b2f4009f97f2d25d46896cc",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "d4aabacd7bf6f16b88b0e6db2bac8f3915ad839c",
+    "source_path": "docs/REBUILD_STATUS.md",
+    "source_blob": "7396a4543d86cf596a811f758d7836ce60df22bf",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "d4aabacd7bf6f16b88b0e6db2bac8f3915ad839c",
+    "source_path": "docs/ROADMAP.md",
+    "source_blob": "849278235f2edec28e2a6e1d6b4f4c32c0433f2b",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "d4aabacd7bf6f16b88b0e6db2bac8f3915ad839c",
+    "source_path": "docs/RUNTIME_INTEGRATION_VALIDATION.md",
+    "source_blob": "c7a2199e1352f320c55f1e1f07e2bf0834b8d7b3",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "d4aabacd7bf6f16b88b0e6db2bac8f3915ad839c",
+    "source_path": "docs/SHORTCUTS.md",
+    "source_blob": "8a989c777a257583634a895d5f8b3993df35c2ac",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "d4aabacd7bf6f16b88b0e6db2bac8f3915ad839c",
+    "source_path": "docs/SOURCE_ENGINE_VALIDATION.md",
+    "source_blob": "cef95d379f73611cc474486c0b537b85cfc54993",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "d4aabacd7bf6f16b88b0e6db2bac8f3915ad839c",
+    "source_path": "docs/SOURCE_NATIVE_VALIDATION.md",
+    "source_blob": "21e89fe81e1867efeae96e4b31d754c021ced817",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "d4aabacd7bf6f16b88b0e6db2bac8f3915ad839c",
+    "source_path": "docs/STATUS.md",
+    "source_blob": "2934aec80fda1634f81209496a7c21dea42b8448",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "d4aabacd7bf6f16b88b0e6db2bac8f3915ad839c",
+    "source_path": "docs/UPDATE_AUTOMATION.md",
+    "source_blob": "eaa64695687d73dde8b4b3be787484757aaae555",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "d4aabacd7bf6f16b88b0e6db2bac8f3915ad839c",
+    "source_path": "docs/VALIDATION.md",
+    "source_blob": "b12310210c56fec03129c10f6ace3a318dde6d41",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "d4aabacd7bf6f16b88b0e6db2bac8f3915ad839c",
+    "source_path": "docs/evidence/runtime-inventory-41148595270.log",
+    "source_blob": "325e8706bb14a4ca8dd80851e6405f5d5a90b47d",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "d4aabacd7bf6f16b88b0e6db2bac8f3915ad839c",
+    "source_path": "rebuild-android/app/src/main/res/drawable/ic_manager.xml",
+    "source_blob": "033d5fa5219af25f572bcac95bb3a962f9b233ba",
+    "disposition": "KEEP_UI_REFERENCE_NOT_IMPLEMENTATION"
+  },
+  {
+    "source_commit": "d4aabacd7bf6f16b88b0e6db2bac8f3915ad839c",
+    "source_path": "rebuild-android/app/src/main/res/layout/manager.xml",
+    "source_blob": "6bda8e6cd2e8b1930f8711273535fed55c99242a",
+    "disposition": "KEEP_UI_REFERENCE_NOT_IMPLEMENTATION"
+  },
+  {
+    "source_commit": "d4aabacd7bf6f16b88b0e6db2bac8f3915ad839c",
+    "source_path": "rebuild-android/app/src/main/res/values/strings.xml",
+    "source_blob": "9ea3c360989df8f8194adb5a4e4f46133213e30e",
+    "disposition": "KEEP_UI_REFERENCE_NOT_IMPLEMENTATION"
+  },
+  {
+    "source_commit": "d4aabacd7bf6f16b88b0e6db2bac8f3915ad839c",
+    "source_path": "rebuild-android/app/src/main/res/xml/backup_exclusions.xml",
+    "source_blob": "8acd663dd03c55554550f04a09f84ee3f8f946de",
+    "disposition": "KEEP_UI_REFERENCE_NOT_IMPLEMENTATION"
+  },
+  {
+    "source_commit": "d4aabacd7bf6f16b88b0e6db2bac8f3915ad839c",
+    "source_path": "rebuild-android/app/src/main/res/xml/data_extraction_rules.xml",
+    "source_blob": "b853a8d2452fe340b2e07d1899f3437e49fb123b",
+    "disposition": "KEEP_UI_REFERENCE_NOT_IMPLEMENTATION"
+  },
+  {
+    "source_commit": "d4aabacd7bf6f16b88b0e6db2bac8f3915ad839c",
+    "source_path": "rebuild-storage/spec/legacy-room/1.json",
+    "source_blob": "062c59e4e03423cbc97a26f767ed027a344a2a43",
+    "disposition": "KEEP_SCHEMA_REFERENCE_NOT_MIGRATION"
+  },
+  {
+    "source_commit": "d4aabacd7bf6f16b88b0e6db2bac8f3915ad839c",
+    "source_path": "rebuild-storage/spec/legacy-room/2.json",
+    "source_blob": "9eea5f6d55b6fce4a1269a75af6fb4c441eee613",
+    "disposition": "KEEP_SCHEMA_REFERENCE_NOT_MIGRATION"
+  },
+  {
+    "source_commit": "d4aabacd7bf6f16b88b0e6db2bac8f3915ad839c",
+    "source_path": "rebuild-storage/spec/legacy-room/3.json",
+    "source_blob": "5c86213aaff9f3a1de6cd8d590d003c225d8b5a6",
+    "disposition": "KEEP_SCHEMA_REFERENCE_NOT_MIGRATION"
+  },
+  {
+    "source_commit": "d4aabacd7bf6f16b88b0e6db2bac8f3915ad839c",
+    "source_path": "rebuild-storage/spec/legacy-room/4.json",
+    "source_blob": "c0551b63e9a43fe4bc66385573071bfb2f02941e",
+    "disposition": "KEEP_SCHEMA_REFERENCE_NOT_MIGRATION"
+  },
+  {
+    "source_commit": "d4aabacd7bf6f16b88b0e6db2bac8f3915ad839c",
+    "source_path": "rebuild-storage/spec/legacy-room/5.json",
+    "source_blob": "63984923e9f017eb5f266676dd88ac920be9e40e",
+    "disposition": "KEEP_SCHEMA_REFERENCE_NOT_MIGRATION"
+  },
+  {
+    "source_commit": "d4aabacd7bf6f16b88b0e6db2bac8f3915ad839c",
+    "source_path": "rebuild-storage/spec/legacy-room/6.json",
+    "source_blob": "5422e7ef0d66a45333201bd4cbffbd49fb5dc301",
+    "disposition": "KEEP_SCHEMA_REFERENCE_NOT_MIGRATION"
+  },
+  {
+    "source_commit": "d4aabacd7bf6f16b88b0e6db2bac8f3915ad839c",
+    "source_path": "rebuild-storage/spec/legacy-room/MANIFEST.json",
+    "source_blob": "e10a3e766f697ed3d4c5393f4106627a85155775",
+    "disposition": "KEEP_SCHEMA_REFERENCE_NOT_MIGRATION"
+  },
+  {
+    "source_commit": "d4aabacd7bf6f16b88b0e6db2bac8f3915ad839c",
+    "source_path": "third_party/apksig/NOTICE.md",
+    "source_blob": "0cda112d9307b865174a68cb85f05b2d6ee38b8f",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "d4aabacd7bf6f16b88b0e6db2bac8f3915ad839c",
+    "source_path": "third_party/source-engine/NOTICE.md",
+    "source_blob": "d763c48e324fc1357ca95d44b8d7d48a50091f06",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "d4aabacd7bf6f16b88b0e6db2bac8f3915ad839c",
+    "source_path": "third_party/spacecore/NOTICE.md",
+    "source_blob": "2ae6df041dd727260d3a4d1b8143d0c159996014",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "dccc27989b9c258ce9f99e28bc620ac03ac696ae",
+    "source_path": "app/src/main/res/drawable/ic_fonesi.xml",
+    "source_blob": "29c32ff30cabdbb3900814d9a7815087e4a12202",
+    "disposition": "KEEP_UI_REFERENCE_NOT_IMPLEMENTATION"
+  },
+  {
+    "source_commit": "dccc27989b9c258ce9f99e28bc620ac03ac696ae",
+    "source_path": "app/src/main/res/values/strings.xml",
+    "source_blob": "2f7a3970ab5a3710fcad183652e878d8fde82bbc",
+    "disposition": "KEEP_UI_REFERENCE_NOT_IMPLEMENTATION"
+  },
+  {
+    "source_commit": "dccc27989b9c258ce9f99e28bc620ac03ac696ae",
+    "source_path": "app/src/main/res/values/themes.xml",
+    "source_blob": "f9efac1e2630c3f6de197f912af6eb79a1bbbf7a",
+    "disposition": "KEEP_UI_REFERENCE_NOT_IMPLEMENTATION"
+  },
+  {
+    "source_commit": "dccc27989b9c258ce9f99e28bc620ac03ac696ae",
+    "source_path": "app/src/main/res/xml/data_extraction_rules.xml",
+    "source_blob": "b853a8d2452fe340b2e07d1899f3437e49fb123b",
+    "disposition": "KEEP_UI_REFERENCE_NOT_IMPLEMENTATION"
+  },
+  {
+    "source_commit": "dccc27989b9c258ce9f99e28bc620ac03ac696ae",
+    "source_path": "docs/ACCESS_CONTROL.md",
+    "source_blob": "753ef6854e30a6341b90c2babffc9397241da822",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "dccc27989b9c258ce9f99e28bc620ac03ac696ae",
+    "source_path": "docs/APK_SET_VALIDATION.md",
+    "source_blob": "e60ddad072e8e22ceb178ad140fd9f91fbf61f0e",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "dccc27989b9c258ce9f99e28bc620ac03ac696ae",
+    "source_path": "docs/CLOUD_BACKEND.md",
+    "source_blob": "0da5198f661fa5014745940a019c42c561159225",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "dccc27989b9c258ce9f99e28bc620ac03ac696ae",
+    "source_path": "docs/CLOUD_VALIDATION.md",
+    "source_blob": "8bfb8a81c9293796b5eb1bc830a48ad0d16b63bf",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "dccc27989b9c258ce9f99e28bc620ac03ac696ae",
+    "source_path": "docs/CODE_TEST_RULES.md",
+    "source_blob": "c58416da6a30c411bf769f960f0d26723d0c787e",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "dccc27989b9c258ce9f99e28bc620ac03ac696ae",
+    "source_path": "docs/CONFIGURATION.md",
+    "source_blob": "05795022b22f3d880c7d2becf517f7c2d6286546",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "dccc27989b9c258ce9f99e28bc620ac03ac696ae",
+    "source_path": "docs/DEVICE_MATRIX.md",
+    "source_blob": "d1eaad3486807080a1168f81ab823c9ce01baceb",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "dccc27989b9c258ce9f99e28bc620ac03ac696ae",
+    "source_path": "docs/ENGINE_SPLIT_AUDIT.md",
+    "source_blob": "f6fc680eadbde85c973d6b9c8b3b980cc0f08d8b",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "dccc27989b9c258ce9f99e28bc620ac03ac696ae",
+    "source_path": "docs/EXECUTION_PLAN.md",
+    "source_blob": "7351110b6a9b1f50a5e5a2626e6dfe277d7a4700",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "dccc27989b9c258ce9f99e28bc620ac03ac696ae",
+    "source_path": "docs/GUEST_CODE_VALIDATION.md",
+    "source_blob": "55a40b777be30840821371b4354eb68e1bfd02ba",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "dccc27989b9c258ce9f99e28bc620ac03ac696ae",
+    "source_path": "docs/INTEGRATED_CANDIDATE.md",
+    "source_blob": "2bfaa5cf4eba3cac98b997f805cba58436b430ee",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "dccc27989b9c258ce9f99e28bc620ac03ac696ae",
+    "source_path": "docs/PHASE1_ENGINE_AUDIT.md",
+    "source_blob": "457dd8eef3ba1a264949d888aae91150c91d1f6d",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "dccc27989b9c258ce9f99e28bc620ac03ac696ae",
+    "source_path": "docs/PHASE1_PHONE_TEST.md",
+    "source_blob": "b75065329b2e089f547d1adf40ae6ba7589ffdb0",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "dccc27989b9c258ce9f99e28bc620ac03ac696ae",
+    "source_path": "docs/PHASE1_VALIDATION.md",
+    "source_blob": "588ff607ecccbc1afa89fbcb94c4c0e710714acd",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "dccc27989b9c258ce9f99e28bc620ac03ac696ae",
+    "source_path": "docs/PHASE3_VALIDATION.md",
+    "source_blob": "15ae40af8af4e272e1dce31b6daf60cc30680534",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "dccc27989b9c258ce9f99e28bc620ac03ac696ae",
+    "source_path": "docs/PHASE6_VALIDATION.md",
+    "source_blob": "ca375b6e0431625ff7e8ff479db32dea3d7284b1",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "dccc27989b9c258ce9f99e28bc620ac03ac696ae",
+    "source_path": "docs/PHONE_TEST_GUIDE.md",
+    "source_blob": "76a97bb0ca489c8a0823e69bc11f3ccad6e27703",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "dccc27989b9c258ce9f99e28bc620ac03ac696ae",
+    "source_path": "docs/PLAN.md",
+    "source_blob": "00ad46c8f975e9f3d9906e133d4dfa5d718a4ae2",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "dccc27989b9c258ce9f99e28bc620ac03ac696ae",
+    "source_path": "docs/REBUILD_ANDROID_COMPATIBILITY.md",
+    "source_blob": "9b9edc03d6f818d05693301d28c9d12e0ea2feca",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "dccc27989b9c258ce9f99e28bc620ac03ac696ae",
+    "source_path": "docs/REBUILD_B3B_CANONICAL_PLAN.md",
+    "source_blob": "052d4770c9acac7b64f3210f847bb85e52c8e3e3",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "dccc27989b9c258ce9f99e28bc620ac03ac696ae",
+    "source_path": "docs/REBUILD_B3C_API_AUDIT.md",
+    "source_blob": "eb68b36d4f4fea7fdcdf4067181cf86dd24d2937",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "dccc27989b9c258ce9f99e28bc620ac03ac696ae",
+    "source_path": "docs/REBUILD_B3C_PURE_PORT_PLAN.md",
+    "source_blob": "d9ae71f76eecf235aeb3396a875e96c9b58ee41c",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "dccc27989b9c258ce9f99e28bc620ac03ac696ae",
+    "source_path": "docs/REBUILD_B3_AMBIGUITY_LEDGER.md",
+    "source_blob": "c37d4ac5a9e58cc0418bb8dd938ef45234880441",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "dccc27989b9c258ce9f99e28bc620ac03ac696ae",
+    "source_path": "docs/REBUILD_B3_CODEC_PROPOSAL.md",
+    "source_blob": "81996bf5e2cf3692afcf3534f3519e0592b21cc3",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "dccc27989b9c258ce9f99e28bc620ac03ac696ae",
+    "source_path": "docs/REBUILD_BRIDGE_ORACLE_REVIEW.md",
+    "source_blob": "d0ad142dc9765457f9e5e03f88bab9acd6d88d83",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "dccc27989b9c258ce9f99e28bc620ac03ac696ae",
+    "source_path": "docs/REBUILD_CATALOG_API26_RECIPE_AUDIT.md",
+    "source_blob": "d7a85bdf7da61ba79c2561d2d4b779f338a1139e",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "dccc27989b9c258ce9f99e28bc620ac03ac696ae",
+    "source_path": "docs/REBUILD_CATALOG_DIRECTORY_MODE_PLAN.md",
+    "source_blob": "96486cc1de03e7d3a59af67d955ac9354dd64a17",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "dccc27989b9c258ce9f99e28bc620ac03ac696ae",
+    "source_path": "docs/REBUILD_CATALOG_QUERY_RECIPE.md",
+    "source_blob": "5a0e1298a3985fa619acc84fb44f862a2e95574a",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "dccc27989b9c258ce9f99e28bc620ac03ac696ae",
+    "source_path": "docs/REBUILD_EXECUTION_PLAN.md",
+    "source_blob": "8e6b44f3863c87b79653c98d850d6e58fe15f1db",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "dccc27989b9c258ce9f99e28bc620ac03ac696ae",
+    "source_path": "docs/REBUILD_FIXTURE_TRANSPORT.md",
+    "source_blob": "4bcc3baf2a74827e2014c52c98933b48169c3102",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "dccc27989b9c258ce9f99e28bc620ac03ac696ae",
+    "source_path": "docs/REBUILD_HOSTED_ANDROID_PLAN.md",
+    "source_blob": "f7289488f20b79e415184438bdfa933a3380a362",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "dccc27989b9c258ce9f99e28bc620ac03ac696ae",
+    "source_path": "docs/REBUILD_HOSTED_RUNTIME_INVENTORY_PLAN.md",
+    "source_blob": "be5800d5f902056378c471ee8790870e53bec58b",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "dccc27989b9c258ce9f99e28bc620ac03ac696ae",
+    "source_path": "docs/REBUILD_IDENTITY_HARDENING_PLAN.md",
+    "source_blob": "c27d5233c61c5a80fff3afcd6055dd7b00ff58c1",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "dccc27989b9c258ce9f99e28bc620ac03ac696ae",
+    "source_path": "docs/REBUILD_LEGACY_CLEANUP_MANIFEST.json",
+    "source_blob": "81c697a55f53b5702a047017d8d0ce0678603197",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "dccc27989b9c258ce9f99e28bc620ac03ac696ae",
+    "source_path": "docs/REBUILD_LEGACY_CLEANUP_PROPOSAL.md",
+    "source_blob": "118826740320a749909e766b196eefb8f805fec3",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "dccc27989b9c258ce9f99e28bc620ac03ac696ae",
+    "source_path": "docs/REBUILD_LOGICAL_API_AUDIT.md",
+    "source_blob": "f0950a8fcb436439c304eb5af048ee351001d026",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "dccc27989b9c258ce9f99e28bc620ac03ac696ae",
+    "source_path": "docs/REBUILD_LOGICAL_BRIDGE_PROPOSAL.md",
+    "source_blob": "55456dd480fb618cdc0434a4d1aecfa47f425942",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "dccc27989b9c258ce9f99e28bc620ac03ac696ae",
+    "source_path": "docs/REBUILD_MASTER_PLAN.md",
+    "source_blob": "b120fc790fbb176532febcea6f4d33a56c5cada5",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "dccc27989b9c258ce9f99e28bc620ac03ac696ae",
+    "source_path": "docs/REBUILD_MINSDK26_API_AUDIT.md",
+    "source_blob": "317a8eab90dce50d81632e1c088063ab043ef946",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "dccc27989b9c258ce9f99e28bc620ac03ac696ae",
+    "source_path": "docs/REBUILD_PACKAGE_BOUNDS_DEFECT.md",
+    "source_blob": "e8d0ae59ffb44f796c54f2c6aae51baedc4230e8",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "dccc27989b9c258ce9f99e28bc620ac03ac696ae",
+    "source_path": "docs/REBUILD_POLICY_D3_DECISION.md",
+    "source_blob": "5085f28de7125255284a69a88e4e06eee25e3eec",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "dccc27989b9c258ce9f99e28bc620ac03ac696ae",
+    "source_path": "docs/REBUILD_R1_CLOSURE_REVIEW.md",
+    "source_blob": "a605358af87e8e123bc7a708c8e2af8e3fdca787",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "dccc27989b9c258ce9f99e28bc620ac03ac696ae",
+    "source_path": "docs/REBUILD_R1_DECISIONS.md",
+    "source_blob": "9d692b4ef455ce5ff641e6a2db157f292e52a43a",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "dccc27989b9c258ce9f99e28bc620ac03ac696ae",
+    "source_path": "docs/REBUILD_R1_PUBLIC_PROVENANCE.md",
+    "source_blob": "e60d851e7d3f1b93f1951b774453925798901ccd",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "dccc27989b9c258ce9f99e28bc620ac03ac696ae",
+    "source_path": "docs/REBUILD_R1_REQUIREMENTS.md",
+    "source_blob": "81e817fe914e257ff406ca3e639c4846fc0ba8c2",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "dccc27989b9c258ce9f99e28bc620ac03ac696ae",
+    "source_path": "docs/REBUILD_R1_ROADMAP_REQUIREMENTS.md",
+    "source_blob": "8116de8519dfb9a9a9c2a382050be22ea50d0967",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "dccc27989b9c258ce9f99e28bc620ac03ac696ae",
+    "source_path": "docs/REBUILD_R1_SECURITY_REQUIREMENTS.md",
+    "source_blob": "fa0571ca12bbf84a9c44e040101106eb8a02eb04",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "dccc27989b9c258ce9f99e28bc620ac03ac696ae",
+    "source_path": "docs/REBUILD_R1_SUPPLEMENT_REQUIREMENTS.md",
+    "source_blob": "341d4e7f3a77c7664e7cc940ce3bf6ff80d4bc2c",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "dccc27989b9c258ce9f99e28bc620ac03ac696ae",
+    "source_path": "docs/REBUILD_R1_TRACEABILITY_REVIEW.md",
+    "source_blob": "d3953e0d4cf52574e4a86cdf4d0bc500494cedec",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "dccc27989b9c258ce9f99e28bc620ac03ac696ae",
+    "source_path": "docs/REBUILD_R2_ACCEPTANCE_AUDIT.md",
+    "source_blob": "e7975aec7ddfe672e577e1572d26d3067912fe40",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "dccc27989b9c258ce9f99e28bc620ac03ac696ae",
+    "source_path": "docs/REBUILD_R2_CLOSURE_PLAN.md",
+    "source_blob": "979f2769f401d2dd0d942f8fcfec93d5ddcd6fb3",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "dccc27989b9c258ce9f99e28bc620ac03ac696ae",
+    "source_path": "docs/REBUILD_R3_R5_CATALOG_READ_PLAN.md",
+    "source_blob": "02af7a6a364d03321ad037c85471cba595da6edb",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "dccc27989b9c258ce9f99e28bc620ac03ac696ae",
+    "source_path": "docs/REBUILD_R5_CATALOG_KEY_PLAN.md",
+    "source_blob": "3f46170a0f5913be341a097570e1f8a46c482a7a",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "dccc27989b9c258ce9f99e28bc620ac03ac696ae",
+    "source_path": "docs/REBUILD_RECONCILIATION.md",
+    "source_blob": "902bd87b578e75cc2c6e93ba6b95f9ea890d7438",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "dccc27989b9c258ce9f99e28bc620ac03ac696ae",
+    "source_path": "docs/REBUILD_REVIEW.md",
+    "source_blob": "abc9762e7a3c1323d7aa7361cdab3b6b5917c87b",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "dccc27989b9c258ce9f99e28bc620ac03ac696ae",
+    "source_path": "docs/REBUILD_RUNTIME_GATE_HANDOFF.md",
+    "source_blob": "227755170186ab3026030f2dc1b0c4d2069d2090",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "dccc27989b9c258ce9f99e28bc620ac03ac696ae",
+    "source_path": "docs/REBUILD_RUNTIME_TEST_DESIGN.md",
+    "source_blob": "123db8c3e06a57ad6b3835aa80ae3ed8ba9029e1",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "dccc27989b9c258ce9f99e28bc620ac03ac696ae",
+    "source_path": "docs/REBUILD_STAGE_A_PLAN.md",
+    "source_blob": "f48e7781c5072ac20b2f4009f97f2d25d46896cc",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "dccc27989b9c258ce9f99e28bc620ac03ac696ae",
+    "source_path": "docs/REBUILD_STATUS.md",
+    "source_blob": "986d535eb536fe6e6808ebeda027d9160cc267e9",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "dccc27989b9c258ce9f99e28bc620ac03ac696ae",
+    "source_path": "docs/ROADMAP.md",
+    "source_blob": "849278235f2edec28e2a6e1d6b4f4c32c0433f2b",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "dccc27989b9c258ce9f99e28bc620ac03ac696ae",
+    "source_path": "docs/RUNTIME_INTEGRATION_VALIDATION.md",
+    "source_blob": "c7a2199e1352f320c55f1e1f07e2bf0834b8d7b3",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "dccc27989b9c258ce9f99e28bc620ac03ac696ae",
+    "source_path": "docs/SHORTCUTS.md",
+    "source_blob": "8a989c777a257583634a895d5f8b3993df35c2ac",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "dccc27989b9c258ce9f99e28bc620ac03ac696ae",
+    "source_path": "docs/SOURCE_ENGINE_VALIDATION.md",
+    "source_blob": "cef95d379f73611cc474486c0b537b85cfc54993",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "dccc27989b9c258ce9f99e28bc620ac03ac696ae",
+    "source_path": "docs/SOURCE_NATIVE_VALIDATION.md",
+    "source_blob": "21e89fe81e1867efeae96e4b31d754c021ced817",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "dccc27989b9c258ce9f99e28bc620ac03ac696ae",
+    "source_path": "docs/STATUS.md",
+    "source_blob": "2934aec80fda1634f81209496a7c21dea42b8448",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "dccc27989b9c258ce9f99e28bc620ac03ac696ae",
+    "source_path": "docs/UPDATE_AUTOMATION.md",
+    "source_blob": "eaa64695687d73dde8b4b3be787484757aaae555",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "dccc27989b9c258ce9f99e28bc620ac03ac696ae",
+    "source_path": "docs/VALIDATION.md",
+    "source_blob": "b12310210c56fec03129c10f6ace3a318dde6d41",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "dccc27989b9c258ce9f99e28bc620ac03ac696ae",
+    "source_path": "docs/evidence/runtime-inventory-41148595270.log",
+    "source_blob": "325e8706bb14a4ca8dd80851e6405f5d5a90b47d",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "dccc27989b9c258ce9f99e28bc620ac03ac696ae",
+    "source_path": "rebuild-android/app/src/main/res/drawable/ic_manager.xml",
+    "source_blob": "033d5fa5219af25f572bcac95bb3a962f9b233ba",
+    "disposition": "KEEP_UI_REFERENCE_NOT_IMPLEMENTATION"
+  },
+  {
+    "source_commit": "dccc27989b9c258ce9f99e28bc620ac03ac696ae",
+    "source_path": "rebuild-android/app/src/main/res/layout/manager.xml",
+    "source_blob": "6bda8e6cd2e8b1930f8711273535fed55c99242a",
+    "disposition": "KEEP_UI_REFERENCE_NOT_IMPLEMENTATION"
+  },
+  {
+    "source_commit": "dccc27989b9c258ce9f99e28bc620ac03ac696ae",
+    "source_path": "rebuild-android/app/src/main/res/values/strings.xml",
+    "source_blob": "9ea3c360989df8f8194adb5a4e4f46133213e30e",
+    "disposition": "KEEP_UI_REFERENCE_NOT_IMPLEMENTATION"
+  },
+  {
+    "source_commit": "dccc27989b9c258ce9f99e28bc620ac03ac696ae",
+    "source_path": "rebuild-android/app/src/main/res/xml/backup_exclusions.xml",
+    "source_blob": "8acd663dd03c55554550f04a09f84ee3f8f946de",
+    "disposition": "KEEP_UI_REFERENCE_NOT_IMPLEMENTATION"
+  },
+  {
+    "source_commit": "dccc27989b9c258ce9f99e28bc620ac03ac696ae",
+    "source_path": "rebuild-android/app/src/main/res/xml/data_extraction_rules.xml",
+    "source_blob": "b853a8d2452fe340b2e07d1899f3437e49fb123b",
+    "disposition": "KEEP_UI_REFERENCE_NOT_IMPLEMENTATION"
+  },
+  {
+    "source_commit": "dccc27989b9c258ce9f99e28bc620ac03ac696ae",
+    "source_path": "rebuild-storage/spec/legacy-room/1.json",
+    "source_blob": "062c59e4e03423cbc97a26f767ed027a344a2a43",
+    "disposition": "KEEP_SCHEMA_REFERENCE_NOT_MIGRATION"
+  },
+  {
+    "source_commit": "dccc27989b9c258ce9f99e28bc620ac03ac696ae",
+    "source_path": "rebuild-storage/spec/legacy-room/2.json",
+    "source_blob": "9eea5f6d55b6fce4a1269a75af6fb4c441eee613",
+    "disposition": "KEEP_SCHEMA_REFERENCE_NOT_MIGRATION"
+  },
+  {
+    "source_commit": "dccc27989b9c258ce9f99e28bc620ac03ac696ae",
+    "source_path": "rebuild-storage/spec/legacy-room/3.json",
+    "source_blob": "5c86213aaff9f3a1de6cd8d590d003c225d8b5a6",
+    "disposition": "KEEP_SCHEMA_REFERENCE_NOT_MIGRATION"
+  },
+  {
+    "source_commit": "dccc27989b9c258ce9f99e28bc620ac03ac696ae",
+    "source_path": "rebuild-storage/spec/legacy-room/4.json",
+    "source_blob": "c0551b63e9a43fe4bc66385573071bfb2f02941e",
+    "disposition": "KEEP_SCHEMA_REFERENCE_NOT_MIGRATION"
+  },
+  {
+    "source_commit": "dccc27989b9c258ce9f99e28bc620ac03ac696ae",
+    "source_path": "rebuild-storage/spec/legacy-room/5.json",
+    "source_blob": "63984923e9f017eb5f266676dd88ac920be9e40e",
+    "disposition": "KEEP_SCHEMA_REFERENCE_NOT_MIGRATION"
+  },
+  {
+    "source_commit": "dccc27989b9c258ce9f99e28bc620ac03ac696ae",
+    "source_path": "rebuild-storage/spec/legacy-room/6.json",
+    "source_blob": "5422e7ef0d66a45333201bd4cbffbd49fb5dc301",
+    "disposition": "KEEP_SCHEMA_REFERENCE_NOT_MIGRATION"
+  },
+  {
+    "source_commit": "dccc27989b9c258ce9f99e28bc620ac03ac696ae",
+    "source_path": "rebuild-storage/spec/legacy-room/MANIFEST.json",
+    "source_blob": "e10a3e766f697ed3d4c5393f4106627a85155775",
+    "disposition": "KEEP_SCHEMA_REFERENCE_NOT_MIGRATION"
+  },
+  {
+    "source_commit": "dccc27989b9c258ce9f99e28bc620ac03ac696ae",
+    "source_path": "third_party/apksig/NOTICE.md",
+    "source_blob": "0cda112d9307b865174a68cb85f05b2d6ee38b8f",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "dccc27989b9c258ce9f99e28bc620ac03ac696ae",
+    "source_path": "third_party/source-engine/NOTICE.md",
+    "source_blob": "d763c48e324fc1357ca95d44b8d7d48a50091f06",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "dccc27989b9c258ce9f99e28bc620ac03ac696ae",
+    "source_path": "third_party/spacecore/NOTICE.md",
+    "source_blob": "2ae6df041dd727260d3a4d1b8143d0c159996014",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "2fac016e3b28e4d9f21390c221cad1df7a382c86",
+    "source_path": "app/src/main/res/drawable/ic_fonesi.xml",
+    "source_blob": "29c32ff30cabdbb3900814d9a7815087e4a12202",
+    "disposition": "KEEP_UI_REFERENCE_NOT_IMPLEMENTATION"
+  },
+  {
+    "source_commit": "2fac016e3b28e4d9f21390c221cad1df7a382c86",
+    "source_path": "app/src/main/res/values/strings.xml",
+    "source_blob": "2f7a3970ab5a3710fcad183652e878d8fde82bbc",
+    "disposition": "KEEP_UI_REFERENCE_NOT_IMPLEMENTATION"
+  },
+  {
+    "source_commit": "2fac016e3b28e4d9f21390c221cad1df7a382c86",
+    "source_path": "app/src/main/res/values/themes.xml",
+    "source_blob": "f9efac1e2630c3f6de197f912af6eb79a1bbbf7a",
+    "disposition": "KEEP_UI_REFERENCE_NOT_IMPLEMENTATION"
+  },
+  {
+    "source_commit": "2fac016e3b28e4d9f21390c221cad1df7a382c86",
+    "source_path": "app/src/main/res/xml/data_extraction_rules.xml",
+    "source_blob": "b853a8d2452fe340b2e07d1899f3437e49fb123b",
+    "disposition": "KEEP_UI_REFERENCE_NOT_IMPLEMENTATION"
+  },
+  {
+    "source_commit": "2fac016e3b28e4d9f21390c221cad1df7a382c86",
+    "source_path": "docs/ACCESS_CONTROL.md",
+    "source_blob": "753ef6854e30a6341b90c2babffc9397241da822",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "2fac016e3b28e4d9f21390c221cad1df7a382c86",
+    "source_path": "docs/APK_SET_VALIDATION.md",
+    "source_blob": "e60ddad072e8e22ceb178ad140fd9f91fbf61f0e",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "2fac016e3b28e4d9f21390c221cad1df7a382c86",
+    "source_path": "docs/CLOUD_BACKEND.md",
+    "source_blob": "0da5198f661fa5014745940a019c42c561159225",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "2fac016e3b28e4d9f21390c221cad1df7a382c86",
+    "source_path": "docs/CLOUD_VALIDATION.md",
+    "source_blob": "8bfb8a81c9293796b5eb1bc830a48ad0d16b63bf",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "2fac016e3b28e4d9f21390c221cad1df7a382c86",
+    "source_path": "docs/CODE_TEST_RULES.md",
+    "source_blob": "c58416da6a30c411bf769f960f0d26723d0c787e",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "2fac016e3b28e4d9f21390c221cad1df7a382c86",
+    "source_path": "docs/CONFIGURATION.md",
+    "source_blob": "05795022b22f3d880c7d2becf517f7c2d6286546",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "2fac016e3b28e4d9f21390c221cad1df7a382c86",
+    "source_path": "docs/DEVICE_MATRIX.md",
+    "source_blob": "d1eaad3486807080a1168f81ab823c9ce01baceb",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "2fac016e3b28e4d9f21390c221cad1df7a382c86",
+    "source_path": "docs/ENGINE_SPLIT_AUDIT.md",
+    "source_blob": "0274e96d2e4f15e0c9c3286141df976a46c718ff",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "2fac016e3b28e4d9f21390c221cad1df7a382c86",
+    "source_path": "docs/EXECUTION_PLAN.md",
+    "source_blob": "f58b2f09976ce59d8a19b04509d82923c8c744c9",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "2fac016e3b28e4d9f21390c221cad1df7a382c86",
+    "source_path": "docs/GUEST_CODE_VALIDATION.md",
+    "source_blob": "55a40b777be30840821371b4354eb68e1bfd02ba",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "2fac016e3b28e4d9f21390c221cad1df7a382c86",
+    "source_path": "docs/INTEGRATED_CANDIDATE.md",
+    "source_blob": "2bfaa5cf4eba3cac98b997f805cba58436b430ee",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "2fac016e3b28e4d9f21390c221cad1df7a382c86",
+    "source_path": "docs/PHASE1_ENGINE_AUDIT.md",
+    "source_blob": "457dd8eef3ba1a264949d888aae91150c91d1f6d",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "2fac016e3b28e4d9f21390c221cad1df7a382c86",
+    "source_path": "docs/PHASE1_PHONE_TEST.md",
+    "source_blob": "b75065329b2e089f547d1adf40ae6ba7589ffdb0",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "2fac016e3b28e4d9f21390c221cad1df7a382c86",
+    "source_path": "docs/PHASE1_VALIDATION.md",
+    "source_blob": "588ff607ecccbc1afa89fbcb94c4c0e710714acd",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "2fac016e3b28e4d9f21390c221cad1df7a382c86",
+    "source_path": "docs/PHASE3_VALIDATION.md",
+    "source_blob": "15ae40af8af4e272e1dce31b6daf60cc30680534",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "2fac016e3b28e4d9f21390c221cad1df7a382c86",
+    "source_path": "docs/PHASE6_VALIDATION.md",
+    "source_blob": "ca375b6e0431625ff7e8ff479db32dea3d7284b1",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "2fac016e3b28e4d9f21390c221cad1df7a382c86",
+    "source_path": "docs/PHONE_TEST_GUIDE.md",
+    "source_blob": "992d0d0238fb5f47792d2eb1ea7313d24b6cdf52",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "2fac016e3b28e4d9f21390c221cad1df7a382c86",
+    "source_path": "docs/PLAN.md",
+    "source_blob": "00ad46c8f975e9f3d9906e133d4dfa5d718a4ae2",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "2fac016e3b28e4d9f21390c221cad1df7a382c86",
+    "source_path": "docs/PRODUCT_PROGRESS.md",
+    "source_blob": "124e47e3263a68c12abab109c89af8fbe4f9d8c3",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "2fac016e3b28e4d9f21390c221cad1df7a382c86",
+    "source_path": "docs/ROADMAP.md",
+    "source_blob": "849278235f2edec28e2a6e1d6b4f4c32c0433f2b",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "2fac016e3b28e4d9f21390c221cad1df7a382c86",
+    "source_path": "docs/RUNTIME_INTEGRATION_VALIDATION.md",
+    "source_blob": "c7a2199e1352f320c55f1e1f07e2bf0834b8d7b3",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "2fac016e3b28e4d9f21390c221cad1df7a382c86",
+    "source_path": "docs/SHORTCUTS.md",
+    "source_blob": "8a989c777a257583634a895d5f8b3993df35c2ac",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "2fac016e3b28e4d9f21390c221cad1df7a382c86",
+    "source_path": "docs/SOURCE_ENGINE_VALIDATION.md",
+    "source_blob": "cef95d379f73611cc474486c0b537b85cfc54993",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "2fac016e3b28e4d9f21390c221cad1df7a382c86",
+    "source_path": "docs/SOURCE_NATIVE_VALIDATION.md",
+    "source_blob": "21e89fe81e1867efeae96e4b31d754c021ced817",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "2fac016e3b28e4d9f21390c221cad1df7a382c86",
+    "source_path": "docs/STATUS.md",
+    "source_blob": "945aa92d2105c7232fe2f3258d1fc56bda46ea48",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "2fac016e3b28e4d9f21390c221cad1df7a382c86",
+    "source_path": "docs/UPDATE_AUTOMATION.md",
+    "source_blob": "eaa64695687d73dde8b4b3be787484757aaae555",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "2fac016e3b28e4d9f21390c221cad1df7a382c86",
+    "source_path": "docs/VALIDATION.md",
+    "source_blob": "b12310210c56fec03129c10f6ace3a318dde6d41",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "2fac016e3b28e4d9f21390c221cad1df7a382c86",
+    "source_path": "docs/engine/ACCEPTANCE_MATRIX.md",
+    "source_blob": "17822bdf682368abdcbd38dfe79052eaa8909ca9",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "2fac016e3b28e4d9f21390c221cad1df7a382c86",
+    "source_path": "docs/engine/ADR-001-provider-strategy.md",
+    "source_blob": "694d1e40b17f1e6d4dc497bc201d0361e5dce300",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "2fac016e3b28e4d9f21390c221cad1df7a382c86",
+    "source_path": "docs/engine/PACKAGE_CLUSTER_FORMAT.md",
+    "source_blob": "ed72e1fe864614d89682128a0afc2013ab0d89cd",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "2fac016e3b28e4d9f21390c221cad1df7a382c86",
+    "source_path": "docs/engine/PROVIDER_CONTRACT.md",
+    "source_blob": "6d8593f02743fd8a10ecb28c04466c4223a7f773",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "2fac016e3b28e4d9f21390c221cad1df7a382c86",
+    "source_path": "docs/engine/THREAT_MODEL.md",
+    "source_blob": "725da09d4e3d74cec671b29ec9a82150ea460816",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "2fac016e3b28e4d9f21390c221cad1df7a382c86",
+    "source_path": "docs/phases/E10_ACTIVATION_PLAN.md",
+    "source_blob": "9ed493373f2eacd0337a54c8d348e7d6f3a648a5",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "2fac016e3b28e4d9f21390c221cad1df7a382c86",
+    "source_path": "docs/phases/E10_ACTIVATION_RESULTS.md",
+    "source_blob": "21e75d0c05d288db37788f650205c14e34d16291",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "2fac016e3b28e4d9f21390c221cad1df7a382c86",
+    "source_path": "docs/phases/E11_ANDROID_PROBE_PLAN.md",
+    "source_blob": "e3b3f046377e668b69f170773b1856872051e405",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "2fac016e3b28e4d9f21390c221cad1df7a382c86",
+    "source_path": "docs/phases/E11_ANDROID_PROBE_RESULTS.md",
+    "source_blob": "f388d62fb2b2366c9d454aa711e02a7f2c60e80b",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "2fac016e3b28e4d9f21390c221cad1df7a382c86",
+    "source_path": "docs/phases/E11_EMULATOR_PLAN.md",
+    "source_blob": "92a9c1727e42990a7ac478cd2cd7402d007a8494",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "2fac016e3b28e4d9f21390c221cad1df7a382c86",
+    "source_path": "docs/phases/E12_EXECUTION_PLAN.md",
+    "source_blob": "2fe8a0a87f17c1ae18a7b21b5ad59022b8e08b2a",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "2fac016e3b28e4d9f21390c221cad1df7a382c86",
+    "source_path": "docs/phases/E13_NATIVE_AB_PLAN.md",
+    "source_blob": "55f250a4302a4fd44cb70473fb6cd85dd5296e07",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "2fac016e3b28e4d9f21390c221cad1df7a382c86",
+    "source_path": "docs/phases/E14_SCOPED_CONTEXT_PLAN.md",
+    "source_blob": "39e847c473a98b9b6a8489b8dd0599d18ac7467a",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "2fac016e3b28e4d9f21390c221cad1df7a382c86",
+    "source_path": "docs/phases/E15_BINDER_PLAN.md",
+    "source_blob": "f2d5dd4a3de9dae6e928f5fd19b04169cbd63fa5",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "2fac016e3b28e4d9f21390c221cad1df7a382c86",
+    "source_path": "docs/phases/E16_BINDER_DISPATCH_PLAN.md",
+    "source_blob": "e41c67974bd4b645554a7dd1df239868c389d07e",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "2fac016e3b28e4d9f21390c221cad1df7a382c86",
+    "source_path": "docs/phases/E17_APPLICATION_ATTACH_PLAN.md",
+    "source_blob": "52a6435cbab3dfda6bbb5794e967b2b7574aa1dc",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "2fac016e3b28e4d9f21390c221cad1df7a382c86",
+    "source_path": "docs/phases/E18_INTEGRATION_PLAN.md",
+    "source_blob": "b8ee8d025ebd5b70a35eda29493c685409f98a53",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "2fac016e3b28e4d9f21390c221cad1df7a382c86",
+    "source_path": "docs/phases/E19_CLONE_STYLE_PLAN.md",
+    "source_blob": "99490daa1fb9add6d44190243a7fed8431e12953",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "2fac016e3b28e4d9f21390c221cad1df7a382c86",
+    "source_path": "docs/phases/E19_RESULTS.md",
+    "source_blob": "db0b46471b3bc0cf8dcac1cc03c7efc5f2940f83",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "2fac016e3b28e4d9f21390c221cad1df7a382c86",
+    "source_path": "docs/phases/E20_ISOLATED_SPLIT_GRAPH_PLAN.md",
+    "source_blob": "714c74e17f7eb49fb6326b1ee70b999bf64aec70",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "2fac016e3b28e4d9f21390c221cad1df7a382c86",
+    "source_path": "docs/phases/E21_SPLIT_ANDROID_PLAN.md",
+    "source_blob": "90272843840606615d01551564721fa42f28953c",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "2fac016e3b28e4d9f21390c221cad1df7a382c86",
+    "source_path": "docs/phases/E21_SPLIT_ANDROID_RESULTS.md",
+    "source_blob": "a2ad963446ef5a8475d588040496b3cf7ccdad7d",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "2fac016e3b28e4d9f21390c221cad1df7a382c86",
+    "source_path": "docs/phases/E22_DEPENDENT_ANDROID_SPLITS_PLAN.md",
+    "source_blob": "6367752d4bc80bc9a620ae5ba60841632222f8a5",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "2fac016e3b28e4d9f21390c221cad1df7a382c86",
+    "source_path": "docs/phases/E22_DEPENDENT_ANDROID_SPLITS_RESULTS.md",
+    "source_blob": "259ffeca84e023e4bb00feb2dd6606b677f7c492",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "2fac016e3b28e4d9f21390c221cad1df7a382c86",
+    "source_path": "docs/phases/E23_SIGNED_CONFIG_SPLIT_PLAN.md",
+    "source_blob": "d454e1eb5d54e4f684d1ed0f25c5a706e00147c1",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "2fac016e3b28e4d9f21390c221cad1df7a382c86",
+    "source_path": "docs/phases/E23_SIGNED_CONFIG_SPLIT_RESULTS.md",
+    "source_blob": "17a9858e2aa7eb68ccf2cb8dbf63e71f0c1e7b6e",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "2fac016e3b28e4d9f21390c221cad1df7a382c86",
+    "source_path": "docs/phases/E24_SYNTHETIC_SCREEN_PLAN.md",
+    "source_blob": "62aa47e5a5be3502441476272ecfb08667f156a9",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "2fac016e3b28e4d9f21390c221cad1df7a382c86",
+    "source_path": "docs/phases/E24_SYNTHETIC_SCREEN_RESULTS.md",
+    "source_blob": "d4f546c28197f5c686ad930a66179a3a9bee8c09",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "2fac016e3b28e4d9f21390c221cad1df7a382c86",
+    "source_path": "docs/phases/E25_PRIVATE_COMPONENT_PREFLIGHT_PLAN.md",
+    "source_blob": "94df8db6145cd0365ccb7fa49310dbdb2ab7f887",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "2fac016e3b28e4d9f21390c221cad1df7a382c86",
+    "source_path": "docs/phases/E25_PRIVATE_COMPONENT_PREFLIGHT_RESULTS.md",
+    "source_blob": "2e2f3a98adfab0b0ac9b177edb2b41606201b578",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "2fac016e3b28e4d9f21390c221cad1df7a382c86",
+    "source_path": "docs/phases/E26_BACKGROUND_JOURNAL_RECOVERY_PLAN.md",
+    "source_blob": "5f14733c847a022fc287be6f70f4b7bb7cd62853",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "2fac016e3b28e4d9f21390c221cad1df7a382c86",
+    "source_path": "docs/phases/E27_ROOM_WORKER_RECOVERY_PLAN.md",
+    "source_blob": "b18fe22d5d75b7296d516546c31f0e2803f44364",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "2fac016e3b28e4d9f21390c221cad1df7a382c86",
+    "source_path": "docs/phases/E27_ROOM_WORKER_RECOVERY_RESULTS.md",
+    "source_blob": "aa3a5ddea84d7d7458e01f90cb35484c3b575336",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "2fac016e3b28e4d9f21390c221cad1df7a382c86",
+    "source_path": "docs/phases/E28_WORKMANAGER_SCHEDULING_PLAN.md",
+    "source_blob": "0cc46359edcd559d72fe45ec9fd8deb8eb2f63b5",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "2fac016e3b28e4d9f21390c221cad1df7a382c86",
+    "source_path": "docs/phases/E28_WORKMANAGER_SCHEDULING_RESULTS.md",
+    "source_blob": "f065319d61964442cb043e66ea77f912ac05389d",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "2fac016e3b28e4d9f21390c221cad1df7a382c86",
+    "source_path": "docs/phases/E29_PRIVATE_COMPONENT_DISPATCH_PLAN.md",
+    "source_blob": "b8e4bd977cf0efd3d867a5e1467afaefae2bf5c7",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "2fac016e3b28e4d9f21390c221cad1df7a382c86",
+    "source_path": "docs/phases/E29_PRIVATE_COMPONENT_DISPATCH_RESULTS.md",
+    "source_blob": "1f200069c006ebcc12a142b9ab49b80100ab2d2a",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "2fac016e3b28e4d9f21390c221cad1df7a382c86",
+    "source_path": "docs/phases/E30_PROVIDER_FEASIBILITY_PLAN.md",
+    "source_blob": "120560e528715b792fcd504419cbeab52b55be8a",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "2fac016e3b28e4d9f21390c221cad1df7a382c86",
+    "source_path": "docs/phases/E30_PROVIDER_FEASIBILITY_RESULTS.md",
+    "source_blob": "732d8910d9d545d530443cfd097d2ed60008aaf2",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "2fac016e3b28e4d9f21390c221cad1df7a382c86",
+    "source_path": "docs/phases/E31_PROVIDER_SHORTLIST_PLAN.md",
+    "source_blob": "917ee3c5ea05b26ed93c7292659deff060abecb3",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "2fac016e3b28e4d9f21390c221cad1df7a382c86",
+    "source_path": "docs/phases/E31_PROVIDER_SHORTLIST_RESULTS.md",
+    "source_blob": "c71d4bd9895cd81c800c2d404e1a5571554748c5",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "2fac016e3b28e4d9f21390c221cad1df7a382c86",
+    "source_path": "docs/phases/E32_CANDIDATE_SOURCE_PROVENANCE_PLAN.md",
+    "source_blob": "ad3a3c5c6b1360b150bfedd650e069ca587e106c",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "2fac016e3b28e4d9f21390c221cad1df7a382c86",
+    "source_path": "docs/phases/E32_CANDIDATE_SOURCE_PROVENANCE_RESULTS.md",
+    "source_blob": "99750e27c8a66ed10293540fbd7e0750c9629858",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "2fac016e3b28e4d9f21390c221cad1df7a382c86",
+    "source_path": "docs/phases/E33_SOURCE_ACQUISITION_PLAN.md",
+    "source_blob": "c7aa64fdcd55a2d7a5b2f66a30cc22071d5d4ba8",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "2fac016e3b28e4d9f21390c221cad1df7a382c86",
+    "source_path": "docs/phases/E33_SOURCE_ACQUISITION_RESULTS.md",
+    "source_blob": "1562f5c9a7ac17a42112bf2891b814d3aa3aa71a",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "2fac016e3b28e4d9f21390c221cad1df7a382c86",
+    "source_path": "docs/phases/E34_FIRST_PARTY_ENGINE_ARCHITECTURE_PLAN.md",
+    "source_blob": "9d97efea86862db959a0416f64cda2a9ca5a6455",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "2fac016e3b28e4d9f21390c221cad1df7a382c86",
+    "source_path": "docs/phases/E34_FIRST_PARTY_ENGINE_ARCHITECTURE_RESULTS.md",
+    "source_blob": "53f28b2be841d536de0f71c333e2b9c8fa73e93a",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "2fac016e3b28e4d9f21390c221cad1df7a382c86",
+    "source_path": "docs/phases/E35_PROVIDER_CONTRACT_THREAT_MODEL_PLAN.md",
+    "source_blob": "c59aa37193f7d8cf1a9816736051d8896336c5b6",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "2fac016e3b28e4d9f21390c221cad1df7a382c86",
+    "source_path": "docs/phases/E35_PROVIDER_CONTRACT_THREAT_MODEL_RESULTS.md",
+    "source_blob": "02e4f126d138a845d465aa4c38d11bfab720f82c",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "2fac016e3b28e4d9f21390c221cad1df7a382c86",
+    "source_path": "docs/phases/E36_PRIVATE_CLUSTER_STORE_PLAN.md",
+    "source_blob": "73e8d3d6adfe0c099819e31ab6c2cab0100f0754",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "2fac016e3b28e4d9f21390c221cad1df7a382c86",
+    "source_path": "docs/phases/E36_PRIVATE_CLUSTER_STORE_RESULTS.md",
+    "source_blob": "965352f1bc8e97d3148244e4be99ca5465db7281",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "2fac016e3b28e4d9f21390c221cad1df7a382c86",
+    "source_path": "docs/phases/E37_PROVIDER_CAPABILITY_GATING_PLAN.md",
+    "source_blob": "5ac45d50d0547c6a479f2ca6a6b3efddf6763822",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "2fac016e3b28e4d9f21390c221cad1df7a382c86",
+    "source_path": "docs/phases/E37_PROVIDER_CAPABILITY_GATING_RESULTS.md",
+    "source_blob": "6648fa2c3f2da9c269b02170e118970d3d951552",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "2fac016e3b28e4d9f21390c221cad1df7a382c86",
+    "source_path": "docs/phases/E38_CLUSTER_REFERENCE_RETENTION_PLAN.md",
+    "source_blob": "ba4ede87c2ac5d9f72538efdc05af05c10b57eca",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "2fac016e3b28e4d9f21390c221cad1df7a382c86",
+    "source_path": "docs/phases/E38_CLUSTER_REFERENCE_RETENTION_RESULTS.md",
+    "source_blob": "02f376c36a4c3863ba5e54d93891617a79f0234f",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "2fac016e3b28e4d9f21390c221cad1df7a382c86",
+    "source_path": "docs/phases/E39_ROOM_CLUSTER_OWNERSHIP_PLAN.md",
+    "source_blob": "92f747ef2a026dddf151ca846d879b85e8a5a5c7",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "2fac016e3b28e4d9f21390c221cad1df7a382c86",
+    "source_path": "docs/phases/E39_ROOM_CLUSTER_OWNERSHIP_RESULTS.md",
+    "source_blob": "d9f46269c3dc3644d16e70a43f918417cec2cc1c",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "2fac016e3b28e4d9f21390c221cad1df7a382c86",
+    "source_path": "docs/phases/E40_CLONE_CLUSTER_OWNERSHIP_PLAN.md",
+    "source_blob": "332aa47629c04a391f9acb1494ab0d0307f54cda",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "2fac016e3b28e4d9f21390c221cad1df7a382c86",
+    "source_path": "docs/phases/E40_CLONE_CLUSTER_OWNERSHIP_RESULTS.md",
+    "source_blob": "241e86d69c72b4aa523900980d05620271369d10",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "2fac016e3b28e4d9f21390c221cad1df7a382c86",
+    "source_path": "docs/phases/E41_UPDATE_TASK_CLUSTER_OWNERSHIP_PLAN.md",
+    "source_blob": "924ce94ff2207d97801a7ea3880f32d42f00e292",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "2fac016e3b28e4d9f21390c221cad1df7a382c86",
+    "source_path": "docs/phases/E41_UPDATE_TASK_CLUSTER_OWNERSHIP_RESULTS.md",
+    "source_blob": "40b44d60c3637c4bb967f0c5331f36b89f618aa4",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "2fac016e3b28e4d9f21390c221cad1df7a382c86",
+    "source_path": "docs/phases/E42_ATOMIC_JOURNAL_OWNER_TRANSITIONS_PLAN.md",
+    "source_blob": "29ff95a9b04390493db51b18c75591a66146a01c",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "2fac016e3b28e4d9f21390c221cad1df7a382c86",
+    "source_path": "docs/phases/E42_ATOMIC_JOURNAL_OWNER_TRANSITIONS_RESULTS.md",
+    "source_blob": "f0d81eecbf6f0d715bfa48b9007d93b362dfd44a",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "2fac016e3b28e4d9f21390c221cad1df7a382c86",
+    "source_path": "docs/phases/E43_ATOMIC_RETAINED_ENQUEUE_PLAN.md",
+    "source_blob": "cef9550538340695d0dd20fde7b35e47b3d7043d",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "2fac016e3b28e4d9f21390c221cad1df7a382c86",
+    "source_path": "docs/phases/E43_ATOMIC_RETAINED_ENQUEUE_RESULTS.md",
+    "source_blob": "46b23ef23f20832be69be1147ca02f24c4cca62a",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "2fac016e3b28e4d9f21390c221cad1df7a382c86",
+    "source_path": "docs/phases/E44_ATOMIC_BATCH_RETAINED_ENQUEUE_PLAN.md",
+    "source_blob": "932058c713c329d988e1e736aa849cc106a5e0b0",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "2fac016e3b28e4d9f21390c221cad1df7a382c86",
+    "source_path": "docs/phases/E44_ATOMIC_BATCH_RETAINED_ENQUEUE_RESULTS.md",
+    "source_blob": "4b7ac8ff4b2020dcb82fdf724443ab6789bd7b01",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "2fac016e3b28e4d9f21390c221cad1df7a382c86",
+    "source_path": "docs/phases/E44_DURABLE_RETAINED_SOURCE_GUARD_PLAN.md",
+    "source_blob": "7021ed8766cb442de232997a5c422dda9d4183f5",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "2fac016e3b28e4d9f21390c221cad1df7a382c86",
+    "source_path": "docs/phases/E45_RETAINED_BATCH_SOURCE_QUARANTINE_PLAN.md",
+    "source_blob": "9cc61eade008b74a3e9ae938895c0ae4469f1e67",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "2fac016e3b28e4d9f21390c221cad1df7a382c86",
+    "source_path": "docs/phases/E45_RETAINED_BATCH_SOURCE_QUARANTINE_RESULTS.md",
+    "source_blob": "9dc8addca477779db7777901907f3b2d0d79f05a",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "2fac016e3b28e4d9f21390c221cad1df7a382c86",
+    "source_path": "docs/phases/E46_FOREGROUND_SOURCE_AUTHORITY_PLAN.md",
+    "source_blob": "1677f5911cef87f14f7f7c75ac35f6e754286ec5",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "2fac016e3b28e4d9f21390c221cad1df7a382c86",
+    "source_path": "docs/phases/E47_ORIGINAL_SOURCE_CONFIRMATION_PLAN.md",
+    "source_blob": "6cb82804a4535df80dcc2bed8a5ac3653c48c922",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "2fac016e3b28e4d9f21390c221cad1df7a382c86",
+    "source_path": "docs/phases/E48_RETAINED_RECOVERY_QUARANTINE_PLAN.md",
+    "source_blob": "693643f3a2c29eabc0261341c3fc912272c4c565",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "2fac016e3b28e4d9f21390c221cad1df7a382c86",
+    "source_path": "docs/phases/E49_SOURCE_AUTHORITY_GATES_INTEGRATION_PLAN.md",
+    "source_blob": "1eb0ab697d9f728bb5967042ccb9d3fd276bf4b6",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "2fac016e3b28e4d9f21390c221cad1df7a382c86",
+    "source_path": "docs/phases/E50_PREVIEW_PRIVATE_SOURCE_AUTHORITY_PLAN.md",
+    "source_blob": "17fc4fb7570ce49b5f9fc1a4aa3d9590244aadb1",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "2fac016e3b28e4d9f21390c221cad1df7a382c86",
+    "source_path": "docs/phases/E51_RETAINED_ENQUEUE_ORIGINAL_SOURCE_CONFLICT_PLAN.md",
+    "source_blob": "1f16c9176685bb27475f1177c8d764d6e7b89ee0",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "2fac016e3b28e4d9f21390c221cad1df7a382c86",
+    "source_path": "docs/phases/E52_ENGINE_SCOPED_QUEUE_RECOVERY_PLAN.md",
+    "source_blob": "3d08092ea63af0fd196d978fc97e06967f4451a0",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "2fac016e3b28e4d9f21390c221cad1df7a382c86",
+    "source_path": "docs/phases/E52_ENGINE_SCOPED_QUEUE_RECOVERY_RESULTS.md",
+    "source_blob": "101f26d77e1fe3718400cbd7b3573deb91f489c3",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "2fac016e3b28e4d9f21390c221cad1df7a382c86",
+    "source_path": "docs/phases/E53_BACKGROUND_PRIVATE_SOURCE_RECOVERY_PLAN.md",
+    "source_blob": "af997db4671b31b3e3aa77504aa5432dbfba1876",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "2fac016e3b28e4d9f21390c221cad1df7a382c86",
+    "source_path": "docs/phases/E53_BACKGROUND_PRIVATE_SOURCE_RECOVERY_RESULTS.md",
+    "source_blob": "202c36aeb795ca3b9875edacc6192b50c746a2c3",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "2fac016e3b28e4d9f21390c221cad1df7a382c86",
+    "source_path": "docs/phases/E54_UNBLOCKED_QUEUE_WORK_SELECTION_PLAN.md",
+    "source_blob": "9d33944df4961bb6a2343ac674ab653707a50abb",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "2fac016e3b28e4d9f21390c221cad1df7a382c86",
+    "source_path": "docs/phases/E54_UNBLOCKED_QUEUE_WORK_SELECTION_RESULTS.md",
+    "source_blob": "54ade24ecdd8770b5b12e737407c7ac14b6dc132",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "2fac016e3b28e4d9f21390c221cad1df7a382c86",
+    "source_path": "docs/phases/E55_ENGINE_SCOPED_QUEUE_CONTROLS_PLAN.md",
+    "source_blob": "d7fdb67bebcdcb2e694b266862284bfa3e02e43b",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "2fac016e3b28e4d9f21390c221cad1df7a382c86",
+    "source_path": "docs/phases/E55_ENGINE_SCOPED_QUEUE_CONTROLS_RESULTS.md",
+    "source_blob": "7d811e8056a111c669640186a9cb27e0778e15df",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "2fac016e3b28e4d9f21390c221cad1df7a382c86",
+    "source_path": "docs/phases/E56_STOP_CLONE_IDENTITY_REVALIDATION_PLAN.md",
+    "source_blob": "da3d66a233115f6b8c623b5e679ab5901f5c6d35",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "2fac016e3b28e4d9f21390c221cad1df7a382c86",
+    "source_path": "docs/phases/E56_STOP_CLONE_IDENTITY_REVALIDATION_RESULTS.md",
+    "source_blob": "422ca6925feee3635cd98e5495e5376b3050ccda",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "2fac016e3b28e4d9f21390c221cad1df7a382c86",
+    "source_path": "docs/phases/E57_CLONE_PRESENTATION_OPERATION_LOCK_PLAN.md",
+    "source_blob": "04ec0fbdd1fcb5bb0e893238ae19b00d915b61a7",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "2fac016e3b28e4d9f21390c221cad1df7a382c86",
+    "source_path": "docs/phases/E57_CLONE_PRESENTATION_OPERATION_LOCK_RESULTS.md",
+    "source_blob": "7ef721db63ab9f8885b9558b5012e809db1bf000",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "2fac016e3b28e4d9f21390c221cad1df7a382c86",
+    "source_path": "docs/phases/E58_CLONE_CLUSTER_ASSOCIATION_LOCK_PLAN.md",
+    "source_blob": "7f5df3a27fae90e0745f4dc2aa43d9afdf307852",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "2fac016e3b28e4d9f21390c221cad1df7a382c86",
+    "source_path": "docs/phases/E58_CLONE_CLUSTER_ASSOCIATION_LOCK_RESULTS.md",
+    "source_blob": "71964c87463fe2f69e409a0bb486baf951f9c235",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "2fac016e3b28e4d9f21390c221cad1df7a382c86",
+    "source_path": "docs/phases/E59_DELETE_LOCKTIME_IDENTITY_PLAN.md",
+    "source_blob": "4bb239f811ed1d0d814cfcf665e3b5aad3c2c1fa",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "2fac016e3b28e4d9f21390c221cad1df7a382c86",
+    "source_path": "docs/phases/E59_DELETE_LOCKTIME_IDENTITY_RESULTS.md",
+    "source_blob": "eda253328f8ec7d6a099c33a968036470ce37d98",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "2fac016e3b28e4d9f21390c221cad1df7a382c86",
+    "source_path": "docs/phases/E60_POSITIVE_GUEST_STOP_READBACK_PLAN.md",
+    "source_blob": "0843e5e96a4714b5f1926c58be4000d22ce62f02",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "2fac016e3b28e4d9f21390c221cad1df7a382c86",
+    "source_path": "docs/phases/E60_POSITIVE_GUEST_STOP_READBACK_RESULTS.md",
+    "source_blob": "c497b2166814946f05de39a3b75921872a1863c4",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "2fac016e3b28e4d9f21390c221cad1df7a382c86",
+    "source_path": "docs/phases/E61_GUEST_STOP_IDENTITY_CONTINUITY_PLAN.md",
+    "source_blob": "c370585f2afdfb2ebf3058a639bb1b1073db7fed",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "2fac016e3b28e4d9f21390c221cad1df7a382c86",
+    "source_path": "docs/phases/E61_GUEST_STOP_IDENTITY_CONTINUITY_RESULTS.md",
+    "source_blob": "7a83de683c3fb14e7bfc741c30dd1cb135ec05d6",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "2fac016e3b28e4d9f21390c221cad1df7a382c86",
+    "source_path": "docs/phases/E62_READY_GUEST_LAUNCH_GATE_PLAN.md",
+    "source_blob": "75de4223aa625e678aef95a7a206186fd3aff66a",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "2fac016e3b28e4d9f21390c221cad1df7a382c86",
+    "source_path": "docs/phases/E62_READY_GUEST_LAUNCH_GATE_RESULTS.md",
+    "source_blob": "cb6364b6d9bec7c577fd6afb6e6b66d07993e1c7",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "2fac016e3b28e4d9f21390c221cad1df7a382c86",
+    "source_path": "docs/phases/E63_READY_SHARED_MUTATIONS_PLAN.md",
+    "source_blob": "e0f8b62ea49fbdf1c2225f04cd81032a99c92050",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "2fac016e3b28e4d9f21390c221cad1df7a382c86",
+    "source_path": "docs/phases/E63_READY_SHARED_MUTATIONS_RESULTS.md",
+    "source_blob": "60e31de80433fdde0df580a94b2033a7dd366972",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "2fac016e3b28e4d9f21390c221cad1df7a382c86",
+    "source_path": "docs/phases/E64_UNKNOWN_GUEST_LAUNCH_RETRY_PLAN.md",
+    "source_blob": "67bb19b3db9b58f5489317143bfbba0854d209ea",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "2fac016e3b28e4d9f21390c221cad1df7a382c86",
+    "source_path": "docs/phases/E64_UNKNOWN_GUEST_LAUNCH_RETRY_RESULTS.md",
+    "source_blob": "bc643d61d4f5fdc8a5f99f2b2eb6ea535005eead",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "2fac016e3b28e4d9f21390c221cad1df7a382c86",
+    "source_path": "docs/phases/E65_NATIVE_GUEST_DELETE_IDENTITY_PLAN.md",
+    "source_blob": "81f9167ef3314d48823ef37404aa158ebf4f4c24",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "2fac016e3b28e4d9f21390c221cad1df7a382c86",
+    "source_path": "docs/phases/E65_NATIVE_GUEST_DELETE_IDENTITY_RESULTS.md",
+    "source_blob": "ef33fccdadedceda1593e390c75fe62d8f13d44b",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "2fac016e3b28e4d9f21390c221cad1df7a382c86",
+    "source_path": "docs/phases/E66_SHARED_UPDATE_DISPATCH_REVALIDATION_PLAN.md",
+    "source_blob": "dda1d3adbf924bfd2f2ccc61db13dda72eb69ec0",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "2fac016e3b28e4d9f21390c221cad1df7a382c86",
+    "source_path": "docs/phases/E66_SHARED_UPDATE_DISPATCH_REVALIDATION_RESULTS.md",
+    "source_blob": "a08e66c1197ff7fe55edeba6fe039357866d5bad",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "2fac016e3b28e4d9f21390c221cad1df7a382c86",
+    "source_path": "docs/phases/E67_CREATE_PREINSTALL_PEER_GUARD_PLAN.md",
+    "source_blob": "12550e2a9634e7c6ccea0ee5cf89cc686ffeb6c2",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "2fac016e3b28e4d9f21390c221cad1df7a382c86",
+    "source_path": "docs/phases/E67_CREATE_PREINSTALL_PEER_GUARD_RESULTS.md",
+    "source_blob": "5730e358cc13700afcc0a742f6d436f4e1e31bd0",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "2fac016e3b28e4d9f21390c221cad1df7a382c86",
+    "source_path": "docs/phases/E68_PRIVATE_SIGNED_COMPONENT_CATALOG_PLAN.md",
+    "source_blob": "cd861a15c0497e5d7088f4ecd77f4647a481a1c5",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "2fac016e3b28e4d9f21390c221cad1df7a382c86",
+    "source_path": "docs/phases/E69_SOURCE_LOADER_SIGNED_COMPONENT_READBACK_PLAN.md",
+    "source_blob": "1045bc133a56a3a367fef2951f23ebf15eb40efe",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "2fac016e3b28e4d9f21390c221cad1df7a382c86",
+    "source_path": "docs/phases/E70_SIGNED_EXPLICIT_ACTIVITY_SELECTION_PLAN.md",
+    "source_blob": "e2f0942b63ab5fb9fb1f3e8ce29b552c4c389d96",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "2fac016e3b28e4d9f21390c221cad1df7a382c86",
+    "source_path": "docs/phases/E70_SIGNED_EXPLICIT_ACTIVITY_SELECTION_RESULTS.md",
+    "source_blob": "815229d26133765e861bd34bb24d55f995cf8467",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "2fac016e3b28e4d9f21390c221cad1df7a382c86",
+    "source_path": "docs/phases/E71_SIGNED_ACTIVITY_PROCESS_SAFETY_PLAN.md",
+    "source_blob": "ce5c068c0696109cf91b221b0b4d417e48adba6c",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "2fac016e3b28e4d9f21390c221cad1df7a382c86",
+    "source_path": "docs/phases/E71_SIGNED_ACTIVITY_PROCESS_SAFETY_RESULTS.md",
+    "source_blob": "c06c56d29b01ad1edcb2f9ab5bd20fed0529bd3b",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "2fac016e3b28e4d9f21390c221cad1df7a382c86",
+    "source_path": "docs/phases/E72_SIGNED_APP_PROCESS_INHERITANCE_PLAN.md",
+    "source_blob": "c28bcb1110bd94716ced8dc34eaf4f0e63373f6e",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "2fac016e3b28e4d9f21390c221cad1df7a382c86",
+    "source_path": "docs/phases/E72_SIGNED_APP_PROCESS_INHERITANCE_RESULTS.md",
+    "source_blob": "cfb3f116b2697848231615cba9c1d0b9206b561f",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "2fac016e3b28e4d9f21390c221cad1df7a382c86",
+    "source_path": "docs/phases/E73_PRIVATE_ACTIVITY_BYTECODE_PREFLIGHT_PLAN.md",
+    "source_blob": "6081fe5ce3a94ce8640897124fc13cd5e65bfaf2",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "2fac016e3b28e4d9f21390c221cad1df7a382c86",
+    "source_path": "docs/phases/E73_PRIVATE_ACTIVITY_BYTECODE_PREFLIGHT_RESULTS.md",
+    "source_blob": "073aee038bad81c4555dd6d5ecd6a14b54dfe268",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "2fac016e3b28e4d9f21390c221cad1df7a382c86",
+    "source_path": "docs/phases/E74_SIGNED_PRIVATE_ACTIVITY_CLASS_PROBE_PLAN.md",
+    "source_blob": "bda482a7bfb72359dd6517dba13ebb7522b4e046",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "2fac016e3b28e4d9f21390c221cad1df7a382c86",
+    "source_path": "docs/phases/E74_SIGNED_PRIVATE_ACTIVITY_CLASS_PROBE_RESULTS.md",
+    "source_blob": "05c7d87076e27f53638c3a4c1856b1ab8c19c34e",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "2fac016e3b28e4d9f21390c221cad1df7a382c86",
+    "source_path": "docs/phases/E75_ACTIVITY_CONSTRUCTOR_PREFLIGHT_PLAN.md",
+    "source_blob": "ab00ca77dfecae7bf5e601543c5999a0f09f25b4",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "2fac016e3b28e4d9f21390c221cad1df7a382c86",
+    "source_path": "docs/phases/E75_ACTIVITY_CONSTRUCTOR_PREFLIGHT_RESULTS.md",
+    "source_blob": "5ce87caa9a05980debfd11fab47a8f62aa0847c9",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "2fac016e3b28e4d9f21390c221cad1df7a382c86",
+    "source_path": "docs/phases/E76_ACTIVITY_PREFLIGHT_NO_CLASS_INIT_PLAN.md",
+    "source_blob": "debd89dcf429edb72874b30ef95a2a84c5f9c804",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "2fac016e3b28e4d9f21390c221cad1df7a382c86",
+    "source_path": "docs/phases/E77_EMULATOR_ACTIVITY_PREFLIGHT_PROOF_PLAN.md",
+    "source_blob": "34628d3c01e037ca4ebe328685afe6c82297c5c9",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "2fac016e3b28e4d9f21390c221cad1df7a382c86",
+    "source_path": "docs/phases/E77_EMULATOR_ACTIVITY_PREFLIGHT_PROOF_RESULTS.md",
+    "source_blob": "085a08abdcd66bc812023eb221276540ab3a0c7b",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "2fac016e3b28e4d9f21390c221cad1df7a382c86",
+    "source_path": "docs/phases/E78_SYNTHETIC_APPLICATION_LIFECYCLE_PLAN.md",
+    "source_blob": "4c889924257b09c4fb0de4ba308ca5db6a62ce8a",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "2fac016e3b28e4d9f21390c221cad1df7a382c86",
+    "source_path": "docs/phases/E78_SYNTHETIC_APPLICATION_LIFECYCLE_RESULTS.md",
+    "source_blob": "7f0a5930e19ab4fccc0853b69523cd48f62f5d96",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "2fac016e3b28e4d9f21390c221cad1df7a382c86",
+    "source_path": "docs/phases/E79_SYNTHETIC_PROCESS_RESTART_DURABILITY_PLAN.md",
+    "source_blob": "cdb49d10327e297b59fea2163f5a011bfd0ac2d5",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "2fac016e3b28e4d9f21390c221cad1df7a382c86",
+    "source_path": "docs/phases/E79_SYNTHETIC_PROCESS_RESTART_DURABILITY_RESULTS.md",
+    "source_blob": "dee9294cae0c93f3b47e865a3fd3ac2e48a56e3a",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "2fac016e3b28e4d9f21390c221cad1df7a382c86",
+    "source_path": "docs/phases/E80_SIGNED_PRIVATE_ACTIVITY_CONSTRUCTION_PLAN.md",
+    "source_blob": "69e1b6969a1d20c3c0f7f0b48084141a2b5a6a6e",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "2fac016e3b28e4d9f21390c221cad1df7a382c86",
+    "source_path": "docs/phases/E80_SIGNED_PRIVATE_ACTIVITY_CONSTRUCTION_RESULTS.md",
+    "source_blob": "f8a09a6e7fe0e67b3ba5b94e584aacd943b003d8",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "2fac016e3b28e4d9f21390c221cad1df7a382c86",
+    "source_path": "docs/phases/E81_PRIVATE_ACTIVITY_SCOPED_METHOD_PLAN.md",
+    "source_blob": "9ae6fca8a213c2516d7533471fa6b82c2f3c38c4",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "2fac016e3b28e4d9f21390c221cad1df7a382c86",
+    "source_path": "docs/phases/E81_PRIVATE_ACTIVITY_SCOPED_METHOD_RESULTS.md",
+    "source_blob": "485ae33bf4c58926c4cb8354b8359782d5c92596",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "2fac016e3b28e4d9f21390c221cad1df7a382c86",
+    "source_path": "docs/phases/E82_PUBLIC_COMPONENT_FACTORY_FEASIBILITY_PLAN.md",
+    "source_blob": "6ce17a590cdf1b4b7a0473d8ef83bb347ef9c95e",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "2fac016e3b28e4d9f21390c221cad1df7a382c86",
+    "source_path": "docs/phases/E82_PUBLIC_COMPONENT_FACTORY_FEASIBILITY_RESULTS.md",
+    "source_blob": "effbb5e4fb62ea887e922917b8e8dba56e0dc3fb",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "2fac016e3b28e4d9f21390c221cad1df7a382c86",
+    "source_path": "docs/phases/E83_PRODUCTION_SPLIT_PROVIDER_CONTRACT_PLAN.md",
+    "source_blob": "9184defd4305e388817f547f6ef1ffec3581cd6c",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "2fac016e3b28e4d9f21390c221cad1df7a382c86",
+    "source_path": "docs/phases/E83_PRODUCTION_SPLIT_PROVIDER_CONTRACT_RESULTS.md",
+    "source_blob": "ecda351250dfe055b771872bfc87c8c0cca79014",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "2fac016e3b28e4d9f21390c221cad1df7a382c86",
+    "source_path": "docs/phases/E84_ALTERNATIVE_SPLIT_PROVIDER_FEASIBILITY_PLAN.md",
+    "source_blob": "6fccbfb1d8bcbef38cd568ca78e9109056355a78",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "2fac016e3b28e4d9f21390c221cad1df7a382c86",
+    "source_path": "docs/phases/E84_ALTERNATIVE_SPLIT_PROVIDER_FEASIBILITY_RESULTS.md",
+    "source_blob": "72bab28ef76dc18c80554dc08f0c8377945ec9a6",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "2fac016e3b28e4d9f21390c221cad1df7a382c86",
+    "source_path": "docs/phases/E85_MANAGED_GUEST_ENGINE_SPLIT_ORCHESTRATION_PLAN.md",
+    "source_blob": "5f3600f7690cbe73809dfb1f225c9086fc9c6915",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "2fac016e3b28e4d9f21390c221cad1df7a382c86",
+    "source_path": "third_party/apksig/NOTICE.md",
+    "source_blob": "0cda112d9307b865174a68cb85f05b2d6ee38b8f",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "2fac016e3b28e4d9f21390c221cad1df7a382c86",
+    "source_path": "third_party/source-engine/NOTICE.md",
+    "source_blob": "d763c48e324fc1357ca95d44b8d7d48a50091f06",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  },
+  {
+    "source_commit": "2fac016e3b28e4d9f21390c221cad1df7a382c86",
+    "source_path": "third_party/spacecore/NOTICE.md",
+    "source_blob": "2ae6df041dd727260d3a4d1b8143d0c159996014",
+    "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE"
+  }
+]

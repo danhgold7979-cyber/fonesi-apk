@@ -1,3 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Fonesi</string>
+    <string name="foundation_label">NỀN TẢNG ĐANG XÂY DỰNG</string>
+    <string name="screen_title">Quản lý bản clone</string>
+    <string name="build_limit">Bản nền tảng phục vụ kiểm tra build. Chưa thể tạo hoặc chạy bản clone; chưa xác minh trên thiết bị.</string>
+    <string name="empty_title">Chưa đọc danh sách bản clone</string>
+    <string name="empty_description">Bản nền chưa đọc dữ liệu bản clone trên thiết bị. Không có dữ liệu mẫu hoặc danh sách ứng dụng giả. Thao tác vẫn khóa cho đến khi đủ bằng chứng bộ máy clone, xác thực và quyền thao tác hiện tại.</string>
+    <string name="provider_unavailable">Chưa có bộ máy clone được kiểm chứng</string>
+    <string name="action_create">Tạo bản sạch</string>
+    <string name="action_open">Mở bản clone</string>
+    <string name="action_stop">Dừng bản clone</string>
+    <string name="action_delete">Xóa bản clone</string>
+    <string name="create_unavailable">Tạo bản sạch. Chưa có bộ máy clone được kiểm chứng</string>
+    <string name="open_unavailable">Mở bản clone. Chưa có bộ máy clone được kiểm chứng</string>
+    <string name="stop_unavailable">Dừng bản clone. Chưa có bộ máy clone được kiểm chứng</string>
+    <string name="delete_unavailable">Xóa bản clone. Chưa có bộ máy clone được kiểm chứng</string>
+    <string name="privacy_note">Không nhập mật khẩu, mã OTP hoặc phiên đăng nhập ở đây. Khi có bản thử đủ điều kiện, bạn sẽ tự đăng nhập trong ứng dụng trên thiết bị của mình.</string>
 </resources>

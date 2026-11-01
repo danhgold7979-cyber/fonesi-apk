@@ -1,0 +1,1108 @@
+{
+  "audit_commit": "b409f6056b3add75c71242c6751f97859f518f65",
+  "proposal_only": true,
+  "executed_deletions": 0,
+  "legacy_files": [
+    {
+      "path": "apk-runtime/build.gradle.kts",
+      "git_blob": "99153bebf2fcc5d50d4c41a6a9d4be1a2873fc53",
+      "mode": "100644",
+      "bytes": 1461,
+      "role": "legacy-build-orchestration",
+      "disposition": "RETAIN_PENDING_ROOT_REVIEW_AND_EQUIVALENCE"
+    },
+    {
+      "path": "apk-runtime/src/main/kotlin/vn/fonesi/apk/ApkSetAuditor.kt",
+      "git_blob": "6ed5900dcc77098567e73fbb11cb297817301a15",
+      "mode": "100644",
+      "bytes": 9809,
+      "role": "legacy-implementation-or-probe",
+      "disposition": "RETAIN_PENDING_ROOT_REVIEW_AND_EQUIVALENCE"
+    },
+    {
+      "path": "apk-runtime/src/main/kotlin/vn/fonesi/apk/PrivateApkStore.kt",
+      "git_blob": "e84da535f75e0a4d1180e0832da21efe9d51713d",
+      "mode": "100644",
+      "bytes": 9543,
+      "role": "legacy-implementation-or-probe",
+      "disposition": "RETAIN_PENDING_ROOT_REVIEW_AND_EQUIVALENCE"
+    },
+    {
+      "path": "apk-runtime/src/test/kotlin/vn/fonesi/apk/ApkSetAuditorTest.kt",
+      "git_blob": "af787f4eeabff5fb5de86730d5719dd57afc5637",
+      "mode": "100644",
+      "bytes": 6716,
+      "role": "legacy-regression-oracle",
+      "disposition": "RETAIN_PENDING_ROOT_REVIEW_AND_EQUIVALENCE"
+    },
+    {
+      "path": "apk-runtime/src/test/kotlin/vn/fonesi/apk/PrivateApkStoreTest.kt",
+      "git_blob": "f3ee1086f104aea629e9e34ceb9c4321a7b3d198",
+      "mode": "100644",
+      "bytes": 9676,
+      "role": "legacy-regression-oracle",
+      "disposition": "RETAIN_PENDING_ROOT_REVIEW_AND_EQUIVALENCE"
+    },
+    {
+      "path": "app/build.gradle.kts",
+      "git_blob": "bbbf0c2ea3027886a1b6b3a96cacc3a7e1116bfc",
+      "mode": "100644",
+      "bytes": 4453,
+      "role": "legacy-build-orchestration",
+      "disposition": "RETAIN_PENDING_ROOT_REVIEW_AND_EQUIVALENCE"
+    },
+    {
+      "path": "app/schemas/vn.fonesi.app.storage.FonesiDatabase/1.json",
+      "git_blob": "062c59e4e03423cbc97a26f767ed027a344a2a43",
+      "mode": "100644",
+      "bytes": 5287,
+      "role": "legacy-schema-oracle",
+      "disposition": "RETAIN_PENDING_ROOT_REVIEW_AND_EQUIVALENCE"
+    },
+    {
+      "path": "app/schemas/vn.fonesi.app.storage.FonesiDatabase/2.json",
+      "git_blob": "9eea5f6d55b6fce4a1269a75af6fb4c441eee613",
+      "mode": "100644",
+      "bytes": 5896,
+      "role": "legacy-schema-oracle",
+      "disposition": "RETAIN_PENDING_ROOT_REVIEW_AND_EQUIVALENCE"
+    },
+    {
+      "path": "app/schemas/vn.fonesi.app.storage.FonesiDatabase/3.json",
+      "git_blob": "5c86213aaff9f3a1de6cd8d590d003c225d8b5a6",
+      "mode": "100644",
+      "bytes": 8034,
+      "role": "legacy-schema-oracle",
+      "disposition": "RETAIN_PENDING_ROOT_REVIEW_AND_EQUIVALENCE"
+    },
+    {
+      "path": "app/src/candidate/AndroidManifest.xml",
+      "git_blob": "e8154f2f0a19c6e0f542975b9616e068972dbe5d",
+      "mode": "100644",
+      "bytes": 44766,
+      "role": "legacy-implementation-or-probe",
+      "disposition": "RETAIN_PENDING_ROOT_REVIEW_AND_EQUIVALENCE"
+    },
+    {
+      "path": "app/src/candidate/java/vn/fonesi/app/runtime/RuntimeBindings.kt",
+      "git_blob": "659f8e89fd6f7316f4ccf9d3d83d9367a2397be9",
+      "mode": "100644",
+      "bytes": 4044,
+      "role": "legacy-implementation-or-probe",
+      "disposition": "RETAIN_PENDING_ROOT_REVIEW_AND_EQUIVALENCE"
+    },
+    {
+      "path": "app/src/candidate/java/vn/fonesi/app/runtime/SpaceCoreBackend.kt",
+      "git_blob": "5e8a18fe4dd7ccfb4abacd0084f141eb3df8f692",
+      "mode": "100644",
+      "bytes": 5551,
+      "role": "legacy-implementation-or-probe",
+      "disposition": "RETAIN_PENDING_ROOT_REVIEW_AND_EQUIVALENCE"
+    },
+    {
+      "path": "app/src/cloud/java/vn/fonesi/app/runtime/RuntimeBindings.kt",
+      "git_blob": "00998add3750c2fd4c971da8328e3961d131f449",
+      "mode": "100644",
+      "bytes": 647,
+      "role": "legacy-implementation-or-probe",
+      "disposition": "RETAIN_PENDING_ROOT_REVIEW_AND_EQUIVALENCE"
+    },
+    {
+      "path": "app/src/main/AndroidManifest.xml",
+      "git_blob": "ab5136da888f2d0ab2631d548e705f55734ad58b",
+      "mode": "100644",
+      "bytes": 1453,
+      "role": "legacy-implementation-or-probe",
+      "disposition": "RETAIN_PENDING_ROOT_REVIEW_AND_EQUIVALENCE"
+    },
+    {
+      "path": "app/src/main/java/vn/fonesi/app/AndroidSourceCatalog.kt",
+      "git_blob": "b4a9d1ac54b413935115bbb490329c3f8e9931c8",
+      "mode": "100644",
+      "bytes": 1673,
+      "role": "legacy-implementation-or-probe",
+      "disposition": "RETAIN_PENDING_ROOT_REVIEW_AND_EQUIVALENCE"
+    },
+    {
+      "path": "app/src/main/java/vn/fonesi/app/AppsViewModel.kt",
+      "git_blob": "0499822cfdc67b77ef5cd541ab94a4a2da7d4259",
+      "mode": "100644",
+      "bytes": 17702,
+      "role": "legacy-implementation-or-probe",
+      "disposition": "RETAIN_PENDING_ROOT_REVIEW_AND_EQUIVALENCE"
+    },
+    {
+      "path": "app/src/main/java/vn/fonesi/app/CloneListControls.kt",
+      "git_blob": "56a75831fbb22971b110ce2f4ac5bfc7b3b10f64",
+      "mode": "100644",
+      "bytes": 2891,
+      "role": "legacy-implementation-or-probe",
+      "disposition": "RETAIN_PENDING_ROOT_REVIEW_AND_EQUIVALENCE"
+    },
+    {
+      "path": "app/src/main/java/vn/fonesi/app/DeviceDiagnostics.kt",
+      "git_blob": "417153934054e985fc544e1a2033c85ae8886203",
+      "mode": "100644",
+      "bytes": 1595,
+      "role": "legacy-implementation-or-probe",
+      "disposition": "RETAIN_PENDING_ROOT_REVIEW_AND_EQUIVALENCE"
+    },
+    {
+      "path": "app/src/main/java/vn/fonesi/app/DeviceDiagnosticsCard.kt",
+      "git_blob": "ba117b68441b0f65dfcf89c23ca05a9eb3b21588",
+      "mode": "100644",
+      "bytes": 2220,
+      "role": "legacy-implementation-or-probe",
+      "disposition": "RETAIN_PENDING_ROOT_REVIEW_AND_EQUIVALENCE"
+    },
+    {
+      "path": "app/src/main/java/vn/fonesi/app/FonesiApplication.kt",
+      "git_blob": "d15c54684ec12430c6f66f4a8841d73d3653160d",
+      "mode": "100644",
+      "bytes": 308,
+      "role": "legacy-implementation-or-probe",
+      "disposition": "RETAIN_PENDING_ROOT_REVIEW_AND_EQUIVALENCE"
+    },
+    {
+      "path": "app/src/main/java/vn/fonesi/app/InstalledApps.kt",
+      "git_blob": "efbb0af0dbbb0247d4fa8b1849de4d6a2fadfcdf",
+      "mode": "100644",
+      "bytes": 2734,
+      "role": "legacy-implementation-or-probe",
+      "disposition": "RETAIN_PENDING_ROOT_REVIEW_AND_EQUIVALENCE"
+    },
+    {
+      "path": "app/src/main/java/vn/fonesi/app/MainActivity.kt",
+      "git_blob": "ca8c0e385da354d809ee9645223753f5c8dbba45",
+      "mode": "100644",
+      "bytes": 20997,
+      "role": "legacy-implementation-or-probe",
+      "disposition": "RETAIN_PENDING_ROOT_REVIEW_AND_EQUIVALENCE"
+    },
+    {
+      "path": "app/src/main/java/vn/fonesi/app/ManagementCards.kt",
+      "git_blob": "ecf938e39fb92a52a041c0492d7e7cbb6083fa2c",
+      "mode": "100644",
+      "bytes": 8174,
+      "role": "legacy-implementation-or-probe",
+      "disposition": "RETAIN_PENDING_ROOT_REVIEW_AND_EQUIVALENCE"
+    },
+    {
+      "path": "app/src/main/java/vn/fonesi/app/RuntimeSettingsCard.kt",
+      "git_blob": "5e813cff76693df4e495fe56eea43189f767b710",
+      "mode": "100644",
+      "bytes": 3189,
+      "role": "legacy-implementation-or-probe",
+      "disposition": "RETAIN_PENDING_ROOT_REVIEW_AND_EQUIVALENCE"
+    },
+    {
+      "path": "app/src/main/java/vn/fonesi/app/configuration/ConfigurationCard.kt",
+      "git_blob": "c48c069badae1d9b011d1665d4b40a03592f7d60",
+      "mode": "100644",
+      "bytes": 6157,
+      "role": "legacy-implementation-or-probe",
+      "disposition": "RETAIN_PENDING_ROOT_REVIEW_AND_EQUIVALENCE"
+    },
+    {
+      "path": "app/src/main/java/vn/fonesi/app/configuration/ConfigurationCodec.kt",
+      "git_blob": "4440590cab33cbd2a9a926c0cb39f3262f3ba43a",
+      "mode": "100644",
+      "bytes": 6374,
+      "role": "legacy-implementation-or-probe",
+      "disposition": "RETAIN_PENDING_ROOT_REVIEW_AND_EQUIVALENCE"
+    },
+    {
+      "path": "app/src/main/java/vn/fonesi/app/configuration/ConfigurationRepository.kt",
+      "git_blob": "5743443ea60ec8c5cf94bcae9b9bce43dfddfa27",
+      "mode": "100644",
+      "bytes": 2674,
+      "role": "legacy-implementation-or-probe",
+      "disposition": "RETAIN_PENDING_ROOT_REVIEW_AND_EQUIVALENCE"
+    },
+    {
+      "path": "app/src/main/java/vn/fonesi/app/configuration/ConfigurationViewModel.kt",
+      "git_blob": "a466cb583a004f4b7a1bf5bc389968c9440af494",
+      "mode": "100644",
+      "bytes": 6702,
+      "role": "legacy-implementation-or-probe",
+      "disposition": "RETAIN_PENDING_ROOT_REVIEW_AND_EQUIVALENCE"
+    },
+    {
+      "path": "app/src/main/java/vn/fonesi/app/security/AccessBroker.kt",
+      "git_blob": "b557b5f97568b6a605a02dfba9ca93905e7bc5ac",
+      "mode": "100644",
+      "bytes": 1542,
+      "role": "legacy-implementation-or-probe",
+      "disposition": "RETAIN_PENDING_ROOT_REVIEW_AND_EQUIVALENCE"
+    },
+    {
+      "path": "app/src/main/java/vn/fonesi/app/security/AccessGate.kt",
+      "git_blob": "3974aa3efbf7eaa57f2f3c2582198ca50354c571",
+      "mode": "100644",
+      "bytes": 1159,
+      "role": "legacy-implementation-or-probe",
+      "disposition": "RETAIN_PENDING_ROOT_REVIEW_AND_EQUIVALENCE"
+    },
+    {
+      "path": "app/src/main/java/vn/fonesi/app/security/AccessGateModel.kt",
+      "git_blob": "47f5db6f2621e479a8adf601737074040d693c9a",
+      "mode": "100644",
+      "bytes": 3772,
+      "role": "legacy-implementation-or-probe",
+      "disposition": "RETAIN_PENDING_ROOT_REVIEW_AND_EQUIVALENCE"
+    },
+    {
+      "path": "app/src/main/java/vn/fonesi/app/security/AccessPolicyStore.kt",
+      "git_blob": "c9e03915940e2406c3a66a9cf25b15301eeff027",
+      "mode": "100644",
+      "bytes": 1636,
+      "role": "legacy-implementation-or-probe",
+      "disposition": "RETAIN_PENDING_ROOT_REVIEW_AND_EQUIVALENCE"
+    },
+    {
+      "path": "app/src/main/java/vn/fonesi/app/security/LockedActivity.kt",
+      "git_blob": "b5a8c11be80cb9dbf9e671abb9ee611c2e70ec3c",
+      "mode": "100644",
+      "bytes": 5167,
+      "role": "legacy-implementation-or-probe",
+      "disposition": "RETAIN_PENDING_ROOT_REVIEW_AND_EQUIVALENCE"
+    },
+    {
+      "path": "app/src/main/java/vn/fonesi/app/shortcuts/AndroidCloneShortcuts.kt",
+      "git_blob": "c36b892e06ee8e8b59d4208cb7a1a840d18dfacf",
+      "mode": "100644",
+      "bytes": 3499,
+      "role": "legacy-implementation-or-probe",
+      "disposition": "RETAIN_PENDING_ROOT_REVIEW_AND_EQUIVALENCE"
+    },
+    {
+      "path": "app/src/main/java/vn/fonesi/app/shortcuts/CloneLaunchActivity.kt",
+      "git_blob": "828ccd45da0759c5f93f56536022c827511ba9c2",
+      "mode": "100644",
+      "bytes": 4687,
+      "role": "legacy-implementation-or-probe",
+      "disposition": "RETAIN_PENDING_ROOT_REVIEW_AND_EQUIVALENCE"
+    },
+    {
+      "path": "app/src/main/java/vn/fonesi/app/shortcuts/CloneLaunchController.kt",
+      "git_blob": "480077a79fcec1b96ad681b908674c8e94a076b7",
+      "mode": "100644",
+      "bytes": 3454,
+      "role": "legacy-implementation-or-probe",
+      "disposition": "RETAIN_PENDING_ROOT_REVIEW_AND_EQUIVALENCE"
+    },
+    {
+      "path": "app/src/main/java/vn/fonesi/app/shortcuts/CloneRoute.kt",
+      "git_blob": "4f6483854ce99b75296c8084a3ae56f7e07fa38b",
+      "mode": "100644",
+      "bytes": 1446,
+      "role": "legacy-implementation-or-probe",
+      "disposition": "RETAIN_PENDING_ROOT_REVIEW_AND_EQUIVALENCE"
+    },
+    {
+      "path": "app/src/main/java/vn/fonesi/app/storage/CloneMetadataRepository.kt",
+      "git_blob": "8f6a8d76a01303c7436083765b46086aa53a02b8",
+      "mode": "100644",
+      "bytes": 4669,
+      "role": "legacy-implementation-or-probe",
+      "disposition": "RETAIN_PENDING_ROOT_REVIEW_AND_EQUIVALENCE"
+    },
+    {
+      "path": "app/src/main/java/vn/fonesi/app/storage/EngineInstances.kt",
+      "git_blob": "4bf587d954d504b2c80f559c90c6888dbcceff77",
+      "mode": "100644",
+      "bytes": 2126,
+      "role": "legacy-implementation-or-probe",
+      "disposition": "RETAIN_PENDING_ROOT_REVIEW_AND_EQUIVALENCE"
+    },
+    {
+      "path": "app/src/main/java/vn/fonesi/app/storage/FonesiDatabase.kt",
+      "git_blob": "42eef6e0a813024bf5a0ef09b4f5cf8d2f30757f",
+      "mode": "100644",
+      "bytes": 5837,
+      "role": "legacy-implementation-or-probe",
+      "disposition": "RETAIN_PENDING_ROOT_REVIEW_AND_EQUIVALENCE"
+    },
+    {
+      "path": "app/src/main/java/vn/fonesi/app/storage/LocalServices.kt",
+      "git_blob": "bdd9836919f43fb22a2fe5705ea8c6fa924a0982",
+      "mode": "100644",
+      "bytes": 2997,
+      "role": "legacy-implementation-or-probe",
+      "disposition": "RETAIN_PENDING_ROOT_REVIEW_AND_EQUIVALENCE"
+    },
+    {
+      "path": "app/src/main/java/vn/fonesi/app/storage/PreservingOpenHelperFactory.kt",
+      "git_blob": "c7c6733ece1313f932c84830e686f2824f3babf6",
+      "mode": "100644",
+      "bytes": 1768,
+      "role": "legacy-implementation-or-probe",
+      "disposition": "RETAIN_PENDING_ROOT_REVIEW_AND_EQUIVALENCE"
+    },
+    {
+      "path": "app/src/main/java/vn/fonesi/app/storage/RoomUpdateTaskStore.kt",
+      "git_blob": "c422809d4c2c120dcddffcdda2305ab6e6724c61",
+      "mode": "100644",
+      "bytes": 1794,
+      "role": "legacy-implementation-or-probe",
+      "disposition": "RETAIN_PENDING_ROOT_REVIEW_AND_EQUIVALENCE"
+    },
+    {
+      "path": "app/src/main/java/vn/fonesi/app/storage/TaskCodec.kt",
+      "git_blob": "45fe50d719a9f6a11dd9111992a8446d2ff61b39",
+      "mode": "100644",
+      "bytes": 2771,
+      "role": "legacy-implementation-or-probe",
+      "disposition": "RETAIN_PENDING_ROOT_REVIEW_AND_EQUIVALENCE"
+    },
+    {
+      "path": "app/src/main/java/vn/fonesi/app/update/AutoUpdatePolicyStore.kt",
+      "git_blob": "b8808293d2584e3b3159f385a14d3c21c703bc8c",
+      "mode": "100644",
+      "bytes": 1594,
+      "role": "legacy-implementation-or-probe",
+      "disposition": "RETAIN_PENDING_ROOT_REVIEW_AND_EQUIVALENCE"
+    },
+    {
+      "path": "app/src/main/java/vn/fonesi/app/update/AutomaticUpdatesCard.kt",
+      "git_blob": "b32cfcf973451fb867285266b62bae7afeeabe5a",
+      "mode": "100644",
+      "bytes": 2716,
+      "role": "legacy-implementation-or-probe",
+      "disposition": "RETAIN_PENDING_ROOT_REVIEW_AND_EQUIVALENCE"
+    },
+    {
+      "path": "app/src/main/java/vn/fonesi/app/update/ForegroundAutoUpdater.kt",
+      "git_blob": "15e04e6774534803c0da58423d2499a6ce9f0cba",
+      "mode": "100644",
+      "bytes": 5895,
+      "role": "legacy-implementation-or-probe",
+      "disposition": "RETAIN_PENDING_ROOT_REVIEW_AND_EQUIVALENCE"
+    },
+    {
+      "path": "app/src/main/java/vn/fonesi/app/update/UpdatePreviewDialog.kt",
+      "git_blob": "f9216c2c082bc3b888af1d6a1823a37251fae89a",
+      "mode": "100644",
+      "bytes": 3927,
+      "role": "legacy-implementation-or-probe",
+      "disposition": "RETAIN_PENDING_ROOT_REVIEW_AND_EQUIVALENCE"
+    },
+    {
+      "path": "app/src/main/java/vn/fonesi/app/update/UpdateRequestService.kt",
+      "git_blob": "7ad8b0ac03d5129a7b4bf4c2c6a0ae299a748b6d",
+      "mode": "100644",
+      "bytes": 4504,
+      "role": "legacy-implementation-or-probe",
+      "disposition": "RETAIN_PENDING_ROOT_REVIEW_AND_EQUIVALENCE"
+    },
+    {
+      "path": "app/src/main/res/drawable/ic_fonesi.xml",
+      "git_blob": "29c32ff30cabdbb3900814d9a7815087e4a12202",
+      "mode": "100644",
+      "bytes": 510,
+      "role": "legacy-implementation-or-probe",
+      "disposition": "RETAIN_PENDING_ROOT_REVIEW_AND_EQUIVALENCE"
+    },
+    {
+      "path": "app/src/main/res/values/strings.xml",
+      "git_blob": "2f7a3970ab5a3710fcad183652e878d8fde82bbc",
+      "mode": "100644",
+      "bytes": 69,
+      "role": "legacy-implementation-or-probe",
+      "disposition": "RETAIN_PENDING_ROOT_REVIEW_AND_EQUIVALENCE"
+    },
+    {
+      "path": "app/src/main/res/values/themes.xml",
+      "git_blob": "f9efac1e2630c3f6de197f912af6eb79a1bbbf7a",
+      "mode": "100644",
+      "bytes": 220,
+      "role": "legacy-implementation-or-probe",
+      "disposition": "RETAIN_PENDING_ROOT_REVIEW_AND_EQUIVALENCE"
+    },
+    {
+      "path": "app/src/main/res/xml/data_extraction_rules.xml",
+      "git_blob": "b853a8d2452fe340b2e07d1899f3437e49fb123b",
+      "mode": "100644",
+      "bytes": 1050,
+      "role": "legacy-implementation-or-probe",
+      "disposition": "RETAIN_PENDING_ROOT_REVIEW_AND_EQUIVALENCE"
+    },
+    {
+      "path": "app/src/test/java/vn/fonesi/app/configuration/ConfigurationTest.kt",
+      "git_blob": "8c74ad0a407123df36f2b85a6b58654eb72bd639",
+      "mode": "100644",
+      "bytes": 13273,
+      "role": "legacy-regression-oracle",
+      "disposition": "RETAIN_PENDING_ROOT_REVIEW_AND_EQUIVALENCE"
+    },
+    {
+      "path": "app/src/test/java/vn/fonesi/app/security/AccessPolicyTest.kt",
+      "git_blob": "14eeae2decdb885d7a4ab76d78a73577c9252975",
+      "mode": "100644",
+      "bytes": 5242,
+      "role": "legacy-regression-oracle",
+      "disposition": "RETAIN_PENDING_ROOT_REVIEW_AND_EQUIVALENCE"
+    },
+    {
+      "path": "app/src/test/java/vn/fonesi/app/shortcuts/ShortcutIntegrationTest.kt",
+      "git_blob": "62603518b5c779b2cf0c3283668e9b8b96c92d34",
+      "mode": "100644",
+      "bytes": 17825,
+      "role": "legacy-regression-oracle",
+      "disposition": "RETAIN_PENDING_ROOT_REVIEW_AND_EQUIVALENCE"
+    },
+    {
+      "path": "app/src/test/java/vn/fonesi/app/storage/InstanceRegistryTest.kt",
+      "git_blob": "3433e4708f753f1d4c6733fa1774d65e9103a3b1",
+      "mode": "100644",
+      "bytes": 4322,
+      "role": "legacy-regression-oracle",
+      "disposition": "RETAIN_PENDING_ROOT_REVIEW_AND_EQUIVALENCE"
+    },
+    {
+      "path": "app/src/test/java/vn/fonesi/app/storage/StorageIntegrationTest.kt",
+      "git_blob": "e1e591df3d613ff861282a740ccc4762d8c2a9a5",
+      "mode": "100644",
+      "bytes": 13750,
+      "role": "legacy-regression-oracle",
+      "disposition": "RETAIN_PENDING_ROOT_REVIEW_AND_EQUIVALENCE"
+    },
+    {
+      "path": "app/src/test/java/vn/fonesi/app/update/ForegroundAutoUpdaterTest.kt",
+      "git_blob": "855b6eec326a8202f1845dfd9ab64bbea988ed78",
+      "mode": "100644",
+      "bytes": 9206,
+      "role": "legacy-regression-oracle",
+      "disposition": "RETAIN_PENDING_ROOT_REVIEW_AND_EQUIVALENCE"
+    },
+    {
+      "path": "app/src/test/java/vn/fonesi/app/update/UpdateRequestServiceTest.kt",
+      "git_blob": "cb391b639aceadcbdc4376bb6ba551d83a2e870e",
+      "mode": "100644",
+      "bytes": 10254,
+      "role": "legacy-regression-oracle",
+      "disposition": "RETAIN_PENDING_ROOT_REVIEW_AND_EQUIVALENCE"
+    },
+    {
+      "path": "build.gradle.kts",
+      "git_blob": "e1de26e5052816f4d7b9961b18a3645e072299f9",
+      "mode": "100644",
+      "bytes": 376,
+      "role": "legacy-build-orchestration",
+      "disposition": "RETAIN_PENDING_ROOT_REVIEW_AND_EQUIVALENCE"
+    },
+    {
+      "path": "core/build.gradle.kts",
+      "git_blob": "adac5996105101b2912ef89c9466713f34719c07",
+      "mode": "100644",
+      "bytes": 112,
+      "role": "legacy-build-orchestration",
+      "disposition": "RETAIN_PENDING_ROOT_REVIEW_AND_EQUIVALENCE"
+    },
+    {
+      "path": "core/src/main/kotlin/vn/fonesi/core/AccessSession.kt",
+      "git_blob": "00749641f2cb2b0cd646d249b2dd87166e56ad4c",
+      "mode": "100644",
+      "bytes": 1813,
+      "role": "legacy-implementation-or-probe",
+      "disposition": "RETAIN_PENDING_ROOT_REVIEW_AND_EQUIVALENCE"
+    },
+    {
+      "path": "core/src/main/kotlin/vn/fonesi/core/AppCatalog.kt",
+      "git_blob": "c85a9ed05c870ead57b8436e38533e254500dd18",
+      "mode": "100644",
+      "bytes": 559,
+      "role": "legacy-implementation-or-probe",
+      "disposition": "RETAIN_PENDING_ROOT_REVIEW_AND_EQUIVALENCE"
+    },
+    {
+      "path": "core/src/main/kotlin/vn/fonesi/core/CloneEngine.kt",
+      "git_blob": "f624e654690f70d6f66433e639306fbd7861830a",
+      "mode": "100644",
+      "bytes": 2284,
+      "role": "legacy-implementation-or-probe",
+      "disposition": "RETAIN_PENDING_ROOT_REVIEW_AND_EQUIVALENCE"
+    },
+    {
+      "path": "core/src/main/kotlin/vn/fonesi/core/CloneListPolicy.kt",
+      "git_blob": "17f204b1f49be032efabafde599442e4b0a984ac",
+      "mode": "100644",
+      "bytes": 1695,
+      "role": "legacy-implementation-or-probe",
+      "disposition": "RETAIN_PENDING_ROOT_REVIEW_AND_EQUIVALENCE"
+    },
+    {
+      "path": "core/src/main/kotlin/vn/fonesi/core/ManagedGuestEngine.kt",
+      "git_blob": "817961de24132f76b01ea85c9ccb6dac2608e939",
+      "mode": "100644",
+      "bytes": 8781,
+      "role": "legacy-implementation-or-probe",
+      "disposition": "RETAIN_PENDING_ROOT_REVIEW_AND_EQUIVALENCE"
+    },
+    {
+      "path": "core/src/main/kotlin/vn/fonesi/core/ProbePolicy.kt",
+      "git_blob": "a9950446946cccef8c5c1a5fb28ba588809aafa6",
+      "mode": "100644",
+      "bytes": 602,
+      "role": "legacy-implementation-or-probe",
+      "disposition": "RETAIN_PENDING_ROOT_REVIEW_AND_EQUIVALENCE"
+    },
+    {
+      "path": "core/src/main/kotlin/vn/fonesi/core/UpdatePlanner.kt",
+      "git_blob": "c1cb86d132085cd16cb728c3ee69bdbfa767aae2",
+      "mode": "100644",
+      "bytes": 4252,
+      "role": "legacy-implementation-or-probe",
+      "disposition": "RETAIN_PENDING_ROOT_REVIEW_AND_EQUIVALENCE"
+    },
+    {
+      "path": "core/src/main/kotlin/vn/fonesi/core/update/FileQueueLock.kt",
+      "git_blob": "ed60cd627de1a1a4ea08b404701bb6ee3c4bdfda",
+      "mode": "100644",
+      "bytes": 972,
+      "role": "legacy-implementation-or-probe",
+      "disposition": "RETAIN_PENDING_ROOT_REVIEW_AND_EQUIVALENCE"
+    },
+    {
+      "path": "core/src/main/kotlin/vn/fonesi/core/update/FileSourceSnapshotter.kt",
+      "git_blob": "bb110e642207acd1a5e02e9055f688c4361b4612",
+      "mode": "100644",
+      "bytes": 5441,
+      "role": "legacy-implementation-or-probe",
+      "disposition": "RETAIN_PENDING_ROOT_REVIEW_AND_EQUIVALENCE"
+    },
+    {
+      "path": "core/src/main/kotlin/vn/fonesi/core/update/UpdatePorts.kt",
+      "git_blob": "1f1c316f5fc9e5f27c9277a7fcf132da5c6a08ff",
+      "mode": "100644",
+      "bytes": 1359,
+      "role": "legacy-implementation-or-probe",
+      "disposition": "RETAIN_PENDING_ROOT_REVIEW_AND_EQUIVALENCE"
+    },
+    {
+      "path": "core/src/main/kotlin/vn/fonesi/core/update/UpdateQueue.kt",
+      "git_blob": "88f9218d946217f357c866d0c13f80bb78af5f7e",
+      "mode": "100644",
+      "bytes": 1149,
+      "role": "legacy-implementation-or-probe",
+      "disposition": "RETAIN_PENDING_ROOT_REVIEW_AND_EQUIVALENCE"
+    },
+    {
+      "path": "core/src/main/kotlin/vn/fonesi/core/update/UpdateRunner.kt",
+      "git_blob": "30d6c8910ff60f207f8fdd9206134b69566d4369",
+      "mode": "100644",
+      "bytes": 11089,
+      "role": "legacy-implementation-or-probe",
+      "disposition": "RETAIN_PENDING_ROOT_REVIEW_AND_EQUIVALENCE"
+    },
+    {
+      "path": "core/src/main/kotlin/vn/fonesi/core/update/UpdateTask.kt",
+      "git_blob": "987bc7e839f654873cbac9ba005d905fd5af2c20",
+      "mode": "100644",
+      "bytes": 4918,
+      "role": "legacy-implementation-or-probe",
+      "disposition": "RETAIN_PENDING_ROOT_REVIEW_AND_EQUIVALENCE"
+    },
+    {
+      "path": "core/src/test/kotlin/vn/fonesi/core/AccessSessionTest.kt",
+      "git_blob": "67272f9d69c8ec8eade1b50765f31b6c6ce132f4",
+      "mode": "100644",
+      "bytes": 3289,
+      "role": "legacy-regression-oracle",
+      "disposition": "RETAIN_PENDING_ROOT_REVIEW_AND_EQUIVALENCE"
+    },
+    {
+      "path": "core/src/test/kotlin/vn/fonesi/core/CloneListPolicyTest.kt",
+      "git_blob": "7ef07dc1349ba3dae3d7c5d68a3d8e0fa573920d",
+      "mode": "100644",
+      "bytes": 2188,
+      "role": "legacy-regression-oracle",
+      "disposition": "RETAIN_PENDING_ROOT_REVIEW_AND_EQUIVALENCE"
+    },
+    {
+      "path": "core/src/test/kotlin/vn/fonesi/core/ManagedGuestEngineTest.kt",
+      "git_blob": "3363e5f48ec236672d52e78a1e9f2ce8b2ac660a",
+      "mode": "100644",
+      "bytes": 14950,
+      "role": "legacy-regression-oracle",
+      "disposition": "RETAIN_PENDING_ROOT_REVIEW_AND_EQUIVALENCE"
+    },
+    {
+      "path": "core/src/test/kotlin/vn/fonesi/core/ProbePolicyTest.kt",
+      "git_blob": "5e66b9156f7b8a37390a5f049d3d199d6273fb8e",
+      "mode": "100644",
+      "bytes": 1075,
+      "role": "legacy-regression-oracle",
+      "disposition": "RETAIN_PENDING_ROOT_REVIEW_AND_EQUIVALENCE"
+    },
+    {
+      "path": "core/src/test/kotlin/vn/fonesi/core/UpdatePlannerTest.kt",
+      "git_blob": "bf0b3aa3cedafeb7fa46085183df5972160e974b",
+      "mode": "100644",
+      "bytes": 8131,
+      "role": "legacy-regression-oracle",
+      "disposition": "RETAIN_PENDING_ROOT_REVIEW_AND_EQUIVALENCE"
+    },
+    {
+      "path": "core/src/test/kotlin/vn/fonesi/core/update/ExecutionPolicyTest.kt",
+      "git_blob": "ccb44f85ac6b2dcb5950a9ecc64fca202b51f794",
+      "mode": "100644",
+      "bytes": 2421,
+      "role": "legacy-regression-oracle",
+      "disposition": "RETAIN_PENDING_ROOT_REVIEW_AND_EQUIVALENCE"
+    },
+    {
+      "path": "core/src/test/kotlin/vn/fonesi/core/update/FileSourceSnapshotterTest.kt",
+      "git_blob": "df59f688a4676e7a34e0897da281caa90faac5bf",
+      "mode": "100644",
+      "bytes": 4229,
+      "role": "legacy-regression-oracle",
+      "disposition": "RETAIN_PENDING_ROOT_REVIEW_AND_EQUIVALENCE"
+    },
+    {
+      "path": "core/src/test/kotlin/vn/fonesi/core/update/QueueFixtures.kt",
+      "git_blob": "e6202ccd98df71e6d35db189168a4b95ce5183f1",
+      "mode": "100644",
+      "bytes": 3749,
+      "role": "legacy-regression-oracle",
+      "disposition": "RETAIN_PENDING_ROOT_REVIEW_AND_EQUIVALENCE"
+    },
+    {
+      "path": "core/src/test/kotlin/vn/fonesi/core/update/UpdateRunnerTest.kt",
+      "git_blob": "689837d710f94cc9e30fa4f8fbde5c0abad1141d",
+      "mode": "100644",
+      "bytes": 11220,
+      "role": "legacy-regression-oracle",
+      "disposition": "RETAIN_PENDING_ROOT_REVIEW_AND_EQUIVALENCE"
+    },
+    {
+      "path": "engine-probe/build.gradle.kts",
+      "git_blob": "c3edde35c67976787cfd0774e9772b4aeae65b2d",
+      "mode": "100644",
+      "bytes": 1785,
+      "role": "legacy-build-orchestration",
+      "disposition": "RETAIN_PENDING_ROOT_REVIEW_AND_EQUIVALENCE"
+    },
+    {
+      "path": "engine-probe/src/main/AndroidManifest.xml",
+      "git_blob": "6cea700e9ab136cae4aece58150fad4dd52ea832",
+      "mode": "100644",
+      "bytes": 45691,
+      "role": "legacy-implementation-or-probe",
+      "disposition": "RETAIN_PENDING_ROOT_REVIEW_AND_EQUIVALENCE"
+    },
+    {
+      "path": "engine-probe/src/main/java/vn/fonesi/probe/ProbeActivity.kt",
+      "git_blob": "c9a99ef594d392a482bca00a6d3aaaa9ab835b57",
+      "mode": "100644",
+      "bytes": 6820,
+      "role": "legacy-implementation-or-probe",
+      "disposition": "RETAIN_PENDING_ROOT_REVIEW_AND_EQUIVALENCE"
+    },
+    {
+      "path": "engine-probe/src/main/java/vn/fonesi/probe/ProbeApplication.kt",
+      "git_blob": "d1f70b56f5b74671e1707282977895672ddc8db4",
+      "mode": "100644",
+      "bytes": 3073,
+      "role": "legacy-implementation-or-probe",
+      "disposition": "RETAIN_PENDING_ROOT_REVIEW_AND_EQUIVALENCE"
+    },
+    {
+      "path": "engine-probe/src/main/java/vn/fonesi/probe/SpaceCoreProbe.kt",
+      "git_blob": "63c945ab7eaa4f194742732ba213601a9caf3ec6",
+      "mode": "100644",
+      "bytes": 3649,
+      "role": "legacy-implementation-or-probe",
+      "disposition": "RETAIN_PENDING_ROOT_REVIEW_AND_EQUIVALENCE"
+    },
+    {
+      "path": "engine-probe/src/main/res/xml/probe_data_extraction_rules.xml",
+      "git_blob": "9ddbf214368932e46c4757cd03aadf7bdd66ad0a",
+      "mode": "100644",
+      "bytes": 1011,
+      "role": "legacy-implementation-or-probe",
+      "disposition": "RETAIN_PENDING_ROOT_REVIEW_AND_EQUIVALENCE"
+    },
+    {
+      "path": "engine-source/build.gradle.kts",
+      "git_blob": "fc2e03845c6126535dff1392a30552b6a19b3a07",
+      "mode": "100644",
+      "bytes": 3517,
+      "role": "legacy-build-orchestration",
+      "disposition": "RETAIN_PENDING_ROOT_REVIEW_AND_EQUIVALENCE"
+    },
+    {
+      "path": "engine-source/patches/dobby-compat.patch",
+      "git_blob": "f93971710137737801fb17ae18c7916412854b9e",
+      "mode": "100644",
+      "bytes": 6038,
+      "role": "legacy-third-party-patch-provenance",
+      "disposition": "RETAIN_PENDING_ROOT_REVIEW_AND_EQUIVALENCE"
+    },
+    {
+      "path": "engine-source/src/main/AndroidManifest.xml",
+      "git_blob": "b2d3ea123526d400738f87fcb9891f3421426ef9",
+      "mode": "100644",
+      "bytes": 111,
+      "role": "legacy-implementation-or-probe",
+      "disposition": "RETAIN_PENDING_ROOT_REVIEW_AND_EQUIVALENCE"
+    },
+    {
+      "path": "engine-source/src/main/cpp/CMakeLists.txt",
+      "git_blob": "153ede27ea836e585d1e8016e7b7dfce24f802d0",
+      "mode": "100644",
+      "bytes": 1754,
+      "role": "legacy-implementation-or-probe",
+      "disposition": "RETAIN_PENDING_ROOT_REVIEW_AND_EQUIVALENCE"
+    },
+    {
+      "path": "engine-source/src/main/cpp/NativeBridge.cpp",
+      "git_blob": "260b75497f6cc3c2190b0ab51ea2eb1d437be476",
+      "mode": "100644",
+      "bytes": 2775,
+      "role": "legacy-implementation-or-probe",
+      "disposition": "RETAIN_PENDING_ROOT_REVIEW_AND_EQUIVALENCE"
+    },
+    {
+      "path": "engine-source/src/main/cpp/NativeHooks.cpp",
+      "git_blob": "bf6cef585291c725168bb934eaff3b272a0d615a",
+      "mode": "100644",
+      "bytes": 8762,
+      "role": "legacy-implementation-or-probe",
+      "disposition": "RETAIN_PENDING_ROOT_REVIEW_AND_EQUIVALENCE"
+    },
+    {
+      "path": "engine-source/src/main/cpp/NativeHooks.h",
+      "git_blob": "ef5a181293fc64b629d250756ce819a2cbd39721",
+      "mode": "100644",
+      "bytes": 302,
+      "role": "legacy-implementation-or-probe",
+      "disposition": "RETAIN_PENDING_ROOT_REVIEW_AND_EQUIVALENCE"
+    },
+    {
+      "path": "engine-source/src/main/cpp/PathRules.cpp",
+      "git_blob": "a7e5066cac7ccf5782af04c80740805eb36f9009",
+      "mode": "100644",
+      "bytes": 2381,
+      "role": "legacy-implementation-or-probe",
+      "disposition": "RETAIN_PENDING_ROOT_REVIEW_AND_EQUIVALENCE"
+    },
+    {
+      "path": "engine-source/src/main/cpp/PathRules.h",
+      "git_blob": "15d0f7270994e1eb1711ebc0e6ec5408e58bacf3",
+      "mode": "100644",
+      "bytes": 541,
+      "role": "legacy-implementation-or-probe",
+      "disposition": "RETAIN_PENDING_ROOT_REVIEW_AND_EQUIVALENCE"
+    },
+    {
+      "path": "engine-source/src/main/cpp/exports.map",
+      "git_blob": "e7b9dfcc71ce7630b2b94b693b5105059d7ca293",
+      "mode": "100644",
+      "bytes": 224,
+      "role": "legacy-implementation-or-probe",
+      "disposition": "RETAIN_PENDING_ROOT_REVIEW_AND_EQUIVALENCE"
+    },
+    {
+      "path": "engine-source/src/main/java/vn/fonesi/engine/GuestCodeLayout.kt",
+      "git_blob": "0d3ff224d42c9055655b28ce11fce2313040ef33",
+      "mode": "100644",
+      "bytes": 1526,
+      "role": "legacy-implementation-or-probe",
+      "disposition": "RETAIN_PENDING_ROOT_REVIEW_AND_EQUIVALENCE"
+    },
+    {
+      "path": "engine-source/src/main/java/vn/fonesi/engine/GuestCodeLoader.kt",
+      "git_blob": "652f9ed827dc472aa029c139ac02f96a4e06526e",
+      "mode": "100644",
+      "bytes": 4187,
+      "role": "legacy-implementation-or-probe",
+      "disposition": "RETAIN_PENDING_ROOT_REVIEW_AND_EQUIVALENCE"
+    },
+    {
+      "path": "engine-source/src/main/java/vn/fonesi/engine/NativeLibraryPreparer.kt",
+      "git_blob": "af4727152d9a96ec8e1d196cc9beb3e0b5daf3f5",
+      "mode": "100644",
+      "bytes": 10181,
+      "role": "legacy-implementation-or-probe",
+      "disposition": "RETAIN_PENDING_ROOT_REVIEW_AND_EQUIVALENCE"
+    },
+    {
+      "path": "engine-source/src/main/java/vn/fonesi/engine/NativeRuntime.java",
+      "git_blob": "67d14308446e7b4f65faa97826c8ffb2321e244e",
+      "mode": "100644",
+      "bytes": 3013,
+      "role": "legacy-implementation-or-probe",
+      "disposition": "RETAIN_PENDING_ROOT_REVIEW_AND_EQUIVALENCE"
+    },
+    {
+      "path": "engine-source/src/test/java/vn/fonesi/engine/GuestCodeLayoutTest.kt",
+      "git_blob": "b96b9c0f47c48e895a764a9ff70ba4bbccc07e83",
+      "mode": "100644",
+      "bytes": 3807,
+      "role": "legacy-regression-oracle",
+      "disposition": "RETAIN_PENDING_ROOT_REVIEW_AND_EQUIVALENCE"
+    },
+    {
+      "path": "engine-source/src/test/java/vn/fonesi/engine/NativeLibraryPreparerTest.kt",
+      "git_blob": "5cc509c1822d13ae714ecf3deaca03085f9be027",
+      "mode": "100644",
+      "bytes": 7596,
+      "role": "legacy-regression-oracle",
+      "disposition": "RETAIN_PENDING_ROOT_REVIEW_AND_EQUIVALENCE"
+    },
+    {
+      "path": "engine-source/tests/NativeRuntimeTest.cpp",
+      "git_blob": "75edf9cb0b2e5b08b1c5d896f321b2e08c3ba7de",
+      "mode": "100644",
+      "bytes": 6863,
+      "role": "legacy-regression-oracle",
+      "disposition": "RETAIN_PENDING_ROOT_REVIEW_AND_EQUIVALENCE"
+    },
+    {
+      "path": "gradle.properties",
+      "git_blob": "3bf812fdf938bab347a4afd6c771bf53ca26ede1",
+      "mode": "100644",
+      "bytes": 125,
+      "role": "legacy-build-orchestration",
+      "disposition": "RETAIN_PENDING_ROOT_REVIEW_AND_EQUIVALENCE"
+    },
+    {
+      "path": "native-runtime-probe/build.gradle.kts",
+      "git_blob": "3876229208b0f1b1454bcf54b2f7a5a514cfbbb1",
+      "mode": "100644",
+      "bytes": 471,
+      "role": "legacy-build-orchestration",
+      "disposition": "RETAIN_PENDING_ROOT_REVIEW_AND_EQUIVALENCE"
+    },
+    {
+      "path": "native-runtime-probe/src/main/AndroidManifest.xml",
+      "git_blob": "acec2c75980643b51d11f42bc640c86142900209",
+      "mode": "100644",
+      "bytes": 846,
+      "role": "legacy-implementation-or-probe",
+      "disposition": "RETAIN_PENDING_ROOT_REVIEW_AND_EQUIVALENCE"
+    },
+    {
+      "path": "native-runtime-probe/src/main/java/vn/fonesi/nativeprobe/MainActivity.java",
+      "git_blob": "69642b27c0fbeac8f1cbc67ff706e53d5229408d",
+      "mode": "100644",
+      "bytes": 6689,
+      "role": "legacy-implementation-or-probe",
+      "disposition": "RETAIN_PENDING_ROOT_REVIEW_AND_EQUIVALENCE"
+    },
+    {
+      "path": "native-runtime-probe/src/main/java/vn/fonesi/nativeprobe/ProbeData.java",
+      "git_blob": "5996b188f022b559de90e9d493c99a76c24cbbf4",
+      "mode": "100644",
+      "bytes": 2727,
+      "role": "legacy-implementation-or-probe",
+      "disposition": "RETAIN_PENDING_ROOT_REVIEW_AND_EQUIVALENCE"
+    },
+    {
+      "path": "native-runtime-probe/src/main/java/vn/fonesi/nativeprobe/ProbeService.java",
+      "git_blob": "4c4e482f2a5972f23114f39fa444258af7217b73",
+      "mode": "100644",
+      "bytes": 3457,
+      "role": "legacy-implementation-or-probe",
+      "disposition": "RETAIN_PENDING_ROOT_REVIEW_AND_EQUIVALENCE"
+    },
+    {
+      "path": "probe-payload/build.gradle.kts",
+      "git_blob": "03454072f1e8338c3e5250bf350fc8788d5c3083",
+      "mode": "100644",
+      "bytes": 657,
+      "role": "legacy-build-orchestration",
+      "disposition": "RETAIN_PENDING_ROOT_REVIEW_AND_EQUIVALENCE"
+    },
+    {
+      "path": "probe-payload/src/main/AndroidManifest.xml",
+      "git_blob": "d9cbf51c64eb931acf31ab47089179caa571e00c",
+      "mode": "100644",
+      "bytes": 718,
+      "role": "legacy-implementation-or-probe",
+      "disposition": "RETAIN_PENDING_ROOT_REVIEW_AND_EQUIVALENCE"
+    },
+    {
+      "path": "probe-payload/src/main/java/vn/fonesi/payload/PayloadActivity.kt",
+      "git_blob": "a10297ba37e5c3b8ab717de95ce71bca0b97d65e",
+      "mode": "100644",
+      "bytes": 2794,
+      "role": "legacy-implementation-or-probe",
+      "disposition": "RETAIN_PENDING_ROOT_REVIEW_AND_EQUIVALENCE"
+    },
+    {
+      "path": "probe-payload/src/main/res/xml/payload_data_extraction_rules.xml",
+      "git_blob": "94e7be27b14afc041494bfb72512a8aa7d4ad7bc",
+      "mode": "100644",
+      "bytes": 917,
+      "role": "legacy-implementation-or-probe",
+      "disposition": "RETAIN_PENDING_ROOT_REVIEW_AND_EQUIVALENCE"
+    },
+    {
+      "path": "scripts/bootstrap_android.py",
+      "git_blob": "69f53e19eaad1bcaf74f766aa48dd42f1b8baa21",
+      "mode": "100755",
+      "bytes": 5007,
+      "role": "legacy-command-entrypoint-or-fixture-builder",
+      "disposition": "RETAIN_PENDING_ROOT_REVIEW_AND_EQUIVALENCE"
+    },
+    {
+      "path": "scripts/build_apk_audit_fixtures.py",
+      "git_blob": "2935eeefa3d182074c0b871c341146e42777831b",
+      "mode": "100644",
+      "bytes": 6178,
+      "role": "legacy-command-entrypoint-or-fixture-builder",
+      "disposition": "RETAIN_PENDING_ROOT_REVIEW_AND_EQUIVALENCE"
+    },
+    {
+      "path": "scripts/build_native_apk_fixtures.py",
+      "git_blob": "84adfc2828bc674496b51e5104a5983ff43624ee",
+      "mode": "100644",
+      "bytes": 4163,
+      "role": "legacy-command-entrypoint-or-fixture-builder",
+      "disposition": "RETAIN_PENDING_ROOT_REVIEW_AND_EQUIVALENCE"
+    },
+    {
+      "path": "scripts/build_phone_bundle.py",
+      "git_blob": "a5164be158b72dbb5d5f25a1dda40d443b3ed13a",
+      "mode": "100644",
+      "bytes": 2761,
+      "role": "legacy-command-entrypoint-or-fixture-builder",
+      "disposition": "RETAIN_PENDING_ROOT_REVIEW_AND_EQUIVALENCE"
+    },
+    {
+      "path": "scripts/check.sh",
+      "git_blob": "a5f80d63083402125431ff230bec09fa4b531167",
+      "mode": "100755",
+      "bytes": 1895,
+      "role": "legacy-command-entrypoint-or-fixture-builder",
+      "disposition": "RETAIN_PENDING_ROOT_REVIEW_AND_EQUIVALENCE"
+    },
+    {
+      "path": "scripts/check_source_engine.py",
+      "git_blob": "ceb3a55be621947bdc283375df3536f568dec560",
+      "mode": "100644",
+      "bytes": 6636,
+      "role": "legacy-command-entrypoint-or-fixture-builder",
+      "disposition": "RETAIN_PENDING_ROOT_REVIEW_AND_EQUIVALENCE"
+    },
+    {
+      "path": "scripts/fetch_engine_sdk.py",
+      "git_blob": "82240b0e9efbddde2a31aedea0c1f33552b15d01",
+      "mode": "100644",
+      "bytes": 1180,
+      "role": "legacy-command-entrypoint-or-fixture-builder",
+      "disposition": "RETAIN_PENDING_ROOT_REVIEW_AND_EQUIVALENCE"
+    },
+    {
+      "path": "scripts/generate_candidate_manifest.py",
+      "git_blob": "922ace9e9c3bd3098b1a38f4620cc48b3bcd0a77",
+      "mode": "100644",
+      "bytes": 2682,
+      "role": "legacy-command-entrypoint-or-fixture-builder",
+      "disposition": "RETAIN_PENDING_ROOT_REVIEW_AND_EQUIVALENCE"
+    },
+    {
+      "path": "scripts/generate_probe_manifest.py",
+      "git_blob": "83ab6c1ccce847a7f6e8b5953bf619fa8c15d47b",
+      "mode": "100644",
+      "bytes": 4672,
+      "role": "legacy-command-entrypoint-or-fixture-builder",
+      "disposition": "RETAIN_PENDING_ROOT_REVIEW_AND_EQUIVALENCE"
+    },
+    {
+      "path": "scripts/gradle.sh",
+      "git_blob": "b84a6ffae37db40195e9d8faed97381f0eb5f903",
+      "mode": "100755",
+      "bytes": 1451,
+      "role": "legacy-command-entrypoint-or-fixture-builder",
+      "disposition": "RETAIN_PENDING_ROOT_REVIEW_AND_EQUIVALENCE"
+    },
+    {
+      "path": "scripts/prepare_native_emulator.py",
+      "git_blob": "4254c5e226fc883ca2a04561a27afdeb7102549b",
+      "mode": "100644",
+      "bytes": 2375,
+      "role": "legacy-command-entrypoint-or-fixture-builder",
+      "disposition": "RETAIN_PENDING_ROOT_REVIEW_AND_EQUIVALENCE"
+    },
+    {
+      "path": "scripts/prepare_source_engine.py",
+      "git_blob": "f271f6454a3fbc8e58e07a12f822060f1a4bb152",
+      "mode": "100644",
+      "bytes": 3842,
+      "role": "legacy-command-entrypoint-or-fixture-builder",
+      "disposition": "RETAIN_PENDING_ROOT_REVIEW_AND_EQUIVALENCE"
+    },
+    {
+      "path": "scripts/run_native_probe.py",
+      "git_blob": "c51df839480dca86716d5dc696b93aa79515ce86",
+      "mode": "100644",
+      "bytes": 11794,
+      "role": "legacy-command-entrypoint-or-fixture-builder",
+      "disposition": "RETAIN_PENDING_ROOT_REVIEW_AND_EQUIVALENCE"
+    },
+    {
+      "path": "scripts/verify_candidate_build.py",
+      "git_blob": "5ed52f39de0e3a8cb77b8ff33d8355f6d6f71004",
+      "mode": "100644",
+      "bytes": 4819,
+      "role": "legacy-command-entrypoint-or-fixture-builder",
+      "disposition": "RETAIN_PENDING_ROOT_REVIEW_AND_EQUIVALENCE"
+    },
+    {
+      "path": "scripts/verify_main_build.py",
+      "git_blob": "f53afe8be4d9232ff881d6490bfc00dad2918185",
+      "mode": "100644",
+      "bytes": 4842,
+      "role": "legacy-command-entrypoint-or-fixture-builder",
+      "disposition": "RETAIN_PENDING_ROOT_REVIEW_AND_EQUIVALENCE"
+    },
+    {
+      "path": "scripts/verify_probe_apks.py",
+      "git_blob": "34c5ade7a664a940ecca0b4c86c932387c952a2b",
+      "mode": "100644",
+      "bytes": 6652,
+      "role": "legacy-command-entrypoint-or-fixture-builder",
+      "disposition": "RETAIN_PENDING_ROOT_REVIEW_AND_EQUIVALENCE"
+    },
+    {
+      "path": "settings.gradle.kts",
+      "git_blob": "ce8d1054c1e8271810e3a344a6e7503cd2e7e9cd",
+      "mode": "100644",
+      "bytes": 913,
+      "role": "legacy-build-orchestration",
+      "disposition": "RETAIN_PENDING_ROOT_REVIEW_AND_EQUIVALENCE"
+    }
+  ],
+  "minimal_stage_a_proposed_remove": [
+    "build.gradle.kts",
+    "gradle.properties"
+  ],
+  "minimal_stage_a_proposed_replace_with_fail_closed_guard": [
+    "settings.gradle.kts"
+  ],
+  "must_retain": [
+    "gradlew",
+    "gradlew.bat",
+    "gradle/wrapper/gradle-wrapper.jar",
+    "gradle/wrapper/gradle-wrapper.properties",
+    ".gitignore",
+    ".github/workflows/rebuild-kernel.yml",
+    "README.md",
+    "docs/**",
+    "spec/**",
+    "third_party/**",
+    "rebuild-*/**",
+    ".git/**"
+  ],
+  "counts": {
+    "legacy-build-orchestration": 10,
+    "legacy-implementation-or-probe": 83,
+    "legacy-regression-oracle": 21,
+    "legacy-schema-oracle": 3,
+    "legacy-third-party-patch-provenance": 1,
+    "legacy-command-entrypoint-or-fixture-builder": 16
+  }
+}

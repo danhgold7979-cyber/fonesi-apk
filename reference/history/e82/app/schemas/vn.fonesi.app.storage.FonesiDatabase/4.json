@@ -1,0 +1,272 @@
+{
+  "formatVersion": 1,
+  "database": {
+    "version": 4,
+    "identityHash": "bab5e9209b974b568780f922ff01622d",
+    "entities": [
+      {
+        "tableName": "clone_metadata",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`engineKey` TEXT NOT NULL, `cloneId` TEXT NOT NULL, `packageName` TEXT NOT NULL, `label` TEXT NOT NULL, `groupName` TEXT, `createdAt` INTEGER NOT NULL, `changedAt` INTEGER NOT NULL, `launchToken` TEXT NOT NULL DEFAULT '', `accentKey` TEXT NOT NULL DEFAULT 'teal', `badgeText` TEXT, PRIMARY KEY(`engineKey`, `cloneId`))",
+        "fields": [
+          {
+            "fieldPath": "engineKey",
+            "columnName": "engineKey",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "cloneId",
+            "columnName": "cloneId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "packageName",
+            "columnName": "packageName",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "label",
+            "columnName": "label",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "groupName",
+            "columnName": "groupName",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "createdAt",
+            "columnName": "createdAt",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "changedAt",
+            "columnName": "changedAt",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "launchToken",
+            "columnName": "launchToken",
+            "affinity": "TEXT",
+            "notNull": true,
+            "defaultValue": "''"
+          },
+          {
+            "fieldPath": "accentKey",
+            "columnName": "accentKey",
+            "affinity": "TEXT",
+            "notNull": true,
+            "defaultValue": "'teal'"
+          },
+          {
+            "fieldPath": "badgeText",
+            "columnName": "badgeText",
+            "affinity": "TEXT"
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "engineKey",
+            "cloneId"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_clone_metadata_launchToken",
+            "unique": true,
+            "columnNames": [
+              "launchToken"
+            ],
+            "orders": [],
+            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_clone_metadata_launchToken` ON `${TABLE_NAME}` (`launchToken`)"
+          }
+        ]
+      },
+      {
+        "tableName": "update_tasks",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`sequence` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `taskId` TEXT NOT NULL, `packageName` TEXT NOT NULL, `state` TEXT NOT NULL, `revision` INTEGER NOT NULL, `activeKey` TEXT, `payload` TEXT NOT NULL)",
+        "fields": [
+          {
+            "fieldPath": "sequence",
+            "columnName": "sequence",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "taskId",
+            "columnName": "taskId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "packageName",
+            "columnName": "packageName",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "state",
+            "columnName": "state",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "revision",
+            "columnName": "revision",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "activeKey",
+            "columnName": "activeKey",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "payload",
+            "columnName": "payload",
+            "affinity": "TEXT",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": true,
+          "columnNames": [
+            "sequence"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_update_tasks_taskId",
+            "unique": true,
+            "columnNames": [
+              "taskId"
+            ],
+            "orders": [],
+            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_update_tasks_taskId` ON `${TABLE_NAME}` (`taskId`)"
+          },
+          {
+            "name": "index_update_tasks_activeKey",
+            "unique": true,
+            "columnNames": [
+              "activeKey"
+            ],
+            "orders": [],
+            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_update_tasks_activeKey` ON `${TABLE_NAME}` (`activeKey`)"
+          },
+          {
+            "name": "index_update_tasks_packageName_state",
+            "unique": false,
+            "columnNames": [
+              "packageName",
+              "state"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_update_tasks_packageName_state` ON `${TABLE_NAME}` (`packageName`, `state`)"
+          }
+        ]
+      },
+      {
+        "tableName": "queue_control",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER NOT NULL, `paused` INTEGER NOT NULL, PRIMARY KEY(`id`))",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "paused",
+            "columnName": "paused",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        }
+      },
+      {
+        "tableName": "engine_instances",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`sequence` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `cloneId` TEXT NOT NULL, `engineKey` TEXT NOT NULL, `packageName` TEXT NOT NULL, `state` TEXT NOT NULL, `launchPending` INTEGER NOT NULL)",
+        "fields": [
+          {
+            "fieldPath": "sequence",
+            "columnName": "sequence",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "cloneId",
+            "columnName": "cloneId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "engineKey",
+            "columnName": "engineKey",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "packageName",
+            "columnName": "packageName",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "state",
+            "columnName": "state",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "launchPending",
+            "columnName": "launchPending",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": true,
+          "columnNames": [
+            "sequence"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_engine_instances_cloneId",
+            "unique": true,
+            "columnNames": [
+              "cloneId"
+            ],
+            "orders": [],
+            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_engine_instances_cloneId` ON `${TABLE_NAME}` (`cloneId`)"
+          },
+          {
+            "name": "index_engine_instances_engineKey",
+            "unique": false,
+            "columnNames": [
+              "engineKey"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_engine_instances_engineKey` ON `${TABLE_NAME}` (`engineKey`)"
+          }
+        ]
+      }
+    ],
+    "setupQueries": [
+      "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'bab5e9209b974b568780f922ff01622d')"
+    ]
+  }
+}

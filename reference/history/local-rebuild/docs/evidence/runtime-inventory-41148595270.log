@@ -1,0 +1,69 @@
+2026-10-31T00:09:31.6849008Z 0d9e8d12fea00be6e77b6bc4b7b4e719d62ef72d
+2026-10-31T00:09:28.2422886Z Image: ubuntu-24.04
+2026-10-31T00:09:28.2423427Z Version: 20261018.96.1
+2026-10-31T00:09:28.2424697Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20261018.96/images/ubuntu/Ubuntu2404-Readme.md
+2026-10-31T00:09:32.5579756Z {
+2026-10-31T00:09:32.5580201Z   "build_tools": {
+2026-10-31T00:09:32.5580574Z     "files": {
+2026-10-31T00:09:32.5580992Z       "aapt2": true,
+2026-10-31T00:09:32.5581363Z       "apksigner": true,
+2026-10-31T00:09:32.5581783Z       "zipalign": true
+2026-10-31T00:09:32.5582135Z     },
+2026-10-31T00:09:32.5582467Z     "revision": "36.0.0"
+2026-10-31T00:09:32.5582866Z   },
+2026-10-31T00:09:32.5583183Z   "candidate": {
+2026-10-31T00:09:32.5583501Z     "agp": "8.11.1",
+2026-10-31T00:09:32.5584289Z     "build_tools": "36.0.0",
+2026-10-31T00:09:32.5584751Z     "compile_sdk": 36,
+2026-10-31T00:09:32.5585196Z     "gradle": "8.13",
+2026-10-31T00:09:32.5585649Z     "java": 17
+2026-10-31T00:09:32.5585996Z   },
+2026-10-31T00:09:32.5586593Z   "checks": {
+2026-10-31T00:09:32.5587005Z     "build_tools_36_installed": true,
+2026-10-31T00:09:32.5587477Z     "jdk17_installed": true,
+2026-10-31T00:09:32.5587893Z     "platform_api36_installed": true,
+2026-10-31T00:09:32.5588296Z     "sdk_roots_consistent": true,
+2026-10-31T00:09:32.5588724Z     "wrapper_verified": true
+2026-10-31T00:09:32.5589097Z   },
+2026-10-31T00:09:32.5589520Z   "gradle_executed": false,
+2026-10-31T00:09:32.5589906Z   "image_os": "ubuntu24",
+2026-10-31T00:09:32.5590294Z   "image_version": "20261018.96.1",
+2026-10-31T00:09:32.5590673Z   "jdk17": {
+2026-10-31T00:09:32.5590990Z     "IMPLEMENTOR": "Eclipse Adoptium",
+2026-10-31T00:09:32.5591435Z     "JAVA_VERSION": "17.0.20.1"
+2026-10-31T00:09:32.5591793Z   },
+2026-10-31T00:09:32.5592446Z   "jdk17_root": "/usr/lib/jvm/temurin-17-jdk-amd64",
+2026-10-31T00:09:32.5592908Z   "platform": {
+2026-10-31T00:09:32.5593275Z     "AndroidVersion.ApiLevel": "36",
+2026-10-31T00:09:32.5593794Z     "Pkg.Desc": "Android SDK Platform 16",
+2026-10-31T00:09:32.5594231Z     "Pkg.Revision": "2"
+2026-10-31T00:09:32.5594593Z   },
+2026-10-31T00:09:32.5594972Z   "purpose": "READ_ONLY_INVENTORY_NOT_COMPILE",
+2026-10-31T00:09:32.5595388Z   "runtime_inventory": {
+2026-10-31T00:09:32.5595782Z     "emulator": {
+2026-10-31T00:09:32.5596120Z       "reason": "not_found",
+2026-10-31T00:09:32.5596747Z       "status": "ABSENT"
+2026-10-31T00:09:32.5597143Z     },
+2026-10-31T00:09:32.5597472Z     "host_machine": "x86_64",
+2026-10-31T00:09:32.5597916Z     "images": [],
+2026-10-31T00:09:32.5598271Z     "images_status": "ABSENT",
+2026-10-31T00:09:32.5598626Z     "kvm": {
+2026-10-31T00:09:32.5598996Z       "character_device": true,
+2026-10-31T00:09:32.5599437Z       "mode": "0o660",
+2026-10-31T00:09:32.5599864Z       "read_access": false,
+2026-10-31T00:09:32.5600254Z       "status": "PRESENT",
+2026-10-31T00:09:32.5600616Z       "write_access": false
+2026-10-31T00:09:32.5600990Z     },
+2026-10-31T00:09:32.5601370Z     "purpose": "READ_ONLY_RUNTIME_INVENTORY",
+2026-10-31T00:09:32.5602058Z     "runtime_started": false,
+2026-10-31T00:09:32.5602462Z     "scan_complete": true,
+2026-10-31T00:09:32.5602836Z     "sdk_tools_executed": false,
+2026-10-31T00:09:32.5603289Z     "summary": "NO_API26_CANDIDATE_IN_COMPLETE_SCAN"
+2026-10-31T00:09:32.5603748Z   },
+2026-10-31T00:09:32.5604078Z   "sdk_install_attempted": false,
+2026-10-31T00:09:32.5604516Z   "sdk_license_action": false,
+2026-10-31T00:09:32.5604921Z   "sdk_root": "/usr/local/lib/android/sdk",
+2026-10-31T00:09:32.5605543Z   "status": "READY_FOR_BOUNDED_COMPILE_REVIEW",
+2026-10-31T00:09:32.5606430Z   "wrapper_jar_sha256": "81a82aaea5abcc8ff68b3dfcb58b3c3c429378efd98e7433460610fecd7ae45f",
+2026-10-31T00:09:32.5607250Z   "wrapper_script_sha256": "734b3879d3501dce471cf0522d3bcbafe76873d9fc5129345b67fb43bd15e933"
+2026-10-31T00:09:32.5607924Z }

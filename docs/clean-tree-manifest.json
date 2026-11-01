@@ -1,0 +1,1710 @@
+{
+  "baseline_main": "c055df600f87ee9ddf0cd5d6bfc67d80d145e79d",
+  "scope": "NEW fonesi-apk-clean phase-00 branch only; original checkout untouched",
+  "paths": [
+    {
+      "path": ".gitignore",
+      "mode": "100644",
+      "blob": "17cf85a4576ebd4ef4c8525298ba3166b67fbb9b",
+      "bytes": 100,
+      "disposition": "KEEP_INFRASTRUCTURE_REVIEW",
+      "active_action": "REMOVE_FROM_NEW_ACTIVE_TREE",
+      "recovery_commit": "c055df600f87ee9ddf0cd5d6bfc67d80d145e79d",
+      "reference_replacement": null
+    },
+    {
+      "path": "README.md",
+      "mode": "100644",
+      "blob": "0ea1b1dd34aaac583ec2a31ad3d3ae7d5a2e2379",
+      "bytes": 10779,
+      "disposition": "ARCHIVE_REWRITE_ENTRYPOINT",
+      "active_action": "REMOVE_FROM_NEW_ACTIVE_TREE",
+      "recovery_commit": "c055df600f87ee9ddf0cd5d6bfc67d80d145e79d",
+      "reference_replacement": null
+    },
+    {
+      "path": "apk-runtime/build.gradle.kts",
+      "mode": "100644",
+      "blob": "99153bebf2fcc5d50d4c41a6a9d4be1a2873fc53",
+      "bytes": 1461,
+      "disposition": "ARCHIVE_REMOVE_OLD_IMPLEMENTATION",
+      "active_action": "REMOVE_FROM_NEW_ACTIVE_TREE",
+      "recovery_commit": "c055df600f87ee9ddf0cd5d6bfc67d80d145e79d",
+      "reference_replacement": null
+    },
+    {
+      "path": "apk-runtime/src/main/kotlin/vn/fonesi/apk/ApkSetAuditor.kt",
+      "mode": "100644",
+      "blob": "6ed5900dcc77098567e73fbb11cb297817301a15",
+      "bytes": 9809,
+      "disposition": "ARCHIVE_REMOVE_OLD_IMPLEMENTATION",
+      "active_action": "REMOVE_FROM_NEW_ACTIVE_TREE",
+      "recovery_commit": "c055df600f87ee9ddf0cd5d6bfc67d80d145e79d",
+      "reference_replacement": null
+    },
+    {
+      "path": "apk-runtime/src/main/kotlin/vn/fonesi/apk/PrivateApkStore.kt",
+      "mode": "100644",
+      "blob": "e84da535f75e0a4d1180e0832da21efe9d51713d",
+      "bytes": 9543,
+      "disposition": "ARCHIVE_REMOVE_OLD_IMPLEMENTATION",
+      "active_action": "REMOVE_FROM_NEW_ACTIVE_TREE",
+      "recovery_commit": "c055df600f87ee9ddf0cd5d6bfc67d80d145e79d",
+      "reference_replacement": null
+    },
+    {
+      "path": "apk-runtime/src/test/kotlin/vn/fonesi/apk/ApkSetAuditorTest.kt",
+      "mode": "100644",
+      "blob": "af787f4eeabff5fb5de86730d5719dd57afc5637",
+      "bytes": 6716,
+      "disposition": "ARCHIVE_REMOVE_OLD_IMPLEMENTATION",
+      "active_action": "REMOVE_FROM_NEW_ACTIVE_TREE",
+      "recovery_commit": "c055df600f87ee9ddf0cd5d6bfc67d80d145e79d",
+      "reference_replacement": null
+    },
+    {
+      "path": "apk-runtime/src/test/kotlin/vn/fonesi/apk/PrivateApkStoreTest.kt",
+      "mode": "100644",
+      "blob": "f3ee1086f104aea629e9e34ceb9c4321a7b3d198",
+      "bytes": 9676,
+      "disposition": "ARCHIVE_REMOVE_OLD_IMPLEMENTATION",
+      "active_action": "REMOVE_FROM_NEW_ACTIVE_TREE",
+      "recovery_commit": "c055df600f87ee9ddf0cd5d6bfc67d80d145e79d",
+      "reference_replacement": null
+    },
+    {
+      "path": "app/build.gradle.kts",
+      "mode": "100644",
+      "blob": "bbbf0c2ea3027886a1b6b3a96cacc3a7e1116bfc",
+      "bytes": 4453,
+      "disposition": "ARCHIVE_REMOVE_OLD_IMPLEMENTATION",
+      "active_action": "REMOVE_FROM_NEW_ACTIVE_TREE",
+      "recovery_commit": "c055df600f87ee9ddf0cd5d6bfc67d80d145e79d",
+      "reference_replacement": null
+    },
+    {
+      "path": "app/schemas/vn.fonesi.app.storage.FonesiDatabase/1.json",
+      "mode": "100644",
+      "blob": "062c59e4e03423cbc97a26f767ed027a344a2a43",
+      "bytes": 5287,
+      "disposition": "ARCHIVE_REMOVE_OLD_IMPLEMENTATION",
+      "active_action": "REMOVE_FROM_NEW_ACTIVE_TREE",
+      "recovery_commit": "c055df600f87ee9ddf0cd5d6bfc67d80d145e79d",
+      "reference_replacement": "reference/history/main/app/schemas/vn.fonesi.app.storage.FonesiDatabase/1.json"
+    },
+    {
+      "path": "app/schemas/vn.fonesi.app.storage.FonesiDatabase/2.json",
+      "mode": "100644",
+      "blob": "9eea5f6d55b6fce4a1269a75af6fb4c441eee613",
+      "bytes": 5896,
+      "disposition": "ARCHIVE_REMOVE_OLD_IMPLEMENTATION",
+      "active_action": "REMOVE_FROM_NEW_ACTIVE_TREE",
+      "recovery_commit": "c055df600f87ee9ddf0cd5d6bfc67d80d145e79d",
+      "reference_replacement": "reference/history/main/app/schemas/vn.fonesi.app.storage.FonesiDatabase/2.json"
+    },
+    {
+      "path": "app/schemas/vn.fonesi.app.storage.FonesiDatabase/3.json",
+      "mode": "100644",
+      "blob": "5c86213aaff9f3a1de6cd8d590d003c225d8b5a6",
+      "bytes": 8034,
+      "disposition": "ARCHIVE_REMOVE_OLD_IMPLEMENTATION",
+      "active_action": "REMOVE_FROM_NEW_ACTIVE_TREE",
+      "recovery_commit": "c055df600f87ee9ddf0cd5d6bfc67d80d145e79d",
+      "reference_replacement": "reference/history/main/app/schemas/vn.fonesi.app.storage.FonesiDatabase/3.json"
+    },
+    {
+      "path": "app/src/candidate/AndroidManifest.xml",
+      "mode": "100644",
+      "blob": "e8154f2f0a19c6e0f542975b9616e068972dbe5d",
+      "bytes": 44766,
+      "disposition": "ARCHIVE_REMOVE_OLD_IMPLEMENTATION",
+      "active_action": "REMOVE_FROM_NEW_ACTIVE_TREE",
+      "recovery_commit": "c055df600f87ee9ddf0cd5d6bfc67d80d145e79d",
+      "reference_replacement": null
+    },
+    {
+      "path": "app/src/candidate/java/vn/fonesi/app/runtime/RuntimeBindings.kt",
+      "mode": "100644",
+      "blob": "659f8e89fd6f7316f4ccf9d3d83d9367a2397be9",
+      "bytes": 4044,
+      "disposition": "ARCHIVE_REMOVE_OLD_IMPLEMENTATION",
+      "active_action": "REMOVE_FROM_NEW_ACTIVE_TREE",
+      "recovery_commit": "c055df600f87ee9ddf0cd5d6bfc67d80d145e79d",
+      "reference_replacement": null
+    },
+    {
+      "path": "app/src/candidate/java/vn/fonesi/app/runtime/SpaceCoreBackend.kt",
+      "mode": "100644",
+      "blob": "5e8a18fe4dd7ccfb4abacd0084f141eb3df8f692",
+      "bytes": 5551,
+      "disposition": "ARCHIVE_REMOVE_OLD_IMPLEMENTATION",
+      "active_action": "REMOVE_FROM_NEW_ACTIVE_TREE",
+      "recovery_commit": "c055df600f87ee9ddf0cd5d6bfc67d80d145e79d",
+      "reference_replacement": null
+    },
+    {
+      "path": "app/src/cloud/java/vn/fonesi/app/runtime/RuntimeBindings.kt",
+      "mode": "100644",
+      "blob": "00998add3750c2fd4c971da8328e3961d131f449",
+      "bytes": 647,
+      "disposition": "ARCHIVE_REMOVE_OLD_IMPLEMENTATION",
+      "active_action": "REMOVE_FROM_NEW_ACTIVE_TREE",
+      "recovery_commit": "c055df600f87ee9ddf0cd5d6bfc67d80d145e79d",
+      "reference_replacement": null
+    },
+    {
+      "path": "app/src/main/AndroidManifest.xml",
+      "mode": "100644",
+      "blob": "ab5136da888f2d0ab2631d548e705f55734ad58b",
+      "bytes": 1453,
+      "disposition": "ARCHIVE_REMOVE_OLD_IMPLEMENTATION",
+      "active_action": "REMOVE_FROM_NEW_ACTIVE_TREE",
+      "recovery_commit": "c055df600f87ee9ddf0cd5d6bfc67d80d145e79d",
+      "reference_replacement": null
+    },
+    {
+      "path": "app/src/main/java/vn/fonesi/app/AndroidSourceCatalog.kt",
+      "mode": "100644",
+      "blob": "b4a9d1ac54b413935115bbb490329c3f8e9931c8",
+      "bytes": 1673,
+      "disposition": "ARCHIVE_REMOVE_OLD_IMPLEMENTATION",
+      "active_action": "REMOVE_FROM_NEW_ACTIVE_TREE",
+      "recovery_commit": "c055df600f87ee9ddf0cd5d6bfc67d80d145e79d",
+      "reference_replacement": null
+    },
+    {
+      "path": "app/src/main/java/vn/fonesi/app/AppsViewModel.kt",
+      "mode": "100644",
+      "blob": "0499822cfdc67b77ef5cd541ab94a4a2da7d4259",
+      "bytes": 17702,
+      "disposition": "ARCHIVE_REMOVE_OLD_IMPLEMENTATION",
+      "active_action": "REMOVE_FROM_NEW_ACTIVE_TREE",
+      "recovery_commit": "c055df600f87ee9ddf0cd5d6bfc67d80d145e79d",
+      "reference_replacement": null
+    },
+    {
+      "path": "app/src/main/java/vn/fonesi/app/CloneListControls.kt",
+      "mode": "100644",
+      "blob": "56a75831fbb22971b110ce2f4ac5bfc7b3b10f64",
+      "bytes": 2891,
+      "disposition": "ARCHIVE_REMOVE_OLD_IMPLEMENTATION",
+      "active_action": "REMOVE_FROM_NEW_ACTIVE_TREE",
+      "recovery_commit": "c055df600f87ee9ddf0cd5d6bfc67d80d145e79d",
+      "reference_replacement": null
+    },
+    {
+      "path": "app/src/main/java/vn/fonesi/app/DeviceDiagnostics.kt",
+      "mode": "100644",
+      "blob": "417153934054e985fc544e1a2033c85ae8886203",
+      "bytes": 1595,
+      "disposition": "ARCHIVE_REMOVE_OLD_IMPLEMENTATION",
+      "active_action": "REMOVE_FROM_NEW_ACTIVE_TREE",
+      "recovery_commit": "c055df600f87ee9ddf0cd5d6bfc67d80d145e79d",
+      "reference_replacement": null
+    },
+    {
+      "path": "app/src/main/java/vn/fonesi/app/DeviceDiagnosticsCard.kt",
+      "mode": "100644",
+      "blob": "ba117b68441b0f65dfcf89c23ca05a9eb3b21588",
+      "bytes": 2220,
+      "disposition": "ARCHIVE_REMOVE_OLD_IMPLEMENTATION",
+      "active_action": "REMOVE_FROM_NEW_ACTIVE_TREE",
+      "recovery_commit": "c055df600f87ee9ddf0cd5d6bfc67d80d145e79d",
+      "reference_replacement": null
+    },
+    {
+      "path": "app/src/main/java/vn/fonesi/app/FonesiApplication.kt",
+      "mode": "100644",
+      "blob": "d15c54684ec12430c6f66f4a8841d73d3653160d",
+      "bytes": 308,
+      "disposition": "ARCHIVE_REMOVE_OLD_IMPLEMENTATION",
+      "active_action": "REMOVE_FROM_NEW_ACTIVE_TREE",
+      "recovery_commit": "c055df600f87ee9ddf0cd5d6bfc67d80d145e79d",
+      "reference_replacement": null
+    },
+    {
+      "path": "app/src/main/java/vn/fonesi/app/InstalledApps.kt",
+      "mode": "100644",
+      "blob": "efbb0af0dbbb0247d4fa8b1849de4d6a2fadfcdf",
+      "bytes": 2734,
+      "disposition": "ARCHIVE_REMOVE_OLD_IMPLEMENTATION",
+      "active_action": "REMOVE_FROM_NEW_ACTIVE_TREE",
+      "recovery_commit": "c055df600f87ee9ddf0cd5d6bfc67d80d145e79d",
+      "reference_replacement": null
+    },
+    {
+      "path": "app/src/main/java/vn/fonesi/app/MainActivity.kt",
+      "mode": "100644",
+      "blob": "ca8c0e385da354d809ee9645223753f5c8dbba45",
+      "bytes": 20997,
+      "disposition": "ARCHIVE_REMOVE_OLD_IMPLEMENTATION",
+      "active_action": "REMOVE_FROM_NEW_ACTIVE_TREE",
+      "recovery_commit": "c055df600f87ee9ddf0cd5d6bfc67d80d145e79d",
+      "reference_replacement": null
+    },
+    {
+      "path": "app/src/main/java/vn/fonesi/app/ManagementCards.kt",
+      "mode": "100644",
+      "blob": "ecf938e39fb92a52a041c0492d7e7cbb6083fa2c",
+      "bytes": 8174,
+      "disposition": "ARCHIVE_REMOVE_OLD_IMPLEMENTATION",
+      "active_action": "REMOVE_FROM_NEW_ACTIVE_TREE",
+      "recovery_commit": "c055df600f87ee9ddf0cd5d6bfc67d80d145e79d",
+      "reference_replacement": null
+    },
+    {
+      "path": "app/src/main/java/vn/fonesi/app/RuntimeSettingsCard.kt",
+      "mode": "100644",
+      "blob": "5e813cff76693df4e495fe56eea43189f767b710",
+      "bytes": 3189,
+      "disposition": "ARCHIVE_REMOVE_OLD_IMPLEMENTATION",
+      "active_action": "REMOVE_FROM_NEW_ACTIVE_TREE",
+      "recovery_commit": "c055df600f87ee9ddf0cd5d6bfc67d80d145e79d",
+      "reference_replacement": null
+    },
+    {
+      "path": "app/src/main/java/vn/fonesi/app/configuration/ConfigurationCard.kt",
+      "mode": "100644",
+      "blob": "c48c069badae1d9b011d1665d4b40a03592f7d60",
+      "bytes": 6157,
+      "disposition": "ARCHIVE_REMOVE_OLD_IMPLEMENTATION",
+      "active_action": "REMOVE_FROM_NEW_ACTIVE_TREE",
+      "recovery_commit": "c055df600f87ee9ddf0cd5d6bfc67d80d145e79d",
+      "reference_replacement": null
+    },
+    {
+      "path": "app/src/main/java/vn/fonesi/app/configuration/ConfigurationCodec.kt",
+      "mode": "100644",
+      "blob": "4440590cab33cbd2a9a926c0cb39f3262f3ba43a",
+      "bytes": 6374,
+      "disposition": "ARCHIVE_REMOVE_OLD_IMPLEMENTATION",
+      "active_action": "REMOVE_FROM_NEW_ACTIVE_TREE",
+      "recovery_commit": "c055df600f87ee9ddf0cd5d6bfc67d80d145e79d",
+      "reference_replacement": null
+    },
+    {
+      "path": "app/src/main/java/vn/fonesi/app/configuration/ConfigurationRepository.kt",
+      "mode": "100644",
+      "blob": "5743443ea60ec8c5cf94bcae9b9bce43dfddfa27",
+      "bytes": 2674,
+      "disposition": "ARCHIVE_REMOVE_OLD_IMPLEMENTATION",
+      "active_action": "REMOVE_FROM_NEW_ACTIVE_TREE",
+      "recovery_commit": "c055df600f87ee9ddf0cd5d6bfc67d80d145e79d",
+      "reference_replacement": null
+    },
+    {
+      "path": "app/src/main/java/vn/fonesi/app/configuration/ConfigurationViewModel.kt",
+      "mode": "100644",
+      "blob": "a466cb583a004f4b7a1bf5bc389968c9440af494",
+      "bytes": 6702,
+      "disposition": "ARCHIVE_REMOVE_OLD_IMPLEMENTATION",
+      "active_action": "REMOVE_FROM_NEW_ACTIVE_TREE",
+      "recovery_commit": "c055df600f87ee9ddf0cd5d6bfc67d80d145e79d",
+      "reference_replacement": null
+    },
+    {
+      "path": "app/src/main/java/vn/fonesi/app/security/AccessBroker.kt",
+      "mode": "100644",
+      "blob": "b557b5f97568b6a605a02dfba9ca93905e7bc5ac",
+      "bytes": 1542,
+      "disposition": "ARCHIVE_REMOVE_OLD_IMPLEMENTATION",
+      "active_action": "REMOVE_FROM_NEW_ACTIVE_TREE",
+      "recovery_commit": "c055df600f87ee9ddf0cd5d6bfc67d80d145e79d",
+      "reference_replacement": null
+    },
+    {
+      "path": "app/src/main/java/vn/fonesi/app/security/AccessGate.kt",
+      "mode": "100644",
+      "blob": "3974aa3efbf7eaa57f2f3c2582198ca50354c571",
+      "bytes": 1159,
+      "disposition": "ARCHIVE_REMOVE_OLD_IMPLEMENTATION",
+      "active_action": "REMOVE_FROM_NEW_ACTIVE_TREE",
+      "recovery_commit": "c055df600f87ee9ddf0cd5d6bfc67d80d145e79d",
+      "reference_replacement": null
+    },
+    {
+      "path": "app/src/main/java/vn/fonesi/app/security/AccessGateModel.kt",
+      "mode": "100644",
+      "blob": "47f5db6f2621e479a8adf601737074040d693c9a",
+      "bytes": 3772,
+      "disposition": "ARCHIVE_REMOVE_OLD_IMPLEMENTATION",
+      "active_action": "REMOVE_FROM_NEW_ACTIVE_TREE",
+      "recovery_commit": "c055df600f87ee9ddf0cd5d6bfc67d80d145e79d",
+      "reference_replacement": null
+    },
+    {
+      "path": "app/src/main/java/vn/fonesi/app/security/AccessPolicyStore.kt",
+      "mode": "100644",
+      "blob": "c9e03915940e2406c3a66a9cf25b15301eeff027",
+      "bytes": 1636,
+      "disposition": "ARCHIVE_REMOVE_OLD_IMPLEMENTATION",
+      "active_action": "REMOVE_FROM_NEW_ACTIVE_TREE",
+      "recovery_commit": "c055df600f87ee9ddf0cd5d6bfc67d80d145e79d",
+      "reference_replacement": null
+    },
+    {
+      "path": "app/src/main/java/vn/fonesi/app/security/LockedActivity.kt",
+      "mode": "100644",
+      "blob": "b5a8c11be80cb9dbf9e671abb9ee611c2e70ec3c",
+      "bytes": 5167,
+      "disposition": "ARCHIVE_REMOVE_OLD_IMPLEMENTATION",
+      "active_action": "REMOVE_FROM_NEW_ACTIVE_TREE",
+      "recovery_commit": "c055df600f87ee9ddf0cd5d6bfc67d80d145e79d",
+      "reference_replacement": null
+    },
+    {
+      "path": "app/src/main/java/vn/fonesi/app/shortcuts/AndroidCloneShortcuts.kt",
+      "mode": "100644",
+      "blob": "c36b892e06ee8e8b59d4208cb7a1a840d18dfacf",
+      "bytes": 3499,
+      "disposition": "ARCHIVE_REMOVE_OLD_IMPLEMENTATION",
+      "active_action": "REMOVE_FROM_NEW_ACTIVE_TREE",
+      "recovery_commit": "c055df600f87ee9ddf0cd5d6bfc67d80d145e79d",
+      "reference_replacement": null
+    },
+    {
+      "path": "app/src/main/java/vn/fonesi/app/shortcuts/CloneLaunchActivity.kt",
+      "mode": "100644",
+      "blob": "828ccd45da0759c5f93f56536022c827511ba9c2",
+      "bytes": 4687,
+      "disposition": "ARCHIVE_REMOVE_OLD_IMPLEMENTATION",
+      "active_action": "REMOVE_FROM_NEW_ACTIVE_TREE",
+      "recovery_commit": "c055df600f87ee9ddf0cd5d6bfc67d80d145e79d",
+      "reference_replacement": null
+    },
+    {
+      "path": "app/src/main/java/vn/fonesi/app/shortcuts/CloneLaunchController.kt",
+      "mode": "100644",
+      "blob": "480077a79fcec1b96ad681b908674c8e94a076b7",
+      "bytes": 3454,
+      "disposition": "ARCHIVE_REMOVE_OLD_IMPLEMENTATION",
+      "active_action": "REMOVE_FROM_NEW_ACTIVE_TREE",
+      "recovery_commit": "c055df600f87ee9ddf0cd5d6bfc67d80d145e79d",
+      "reference_replacement": null
+    },
+    {
+      "path": "app/src/main/java/vn/fonesi/app/shortcuts/CloneRoute.kt",
+      "mode": "100644",
+      "blob": "4f6483854ce99b75296c8084a3ae56f7e07fa38b",
+      "bytes": 1446,
+      "disposition": "ARCHIVE_REMOVE_OLD_IMPLEMENTATION",
+      "active_action": "REMOVE_FROM_NEW_ACTIVE_TREE",
+      "recovery_commit": "c055df600f87ee9ddf0cd5d6bfc67d80d145e79d",
+      "reference_replacement": null
+    },
+    {
+      "path": "app/src/main/java/vn/fonesi/app/storage/CloneMetadataRepository.kt",
+      "mode": "100644",
+      "blob": "8f6a8d76a01303c7436083765b46086aa53a02b8",
+      "bytes": 4669,
+      "disposition": "ARCHIVE_REMOVE_OLD_IMPLEMENTATION",
+      "active_action": "REMOVE_FROM_NEW_ACTIVE_TREE",
+      "recovery_commit": "c055df600f87ee9ddf0cd5d6bfc67d80d145e79d",
+      "reference_replacement": null
+    },
+    {
+      "path": "app/src/main/java/vn/fonesi/app/storage/EngineInstances.kt",
+      "mode": "100644",
+      "blob": "4bf587d954d504b2c80f559c90c6888dbcceff77",
+      "bytes": 2126,
+      "disposition": "ARCHIVE_REMOVE_OLD_IMPLEMENTATION",
+      "active_action": "REMOVE_FROM_NEW_ACTIVE_TREE",
+      "recovery_commit": "c055df600f87ee9ddf0cd5d6bfc67d80d145e79d",
+      "reference_replacement": null
+    },
+    {
+      "path": "app/src/main/java/vn/fonesi/app/storage/FonesiDatabase.kt",
+      "mode": "100644",
+      "blob": "42eef6e0a813024bf5a0ef09b4f5cf8d2f30757f",
+      "bytes": 5837,
+      "disposition": "ARCHIVE_REMOVE_OLD_IMPLEMENTATION",
+      "active_action": "REMOVE_FROM_NEW_ACTIVE_TREE",
+      "recovery_commit": "c055df600f87ee9ddf0cd5d6bfc67d80d145e79d",
+      "reference_replacement": null
+    },
+    {
+      "path": "app/src/main/java/vn/fonesi/app/storage/LocalServices.kt",
+      "mode": "100644",
+      "blob": "bdd9836919f43fb22a2fe5705ea8c6fa924a0982",
+      "bytes": 2997,
+      "disposition": "ARCHIVE_REMOVE_OLD_IMPLEMENTATION",
+      "active_action": "REMOVE_FROM_NEW_ACTIVE_TREE",
+      "recovery_commit": "c055df600f87ee9ddf0cd5d6bfc67d80d145e79d",
+      "reference_replacement": null
+    },
+    {
+      "path": "app/src/main/java/vn/fonesi/app/storage/PreservingOpenHelperFactory.kt",
+      "mode": "100644",
+      "blob": "c7c6733ece1313f932c84830e686f2824f3babf6",
+      "bytes": 1768,
+      "disposition": "ARCHIVE_REMOVE_OLD_IMPLEMENTATION",
+      "active_action": "REMOVE_FROM_NEW_ACTIVE_TREE",
+      "recovery_commit": "c055df600f87ee9ddf0cd5d6bfc67d80d145e79d",
+      "reference_replacement": null
+    },
+    {
+      "path": "app/src/main/java/vn/fonesi/app/storage/RoomUpdateTaskStore.kt",
+      "mode": "100644",
+      "blob": "c422809d4c2c120dcddffcdda2305ab6e6724c61",
+      "bytes": 1794,
+      "disposition": "ARCHIVE_REMOVE_OLD_IMPLEMENTATION",
+      "active_action": "REMOVE_FROM_NEW_ACTIVE_TREE",
+      "recovery_commit": "c055df600f87ee9ddf0cd5d6bfc67d80d145e79d",
+      "reference_replacement": null
+    },
+    {
+      "path": "app/src/main/java/vn/fonesi/app/storage/TaskCodec.kt",
+      "mode": "100644",
+      "blob": "45fe50d719a9f6a11dd9111992a8446d2ff61b39",
+      "bytes": 2771,
+      "disposition": "ARCHIVE_REMOVE_OLD_IMPLEMENTATION",
+      "active_action": "REMOVE_FROM_NEW_ACTIVE_TREE",
+      "recovery_commit": "c055df600f87ee9ddf0cd5d6bfc67d80d145e79d",
+      "reference_replacement": null
+    },
+    {
+      "path": "app/src/main/java/vn/fonesi/app/update/AutoUpdatePolicyStore.kt",
+      "mode": "100644",
+      "blob": "b8808293d2584e3b3159f385a14d3c21c703bc8c",
+      "bytes": 1594,
+      "disposition": "ARCHIVE_REMOVE_OLD_IMPLEMENTATION",
+      "active_action": "REMOVE_FROM_NEW_ACTIVE_TREE",
+      "recovery_commit": "c055df600f87ee9ddf0cd5d6bfc67d80d145e79d",
+      "reference_replacement": null
+    },
+    {
+      "path": "app/src/main/java/vn/fonesi/app/update/AutomaticUpdatesCard.kt",
+      "mode": "100644",
+      "blob": "b32cfcf973451fb867285266b62bae7afeeabe5a",
+      "bytes": 2716,
+      "disposition": "ARCHIVE_REMOVE_OLD_IMPLEMENTATION",
+      "active_action": "REMOVE_FROM_NEW_ACTIVE_TREE",
+      "recovery_commit": "c055df600f87ee9ddf0cd5d6bfc67d80d145e79d",
+      "reference_replacement": null
+    },
+    {
+      "path": "app/src/main/java/vn/fonesi/app/update/ForegroundAutoUpdater.kt",
+      "mode": "100644",
+      "blob": "15e04e6774534803c0da58423d2499a6ce9f0cba",
+      "bytes": 5895,
+      "disposition": "ARCHIVE_REMOVE_OLD_IMPLEMENTATION",
+      "active_action": "REMOVE_FROM_NEW_ACTIVE_TREE",
+      "recovery_commit": "c055df600f87ee9ddf0cd5d6bfc67d80d145e79d",
+      "reference_replacement": null
+    },
+    {
+      "path": "app/src/main/java/vn/fonesi/app/update/UpdatePreviewDialog.kt",
+      "mode": "100644",
+      "blob": "f9216c2c082bc3b888af1d6a1823a37251fae89a",
+      "bytes": 3927,
+      "disposition": "ARCHIVE_REMOVE_OLD_IMPLEMENTATION",
+      "active_action": "REMOVE_FROM_NEW_ACTIVE_TREE",
+      "recovery_commit": "c055df600f87ee9ddf0cd5d6bfc67d80d145e79d",
+      "reference_replacement": null
+    },
+    {
+      "path": "app/src/main/java/vn/fonesi/app/update/UpdateRequestService.kt",
+      "mode": "100644",
+      "blob": "7ad8b0ac03d5129a7b4bf4c2c6a0ae299a748b6d",
+      "bytes": 4504,
+      "disposition": "ARCHIVE_REMOVE_OLD_IMPLEMENTATION",
+      "active_action": "REMOVE_FROM_NEW_ACTIVE_TREE",
+      "recovery_commit": "c055df600f87ee9ddf0cd5d6bfc67d80d145e79d",
+      "reference_replacement": null
+    },
+    {
+      "path": "app/src/main/res/drawable/ic_fonesi.xml",
+      "mode": "100644",
+      "blob": "29c32ff30cabdbb3900814d9a7815087e4a12202",
+      "bytes": 510,
+      "disposition": "KEEP_UI_REFERENCE_NOT_IMPLEMENTATION",
+      "active_action": "REMOVE_FROM_NEW_ACTIVE_TREE",
+      "recovery_commit": "c055df600f87ee9ddf0cd5d6bfc67d80d145e79d",
+      "reference_replacement": "reference/history/main/app/src/main/res/drawable/ic_fonesi.xml"
+    },
+    {
+      "path": "app/src/main/res/values/strings.xml",
+      "mode": "100644",
+      "blob": "2f7a3970ab5a3710fcad183652e878d8fde82bbc",
+      "bytes": 69,
+      "disposition": "KEEP_UI_REFERENCE_NOT_IMPLEMENTATION",
+      "active_action": "REMOVE_FROM_NEW_ACTIVE_TREE",
+      "recovery_commit": "c055df600f87ee9ddf0cd5d6bfc67d80d145e79d",
+      "reference_replacement": "reference/history/main/app/src/main/res/values/strings.xml"
+    },
+    {
+      "path": "app/src/main/res/values/themes.xml",
+      "mode": "100644",
+      "blob": "f9efac1e2630c3f6de197f912af6eb79a1bbbf7a",
+      "bytes": 220,
+      "disposition": "KEEP_UI_REFERENCE_NOT_IMPLEMENTATION",
+      "active_action": "REMOVE_FROM_NEW_ACTIVE_TREE",
+      "recovery_commit": "c055df600f87ee9ddf0cd5d6bfc67d80d145e79d",
+      "reference_replacement": "reference/history/main/app/src/main/res/values/themes.xml"
+    },
+    {
+      "path": "app/src/main/res/xml/data_extraction_rules.xml",
+      "mode": "100644",
+      "blob": "b853a8d2452fe340b2e07d1899f3437e49fb123b",
+      "bytes": 1050,
+      "disposition": "KEEP_UI_REFERENCE_NOT_IMPLEMENTATION",
+      "active_action": "REMOVE_FROM_NEW_ACTIVE_TREE",
+      "recovery_commit": "c055df600f87ee9ddf0cd5d6bfc67d80d145e79d",
+      "reference_replacement": "reference/history/main/app/src/main/res/xml/data_extraction_rules.xml"
+    },
+    {
+      "path": "app/src/test/java/vn/fonesi/app/configuration/ConfigurationTest.kt",
+      "mode": "100644",
+      "blob": "8c74ad0a407123df36f2b85a6b58654eb72bd639",
+      "bytes": 13273,
+      "disposition": "ARCHIVE_REMOVE_OLD_IMPLEMENTATION",
+      "active_action": "REMOVE_FROM_NEW_ACTIVE_TREE",
+      "recovery_commit": "c055df600f87ee9ddf0cd5d6bfc67d80d145e79d",
+      "reference_replacement": null
+    },
+    {
+      "path": "app/src/test/java/vn/fonesi/app/security/AccessPolicyTest.kt",
+      "mode": "100644",
+      "blob": "14eeae2decdb885d7a4ab76d78a73577c9252975",
+      "bytes": 5242,
+      "disposition": "ARCHIVE_REMOVE_OLD_IMPLEMENTATION",
+      "active_action": "REMOVE_FROM_NEW_ACTIVE_TREE",
+      "recovery_commit": "c055df600f87ee9ddf0cd5d6bfc67d80d145e79d",
+      "reference_replacement": null
+    },
+    {
+      "path": "app/src/test/java/vn/fonesi/app/shortcuts/ShortcutIntegrationTest.kt",
+      "mode": "100644",
+      "blob": "62603518b5c779b2cf0c3283668e9b8b96c92d34",
+      "bytes": 17825,
+      "disposition": "ARCHIVE_REMOVE_OLD_IMPLEMENTATION",
+      "active_action": "REMOVE_FROM_NEW_ACTIVE_TREE",
+      "recovery_commit": "c055df600f87ee9ddf0cd5d6bfc67d80d145e79d",
+      "reference_replacement": null
+    },
+    {
+      "path": "app/src/test/java/vn/fonesi/app/storage/InstanceRegistryTest.kt",
+      "mode": "100644",
+      "blob": "3433e4708f753f1d4c6733fa1774d65e9103a3b1",
+      "bytes": 4322,
+      "disposition": "ARCHIVE_REMOVE_OLD_IMPLEMENTATION",
+      "active_action": "REMOVE_FROM_NEW_ACTIVE_TREE",
+      "recovery_commit": "c055df600f87ee9ddf0cd5d6bfc67d80d145e79d",
+      "reference_replacement": null
+    },
+    {
+      "path": "app/src/test/java/vn/fonesi/app/storage/StorageIntegrationTest.kt",
+      "mode": "100644",
+      "blob": "e1e591df3d613ff861282a740ccc4762d8c2a9a5",
+      "bytes": 13750,
+      "disposition": "ARCHIVE_REMOVE_OLD_IMPLEMENTATION",
+      "active_action": "REMOVE_FROM_NEW_ACTIVE_TREE",
+      "recovery_commit": "c055df600f87ee9ddf0cd5d6bfc67d80d145e79d",
+      "reference_replacement": null
+    },
+    {
+      "path": "app/src/test/java/vn/fonesi/app/update/ForegroundAutoUpdaterTest.kt",
+      "mode": "100644",
+      "blob": "855b6eec326a8202f1845dfd9ab64bbea988ed78",
+      "bytes": 9206,
+      "disposition": "ARCHIVE_REMOVE_OLD_IMPLEMENTATION",
+      "active_action": "REMOVE_FROM_NEW_ACTIVE_TREE",
+      "recovery_commit": "c055df600f87ee9ddf0cd5d6bfc67d80d145e79d",
+      "reference_replacement": null
+    },
+    {
+      "path": "app/src/test/java/vn/fonesi/app/update/UpdateRequestServiceTest.kt",
+      "mode": "100644",
+      "blob": "cb391b639aceadcbdc4376bb6ba551d83a2e870e",
+      "bytes": 10254,
+      "disposition": "ARCHIVE_REMOVE_OLD_IMPLEMENTATION",
+      "active_action": "REMOVE_FROM_NEW_ACTIVE_TREE",
+      "recovery_commit": "c055df600f87ee9ddf0cd5d6bfc67d80d145e79d",
+      "reference_replacement": null
+    },
+    {
+      "path": "build.gradle.kts",
+      "mode": "100644",
+      "blob": "e1de26e5052816f4d7b9961b18a3645e072299f9",
+      "bytes": 376,
+      "disposition": "ARCHIVE_REMOVE_OLD_IMPLEMENTATION",
+      "active_action": "REMOVE_FROM_NEW_ACTIVE_TREE",
+      "recovery_commit": "c055df600f87ee9ddf0cd5d6bfc67d80d145e79d",
+      "reference_replacement": null
+    },
+    {
+      "path": "core/build.gradle.kts",
+      "mode": "100644",
+      "blob": "adac5996105101b2912ef89c9466713f34719c07",
+      "bytes": 112,
+      "disposition": "ARCHIVE_REMOVE_OLD_IMPLEMENTATION",
+      "active_action": "REMOVE_FROM_NEW_ACTIVE_TREE",
+      "recovery_commit": "c055df600f87ee9ddf0cd5d6bfc67d80d145e79d",
+      "reference_replacement": null
+    },
+    {
+      "path": "core/src/main/kotlin/vn/fonesi/core/AccessSession.kt",
+      "mode": "100644",
+      "blob": "00749641f2cb2b0cd646d249b2dd87166e56ad4c",
+      "bytes": 1813,
+      "disposition": "ARCHIVE_REMOVE_OLD_IMPLEMENTATION",
+      "active_action": "REMOVE_FROM_NEW_ACTIVE_TREE",
+      "recovery_commit": "c055df600f87ee9ddf0cd5d6bfc67d80d145e79d",
+      "reference_replacement": null
+    },
+    {
+      "path": "core/src/main/kotlin/vn/fonesi/core/AppCatalog.kt",
+      "mode": "100644",
+      "blob": "c85a9ed05c870ead57b8436e38533e254500dd18",
+      "bytes": 559,
+      "disposition": "ARCHIVE_REMOVE_OLD_IMPLEMENTATION",
+      "active_action": "REMOVE_FROM_NEW_ACTIVE_TREE",
+      "recovery_commit": "c055df600f87ee9ddf0cd5d6bfc67d80d145e79d",
+      "reference_replacement": null
+    },
+    {
+      "path": "core/src/main/kotlin/vn/fonesi/core/CloneEngine.kt",
+      "mode": "100644",
+      "blob": "f624e654690f70d6f66433e639306fbd7861830a",
+      "bytes": 2284,
+      "disposition": "ARCHIVE_REMOVE_OLD_IMPLEMENTATION",
+      "active_action": "REMOVE_FROM_NEW_ACTIVE_TREE",
+      "recovery_commit": "c055df600f87ee9ddf0cd5d6bfc67d80d145e79d",
+      "reference_replacement": null
+    },
+    {
+      "path": "core/src/main/kotlin/vn/fonesi/core/CloneListPolicy.kt",
+      "mode": "100644",
+      "blob": "17f204b1f49be032efabafde599442e4b0a984ac",
+      "bytes": 1695,
+      "disposition": "ARCHIVE_REMOVE_OLD_IMPLEMENTATION",
+      "active_action": "REMOVE_FROM_NEW_ACTIVE_TREE",
+      "recovery_commit": "c055df600f87ee9ddf0cd5d6bfc67d80d145e79d",
+      "reference_replacement": null
+    },
+    {
+      "path": "core/src/main/kotlin/vn/fonesi/core/ManagedGuestEngine.kt",
+      "mode": "100644",
+      "blob": "817961de24132f76b01ea85c9ccb6dac2608e939",
+      "bytes": 8781,
+      "disposition": "ARCHIVE_REMOVE_OLD_IMPLEMENTATION",
+      "active_action": "REMOVE_FROM_NEW_ACTIVE_TREE",
+      "recovery_commit": "c055df600f87ee9ddf0cd5d6bfc67d80d145e79d",
+      "reference_replacement": null
+    },
+    {
+      "path": "core/src/main/kotlin/vn/fonesi/core/ProbePolicy.kt",
+      "mode": "100644",
+      "blob": "a9950446946cccef8c5c1a5fb28ba588809aafa6",
+      "bytes": 602,
+      "disposition": "ARCHIVE_REMOVE_OLD_IMPLEMENTATION",
+      "active_action": "REMOVE_FROM_NEW_ACTIVE_TREE",
+      "recovery_commit": "c055df600f87ee9ddf0cd5d6bfc67d80d145e79d",
+      "reference_replacement": null
+    },
+    {
+      "path": "core/src/main/kotlin/vn/fonesi/core/UpdatePlanner.kt",
+      "mode": "100644",
+      "blob": "c1cb86d132085cd16cb728c3ee69bdbfa767aae2",
+      "bytes": 4252,
+      "disposition": "ARCHIVE_REMOVE_OLD_IMPLEMENTATION",
+      "active_action": "REMOVE_FROM_NEW_ACTIVE_TREE",
+      "recovery_commit": "c055df600f87ee9ddf0cd5d6bfc67d80d145e79d",
+      "reference_replacement": null
+    },
+    {
+      "path": "core/src/main/kotlin/vn/fonesi/core/update/FileQueueLock.kt",
+      "mode": "100644",
+      "blob": "ed60cd627de1a1a4ea08b404701bb6ee3c4bdfda",
+      "bytes": 972,
+      "disposition": "ARCHIVE_REMOVE_OLD_IMPLEMENTATION",
+      "active_action": "REMOVE_FROM_NEW_ACTIVE_TREE",
+      "recovery_commit": "c055df600f87ee9ddf0cd5d6bfc67d80d145e79d",
+      "reference_replacement": null
+    },
+    {
+      "path": "core/src/main/kotlin/vn/fonesi/core/update/FileSourceSnapshotter.kt",
+      "mode": "100644",
+      "blob": "bb110e642207acd1a5e02e9055f688c4361b4612",
+      "bytes": 5441,
+      "disposition": "ARCHIVE_REMOVE_OLD_IMPLEMENTATION",
+      "active_action": "REMOVE_FROM_NEW_ACTIVE_TREE",
+      "recovery_commit": "c055df600f87ee9ddf0cd5d6bfc67d80d145e79d",
+      "reference_replacement": null
+    },
+    {
+      "path": "core/src/main/kotlin/vn/fonesi/core/update/UpdatePorts.kt",
+      "mode": "100644",
+      "blob": "1f1c316f5fc9e5f27c9277a7fcf132da5c6a08ff",
+      "bytes": 1359,
+      "disposition": "ARCHIVE_REMOVE_OLD_IMPLEMENTATION",
+      "active_action": "REMOVE_FROM_NEW_ACTIVE_TREE",
+      "recovery_commit": "c055df600f87ee9ddf0cd5d6bfc67d80d145e79d",
+      "reference_replacement": null
+    },
+    {
+      "path": "core/src/main/kotlin/vn/fonesi/core/update/UpdateQueue.kt",
+      "mode": "100644",
+      "blob": "88f9218d946217f357c866d0c13f80bb78af5f7e",
+      "bytes": 1149,
+      "disposition": "ARCHIVE_REMOVE_OLD_IMPLEMENTATION",
+      "active_action": "REMOVE_FROM_NEW_ACTIVE_TREE",
+      "recovery_commit": "c055df600f87ee9ddf0cd5d6bfc67d80d145e79d",
+      "reference_replacement": null
+    },
+    {
+      "path": "core/src/main/kotlin/vn/fonesi/core/update/UpdateRunner.kt",
+      "mode": "100644",
+      "blob": "30d6c8910ff60f207f8fdd9206134b69566d4369",
+      "bytes": 11089,
+      "disposition": "ARCHIVE_REMOVE_OLD_IMPLEMENTATION",
+      "active_action": "REMOVE_FROM_NEW_ACTIVE_TREE",
+      "recovery_commit": "c055df600f87ee9ddf0cd5d6bfc67d80d145e79d",
+      "reference_replacement": null
+    },
+    {
+      "path": "core/src/main/kotlin/vn/fonesi/core/update/UpdateTask.kt",
+      "mode": "100644",
+      "blob": "987bc7e839f654873cbac9ba005d905fd5af2c20",
+      "bytes": 4918,
+      "disposition": "ARCHIVE_REMOVE_OLD_IMPLEMENTATION",
+      "active_action": "REMOVE_FROM_NEW_ACTIVE_TREE",
+      "recovery_commit": "c055df600f87ee9ddf0cd5d6bfc67d80d145e79d",
+      "reference_replacement": null
+    },
+    {
+      "path": "core/src/test/kotlin/vn/fonesi/core/AccessSessionTest.kt",
+      "mode": "100644",
+      "blob": "67272f9d69c8ec8eade1b50765f31b6c6ce132f4",
+      "bytes": 3289,
+      "disposition": "ARCHIVE_REMOVE_OLD_IMPLEMENTATION",
+      "active_action": "REMOVE_FROM_NEW_ACTIVE_TREE",
+      "recovery_commit": "c055df600f87ee9ddf0cd5d6bfc67d80d145e79d",
+      "reference_replacement": null
+    },
+    {
+      "path": "core/src/test/kotlin/vn/fonesi/core/CloneListPolicyTest.kt",
+      "mode": "100644",
+      "blob": "7ef07dc1349ba3dae3d7c5d68a3d8e0fa573920d",
+      "bytes": 2188,
+      "disposition": "ARCHIVE_REMOVE_OLD_IMPLEMENTATION",
+      "active_action": "REMOVE_FROM_NEW_ACTIVE_TREE",
+      "recovery_commit": "c055df600f87ee9ddf0cd5d6bfc67d80d145e79d",
+      "reference_replacement": null
+    },
+    {
+      "path": "core/src/test/kotlin/vn/fonesi/core/ManagedGuestEngineTest.kt",
+      "mode": "100644",
+      "blob": "3363e5f48ec236672d52e78a1e9f2ce8b2ac660a",
+      "bytes": 14950,
+      "disposition": "ARCHIVE_REMOVE_OLD_IMPLEMENTATION",
+      "active_action": "REMOVE_FROM_NEW_ACTIVE_TREE",
+      "recovery_commit": "c055df600f87ee9ddf0cd5d6bfc67d80d145e79d",
+      "reference_replacement": null
+    },
+    {
+      "path": "core/src/test/kotlin/vn/fonesi/core/ProbePolicyTest.kt",
+      "mode": "100644",
+      "blob": "5e66b9156f7b8a37390a5f049d3d199d6273fb8e",
+      "bytes": 1075,
+      "disposition": "ARCHIVE_REMOVE_OLD_IMPLEMENTATION",
+      "active_action": "REMOVE_FROM_NEW_ACTIVE_TREE",
+      "recovery_commit": "c055df600f87ee9ddf0cd5d6bfc67d80d145e79d",
+      "reference_replacement": null
+    },
+    {
+      "path": "core/src/test/kotlin/vn/fonesi/core/UpdatePlannerTest.kt",
+      "mode": "100644",
+      "blob": "bf0b3aa3cedafeb7fa46085183df5972160e974b",
+      "bytes": 8131,
+      "disposition": "ARCHIVE_REMOVE_OLD_IMPLEMENTATION",
+      "active_action": "REMOVE_FROM_NEW_ACTIVE_TREE",
+      "recovery_commit": "c055df600f87ee9ddf0cd5d6bfc67d80d145e79d",
+      "reference_replacement": null
+    },
+    {
+      "path": "core/src/test/kotlin/vn/fonesi/core/update/ExecutionPolicyTest.kt",
+      "mode": "100644",
+      "blob": "ccb44f85ac6b2dcb5950a9ecc64fca202b51f794",
+      "bytes": 2421,
+      "disposition": "ARCHIVE_REMOVE_OLD_IMPLEMENTATION",
+      "active_action": "REMOVE_FROM_NEW_ACTIVE_TREE",
+      "recovery_commit": "c055df600f87ee9ddf0cd5d6bfc67d80d145e79d",
+      "reference_replacement": null
+    },
+    {
+      "path": "core/src/test/kotlin/vn/fonesi/core/update/FileSourceSnapshotterTest.kt",
+      "mode": "100644",
+      "blob": "df59f688a4676e7a34e0897da281caa90faac5bf",
+      "bytes": 4229,
+      "disposition": "ARCHIVE_REMOVE_OLD_IMPLEMENTATION",
+      "active_action": "REMOVE_FROM_NEW_ACTIVE_TREE",
+      "recovery_commit": "c055df600f87ee9ddf0cd5d6bfc67d80d145e79d",
+      "reference_replacement": null
+    },
+    {
+      "path": "core/src/test/kotlin/vn/fonesi/core/update/QueueFixtures.kt",
+      "mode": "100644",
+      "blob": "e6202ccd98df71e6d35db189168a4b95ce5183f1",
+      "bytes": 3749,
+      "disposition": "ARCHIVE_REMOVE_OLD_IMPLEMENTATION",
+      "active_action": "REMOVE_FROM_NEW_ACTIVE_TREE",
+      "recovery_commit": "c055df600f87ee9ddf0cd5d6bfc67d80d145e79d",
+      "reference_replacement": null
+    },
+    {
+      "path": "core/src/test/kotlin/vn/fonesi/core/update/UpdateRunnerTest.kt",
+      "mode": "100644",
+      "blob": "689837d710f94cc9e30fa4f8fbde5c0abad1141d",
+      "bytes": 11220,
+      "disposition": "ARCHIVE_REMOVE_OLD_IMPLEMENTATION",
+      "active_action": "REMOVE_FROM_NEW_ACTIVE_TREE",
+      "recovery_commit": "c055df600f87ee9ddf0cd5d6bfc67d80d145e79d",
+      "reference_replacement": null
+    },
+    {
+      "path": "docs/ACCESS_CONTROL.md",
+      "mode": "100644",
+      "blob": "753ef6854e30a6341b90c2babffc9397241da822",
+      "bytes": 4451,
+      "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE",
+      "active_action": "REMOVE_FROM_NEW_ACTIVE_TREE",
+      "recovery_commit": "c055df600f87ee9ddf0cd5d6bfc67d80d145e79d",
+      "reference_replacement": "reference/history/main/docs/ACCESS_CONTROL.md"
+    },
+    {
+      "path": "docs/APK_SET_VALIDATION.md",
+      "mode": "100644",
+      "blob": "e60ddad072e8e22ceb178ad140fd9f91fbf61f0e",
+      "bytes": 7133,
+      "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE",
+      "active_action": "REMOVE_FROM_NEW_ACTIVE_TREE",
+      "recovery_commit": "c055df600f87ee9ddf0cd5d6bfc67d80d145e79d",
+      "reference_replacement": "reference/history/main/docs/APK_SET_VALIDATION.md"
+    },
+    {
+      "path": "docs/CLOUD_BACKEND.md",
+      "mode": "100644",
+      "blob": "0da5198f661fa5014745940a019c42c561159225",
+      "bytes": 7091,
+      "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE",
+      "active_action": "REMOVE_FROM_NEW_ACTIVE_TREE",
+      "recovery_commit": "c055df600f87ee9ddf0cd5d6bfc67d80d145e79d",
+      "reference_replacement": "reference/history/main/docs/CLOUD_BACKEND.md"
+    },
+    {
+      "path": "docs/CLOUD_VALIDATION.md",
+      "mode": "100644",
+      "blob": "8bfb8a81c9293796b5eb1bc830a48ad0d16b63bf",
+      "bytes": 5192,
+      "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE",
+      "active_action": "REMOVE_FROM_NEW_ACTIVE_TREE",
+      "recovery_commit": "c055df600f87ee9ddf0cd5d6bfc67d80d145e79d",
+      "reference_replacement": "reference/history/main/docs/CLOUD_VALIDATION.md"
+    },
+    {
+      "path": "docs/CODE_TEST_RULES.md",
+      "mode": "100644",
+      "blob": "c58416da6a30c411bf769f960f0d26723d0c787e",
+      "bytes": 4632,
+      "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE",
+      "active_action": "REMOVE_FROM_NEW_ACTIVE_TREE",
+      "recovery_commit": "c055df600f87ee9ddf0cd5d6bfc67d80d145e79d",
+      "reference_replacement": "reference/history/main/docs/CODE_TEST_RULES.md"
+    },
+    {
+      "path": "docs/CONFIGURATION.md",
+      "mode": "100644",
+      "blob": "05795022b22f3d880c7d2becf517f7c2d6286546",
+      "bytes": 3503,
+      "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE",
+      "active_action": "REMOVE_FROM_NEW_ACTIVE_TREE",
+      "recovery_commit": "c055df600f87ee9ddf0cd5d6bfc67d80d145e79d",
+      "reference_replacement": "reference/history/main/docs/CONFIGURATION.md"
+    },
+    {
+      "path": "docs/DEVICE_MATRIX.md",
+      "mode": "100644",
+      "blob": "d1eaad3486807080a1168f81ab823c9ce01baceb",
+      "bytes": 2461,
+      "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE",
+      "active_action": "REMOVE_FROM_NEW_ACTIVE_TREE",
+      "recovery_commit": "c055df600f87ee9ddf0cd5d6bfc67d80d145e79d",
+      "reference_replacement": "reference/history/main/docs/DEVICE_MATRIX.md"
+    },
+    {
+      "path": "docs/ENGINE_SPLIT_AUDIT.md",
+      "mode": "100644",
+      "blob": "f6fc680eadbde85c973d6b9c8b3b980cc0f08d8b",
+      "bytes": 8922,
+      "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE",
+      "active_action": "REMOVE_FROM_NEW_ACTIVE_TREE",
+      "recovery_commit": "c055df600f87ee9ddf0cd5d6bfc67d80d145e79d",
+      "reference_replacement": "reference/history/main/docs/ENGINE_SPLIT_AUDIT.md"
+    },
+    {
+      "path": "docs/EXECUTION_PLAN.md",
+      "mode": "100644",
+      "blob": "7351110b6a9b1f50a5e5a2626e6dfe277d7a4700",
+      "bytes": 63875,
+      "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE",
+      "active_action": "REMOVE_FROM_NEW_ACTIVE_TREE",
+      "recovery_commit": "c055df600f87ee9ddf0cd5d6bfc67d80d145e79d",
+      "reference_replacement": "reference/history/main/docs/EXECUTION_PLAN.md"
+    },
+    {
+      "path": "docs/GUEST_CODE_VALIDATION.md",
+      "mode": "100644",
+      "blob": "55a40b777be30840821371b4354eb68e1bfd02ba",
+      "bytes": 5860,
+      "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE",
+      "active_action": "REMOVE_FROM_NEW_ACTIVE_TREE",
+      "recovery_commit": "c055df600f87ee9ddf0cd5d6bfc67d80d145e79d",
+      "reference_replacement": "reference/history/main/docs/GUEST_CODE_VALIDATION.md"
+    },
+    {
+      "path": "docs/INTEGRATED_CANDIDATE.md",
+      "mode": "100644",
+      "blob": "2bfaa5cf4eba3cac98b997f805cba58436b430ee",
+      "bytes": 8624,
+      "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE",
+      "active_action": "REMOVE_FROM_NEW_ACTIVE_TREE",
+      "recovery_commit": "c055df600f87ee9ddf0cd5d6bfc67d80d145e79d",
+      "reference_replacement": "reference/history/main/docs/INTEGRATED_CANDIDATE.md"
+    },
+    {
+      "path": "docs/PHASE1_ENGINE_AUDIT.md",
+      "mode": "100644",
+      "blob": "457dd8eef3ba1a264949d888aae91150c91d1f6d",
+      "bytes": 6851,
+      "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE",
+      "active_action": "REMOVE_FROM_NEW_ACTIVE_TREE",
+      "recovery_commit": "c055df600f87ee9ddf0cd5d6bfc67d80d145e79d",
+      "reference_replacement": "reference/history/main/docs/PHASE1_ENGINE_AUDIT.md"
+    },
+    {
+      "path": "docs/PHASE1_PHONE_TEST.md",
+      "mode": "100644",
+      "blob": "b75065329b2e089f547d1adf40ae6ba7589ffdb0",
+      "bytes": 4280,
+      "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE",
+      "active_action": "REMOVE_FROM_NEW_ACTIVE_TREE",
+      "recovery_commit": "c055df600f87ee9ddf0cd5d6bfc67d80d145e79d",
+      "reference_replacement": "reference/history/main/docs/PHASE1_PHONE_TEST.md"
+    },
+    {
+      "path": "docs/PHASE1_VALIDATION.md",
+      "mode": "100644",
+      "blob": "588ff607ecccbc1afa89fbcb94c4c0e710714acd",
+      "bytes": 3947,
+      "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE",
+      "active_action": "REMOVE_FROM_NEW_ACTIVE_TREE",
+      "recovery_commit": "c055df600f87ee9ddf0cd5d6bfc67d80d145e79d",
+      "reference_replacement": "reference/history/main/docs/PHASE1_VALIDATION.md"
+    },
+    {
+      "path": "docs/PHASE3_VALIDATION.md",
+      "mode": "100644",
+      "blob": "15ae40af8af4e272e1dce31b6daf60cc30680534",
+      "bytes": 5147,
+      "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE",
+      "active_action": "REMOVE_FROM_NEW_ACTIVE_TREE",
+      "recovery_commit": "c055df600f87ee9ddf0cd5d6bfc67d80d145e79d",
+      "reference_replacement": "reference/history/main/docs/PHASE3_VALIDATION.md"
+    },
+    {
+      "path": "docs/PHASE6_VALIDATION.md",
+      "mode": "100644",
+      "blob": "ca375b6e0431625ff7e8ff479db32dea3d7284b1",
+      "bytes": 7059,
+      "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE",
+      "active_action": "REMOVE_FROM_NEW_ACTIVE_TREE",
+      "recovery_commit": "c055df600f87ee9ddf0cd5d6bfc67d80d145e79d",
+      "reference_replacement": "reference/history/main/docs/PHASE6_VALIDATION.md"
+    },
+    {
+      "path": "docs/PHONE_TEST_GUIDE.md",
+      "mode": "100644",
+      "blob": "76a97bb0ca489c8a0823e69bc11f3ccad6e27703",
+      "bytes": 5918,
+      "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE",
+      "active_action": "REMOVE_FROM_NEW_ACTIVE_TREE",
+      "recovery_commit": "c055df600f87ee9ddf0cd5d6bfc67d80d145e79d",
+      "reference_replacement": "reference/history/main/docs/PHONE_TEST_GUIDE.md"
+    },
+    {
+      "path": "docs/PLAN.md",
+      "mode": "100644",
+      "blob": "00ad46c8f975e9f3d9906e133d4dfa5d718a4ae2",
+      "bytes": 14047,
+      "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE",
+      "active_action": "REMOVE_FROM_NEW_ACTIVE_TREE",
+      "recovery_commit": "c055df600f87ee9ddf0cd5d6bfc67d80d145e79d",
+      "reference_replacement": "reference/history/main/docs/PLAN.md"
+    },
+    {
+      "path": "docs/ROADMAP.md",
+      "mode": "100644",
+      "blob": "849278235f2edec28e2a6e1d6b4f4c32c0433f2b",
+      "bytes": 19223,
+      "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE",
+      "active_action": "REMOVE_FROM_NEW_ACTIVE_TREE",
+      "recovery_commit": "c055df600f87ee9ddf0cd5d6bfc67d80d145e79d",
+      "reference_replacement": "reference/history/main/docs/ROADMAP.md"
+    },
+    {
+      "path": "docs/RUNTIME_INTEGRATION_VALIDATION.md",
+      "mode": "100644",
+      "blob": "c7a2199e1352f320c55f1e1f07e2bf0834b8d7b3",
+      "bytes": 4959,
+      "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE",
+      "active_action": "REMOVE_FROM_NEW_ACTIVE_TREE",
+      "recovery_commit": "c055df600f87ee9ddf0cd5d6bfc67d80d145e79d",
+      "reference_replacement": "reference/history/main/docs/RUNTIME_INTEGRATION_VALIDATION.md"
+    },
+    {
+      "path": "docs/SHORTCUTS.md",
+      "mode": "100644",
+      "blob": "8a989c777a257583634a895d5f8b3993df35c2ac",
+      "bytes": 6592,
+      "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE",
+      "active_action": "REMOVE_FROM_NEW_ACTIVE_TREE",
+      "recovery_commit": "c055df600f87ee9ddf0cd5d6bfc67d80d145e79d",
+      "reference_replacement": "reference/history/main/docs/SHORTCUTS.md"
+    },
+    {
+      "path": "docs/SOURCE_ENGINE_VALIDATION.md",
+      "mode": "100644",
+      "blob": "cef95d379f73611cc474486c0b537b85cfc54993",
+      "bytes": 9156,
+      "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE",
+      "active_action": "REMOVE_FROM_NEW_ACTIVE_TREE",
+      "recovery_commit": "c055df600f87ee9ddf0cd5d6bfc67d80d145e79d",
+      "reference_replacement": "reference/history/main/docs/SOURCE_ENGINE_VALIDATION.md"
+    },
+    {
+      "path": "docs/SOURCE_NATIVE_VALIDATION.md",
+      "mode": "100644",
+      "blob": "21e89fe81e1867efeae96e4b31d754c021ced817",
+      "bytes": 5294,
+      "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE",
+      "active_action": "REMOVE_FROM_NEW_ACTIVE_TREE",
+      "recovery_commit": "c055df600f87ee9ddf0cd5d6bfc67d80d145e79d",
+      "reference_replacement": "reference/history/main/docs/SOURCE_NATIVE_VALIDATION.md"
+    },
+    {
+      "path": "docs/STATUS.md",
+      "mode": "100644",
+      "blob": "2934aec80fda1634f81209496a7c21dea42b8448",
+      "bytes": 7975,
+      "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE",
+      "active_action": "REMOVE_FROM_NEW_ACTIVE_TREE",
+      "recovery_commit": "c055df600f87ee9ddf0cd5d6bfc67d80d145e79d",
+      "reference_replacement": "reference/history/main/docs/STATUS.md"
+    },
+    {
+      "path": "docs/UPDATE_AUTOMATION.md",
+      "mode": "100644",
+      "blob": "eaa64695687d73dde8b4b3be787484757aaae555",
+      "bytes": 4125,
+      "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE",
+      "active_action": "REMOVE_FROM_NEW_ACTIVE_TREE",
+      "recovery_commit": "c055df600f87ee9ddf0cd5d6bfc67d80d145e79d",
+      "reference_replacement": "reference/history/main/docs/UPDATE_AUTOMATION.md"
+    },
+    {
+      "path": "docs/VALIDATION.md",
+      "mode": "100644",
+      "blob": "b12310210c56fec03129c10f6ace3a318dde6d41",
+      "bytes": 3403,
+      "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE",
+      "active_action": "REMOVE_FROM_NEW_ACTIVE_TREE",
+      "recovery_commit": "c055df600f87ee9ddf0cd5d6bfc67d80d145e79d",
+      "reference_replacement": "reference/history/main/docs/VALIDATION.md"
+    },
+    {
+      "path": "engine-probe/build.gradle.kts",
+      "mode": "100644",
+      "blob": "c3edde35c67976787cfd0774e9772b4aeae65b2d",
+      "bytes": 1785,
+      "disposition": "ARCHIVE_REMOVE_OLD_IMPLEMENTATION",
+      "active_action": "REMOVE_FROM_NEW_ACTIVE_TREE",
+      "recovery_commit": "c055df600f87ee9ddf0cd5d6bfc67d80d145e79d",
+      "reference_replacement": null
+    },
+    {
+      "path": "engine-probe/src/main/AndroidManifest.xml",
+      "mode": "100644",
+      "blob": "6cea700e9ab136cae4aece58150fad4dd52ea832",
+      "bytes": 45691,
+      "disposition": "ARCHIVE_REMOVE_OLD_IMPLEMENTATION",
+      "active_action": "REMOVE_FROM_NEW_ACTIVE_TREE",
+      "recovery_commit": "c055df600f87ee9ddf0cd5d6bfc67d80d145e79d",
+      "reference_replacement": null
+    },
+    {
+      "path": "engine-probe/src/main/java/vn/fonesi/probe/ProbeActivity.kt",
+      "mode": "100644",
+      "blob": "c9a99ef594d392a482bca00a6d3aaaa9ab835b57",
+      "bytes": 6820,
+      "disposition": "ARCHIVE_REMOVE_OLD_IMPLEMENTATION",
+      "active_action": "REMOVE_FROM_NEW_ACTIVE_TREE",
+      "recovery_commit": "c055df600f87ee9ddf0cd5d6bfc67d80d145e79d",
+      "reference_replacement": null
+    },
+    {
+      "path": "engine-probe/src/main/java/vn/fonesi/probe/ProbeApplication.kt",
+      "mode": "100644",
+      "blob": "d1f70b56f5b74671e1707282977895672ddc8db4",
+      "bytes": 3073,
+      "disposition": "ARCHIVE_REMOVE_OLD_IMPLEMENTATION",
+      "active_action": "REMOVE_FROM_NEW_ACTIVE_TREE",
+      "recovery_commit": "c055df600f87ee9ddf0cd5d6bfc67d80d145e79d",
+      "reference_replacement": null
+    },
+    {
+      "path": "engine-probe/src/main/java/vn/fonesi/probe/SpaceCoreProbe.kt",
+      "mode": "100644",
+      "blob": "63c945ab7eaa4f194742732ba213601a9caf3ec6",
+      "bytes": 3649,
+      "disposition": "ARCHIVE_REMOVE_OLD_IMPLEMENTATION",
+      "active_action": "REMOVE_FROM_NEW_ACTIVE_TREE",
+      "recovery_commit": "c055df600f87ee9ddf0cd5d6bfc67d80d145e79d",
+      "reference_replacement": null
+    },
+    {
+      "path": "engine-probe/src/main/res/xml/probe_data_extraction_rules.xml",
+      "mode": "100644",
+      "blob": "9ddbf214368932e46c4757cd03aadf7bdd66ad0a",
+      "bytes": 1011,
+      "disposition": "ARCHIVE_REMOVE_OLD_IMPLEMENTATION",
+      "active_action": "REMOVE_FROM_NEW_ACTIVE_TREE",
+      "recovery_commit": "c055df600f87ee9ddf0cd5d6bfc67d80d145e79d",
+      "reference_replacement": "reference/history/main/engine-probe/src/main/res/xml/probe_data_extraction_rules.xml"
+    },
+    {
+      "path": "engine-source/build.gradle.kts",
+      "mode": "100644",
+      "blob": "fc2e03845c6126535dff1392a30552b6a19b3a07",
+      "bytes": 3517,
+      "disposition": "ARCHIVE_REMOVE_OLD_IMPLEMENTATION",
+      "active_action": "REMOVE_FROM_NEW_ACTIVE_TREE",
+      "recovery_commit": "c055df600f87ee9ddf0cd5d6bfc67d80d145e79d",
+      "reference_replacement": null
+    },
+    {
+      "path": "engine-source/patches/dobby-compat.patch",
+      "mode": "100644",
+      "blob": "f93971710137737801fb17ae18c7916412854b9e",
+      "bytes": 6038,
+      "disposition": "ARCHIVE_REMOVE_OLD_IMPLEMENTATION",
+      "active_action": "REMOVE_FROM_NEW_ACTIVE_TREE",
+      "recovery_commit": "c055df600f87ee9ddf0cd5d6bfc67d80d145e79d",
+      "reference_replacement": null
+    },
+    {
+      "path": "engine-source/src/main/AndroidManifest.xml",
+      "mode": "100644",
+      "blob": "b2d3ea123526d400738f87fcb9891f3421426ef9",
+      "bytes": 111,
+      "disposition": "ARCHIVE_REMOVE_OLD_IMPLEMENTATION",
+      "active_action": "REMOVE_FROM_NEW_ACTIVE_TREE",
+      "recovery_commit": "c055df600f87ee9ddf0cd5d6bfc67d80d145e79d",
+      "reference_replacement": null
+    },
+    {
+      "path": "engine-source/src/main/cpp/CMakeLists.txt",
+      "mode": "100644",
+      "blob": "153ede27ea836e585d1e8016e7b7dfce24f802d0",
+      "bytes": 1754,
+      "disposition": "ARCHIVE_REMOVE_OLD_IMPLEMENTATION",
+      "active_action": "REMOVE_FROM_NEW_ACTIVE_TREE",
+      "recovery_commit": "c055df600f87ee9ddf0cd5d6bfc67d80d145e79d",
+      "reference_replacement": null
+    },
+    {
+      "path": "engine-source/src/main/cpp/NativeBridge.cpp",
+      "mode": "100644",
+      "blob": "260b75497f6cc3c2190b0ab51ea2eb1d437be476",
+      "bytes": 2775,
+      "disposition": "ARCHIVE_REMOVE_OLD_IMPLEMENTATION",
+      "active_action": "REMOVE_FROM_NEW_ACTIVE_TREE",
+      "recovery_commit": "c055df600f87ee9ddf0cd5d6bfc67d80d145e79d",
+      "reference_replacement": null
+    },
+    {
+      "path": "engine-source/src/main/cpp/NativeHooks.cpp",
+      "mode": "100644",
+      "blob": "bf6cef585291c725168bb934eaff3b272a0d615a",
+      "bytes": 8762,
+      "disposition": "ARCHIVE_REMOVE_OLD_IMPLEMENTATION",
+      "active_action": "REMOVE_FROM_NEW_ACTIVE_TREE",
+      "recovery_commit": "c055df600f87ee9ddf0cd5d6bfc67d80d145e79d",
+      "reference_replacement": null
+    },
+    {
+      "path": "engine-source/src/main/cpp/NativeHooks.h",
+      "mode": "100644",
+      "blob": "ef5a181293fc64b629d250756ce819a2cbd39721",
+      "bytes": 302,
+      "disposition": "ARCHIVE_REMOVE_OLD_IMPLEMENTATION",
+      "active_action": "REMOVE_FROM_NEW_ACTIVE_TREE",
+      "recovery_commit": "c055df600f87ee9ddf0cd5d6bfc67d80d145e79d",
+      "reference_replacement": null
+    },
+    {
+      "path": "engine-source/src/main/cpp/PathRules.cpp",
+      "mode": "100644",
+      "blob": "a7e5066cac7ccf5782af04c80740805eb36f9009",
+      "bytes": 2381,
+      "disposition": "ARCHIVE_REMOVE_OLD_IMPLEMENTATION",
+      "active_action": "REMOVE_FROM_NEW_ACTIVE_TREE",
+      "recovery_commit": "c055df600f87ee9ddf0cd5d6bfc67d80d145e79d",
+      "reference_replacement": null
+    },
+    {
+      "path": "engine-source/src/main/cpp/PathRules.h",
+      "mode": "100644",
+      "blob": "15d0f7270994e1eb1711ebc0e6ec5408e58bacf3",
+      "bytes": 541,
+      "disposition": "ARCHIVE_REMOVE_OLD_IMPLEMENTATION",
+      "active_action": "REMOVE_FROM_NEW_ACTIVE_TREE",
+      "recovery_commit": "c055df600f87ee9ddf0cd5d6bfc67d80d145e79d",
+      "reference_replacement": null
+    },
+    {
+      "path": "engine-source/src/main/cpp/exports.map",
+      "mode": "100644",
+      "blob": "e7b9dfcc71ce7630b2b94b693b5105059d7ca293",
+      "bytes": 224,
+      "disposition": "ARCHIVE_REMOVE_OLD_IMPLEMENTATION",
+      "active_action": "REMOVE_FROM_NEW_ACTIVE_TREE",
+      "recovery_commit": "c055df600f87ee9ddf0cd5d6bfc67d80d145e79d",
+      "reference_replacement": null
+    },
+    {
+      "path": "engine-source/src/main/java/vn/fonesi/engine/GuestCodeLayout.kt",
+      "mode": "100644",
+      "blob": "0d3ff224d42c9055655b28ce11fce2313040ef33",
+      "bytes": 1526,
+      "disposition": "ARCHIVE_REMOVE_OLD_IMPLEMENTATION",
+      "active_action": "REMOVE_FROM_NEW_ACTIVE_TREE",
+      "recovery_commit": "c055df600f87ee9ddf0cd5d6bfc67d80d145e79d",
+      "reference_replacement": null
+    },
+    {
+      "path": "engine-source/src/main/java/vn/fonesi/engine/GuestCodeLoader.kt",
+      "mode": "100644",
+      "blob": "652f9ed827dc472aa029c139ac02f96a4e06526e",
+      "bytes": 4187,
+      "disposition": "ARCHIVE_REMOVE_OLD_IMPLEMENTATION",
+      "active_action": "REMOVE_FROM_NEW_ACTIVE_TREE",
+      "recovery_commit": "c055df600f87ee9ddf0cd5d6bfc67d80d145e79d",
+      "reference_replacement": null
+    },
+    {
+      "path": "engine-source/src/main/java/vn/fonesi/engine/NativeLibraryPreparer.kt",
+      "mode": "100644",
+      "blob": "af4727152d9a96ec8e1d196cc9beb3e0b5daf3f5",
+      "bytes": 10181,
+      "disposition": "ARCHIVE_REMOVE_OLD_IMPLEMENTATION",
+      "active_action": "REMOVE_FROM_NEW_ACTIVE_TREE",
+      "recovery_commit": "c055df600f87ee9ddf0cd5d6bfc67d80d145e79d",
+      "reference_replacement": null
+    },
+    {
+      "path": "engine-source/src/main/java/vn/fonesi/engine/NativeRuntime.java",
+      "mode": "100644",
+      "blob": "67d14308446e7b4f65faa97826c8ffb2321e244e",
+      "bytes": 3013,
+      "disposition": "ARCHIVE_REMOVE_OLD_IMPLEMENTATION",
+      "active_action": "REMOVE_FROM_NEW_ACTIVE_TREE",
+      "recovery_commit": "c055df600f87ee9ddf0cd5d6bfc67d80d145e79d",
+      "reference_replacement": null
+    },
+    {
+      "path": "engine-source/src/test/java/vn/fonesi/engine/GuestCodeLayoutTest.kt",
+      "mode": "100644",
+      "blob": "b96b9c0f47c48e895a764a9ff70ba4bbccc07e83",
+      "bytes": 3807,
+      "disposition": "ARCHIVE_REMOVE_OLD_IMPLEMENTATION",
+      "active_action": "REMOVE_FROM_NEW_ACTIVE_TREE",
+      "recovery_commit": "c055df600f87ee9ddf0cd5d6bfc67d80d145e79d",
+      "reference_replacement": null
+    },
+    {
+      "path": "engine-source/src/test/java/vn/fonesi/engine/NativeLibraryPreparerTest.kt",
+      "mode": "100644",
+      "blob": "5cc509c1822d13ae714ecf3deaca03085f9be027",
+      "bytes": 7596,
+      "disposition": "ARCHIVE_REMOVE_OLD_IMPLEMENTATION",
+      "active_action": "REMOVE_FROM_NEW_ACTIVE_TREE",
+      "recovery_commit": "c055df600f87ee9ddf0cd5d6bfc67d80d145e79d",
+      "reference_replacement": null
+    },
+    {
+      "path": "engine-source/tests/NativeRuntimeTest.cpp",
+      "mode": "100644",
+      "blob": "75edf9cb0b2e5b08b1c5d896f321b2e08c3ba7de",
+      "bytes": 6863,
+      "disposition": "ARCHIVE_REMOVE_OLD_IMPLEMENTATION",
+      "active_action": "REMOVE_FROM_NEW_ACTIVE_TREE",
+      "recovery_commit": "c055df600f87ee9ddf0cd5d6bfc67d80d145e79d",
+      "reference_replacement": null
+    },
+    {
+      "path": "gradle.properties",
+      "mode": "100644",
+      "blob": "3bf812fdf938bab347a4afd6c771bf53ca26ede1",
+      "bytes": 125,
+      "disposition": "ARCHIVE_REMOVE_OLD_IMPLEMENTATION",
+      "active_action": "REMOVE_FROM_NEW_ACTIVE_TREE",
+      "recovery_commit": "c055df600f87ee9ddf0cd5d6bfc67d80d145e79d",
+      "reference_replacement": null
+    },
+    {
+      "path": "gradle/wrapper/gradle-wrapper.jar",
+      "mode": "100644",
+      "blob": "9bbc975c742b298b441bfb90dbc124400a3751b9",
+      "bytes": 43705,
+      "disposition": "KEEP_INFRASTRUCTURE_REVIEW",
+      "active_action": "REMOVE_FROM_NEW_ACTIVE_TREE",
+      "recovery_commit": "c055df600f87ee9ddf0cd5d6bfc67d80d145e79d",
+      "reference_replacement": null
+    },
+    {
+      "path": "gradle/wrapper/gradle-wrapper.properties",
+      "mode": "100644",
+      "blob": "36e4933e1da7ba705f81a2e2a0052d348c8377a4",
+      "bytes": 338,
+      "disposition": "KEEP_INFRASTRUCTURE_REVIEW",
+      "active_action": "REMOVE_FROM_NEW_ACTIVE_TREE",
+      "recovery_commit": "c055df600f87ee9ddf0cd5d6bfc67d80d145e79d",
+      "reference_replacement": null
+    },
+    {
+      "path": "gradlew",
+      "mode": "100755",
+      "blob": "faf93008b77e7b52e18c44e4eef257fc2f8fd76d",
+      "bytes": 8752,
+      "disposition": "KEEP_INFRASTRUCTURE_REVIEW",
+      "active_action": "REMOVE_FROM_NEW_ACTIVE_TREE",
+      "recovery_commit": "c055df600f87ee9ddf0cd5d6bfc67d80d145e79d",
+      "reference_replacement": null
+    },
+    {
+      "path": "gradlew.bat",
+      "mode": "100644",
+      "blob": "9b42019c7915b971238526075306ffba3b666dd5",
+      "bytes": 2966,
+      "disposition": "KEEP_INFRASTRUCTURE_REVIEW",
+      "active_action": "REMOVE_FROM_NEW_ACTIVE_TREE",
+      "recovery_commit": "c055df600f87ee9ddf0cd5d6bfc67d80d145e79d",
+      "reference_replacement": null
+    },
+    {
+      "path": "native-runtime-probe/build.gradle.kts",
+      "mode": "100644",
+      "blob": "3876229208b0f1b1454bcf54b2f7a5a514cfbbb1",
+      "bytes": 471,
+      "disposition": "ARCHIVE_REMOVE_OLD_IMPLEMENTATION",
+      "active_action": "REMOVE_FROM_NEW_ACTIVE_TREE",
+      "recovery_commit": "c055df600f87ee9ddf0cd5d6bfc67d80d145e79d",
+      "reference_replacement": null
+    },
+    {
+      "path": "native-runtime-probe/src/main/AndroidManifest.xml",
+      "mode": "100644",
+      "blob": "acec2c75980643b51d11f42bc640c86142900209",
+      "bytes": 846,
+      "disposition": "ARCHIVE_REMOVE_OLD_IMPLEMENTATION",
+      "active_action": "REMOVE_FROM_NEW_ACTIVE_TREE",
+      "recovery_commit": "c055df600f87ee9ddf0cd5d6bfc67d80d145e79d",
+      "reference_replacement": null
+    },
+    {
+      "path": "native-runtime-probe/src/main/java/vn/fonesi/nativeprobe/MainActivity.java",
+      "mode": "100644",
+      "blob": "69642b27c0fbeac8f1cbc67ff706e53d5229408d",
+      "bytes": 6689,
+      "disposition": "ARCHIVE_REMOVE_OLD_IMPLEMENTATION",
+      "active_action": "REMOVE_FROM_NEW_ACTIVE_TREE",
+      "recovery_commit": "c055df600f87ee9ddf0cd5d6bfc67d80d145e79d",
+      "reference_replacement": null
+    },
+    {
+      "path": "native-runtime-probe/src/main/java/vn/fonesi/nativeprobe/ProbeData.java",
+      "mode": "100644",
+      "blob": "5996b188f022b559de90e9d493c99a76c24cbbf4",
+      "bytes": 2727,
+      "disposition": "ARCHIVE_REMOVE_OLD_IMPLEMENTATION",
+      "active_action": "REMOVE_FROM_NEW_ACTIVE_TREE",
+      "recovery_commit": "c055df600f87ee9ddf0cd5d6bfc67d80d145e79d",
+      "reference_replacement": null
+    },
+    {
+      "path": "native-runtime-probe/src/main/java/vn/fonesi/nativeprobe/ProbeService.java",
+      "mode": "100644",
+      "blob": "4c4e482f2a5972f23114f39fa444258af7217b73",
+      "bytes": 3457,
+      "disposition": "ARCHIVE_REMOVE_OLD_IMPLEMENTATION",
+      "active_action": "REMOVE_FROM_NEW_ACTIVE_TREE",
+      "recovery_commit": "c055df600f87ee9ddf0cd5d6bfc67d80d145e79d",
+      "reference_replacement": null
+    },
+    {
+      "path": "probe-payload/build.gradle.kts",
+      "mode": "100644",
+      "blob": "03454072f1e8338c3e5250bf350fc8788d5c3083",
+      "bytes": 657,
+      "disposition": "ARCHIVE_REMOVE_OLD_IMPLEMENTATION",
+      "active_action": "REMOVE_FROM_NEW_ACTIVE_TREE",
+      "recovery_commit": "c055df600f87ee9ddf0cd5d6bfc67d80d145e79d",
+      "reference_replacement": null
+    },
+    {
+      "path": "probe-payload/src/main/AndroidManifest.xml",
+      "mode": "100644",
+      "blob": "d9cbf51c64eb931acf31ab47089179caa571e00c",
+      "bytes": 718,
+      "disposition": "ARCHIVE_REMOVE_OLD_IMPLEMENTATION",
+      "active_action": "REMOVE_FROM_NEW_ACTIVE_TREE",
+      "recovery_commit": "c055df600f87ee9ddf0cd5d6bfc67d80d145e79d",
+      "reference_replacement": null
+    },
+    {
+      "path": "probe-payload/src/main/java/vn/fonesi/payload/PayloadActivity.kt",
+      "mode": "100644",
+      "blob": "a10297ba37e5c3b8ab717de95ce71bca0b97d65e",
+      "bytes": 2794,
+      "disposition": "ARCHIVE_REMOVE_OLD_IMPLEMENTATION",
+      "active_action": "REMOVE_FROM_NEW_ACTIVE_TREE",
+      "recovery_commit": "c055df600f87ee9ddf0cd5d6bfc67d80d145e79d",
+      "reference_replacement": null
+    },
+    {
+      "path": "probe-payload/src/main/res/xml/payload_data_extraction_rules.xml",
+      "mode": "100644",
+      "blob": "94e7be27b14afc041494bfb72512a8aa7d4ad7bc",
+      "bytes": 917,
+      "disposition": "ARCHIVE_REMOVE_OLD_IMPLEMENTATION",
+      "active_action": "REMOVE_FROM_NEW_ACTIVE_TREE",
+      "recovery_commit": "c055df600f87ee9ddf0cd5d6bfc67d80d145e79d",
+      "reference_replacement": "reference/history/main/probe-payload/src/main/res/xml/payload_data_extraction_rules.xml"
+    },
+    {
+      "path": "scripts/bootstrap_android.py",
+      "mode": "100755",
+      "blob": "69f53e19eaad1bcaf74f766aa48dd42f1b8baa21",
+      "bytes": 5007,
+      "disposition": "ARCHIVE_REMOVE_OLD_IMPLEMENTATION",
+      "active_action": "REMOVE_FROM_NEW_ACTIVE_TREE",
+      "recovery_commit": "c055df600f87ee9ddf0cd5d6bfc67d80d145e79d",
+      "reference_replacement": null
+    },
+    {
+      "path": "scripts/build_apk_audit_fixtures.py",
+      "mode": "100644",
+      "blob": "2935eeefa3d182074c0b871c341146e42777831b",
+      "bytes": 6178,
+      "disposition": "ARCHIVE_REMOVE_OLD_IMPLEMENTATION",
+      "active_action": "REMOVE_FROM_NEW_ACTIVE_TREE",
+      "recovery_commit": "c055df600f87ee9ddf0cd5d6bfc67d80d145e79d",
+      "reference_replacement": null
+    },
+    {
+      "path": "scripts/build_native_apk_fixtures.py",
+      "mode": "100644",
+      "blob": "84adfc2828bc674496b51e5104a5983ff43624ee",
+      "bytes": 4163,
+      "disposition": "ARCHIVE_REMOVE_OLD_IMPLEMENTATION",
+      "active_action": "REMOVE_FROM_NEW_ACTIVE_TREE",
+      "recovery_commit": "c055df600f87ee9ddf0cd5d6bfc67d80d145e79d",
+      "reference_replacement": null
+    },
+    {
+      "path": "scripts/build_phone_bundle.py",
+      "mode": "100644",
+      "blob": "a5164be158b72dbb5d5f25a1dda40d443b3ed13a",
+      "bytes": 2761,
+      "disposition": "ARCHIVE_REMOVE_OLD_IMPLEMENTATION",
+      "active_action": "REMOVE_FROM_NEW_ACTIVE_TREE",
+      "recovery_commit": "c055df600f87ee9ddf0cd5d6bfc67d80d145e79d",
+      "reference_replacement": null
+    },
+    {
+      "path": "scripts/check.sh",
+      "mode": "100755",
+      "blob": "a5f80d63083402125431ff230bec09fa4b531167",
+      "bytes": 1895,
+      "disposition": "ARCHIVE_REMOVE_OLD_IMPLEMENTATION",
+      "active_action": "REMOVE_FROM_NEW_ACTIVE_TREE",
+      "recovery_commit": "c055df600f87ee9ddf0cd5d6bfc67d80d145e79d",
+      "reference_replacement": null
+    },
+    {
+      "path": "scripts/check_source_engine.py",
+      "mode": "100644",
+      "blob": "ceb3a55be621947bdc283375df3536f568dec560",
+      "bytes": 6636,
+      "disposition": "ARCHIVE_REMOVE_OLD_IMPLEMENTATION",
+      "active_action": "REMOVE_FROM_NEW_ACTIVE_TREE",
+      "recovery_commit": "c055df600f87ee9ddf0cd5d6bfc67d80d145e79d",
+      "reference_replacement": null
+    },
+    {
+      "path": "scripts/fetch_engine_sdk.py",
+      "mode": "100644",
+      "blob": "82240b0e9efbddde2a31aedea0c1f33552b15d01",
+      "bytes": 1180,
+      "disposition": "ARCHIVE_REMOVE_OLD_IMPLEMENTATION",
+      "active_action": "REMOVE_FROM_NEW_ACTIVE_TREE",
+      "recovery_commit": "c055df600f87ee9ddf0cd5d6bfc67d80d145e79d",
+      "reference_replacement": null
+    },
+    {
+      "path": "scripts/generate_candidate_manifest.py",
+      "mode": "100644",
+      "blob": "922ace9e9c3bd3098b1a38f4620cc48b3bcd0a77",
+      "bytes": 2682,
+      "disposition": "ARCHIVE_REMOVE_OLD_IMPLEMENTATION",
+      "active_action": "REMOVE_FROM_NEW_ACTIVE_TREE",
+      "recovery_commit": "c055df600f87ee9ddf0cd5d6bfc67d80d145e79d",
+      "reference_replacement": null
+    },
+    {
+      "path": "scripts/generate_probe_manifest.py",
+      "mode": "100644",
+      "blob": "83ab6c1ccce847a7f6e8b5953bf619fa8c15d47b",
+      "bytes": 4672,
+      "disposition": "ARCHIVE_REMOVE_OLD_IMPLEMENTATION",
+      "active_action": "REMOVE_FROM_NEW_ACTIVE_TREE",
+      "recovery_commit": "c055df600f87ee9ddf0cd5d6bfc67d80d145e79d",
+      "reference_replacement": null
+    },
+    {
+      "path": "scripts/gradle.sh",
+      "mode": "100755",
+      "blob": "b84a6ffae37db40195e9d8faed97381f0eb5f903",
+      "bytes": 1451,
+      "disposition": "ARCHIVE_REMOVE_OLD_IMPLEMENTATION",
+      "active_action": "REMOVE_FROM_NEW_ACTIVE_TREE",
+      "recovery_commit": "c055df600f87ee9ddf0cd5d6bfc67d80d145e79d",
+      "reference_replacement": null
+    },
+    {
+      "path": "scripts/prepare_native_emulator.py",
+      "mode": "100644",
+      "blob": "4254c5e226fc883ca2a04561a27afdeb7102549b",
+      "bytes": 2375,
+      "disposition": "ARCHIVE_REMOVE_OLD_IMPLEMENTATION",
+      "active_action": "REMOVE_FROM_NEW_ACTIVE_TREE",
+      "recovery_commit": "c055df600f87ee9ddf0cd5d6bfc67d80d145e79d",
+      "reference_replacement": null
+    },
+    {
+      "path": "scripts/prepare_source_engine.py",
+      "mode": "100644",
+      "blob": "f271f6454a3fbc8e58e07a12f822060f1a4bb152",
+      "bytes": 3842,
+      "disposition": "ARCHIVE_REMOVE_OLD_IMPLEMENTATION",
+      "active_action": "REMOVE_FROM_NEW_ACTIVE_TREE",
+      "recovery_commit": "c055df600f87ee9ddf0cd5d6bfc67d80d145e79d",
+      "reference_replacement": null
+    },
+    {
+      "path": "scripts/run_native_probe.py",
+      "mode": "100644",
+      "blob": "c51df839480dca86716d5dc696b93aa79515ce86",
+      "bytes": 11794,
+      "disposition": "ARCHIVE_REMOVE_OLD_IMPLEMENTATION",
+      "active_action": "REMOVE_FROM_NEW_ACTIVE_TREE",
+      "recovery_commit": "c055df600f87ee9ddf0cd5d6bfc67d80d145e79d",
+      "reference_replacement": null
+    },
+    {
+      "path": "scripts/verify_candidate_build.py",
+      "mode": "100644",
+      "blob": "5ed52f39de0e3a8cb77b8ff33d8355f6d6f71004",
+      "bytes": 4819,
+      "disposition": "ARCHIVE_REMOVE_OLD_IMPLEMENTATION",
+      "active_action": "REMOVE_FROM_NEW_ACTIVE_TREE",
+      "recovery_commit": "c055df600f87ee9ddf0cd5d6bfc67d80d145e79d",
+      "reference_replacement": null
+    },
+    {
+      "path": "scripts/verify_main_build.py",
+      "mode": "100644",
+      "blob": "f53afe8be4d9232ff881d6490bfc00dad2918185",
+      "bytes": 4842,
+      "disposition": "ARCHIVE_REMOVE_OLD_IMPLEMENTATION",
+      "active_action": "REMOVE_FROM_NEW_ACTIVE_TREE",
+      "recovery_commit": "c055df600f87ee9ddf0cd5d6bfc67d80d145e79d",
+      "reference_replacement": null
+    },
+    {
+      "path": "scripts/verify_probe_apks.py",
+      "mode": "100644",
+      "blob": "34c5ade7a664a940ecca0b4c86c932387c952a2b",
+      "bytes": 6652,
+      "disposition": "ARCHIVE_REMOVE_OLD_IMPLEMENTATION",
+      "active_action": "REMOVE_FROM_NEW_ACTIVE_TREE",
+      "recovery_commit": "c055df600f87ee9ddf0cd5d6bfc67d80d145e79d",
+      "reference_replacement": null
+    },
+    {
+      "path": "settings.gradle.kts",
+      "mode": "100644",
+      "blob": "ce8d1054c1e8271810e3a344a6e7503cd2e7e9cd",
+      "bytes": 913,
+      "disposition": "ARCHIVE_REMOVE_OLD_IMPLEMENTATION",
+      "active_action": "REMOVE_FROM_NEW_ACTIVE_TREE",
+      "recovery_commit": "c055df600f87ee9ddf0cd5d6bfc67d80d145e79d",
+      "reference_replacement": null
+    },
+    {
+      "path": "third_party/apksig/NOTICE.md",
+      "mode": "100644",
+      "blob": "0cda112d9307b865174a68cb85f05b2d6ee38b8f",
+      "bytes": 1226,
+      "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE",
+      "active_action": "REMOVE_FROM_NEW_ACTIVE_TREE",
+      "recovery_commit": "c055df600f87ee9ddf0cd5d6bfc67d80d145e79d",
+      "reference_replacement": "reference/history/main/third_party/apksig/NOTICE.md"
+    },
+    {
+      "path": "third_party/source-engine/NOTICE.md",
+      "mode": "100644",
+      "blob": "d763c48e324fc1357ca95d44b8d7d48a50091f06",
+      "bytes": 2175,
+      "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE",
+      "active_action": "REMOVE_FROM_NEW_ACTIVE_TREE",
+      "recovery_commit": "c055df600f87ee9ddf0cd5d6bfc67d80d145e79d",
+      "reference_replacement": "reference/history/main/third_party/source-engine/NOTICE.md"
+    },
+    {
+      "path": "third_party/spacecore/NOTICE.md",
+      "mode": "100644",
+      "blob": "2ae6df041dd727260d3a4d1b8143d0c159996014",
+      "bytes": 2473,
+      "disposition": "KEEP_REFERENCE_DOCUMENT_NOTICE",
+      "active_action": "REMOVE_FROM_NEW_ACTIVE_TREE",
+      "recovery_commit": "c055df600f87ee9ddf0cd5d6bfc67d80d145e79d",
+      "reference_replacement": "reference/history/main/third_party/spacecore/NOTICE.md"
+    }
+  ],
+  "removed_count": 169,
+  "old_implementation_reuse": false,
+  "gate": "PASSED_DURABLE_BACKUP_AND_PARENT_AUTHORIZATION",
+  "recovery": {
+    "library_file_id": "libfile_7df66b3b77d4819197e586990741e43d",
+    "version": 0,
+    "zip_sha256": "686dfaf20fc211d99d29c13219db4781a4bc1f681313d0ed3d18c6e29237a17f",
+    "bundle_sha256": "ee9ed3f85e5f2a805d56d90493cf9406f4ce48aa194f4835aa5f323261f85f5f",
+    "actual_remote_heads": 61,
+    "local_reflog_commits": 75,
+    "restored_exact_ref_map": true,
+    "fsck": "PASS",
+    "ignored_cache_local_only": 52
+  }
+}

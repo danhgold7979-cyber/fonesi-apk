@@ -1,0 +1,19 @@
+# E54 — select eligible queue tasks without bypassing quarantined private sources (pre-code plan)
+
+Date: 2026-10-29. Repository `danhgold7979-cyber/fonesi-apk`, branch `phase/e54-unblocked-queue-work-selection-20261029` based on E53 reporting SHA `eb1c38a8aaa4977f93653b52a26e362df7d12cb4` ([Draft PR #28](https://github.com/danhgold7979-cyber/fonesi-apk/pull/28)). E53 exact code `76ab8d3ac991f92f8d2a21b5c4fff3d51b45e3b9` passed [CI #40855911991](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40855911991), 427 tests per cloud/candidate gate; E53 reporting [CI #40857083739](https://github.com/danhgold7979-cyber/fonesi-apk/actions/runs/40857083739) was `in_progress/pending` at E54 pre-code planning. Original Product **Phase 4, steps 18–20**; E54 is a technical slice, not a new product Phase.
+
+## Defect / desired invariant
+
+`UpdateRunner.runNext` now scopes shared durable tasks by engine (E52) but chooses the oldest queued candidate **before** checking the legacy source authority. If an explicit retained private task is first (E43/E44) and has no supported production update adapter, `mayUseLegacySource` rejects it and `runNext` returns PolicyBlocked without considering any later, **unrelated** queued package. The same starvation occurs when a pre-marker E41 private task lacks the retained flag but Room denies original APK fallback. Protected tasks must never be executed by the legacy engine, yet they must not prevent allowed work for other packages. The original same-package predecessor/review barrier must remain.
+
+## Implementation / tests
+
+1. Recheck exact E53 parent SHA, CI, E51–E53 source authority, `UpdateRunner` and queue fixture. Commit this plan to GitHub before code.
+2. Keep the existing engine-scoped and same-package ordering filter. Compute eligible queued candidates **only after** the predecessor/review-required barrier. Within that set, choose the first whose `mayUseLegacySource` succeeds. Do not call the original installed-source catalog or import engine for a blocked candidate. If every otherwise eligible candidate is disallowed, return `PolicyBlocked` (not Idle and not success), leaving journals/snapshots unchanged. If no queued candidate qualifies due to state/review, return `Idle`. Keep global lock, pause, engine readiness and normal legacy execution checks.
+3. Add focused core/JVM regressions: (a) marked retained private head does not block an unrelated original package; (b) owner-only pre-marker head denied by policy does not block unrelated allowed work; (c) same-package original behind protected private source must **not** bypass its predecessor (including different version/dedup). Preserve existing fail-closed private-only/authority exception and E52 cross-engine tests.
+4. Add `scripts/audit_e54_unblocked_queue_selection.py` checking authority-safe candidate selection and required regressions. Dedicated pinned cloud/candidate workflow carries E40–E53 audits, SDK36 JDK21/Gradle build/lint/signature/permission and no provider/split/GC check, with test-only artifact. Fix any failures without changing acceptance criteria. Record code SHA, exact CI receipts and results before updating final product docs.
+5. Keep Phase 4 and same weighted 28.00% estimate; no real third-party clone acceptance and no merge/release. Original legacy update execution remains the only eligible runner path; no private guest source import/activation/readback is added.
+
+## Safety boundary
+
+A protected same-engine/package task remains a strict FIFO and REVIEW_REQUIRED barrier. Skipping is permitted **only across unrelated packages** after the existing engine, package, and state filters. Every source policy read error fails closed. The missing full-split production provider, independent guest Activity/UID/accounts, physical phone tests and signing remain blockers.

@@ -1,0 +1,76 @@
+name: Clean APK foundation
+on:
+  push:
+    branches: ['phase-*']
+  pull_request:
+    branches: [main, 'phase-*']
+  workflow_dispatch:
+env:
+  EXPECTED_SOURCE_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+permissions:
+  contents: read
+concurrency:
+  group: clean-apk-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  documentary-host:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - name: Verify exact reviewed source
+        run: test "$(git rev-parse HEAD)" = "$EXPECTED_SOURCE_SHA"
+      - name: Use runner JDK17
+        run: |
+          test -d "$JAVA_HOME_17_X64"
+          echo "JAVA_HOME=$JAVA_HOME_17_X64" >> "$GITHUB_ENV"
+          echo "$JAVA_HOME_17_X64/bin" >> "$GITHUB_PATH"
+      - name: Independent foundation checks
+        run: |
+          java -version
+          python3 tools/check_plan.py
+          python3 tools/test_plan_integrity.py
+          python3 tools/check_toolchain.py
+          python3 tools/test_toolchain_contract.py
+          python3 tools/test_shell_contract.py
+          python3 tools/test_apk_contract.py
+          bash tools/test_core.sh
+  android-compile:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - name: Verify exact reviewed source
+        run: test "$(git rev-parse HEAD)" = "$EXPECTED_SOURCE_SHA"
+      - name: Use existing runner JDK17 and SDK only
+        run: |
+          test -d "$JAVA_HOME_17_X64"
+          echo "JAVA_HOME=$JAVA_HOME_17_X64" >> "$GITHUB_ENV"
+          echo "$JAVA_HOME_17_X64/bin" >> "$GITHUB_PATH"
+          python3 tools/check_toolchain.py --android
+          test -x "$ANDROID_HOME/cmdline-tools/latest/bin/apkanalyzer"
+      - name: Build and lint (not Android execution)
+        run: |
+          java -version
+          ./gradlew --no-daemon --console=plain :app:assembleDebug :app:lintDebug
+      - name: Verify actual packaged artifact
+        run: |
+          python3 tools/verify_apk.py app/build/outputs/apk/debug/app-debug.apk | tee compile-receipt.json
+          test "$(git rev-parse HEAD)" = "$EXPECTED_SOURCE_SHA"
+          git rev-parse HEAD > source-sha.txt
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: foundation-compile-only-${{ github.event.pull_request.head.sha || github.sha }}
+          path: |
+            app/build/outputs/apk/debug/app-debug.apk
+            app/build/reports/lint-results-debug.html
+            compile-receipt.json
+            source-sha.txt
+          if-no-files-found: error
+          retention-days: 14

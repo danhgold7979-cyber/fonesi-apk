@@ -1,10 +1,6 @@
+build/
 .gradle/
-**/build/
-**/.cxx/
 local.properties
-.idea/
-*.iml
 *.jks
 *.keystore
-.kotlin/
-**/__pycache__/
+__pycache__/

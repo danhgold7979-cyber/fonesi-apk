@@ -1,0 +1,45 @@
+[
+  {
+    "path": ".gitignore",
+    "source_commit": "dccc27989b9c258ce9f99e28bc620ac03ac696ae",
+    "sha256": "6f0ec3b58757e1213f86471b374c2d887f97ef2032e0f2abbf4183aab996610b",
+    "decision": "ARCHIVE_ONLY_NO_REUSE_YET",
+    "reason": "Provenance and upstream comparison not yet independently reviewed; no wrapper binary executed"
+  },
+  {
+    "path": "gradlew",
+    "source_commit": "dccc27989b9c258ce9f99e28bc620ac03ac696ae",
+    "sha256": "734b3879d3501dce471cf0522d3bcbafe76873d9fc5129345b67fb43bd15e933",
+    "decision": "ARCHIVE_ONLY_NO_REUSE_YET",
+    "reason": "Provenance and upstream comparison not yet independently reviewed; no wrapper binary executed"
+  },
+  {
+    "path": "gradlew.bat",
+    "source_commit": "dccc27989b9c258ce9f99e28bc620ac03ac696ae",
+    "sha256": "57931b17dd228e5c24dac90e815d0bf82477e831a4618dfab4136f5446b42a9f",
+    "decision": "ARCHIVE_ONLY_NO_REUSE_YET",
+    "reason": "Provenance and upstream comparison not yet independently reviewed; no wrapper binary executed"
+  },
+  {
+    "path": "gradle/wrapper/gradle-wrapper.properties",
+    "source_commit": "dccc27989b9c258ce9f99e28bc620ac03ac696ae",
+    "sha256": "c040b6ef2fb893ff5beea5a281614f2848f1c3996a7886f650b713f8240656a2",
+    "decision": "ARCHIVE_ONLY_NO_REUSE_YET",
+    "reason": "Provenance and upstream comparison not yet independently reviewed; no wrapper binary executed"
+  },
+  {
+    "path": "gradle/wrapper/gradle-wrapper.jar",
+    "source_commit": "dccc27989b9c258ce9f99e28bc620ac03ac696ae",
+    "sha256": "81a82aaea5abcc8ff68b3dfcb58b3c3c429378efd98e7433460610fecd7ae45f",
+    "decision": "ARCHIVE_ONLY_NO_REUSE_YET",
+    "reason": "Provenance and upstream comparison not yet independently reviewed; no wrapper binary executed"
+  },
+  {
+    "path": "gradlew, gradlew.bat, gradle/wrapper/gradle-wrapper.jar",
+    "decision": "NEW_UPSTREAM_INFRASTRUCTURE_VERIFIED",
+    "source": "https://github.com/gradle/gradle/tree/v8.13.0",
+    "hash_checks": "tools/check_toolchain.py",
+    "license": "third_party/gradle/LICENSE",
+    "scope": "Standard infrastructure only; old application implementation/tests remain archive-only"
+  }
+]

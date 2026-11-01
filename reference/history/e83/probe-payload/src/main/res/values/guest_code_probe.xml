@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Synthetic marker for readback of a signed, private APK's resources. -->
+    <string name="fonesi_guest_code_probe">Fonesi signed private payload</string>
+</resources>

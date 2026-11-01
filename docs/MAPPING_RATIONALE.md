@@ -1,0 +1,36 @@
+# Requirement ownership — clean APK baseline
+
+## Scope and status
+
+This is a documentary planning input, not implementation or acceptance. All 362 distinct IDs retain their full atomic obligation, full positive/negative/race-recovery/stop acceptance, exact original ledger row and immutable SHA/path/line. Historical evidence is explicitly separated from new evidence. All five new evidence tiers are NOT_RUN and every requirement is NOT_IMPLEMENTED. Root may separately accept a documentary artifact without marking its runtime obligation complete.
+
+Exact source ledger: local commit `dccc27989b9c258ce9f99e28bc620ac03ac696ae`; its retention is required in the new backup, not assumed public. Normative sources point to E82 `2fac016e3b28e4d9f21390c221cad1df7a382c86`, E83 `58d52f4aa05c8c8d5256e7125b522815418b1e02` and reconciliation `b28708f57c47cb3e614037501893976563d52619`. Source aliases are ledger-scoped: security `A` is not supplementary `A`. Documentation cited ranges are included verbatim; legacy Kotlin citations are reference-only, not copied implementation/test code. BRG bullets retain their complete decision text and ledger provenance; embedded historical proof claims are not new receipts.
+
+## Ownership semantics
+
+`primary_task` identifies the original roadmap step responsible for delivering the behavior. `integration_tasks` identify additional steps that consume/check it; they neither multiply the 362 count nor establish an execution order. Tasks may develop cloud-independent components early; required provider/Android/phone integrations remain open. No broad family ownership can replace row-by-row acceptance.
+
+- P001–P075 were individually assigned from their actual obligations. Mandatory Facebook isolation belongs to T10; Zalo/TikTok to T21; Messenger/Threads/X/Shopee/YouTube to T22. UI names/groups/search/style belong to T25, persistent row contracts to T13, mutation to T14, shortcut to T15, restart/original-removal reconciliation to T16. Sources and signatures belong to T17, durable queue to T18, consent/automation/update presentation to T19, real update/failure/readback to T20.
+- Numbered RM rows retain the original step number exactly, including RM-13x. RM-G and DM cross-cutting rows are assigned to their principal gate: factual reporting T02/T04, owner synthetic-first installation T09, scope/license decisions T05, app evidence T23/T24, no-root/multi-model T31. Four milestones remain distinct; RM-M01 is final aggregation T32 with prerequisite tasks T09–12/T20/T24, not one substitute test.
+- SUP-A policy/prompt/lifecycle ownership is T26. Actual create/delete boundaries A09/A16–18/A22 also belong to T14; pre-dispatch foreground gate A14 to T18; post-entry uncertainty A15 to T20. T26 must be integrated before any protected action can run, even if UI implementation is scheduled later.
+- SUP-C configuration-only import/export is T28; it depends on exact metadata transactions T13 and live access grants T26. No session transfer, guest creation, implicit target mapping or imported authority is admitted.
+- SUP-U is split deliberately: original source U01 T17; provider split capability U05 T08; durable atomic enqueue/pause/locking/supersession U07/U16/U19/U20 T18; verification/post-entry/retry U09/U17/U18/U28 T20; metadata search/selection U22–24 T25; diagnostics U25–26 T27; remaining preview, consent, foreground opt-in automation and truthful outcome UX T19.
+- SUP-S presentation S01–03/S05–06 T25; preservation/migration S04/S08 T13; launcher rendering S07/S10 T15; explicit exclusion from configuration v1 S09 T28. Exactly six accents remain teal/blue/purple/amber/red/slate, default teal. Yellow is chat reporting only; original green branding remains reference.
+- SEC-003–007/014/060 own hostile-guest/original preservation proof T10. Service/receiver/provider/notification lifecycle SEC-008–011 owns T11. Provider snapshot/capability/framework/private component SEC-002/012–013/020/023/025–028 owns T08. Supply chain SEC-016/018/022/024 belongs to T05/T06, not guessed support.
+- SEC source authenticity/ZIP/containment/publication/immutable generation and exact typed source inspection SEC-029–033/044–050 belongs T17. Durable dispatch/CAS SEC-035–036 belongs T18. Actual output/readback/no-change/rollback distinctions SEC-037–041/055–058 belongs T20. Exact target/delete/typed install/launch output SEC-034/042–043/051–054/059 belongs T14. Namespace persistence SEC-021 belongs T13; logs SEC-017 T28; live auth SEC-001 T26; background no-runtime recovery SEC-019 T18.
+- SPL-001–011 and SPL-018 own authentic complete source T17; SPL-012–014 private complete readback T20; SPL-015–017/019 actual typed eligible provider integration T08; SPL-020 pinned historical receipt validation T07. Source parsing, classloading and constructing a capability object do not close split runtime acceptance.
+- EVD-001 supply-chain manifest T05, EVD-002 native reproducibility T07, EVD-003/008–013 actual fixture/framework receipts T08, EVD-004 OEM background behavior T30, EVD-005–006 truthful bound reporting T04, EVD-007 release source/signature/device manifest T32.
+- REC-001 process API guard T08; REC-002–004/006/010–012 transactional authority/FIFO/namespace-aware scheduling T18; REC-005/007–008 automatic/preview consent T19; REC-009/013 preservation and strict legacy authority T13.
+- BRG-001 exact provider identity grammar T08 (never impose on opaque catalog keys), BRG-002 owned canonical operation bytes T18 (not the APK-cluster digest), BRG-003 adversarial stronger-boundary proof T10 (necessary allowlist, never self-attestation).
+
+## Supersessions and acceptance rules
+
+The original 32 task meanings are preserved. Archive-first is a new prerequisite/overlay for phase 0; it does not renumber the roadmap. Original code/tests/oracles are archive-only; this mapping does not permit copying them into a fresh runtime or claiming parity. Historical “retain until replacement equivalence” yields to the user's archive-first removal direction only after verified recovery; no parity is asserted.
+
+ADR-R1-01 approves Java/View + SQLite instead of proposed Kotlin/Compose/Room while retaining native UI, durable metadata and migration obligations. STYLE-R1-01 retains closed typed style and no resource/URL/I/O interpretation. EXEC-ID-R1-01 distinguishes opaque display catalog TEXT from execution authority. Those decisions are prerequisites to interpreting the old source text, not deleted requirements.
+
+No provider is selected or accepted. Unknown identity, source, peers, capability or authority disables dependent operation; post-dispatch ambiguity retains state for review, never replays blindly. Build/HOST/COMPILE evidence cannot substitute for actual Android lifecycle, provider isolation, eight separate app results, four phone milestones or owner-controlled release signing. Device/account/license/purchase/publication actions require their proper separate authority.
+
+## Reproduction
+
+Run `python3 apk-plan-inputs/build_requirements.py` from the workspace root to regenerate from frozen Git objects. Run `python3 apk-plan-inputs/validate_requirements.py` to independently compare IDs, exact ledger lines, field presence, normative excerpts and 32 task coverage. No old scripts/tests/builds are executed.
