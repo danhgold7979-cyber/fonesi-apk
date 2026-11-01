@@ -69,6 +69,12 @@ class PlanIntegrityTest(unittest.TestCase):
         self.check_mutation('docs/evidence/foundation-acceptance.json',lambda x:x.update(source_sha='0'*40))
         self.check_mutation('docs/status.json',lambda x:x['task_progress'].update(all_task_percent=100))
         self.check_mutation('docs/tasks.json',lambda x:x['tasks'][4].update(status='ACCEPTED_HOST_COMPILE'))
+        self.check_mutation('docs/evidence/provider-inventory-acceptance.json',lambda x:x.update(eligible_providers=1))
+        self.check_mutation('docs/phase-01/candidate-eligibility.json',lambda x:x['candidates'][0].update(eligible=True))
+        self.check_mutation('docs/phase-01/candidate-eligibility.json',lambda x:x['app_compatibility'].update(Facebook='PASS'))
+        for index in (5,6,7):
+            self.check_mutation('docs/tasks.json',lambda x:x['tasks'][index].update(status='ACCEPTED_DOCUMENTARY'))
+        self.check_mutation('docs/status.json',lambda x:x['task_progress'].update(phase1_task_percent=100))
     def test_missing_documentary_receipt(self):
         self.check_mutation('docs/tasks.json',lambda x:x['tasks'][0].update(accepted_evidence=[]))
     def test_archival_main_false_clean(self):

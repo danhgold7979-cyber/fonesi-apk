@@ -4,7 +4,7 @@ import hashlib
 from pathlib import Path
 import unittest
 from record_baseline import bind
-from run_host_checks import COMMANDS, parse_count
+from run_host_checks import COMMANDS, parse_count, check_kind
 
 
 class BaselineReceiptTest(unittest.TestCase):
@@ -14,7 +14,7 @@ class BaselineReceiptTest(unittest.TestCase):
         base = {'source_sha': self.sha, 'ANDROID': 'NOT_RUN', 'PROVIDER': 'NOT_RUN', 'PHONE': 'NOT_RUN'}
         checks = []
         for command in COMMANDS:
-            kind = 'synthetic_assertions' if command[-1].endswith('test_core.sh') else ('unittest_cases' if Path(command[-1]).name.startswith('test_') else 'integrity_command')
+            kind = check_kind(command)
             checks.append({'command': command, 'exit': 0, 'kind': kind, 'count': None if kind == 'integrity_command' else 1})
         self.host = {**base, 'tier': 'HOST', 'result': 'PASS', 'checks': checks}
         self.compile = {**base, 'tier': 'COMPILE', 'manifest': 'PASS', 'signature': 'PASS_DEBUG_ONLY',

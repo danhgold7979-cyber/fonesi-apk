@@ -6,7 +6,7 @@ import json
 import os
 from pathlib import Path
 import subprocess
-from run_host_checks import COMMANDS
+from run_host_checks import COMMANDS, check_kind
 
 ROOT = Path(__file__).resolve().parents[1]
 APK = Path('app/build/outputs/apk/debug/app-debug.apk')
@@ -21,7 +21,7 @@ def bind(host, compile_, lint, apk_bytes, source_sha):
     assert [check['command'] for check in host['checks']] == COMMANDS, 'missing/reordered HOST aggregate checks'
     assert all(check['exit'] == 0 for check in host['checks'])
     for check in host['checks']:
-        expected_kind = 'synthetic_assertions' if check['command'][-1].endswith('test_core.sh') else ('unittest_cases' if Path(check['command'][-1]).name.startswith('test_') else 'integrity_command')
+        expected_kind = check_kind(check['command'])
         assert check['kind'] == expected_kind
         if check['kind'] != 'integrity_command':
             assert isinstance(check['count'], int) and check['count'] > 0

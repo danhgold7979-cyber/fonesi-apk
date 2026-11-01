@@ -2,7 +2,7 @@
   "version": 1,
   "phases": 8,
   "tasks_total": 32,
-  "completed_count": 4,
+  "completed_count": 5,
   "phone_gates": {
     "1": [
       9,
@@ -170,7 +170,7 @@
       "phase_id": 1,
       "step": 5,
       "title": "Provider candidate matrix",
-      "status": "NOT_STARTED",
+      "status": "ACCEPTED_DOCUMENTARY",
       "source": {
         "commit": "2fac016e3b28e4d9f21390c221cad1df7a382c86",
         "path": "docs/ROADMAP.md",
@@ -187,7 +187,9 @@
       "evidence_tiers": [
         "HOST"
       ],
-      "accepted_evidence": [],
+      "accepted_evidence": [
+        "docs/evidence/provider-inventory-acceptance.json#APK-P1-T05"
+      ],
       "requirement_ids_integration": [],
       "requirement_ids_primary": [
         "P064",
@@ -204,7 +206,7 @@
       "phase_id": 1,
       "step": 6,
       "title": "Provider initialization and security review",
-      "status": "NOT_STARTED",
+      "status": "BLOCKED",
       "source": {
         "commit": "2fac016e3b28e4d9f21390c221cad1df7a382c86",
         "path": "docs/ROADMAP.md",
@@ -236,7 +238,7 @@
       "phase_id": 1,
       "step": 7,
       "title": "Build authorized provider candidate",
-      "status": "NOT_STARTED",
+      "status": "BLOCKED",
       "source": {
         "commit": "2fac016e3b28e4d9f21390c221cad1df7a382c86",
         "path": "docs/ROADMAP.md",
@@ -268,7 +270,7 @@
       "phase_id": 1,
       "step": 8,
       "title": "Minimal owned-fixture provider adapter",
-      "status": "NOT_STARTED",
+      "status": "BLOCKED",
       "source": {
         "commit": "2fac016e3b28e4d9f21390c221cad1df7a382c86",
         "path": "docs/ROADMAP.md",

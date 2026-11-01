@@ -1,0 +1,37 @@
+{
+  "schema_version": 1,
+  "scope": "NEGATIVE_CANDIDATE_INVENTORY_ONLY_NOT_PROVIDER_SELECTION",
+  "accepted_tasks": [
+    "APK-P1-T05"
+  ],
+  "blocked_tasks": [
+    "APK-P1-T06",
+    "APK-P1-T07",
+    "APK-P1-T08"
+  ],
+  "root_acceptance": "2026-11-01 parent explicit acceptance after independent dossier review",
+  "source_sha": "48dd8f8c25fa18bbab5d5cbfbe74064aeb117d62",
+  "source_tree": "59f4440657548591af3d9e1f012fc7d710cd72b9",
+  "independent_review": {
+    "path": "docs/evidence/P1_T05_DOSSIER_REVIEW.md",
+    "sha256": "afed2371ce4c0f79578bea98b79562fb03ce78a3d5cfc5631d8c3d7960083a5f"
+  },
+  "candidate_inventory": {
+    "path": "docs/phase-01/candidate-eligibility.json",
+    "sha256": "0cff685afdebf43b10f9a92ed75c5eb29ef5a56604d7555227e7ea0fe066858a",
+    "count": 6,
+    "scope": "Frozen pre-acceptance research snapshot; acceptance is recorded only in this registry"
+  },
+  "eligible_providers": 0,
+  "accepted_product_requirements": 0,
+  "ANDROID": "NOT_RUN",
+  "PROVIDER": "NOT_RUN",
+  "PHONE": "NOT_RUN",
+  "missing_prerequisites": [
+    "Materially new qualified candidate with complete inspectable source/native/transitive provenance and appropriate rights",
+    "Independent adoption/quality evidence plus maintained security posture, not stars/vendor claims",
+    "Enforceable hostile-guest isolation, no prohibited identity substitution or uncontrolled export, complete scoped security review",
+    "Authorized reproducible provider build then owned-fixture Android/provider proof before phone/account tests"
+  ],
+  "decision_if_no_candidate": "Explicit owner architecture/scope decision required; no silent root/profile/web/identity/signature/session/app-list substitution"
+}

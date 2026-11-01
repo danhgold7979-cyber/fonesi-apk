@@ -3,11 +3,11 @@
   "phase_total": 8,
   "task_total": 32,
   "requirement_total": 362,
-  "completed_tasks": 4,
+  "completed_tasks": 5,
   "accepted_product_requirements": 0,
-  "current_task": null,
-  "current_activity": "Phase 0 accepted; phase 1 not started",
-  "branch": "phase-00",
+  "current_task": "APK-P1-T06",
+  "current_activity": "T05 negative inventory accepted; T06/T07/T08 blocked: no qualified provider",
+  "branch": "phase-01",
   "provider": "UNAVAILABLE_NOT_ACCEPTED",
   "evidence": {
     "HOST": "PASS_FOUNDATION_ONLY",
@@ -24,8 +24,11 @@
     "4": "NOT_RUN"
   },
   "blockers": [
-    "No eligible proven provider; all eight-app compatibility UNKNOWN",
-    "Phone installation/accounts require owner action and synthetic-first gate"
+    "Materially new qualified candidate with complete inspectable source/native/transitive provenance and appropriate rights",
+    "Independent adoption/quality evidence plus maintained security posture, not stars/vendor claims",
+    "Enforceable hostile-guest isolation, no prohibited identity substitution or uncontrolled export, complete scoped security review",
+    "Authorized reproducible provider build then owned-fixture Android/provider proof before phone/account tests",
+    "Explicit owner architecture/scope decision required; no silent root/profile/web/identity/signature/session/app-list substitution"
   ],
   "evidence_scope": "Accepted exact-source foundation HOST/COMPILE only; no product requirement or runtime acceptance",
   "documentary_checkpoint": {
@@ -65,9 +68,13 @@
     "phase0_accepted": 4,
     "phase0_total": 4,
     "phase0_task_percent": 100.0,
-    "all_accepted": 4,
+    "all_accepted": 5,
     "all_total": 32,
-    "all_task_percent": 12.5,
-    "scope": "TASK_COUNTS_ONLY_NOT_PRODUCT_FUNCTIONALITY"
-  }
+    "all_task_percent": 15.625,
+    "scope": "TASK_COUNTS_ONLY_NOT_PRODUCT_FUNCTIONALITY",
+    "phase1_accepted": 1,
+    "phase1_total": 4,
+    "phase1_task_percent": 25.0
+  },
+  "provider_inventory_acceptance_registry": "docs/evidence/provider-inventory-acceptance.json"
 }

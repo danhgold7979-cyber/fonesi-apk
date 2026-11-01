@@ -1,0 +1,2695 @@
+{
+  "scope": "109 security/reconciliation/bridge IDs within complete362requirement ledger, not extra requirements",
+  "rows": [
+    {
+      "id": "SEC-001",
+      "obligation_verbatim": "Authorize every guest mutation only while foreground access is unlocked.",
+      "acceptance_verbatim": "P authorized foreground mutation; N locked/background request has zero provider calls; R revoke between each preflight and dispatch, then restart without replay.",
+      "ledger_source": {
+        "commit": "dccc27989b9c258ce9f99e28bc620ac03ac696ae",
+        "path": "docs/REBUILD_R1_SECURITY_REQUIREMENTS.md",
+        "line": 45,
+        "line_sha256": "1de7692d2b61d3a3a08363bd01ac426d89a344f3d5301e026822bb7d259b313f"
+      },
+      "primary_original_task": "APK-P6-T26",
+      "control_area": "live auth",
+      "planned_fixture_cases": [
+        "F05"
+      ],
+      "evidence_to_establish": [
+        "HOST",
+        "ANDROID",
+        "PROVIDER"
+      ],
+      "status": "NOT_RUN_NOT_ACCEPTED",
+      "note": "Planning map does not replace complete source acceptance or authorize execution"
+    },
+    {
+      "id": "SEC-002",
+      "obligation_verbatim": "Treat provider-returned state as untrusted until provenance and runtime acceptance.",
+      "acceptance_verbatim": "P independently corroborated state; N stale/incomplete response denied; R provider revision changes invalidate evidence before use.",
+      "ledger_source": {
+        "commit": "dccc27989b9c258ce9f99e28bc620ac03ac696ae",
+        "path": "docs/REBUILD_R1_SECURITY_REQUIREMENTS.md",
+        "line": 46,
+        "line_sha256": "022b1e52db0225bf1eba9937148c40451bc47d81430f0aae84897e274c02c173"
+      },
+      "primary_original_task": "APK-P1-T08",
+      "control_area": "provider identity/capability/framework",
+      "planned_fixture_cases": [
+        "F03",
+        "F04",
+        "F08"
+      ],
+      "evidence_to_establish": [
+        "HOST",
+        "COMPILE",
+        "ANDROID",
+        "PROVIDER"
+      ],
+      "status": "NOT_RUN_NOT_ACCEPTED",
+      "note": "Planning map does not replace complete source acceptance or authorize execution"
+    },
+    {
+      "id": "SEC-003",
+      "obligation_verbatim": "Do not treat host-UID directories as hostile-guest isolation.",
+      "acceptance_verbatim": "P verified stronger boundary plus adversarial evidence; N same UID/UNKNOWN with claimed isolation denied; R boundary changes revoke acceptance.",
+      "ledger_source": {
+        "commit": "dccc27989b9c258ce9f99e28bc620ac03ac696ae",
+        "path": "docs/REBUILD_R1_SECURITY_REQUIREMENTS.md",
+        "line": 47,
+        "line_sha256": "adee1bcc2258fd588a16250eebdfeab6a8f54291f3c9e459a8e8fd867c885395"
+      },
+      "primary_original_task": "APK-P2-T10",
+      "control_area": "hostile guest and original boundary",
+      "planned_fixture_cases": [
+        "F02",
+        "F03",
+        "F09"
+      ],
+      "evidence_to_establish": [
+        "ANDROID",
+        "PROVIDER",
+        "PHONE"
+      ],
+      "status": "NOT_RUN_NOT_ACCEPTED",
+      "note": "Planning map does not replace complete source acceptance or authorize execution"
+    },
+    {
+      "id": "SEC-004",
+      "obligation_verbatim": "Deny clone A access to clone B private files.",
+      "acceptance_verbatim": "P each clone accesses own files; N A reads/writes B denied; R after rename/delete/restart ownership remains separate.",
+      "ledger_source": {
+        "commit": "dccc27989b9c258ce9f99e28bc620ac03ac696ae",
+        "path": "docs/REBUILD_R1_SECURITY_REQUIREMENTS.md",
+        "line": 48,
+        "line_sha256": "3dedfdf8696590e203720b6526e4da70fb3f3a1b67c270925b4b1c65afdc90ac"
+      },
+      "primary_original_task": "APK-P2-T10",
+      "control_area": "hostile guest and original boundary",
+      "planned_fixture_cases": [
+        "F02",
+        "F03",
+        "F09"
+      ],
+      "evidence_to_establish": [
+        "ANDROID",
+        "PROVIDER",
+        "PHONE"
+      ],
+      "status": "NOT_RUN_NOT_ACCEPTED",
+      "note": "Planning map does not replace complete source acceptance or authorize execution"
+    },
+    {
+      "id": "SEC-005",
+      "obligation_verbatim": "Deny cross-clone database access.",
+      "acceptance_verbatim": "P own database persists; N cross-clone query/write denied; R concurrent update/crash preserves separation.",
+      "ledger_source": {
+        "commit": "dccc27989b9c258ce9f99e28bc620ac03ac696ae",
+        "path": "docs/REBUILD_R1_SECURITY_REQUIREMENTS.md",
+        "line": 49,
+        "line_sha256": "3f81ffa93f350e16030ae3892c9086ecb46b645114243bc745ed08bc9f2cc4c4"
+      },
+      "primary_original_task": "APK-P2-T10",
+      "control_area": "hostile guest and original boundary",
+      "planned_fixture_cases": [
+        "F02",
+        "F03",
+        "F09"
+      ],
+      "evidence_to_establish": [
+        "ANDROID",
+        "PROVIDER",
+        "PHONE"
+      ],
+      "status": "NOT_RUN_NOT_ACCEPTED",
+      "note": "Planning map does not replace complete source acceptance or authorize execution"
+    },
+    {
+      "id": "SEC-006",
+      "obligation_verbatim": "Deny cross-clone preference/cache access.",
+      "acceptance_verbatim": "P own settings/cache work; N other clone access denied; R cleanup/restart cannot alias namespaces.",
+      "ledger_source": {
+        "commit": "dccc27989b9c258ce9f99e28bc620ac03ac696ae",
+        "path": "docs/REBUILD_R1_SECURITY_REQUIREMENTS.md",
+        "line": 50,
+        "line_sha256": "2772763cf73f947bfd0a46868ffd2898803572e8248fe4f8bd1d4163bbe887ce"
+      },
+      "primary_original_task": "APK-P2-T10",
+      "control_area": "hostile guest and original boundary",
+      "planned_fixture_cases": [
+        "F02",
+        "F03",
+        "F09"
+      ],
+      "evidence_to_establish": [
+        "ANDROID",
+        "PROVIDER",
+        "PHONE"
+      ],
+      "status": "NOT_RUN_NOT_ACCEPTED",
+      "note": "Planning map does not replace complete source acceptance or authorize execution"
+    },
+    {
+      "id": "SEC-007",
+      "obligation_verbatim": "Prevent cross-clone URI grant acquisition/use.",
+      "acceptance_verbatim": "P intended grant works; N foreign grant denied; R revoke/restart does not restore foreign access.",
+      "ledger_source": {
+        "commit": "dccc27989b9c258ce9f99e28bc620ac03ac696ae",
+        "path": "docs/REBUILD_R1_SECURITY_REQUIREMENTS.md",
+        "line": 51,
+        "line_sha256": "954ada7e87a186dd43010c876ac23f449d038fc64a8a555deb1b7c4489ba8398"
+      },
+      "primary_original_task": "APK-P2-T10",
+      "control_area": "hostile guest and original boundary",
+      "planned_fixture_cases": [
+        "F02",
+        "F03",
+        "F09"
+      ],
+      "evidence_to_establish": [
+        "ANDROID",
+        "PROVIDER",
+        "PHONE"
+      ],
+      "status": "NOT_RUN_NOT_ACCEPTED",
+      "note": "Planning map does not replace complete source acceptance or authorize execution"
+    },
+    {
+      "id": "SEC-008",
+      "obligation_verbatim": "Keep guest notification identity and routing separate.",
+      "acceptance_verbatim": "P notification opens exact clone; N foreign clone cancellation/action rejected; R process recreation preserves target identity.",
+      "ledger_source": {
+        "commit": "dccc27989b9c258ce9f99e28bc620ac03ac696ae",
+        "path": "docs/REBUILD_R1_SECURITY_REQUIREMENTS.md",
+        "line": 52,
+        "line_sha256": "26d3cb27db9c4393bb22597776a77f5731a27c2a816c488fbc7d333a24e5576b"
+      },
+      "primary_original_task": "APK-P2-T11",
+      "control_area": "hostile guest and original boundary",
+      "planned_fixture_cases": [
+        "F02",
+        "F03",
+        "F09"
+      ],
+      "evidence_to_establish": [
+        "ANDROID",
+        "PROVIDER",
+        "PHONE"
+      ],
+      "status": "NOT_RUN_NOT_ACCEPTED",
+      "note": "Planning map does not replace complete source acceptance or authorize execution"
+    },
+    {
+      "id": "SEC-009",
+      "obligation_verbatim": "Keep guest Service identity/lifecycle separate and enforce permissions/export rules.",
+      "acceptance_verbatim": "P owned service lifecycle receipt; N foreign/unauthorized call denied; R restart/background handling retains owner.",
+      "ledger_source": {
+        "commit": "dccc27989b9c258ce9f99e28bc620ac03ac696ae",
+        "path": "docs/REBUILD_R1_SECURITY_REQUIREMENTS.md",
+        "line": 53,
+        "line_sha256": "643b017c6bf69ab718ac24b1ffe85ef72e01362c9a8fa236a84b24c5da0de9e7"
+      },
+      "primary_original_task": "APK-P2-T11",
+      "control_area": "hostile guest and original boundary",
+      "planned_fixture_cases": [
+        "F02",
+        "F03",
+        "F09"
+      ],
+      "evidence_to_establish": [
+        "ANDROID",
+        "PROVIDER",
+        "PHONE"
+      ],
+      "status": "NOT_RUN_NOT_ACCEPTED",
+      "note": "Planning map does not replace complete source acceptance or authorize execution"
+    },
+    {
+      "id": "SEC-010",
+      "obligation_verbatim": "Enforce guest Receiver lifecycle and permission/export boundaries.",
+      "acceptance_verbatim": "P intended owned receiver delivery; N unauthorized delivery denied; R process restart has no duplicate/misrouted delivery.",
+      "ledger_source": {
+        "commit": "dccc27989b9c258ce9f99e28bc620ac03ac696ae",
+        "path": "docs/REBUILD_R1_SECURITY_REQUIREMENTS.md",
+        "line": 54,
+        "line_sha256": "7c4c2aa99d2b51643225499432ed02c59807bc5faf1ced02089ebd4809dda4c5"
+      },
+      "primary_original_task": "APK-P2-T11",
+      "control_area": "hostile guest and original boundary",
+      "planned_fixture_cases": [
+        "F02",
+        "F03",
+        "F09"
+      ],
+      "evidence_to_establish": [
+        "ANDROID",
+        "PROVIDER",
+        "PHONE"
+      ],
+      "status": "NOT_RUN_NOT_ACCEPTED",
+      "note": "Planning map does not replace complete source acceptance or authorize execution"
+    },
+    {
+      "id": "SEC-011",
+      "obligation_verbatim": "Keep guest ContentProvider identity/lifecycle and permissions separate.",
+      "acceptance_verbatim": "P own provider data; N wrong clone/export violation denied; R restart preserves authority binding.",
+      "ledger_source": {
+        "commit": "dccc27989b9c258ce9f99e28bc620ac03ac696ae",
+        "path": "docs/REBUILD_R1_SECURITY_REQUIREMENTS.md",
+        "line": 55,
+        "line_sha256": "ca99658dac9d2dc67c42c79f72ec59e46ef766c24d94812d61261a858cbb9a86"
+      },
+      "primary_original_task": "APK-P2-T11",
+      "control_area": "hostile guest and original boundary",
+      "planned_fixture_cases": [
+        "F02",
+        "F03",
+        "F09"
+      ],
+      "evidence_to_establish": [
+        "ANDROID",
+        "PROVIDER",
+        "PHONE"
+      ],
+      "status": "NOT_RUN_NOT_ACCEPTED",
+      "note": "Planning map does not replace complete source acceptance or authorize execution"
+    },
+    {
+      "id": "SEC-012",
+      "obligation_verbatim": "A guest Activity claim requires actual provider/framework guest lifecycle, not host View/Activity events.",
+      "acceptance_verbatim": "P owned guest component receipt; N host proxy alone never counts; R launch/process-death/recreation binds same instance.",
+      "ledger_source": {
+        "commit": "dccc27989b9c258ce9f99e28bc620ac03ac696ae",
+        "path": "docs/REBUILD_R1_SECURITY_REQUIREMENTS.md",
+        "line": 56,
+        "line_sha256": "7d33172a900253d2d0031fa41d27ac75d5880b97d33e17f4e37046a1d79eeb0b"
+      },
+      "primary_original_task": "APK-P1-T08",
+      "control_area": "provider identity/capability/framework",
+      "planned_fixture_cases": [
+        "F03",
+        "F04",
+        "F08"
+      ],
+      "evidence_to_establish": [
+        "HOST",
+        "COMPILE",
+        "ANDROID",
+        "PROVIDER"
+      ],
+      "status": "NOT_RUN_NOT_ACCEPTED",
+      "note": "Planning map does not replace complete source acceptance or authorize execution"
+    },
+    {
+      "id": "SEC-013",
+      "obligation_verbatim": "Resolve PackageInfo/ApplicationInfo/components from private guest identity, never original app as fallback evidence.",
+      "acceptance_verbatim": "P actual private registry/framework readback; N original installed app alone denied; R original uninstall/change cannot substitute identity.",
+      "ledger_source": {
+        "commit": "dccc27989b9c258ce9f99e28bc620ac03ac696ae",
+        "path": "docs/REBUILD_R1_SECURITY_REQUIREMENTS.md",
+        "line": 57,
+        "line_sha256": "60da684c33799d69f1a1fe4dc64b67b0c362ac64ca3dfbadabba31eefab18a4a"
+      },
+      "primary_original_task": "APK-P1-T08",
+      "control_area": "provider identity/capability/framework",
+      "planned_fixture_cases": [
+        "F03",
+        "F04",
+        "F08"
+      ],
+      "evidence_to_establish": [
+        "HOST",
+        "COMPILE",
+        "ANDROID",
+        "PROVIDER"
+      ],
+      "status": "NOT_RUN_NOT_ACCEPTED",
+      "note": "Planning map does not replace complete source acceptance or authorize execution"
+    },
+    {
+      "id": "SEC-014",
+      "obligation_verbatim": "Preserve original installed app data/identity during clone operations.",
+      "acceptance_verbatim": "P independent original remains usable; N clone removal/update cannot touch original; R interrupted cleanup retains original.",
+      "ledger_source": {
+        "commit": "dccc27989b9c258ce9f99e28bc620ac03ac696ae",
+        "path": "docs/REBUILD_R1_SECURITY_REQUIREMENTS.md",
+        "line": 58,
+        "line_sha256": "5b40203763a55b9c27fd58417e46cdee77369a6d9a9fb7a54fcee7b4d42c2e39"
+      },
+      "primary_original_task": "APK-P2-T10",
+      "control_area": "hostile guest and original boundary",
+      "planned_fixture_cases": [
+        "F02",
+        "F03",
+        "F09"
+      ],
+      "evidence_to_establish": [
+        "ANDROID",
+        "PROVIDER",
+        "PHONE"
+      ],
+      "status": "NOT_RUN_NOT_ACCEPTED",
+      "note": "Planning map does not replace complete source acceptance or authorize execution"
+    },
+    {
+      "id": "SEC-015",
+      "obligation_verbatim": "Do not automatically copy original credentials/session material.",
+      "acceptance_verbatim": "P clean new account region; N source secrets excluded; R recovery/import cannot reintroduce session copying.",
+      "ledger_source": {
+        "commit": "dccc27989b9c258ce9f99e28bc620ac03ac696ae",
+        "path": "docs/REBUILD_R1_SECURITY_REQUIREMENTS.md",
+        "line": 59,
+        "line_sha256": "fce4e4e58033f75c91ed7bb5181a3c5a164081356f370607b07023e7e483baa7"
+      },
+      "primary_original_task": "APK-P3-T14",
+      "control_area": "exact scoped operation/result",
+      "planned_fixture_cases": [
+        "F05",
+        "F07"
+      ],
+      "evidence_to_establish": [
+        "HOST",
+        "ANDROID",
+        "PROVIDER",
+        "PHONE"
+      ],
+      "status": "NOT_RUN_NOT_ACCEPTED",
+      "note": "Planning map does not replace complete source acceptance or authorize execution"
+    },
+    {
+      "id": "SEC-016",
+      "obligation_verbatim": "Do not introduce hidden identity spoofing/anti-detection/crash suppression.",
+      "acceptance_verbatim": "P reviewed behavior inventory; N prohibited SDK hooks rejected; R dependency/config upgrade triggers renewed audit.",
+      "ledger_source": {
+        "commit": "dccc27989b9c258ce9f99e28bc620ac03ac696ae",
+        "path": "docs/REBUILD_R1_SECURITY_REQUIREMENTS.md",
+        "line": 60,
+        "line_sha256": "459167c0665c3ef5a3331cce7494a9ec9f30c21a3163044da63c842abd08729e"
+      },
+      "primary_original_task": "APK-P1-T06",
+      "control_area": "supply chain/no forbidden behavior",
+      "planned_fixture_cases": [
+        "F04",
+        "F10"
+      ],
+      "evidence_to_establish": [
+        "HOST",
+        "COMPILE",
+        "PROVIDER"
+      ],
+      "status": "NOT_RUN_NOT_ACCEPTED",
+      "note": "Planning map does not replace complete source acceptance or authorize execution"
+    },
+    {
+      "id": "SEC-017",
+      "obligation_verbatim": "Keep logs free of credentials, package-private data and session material.",
+      "acceptance_verbatim": "P allowlisted diagnostics; N sensitive fields absent; R crash/error paths stay filtered after restart.",
+      "ledger_source": {
+        "commit": "dccc27989b9c258ce9f99e28bc620ac03ac696ae",
+        "path": "docs/REBUILD_R1_SECURITY_REQUIREMENTS.md",
+        "line": 61,
+        "line_sha256": "391a5d8f5cf31fb701a1aa071ba21aaf7fb127f4074cd3914e03e0495ae16c21"
+      },
+      "primary_original_task": "APK-P6-T28",
+      "control_area": "secret-free diagnostics",
+      "planned_fixture_cases": [
+        "F10"
+      ],
+      "evidence_to_establish": [
+        "HOST",
+        "ANDROID",
+        "PROVIDER",
+        "PHONE"
+      ],
+      "status": "NOT_RUN_NOT_ACCEPTED",
+      "note": "Planning map does not replace complete source acceptance or authorize execution"
+    },
+    {
+      "id": "SEC-018",
+      "obligation_verbatim": "Do not perform unreviewed telemetry/log upload.",
+      "acceptance_verbatim": "P declared reviewed dataflow; N unexpected endpoint/upload absent; R dependency/config changes cannot silently enable upload.",
+      "ledger_source": {
+        "commit": "dccc27989b9c258ce9f99e28bc620ac03ac696ae",
+        "path": "docs/REBUILD_R1_SECURITY_REQUIREMENTS.md",
+        "line": 62,
+        "line_sha256": "8ec17c98e4051cc78762f2d2219a4f05569f8dc608a3f27c8b210bb9e7ce6b47"
+      },
+      "primary_original_task": "APK-P1-T06",
+      "control_area": "supply chain/no forbidden behavior",
+      "planned_fixture_cases": [
+        "F04",
+        "F10"
+      ],
+      "evidence_to_establish": [
+        "HOST",
+        "COMPILE",
+        "PROVIDER"
+      ],
+      "status": "NOT_RUN_NOT_ACCEPTED",
+      "note": "Planning map does not replace complete source acceptance or authorize execution"
+    },
+    {
+      "id": "SEC-019",
+      "obligation_verbatim": "Background recovery may reconcile metadata but never initialize/launch/install/update/import guests.",
+      "acceptance_verbatim": "P metadata-only recovery; N background provider callback count zero; R stale worker after lock/disable/restart stays inert.",
+      "ledger_source": {
+        "commit": "dccc27989b9c258ce9f99e28bc620ac03ac696ae",
+        "path": "docs/REBUILD_R1_SECURITY_REQUIREMENTS.md",
+        "line": 63,
+        "line_sha256": "050052f4137a528eaba408fec02d3eef82a3c3aa5488006204ed0c1706f72ced"
+      },
+      "primary_original_task": "APK-P4-T18",
+      "control_area": "durable authority/journal",
+      "planned_fixture_cases": [
+        "F05",
+        "F06"
+      ],
+      "evidence_to_establish": [
+        "HOST",
+        "ANDROID",
+        "PROVIDER"
+      ],
+      "status": "NOT_RUN_NOT_ACCEPTED",
+      "note": "Planning map does not replace complete source acceptance or authorize execution"
+    },
+    {
+      "id": "SEC-020",
+      "obligation_verbatim": "Disabled manager/provider cannot initialize guest runtime.",
+      "acceptance_verbatim": "P enabled reviewed initialization; N disabled state zero initialization; R disable during scheduled/startup event prevents callback.",
+      "ledger_source": {
+        "commit": "dccc27989b9c258ce9f99e28bc620ac03ac696ae",
+        "path": "docs/REBUILD_R1_SECURITY_REQUIREMENTS.md",
+        "line": 64,
+        "line_sha256": "6b5c0f6369f1fb2f8394ab80b9c77240d19f03d1f147db61fe8227b655febd57"
+      },
+      "primary_original_task": "APK-P1-T08",
+      "control_area": "provider identity/capability/framework",
+      "planned_fixture_cases": [
+        "F03",
+        "F04",
+        "F08"
+      ],
+      "evidence_to_establish": [
+        "HOST",
+        "COMPILE",
+        "ANDROID",
+        "PROVIDER"
+      ],
+      "status": "NOT_RUN_NOT_ACCEPTED",
+      "note": "Planning map does not replace complete source acceptance or authorize execution"
+    },
+    {
+      "id": "SEC-021",
+      "obligation_verbatim": "Namespace persisted clone records by provider; replacement cannot adopt foreign records without tested migration.",
+      "acceptance_verbatim": "P exact provider owns record; N same clone ID in another provider remains foreign; R upgrade retains foreign bytes/no dispatch.",
+      "ledger_source": {
+        "commit": "dccc27989b9c258ce9f99e28bc620ac03ac696ae",
+        "path": "docs/REBUILD_R1_SECURITY_REQUIREMENTS.md",
+        "line": 70,
+        "line_sha256": "211bcd5154b730b844d6da74698e5a5caac6d820bf86955b4d2d1abe4f97cd06"
+      },
+      "primary_original_task": "APK-P3-T13",
+      "control_area": "namespace persistence",
+      "planned_fixture_cases": [
+        "F02",
+        "F07"
+      ],
+      "evidence_to_establish": [
+        "HOST",
+        "ANDROID",
+        "PROVIDER"
+      ],
+      "status": "NOT_RUN_NOT_ACCEPTED",
+      "note": "Planning map does not replace complete source acceptance or authorize execution"
+    },
+    {
+      "id": "SEC-022",
+      "obligation_verbatim": "Bind provider snapshot to ID/version/source revision/dependency-manifest digest.",
+      "acceptance_verbatim": "P all four verified bindings; N missing/mismatched binding denied; R upgrade invalidates cached snapshot.",
+      "ledger_source": {
+        "commit": "dccc27989b9c258ce9f99e28bc620ac03ac696ae",
+        "path": "docs/REBUILD_R1_SECURITY_REQUIREMENTS.md",
+        "line": 71,
+        "line_sha256": "f454f2c9904554a657f36bee4b4c25d5d86390b45803fe6b2e198b16a416a408"
+      },
+      "primary_original_task": "APK-P1-T05",
+      "control_area": "provider identity/capability/framework",
+      "planned_fixture_cases": [
+        "F03",
+        "F04",
+        "F08"
+      ],
+      "evidence_to_establish": [
+        "HOST",
+        "COMPILE",
+        "ANDROID",
+        "PROVIDER"
+      ],
+      "status": "NOT_RUN_NOT_ACCEPTED",
+      "note": "Planning map does not replace complete source acceptance or authorize execution"
+    },
+    {
+      "id": "SEC-023",
+      "obligation_verbatim": "Represent readiness, initialization state and failure code separately.",
+      "acceptance_verbatim": "P explicit initialized result; N ready flag alone grants no capability; R failed/interrupted init remains nonready.",
+      "ledger_source": {
+        "commit": "dccc27989b9c258ce9f99e28bc620ac03ac696ae",
+        "path": "docs/REBUILD_R1_SECURITY_REQUIREMENTS.md",
+        "line": 72,
+        "line_sha256": "a1960000313fc7f32ef414296fe4847c7c5f417e73c992ff3eb4bc4a77264904"
+      },
+      "primary_original_task": "APK-P1-T08",
+      "control_area": "provider identity/capability/framework",
+      "planned_fixture_cases": [
+        "F03",
+        "F04",
+        "F08"
+      ],
+      "evidence_to_establish": [
+        "HOST",
+        "COMPILE",
+        "ANDROID",
+        "PROVIDER"
+      ],
+      "status": "NOT_RUN_NOT_ACCEPTED",
+      "note": "Planning map does not replace complete source acceptance or authorize execution"
+    },
+    {
+      "id": "SEC-024",
+      "obligation_verbatim": "Expose verified API/ABI/page-size support and explicit unsupported restrictions.",
+      "acceptance_verbatim": "P exact supported environment; N unknown/unsupported disabled; R environment change re-evaluates capability.",
+      "ledger_source": {
+        "commit": "dccc27989b9c258ce9f99e28bc620ac03ac696ae",
+        "path": "docs/REBUILD_R1_SECURITY_REQUIREMENTS.md",
+        "line": 73,
+        "line_sha256": "977ccbfb5b99d97404dd8a9bd20c67806106cf1c778dcc5479a9b3255881e3f3"
+      },
+      "primary_original_task": "APK-P1-T05",
+      "control_area": "provider identity/capability/framework",
+      "planned_fixture_cases": [
+        "F03",
+        "F04",
+        "F08"
+      ],
+      "evidence_to_establish": [
+        "HOST",
+        "COMPILE",
+        "ANDROID",
+        "PROVIDER"
+      ],
+      "status": "NOT_RUN_NOT_ACCEPTED",
+      "note": "Planning map does not replace complete source acceptance or authorize execution"
+    },
+    {
+      "id": "SEC-025",
+      "obligation_verbatim": "Keep capabilities explicit, individually verified and default unsupported/unknown.",
+      "acceptance_verbatim": "P exact required claim; N absent/UNKNOWN denied; R capability revision change invalidates pending authorization.",
+      "ledger_source": {
+        "commit": "dccc27989b9c258ce9f99e28bc620ac03ac696ae",
+        "path": "docs/REBUILD_R1_SECURITY_REQUIREMENTS.md",
+        "line": 74,
+        "line_sha256": "21d0f61410a8b75448bb54f9a645638081068a9788345c7e281e9cf257fd32f9"
+      },
+      "primary_original_task": "APK-P1-T08",
+      "control_area": "provider identity/capability/framework",
+      "planned_fixture_cases": [
+        "F03",
+        "F04",
+        "F08"
+      ],
+      "evidence_to_establish": [
+        "HOST",
+        "COMPILE",
+        "ANDROID",
+        "PROVIDER"
+      ],
+      "status": "NOT_RUN_NOT_ACCEPTED",
+      "note": "Planning map does not replace complete source acceptance or authorize execution"
+    },
+    {
+      "id": "SEC-026",
+      "obligation_verbatim": "Declare resource/config/native/intent/framework mediation levels separately.",
+      "acceptance_verbatim": "P evidence per mediation feature; N successful parsing does not enable runtime feature; R configuration/process changes rerun proof.",
+      "ledger_source": {
+        "commit": "dccc27989b9c258ce9f99e28bc620ac03ac696ae",
+        "path": "docs/REBUILD_R1_SECURITY_REQUIREMENTS.md",
+        "line": 75,
+        "line_sha256": "3fe2bdc20e32cbc006883853b0c838f85e2d26a139ef5709d7272155a51d6604"
+      },
+      "primary_original_task": "APK-P1-T08",
+      "control_area": "provider identity/capability/framework",
+      "planned_fixture_cases": [
+        "F03",
+        "F04",
+        "F08"
+      ],
+      "evidence_to_establish": [
+        "HOST",
+        "COMPILE",
+        "ANDROID",
+        "PROVIDER"
+      ],
+      "status": "NOT_RUN_NOT_ACCEPTED",
+      "note": "Planning map does not replace complete source acceptance or authorize execution"
+    },
+    {
+      "id": "SEC-027",
+      "obligation_verbatim": "Declare exact update scope, atomicity and readback guarantees.",
+      "acceptance_verbatim": "P complete affected set consent; N unknown scope/running state defers; R peer set/state changes reject stale consent.",
+      "ledger_source": {
+        "commit": "dccc27989b9c258ce9f99e28bc620ac03ac696ae",
+        "path": "docs/REBUILD_R1_SECURITY_REQUIREMENTS.md",
+        "line": 76,
+        "line_sha256": "43be24e1d096b70bf9d5e3ed0455bc615b8fd07995d1607246aaab506bea39f5"
+      },
+      "primary_original_task": "APK-P1-T08",
+      "control_area": "provider identity/capability/framework",
+      "planned_fixture_cases": [
+        "F03",
+        "F04",
+        "F08"
+      ],
+      "evidence_to_establish": [
+        "HOST",
+        "COMPILE",
+        "ANDROID",
+        "PROVIDER"
+      ],
+      "status": "NOT_RUN_NOT_ACCEPTED",
+      "note": "Planning map does not replace complete source acceptance or authorize execution"
+    },
+    {
+      "id": "SEC-028",
+      "obligation_verbatim": "Capability changes require renewed acceptance and snapshot digest update.",
+      "acceptance_verbatim": "P new revision has exact receipts; N old digest cannot authorize new implementation; R in-flight evidence change aborts safely.",
+      "ledger_source": {
+        "commit": "dccc27989b9c258ce9f99e28bc620ac03ac696ae",
+        "path": "docs/REBUILD_R1_SECURITY_REQUIREMENTS.md",
+        "line": 77,
+        "line_sha256": "cb530443196bf1a38ef409ec38c4bab54a6300466d883d1ea3d1e14b9ac740ce"
+      },
+      "primary_original_task": "APK-P1-T08",
+      "control_area": "provider identity/capability/framework",
+      "planned_fixture_cases": [
+        "F03",
+        "F04",
+        "F08"
+      ],
+      "evidence_to_establish": [
+        "HOST",
+        "COMPILE",
+        "ANDROID",
+        "PROVIDER"
+      ],
+      "status": "NOT_RUN_NOT_ACCEPTED",
+      "note": "Planning map does not replace complete source acceptance or authorize execution"
+    },
+    {
+      "id": "SEC-029",
+      "obligation_verbatim": "Validate package/version/signer identity before any write.",
+      "acceptance_verbatim": "P authentic owned APK matches expected identity; N corrupt/mismatched identity denied; R post-audit mutation detected before publish/dispatch.",
+      "ledger_source": {
+        "commit": "dccc27989b9c258ce9f99e28bc620ac03ac696ae",
+        "path": "docs/REBUILD_R1_SECURITY_REQUIREMENTS.md",
+        "line": 78,
+        "line_sha256": "828b6874f80b6ecb91ab892709ffe168ad71ed808eeb88acbf7b03f8bcb8d8b3"
+      },
+      "primary_original_task": "APK-P4-T17",
+      "control_area": "authentic immutable signed source",
+      "planned_fixture_cases": [
+        "F01",
+        "F08"
+      ],
+      "evidence_to_establish": [
+        "HOST",
+        "COMPILE",
+        "ANDROID",
+        "PROVIDER"
+      ],
+      "status": "NOT_RUN_NOT_ACCEPTED",
+      "note": "Planning map does not replace complete source acceptance or authorize execution"
+    },
+    {
+      "id": "SEC-030",
+      "obligation_verbatim": "Reject malformed ZIP/APK inputs and resource exhaustion.",
+      "acceptance_verbatim": "P bounded valid owned fixture; N corrupt/duplicate/overbudget archive denied without partial active output; R interrupted parsing retains no active generation.",
+      "ledger_source": {
+        "commit": "dccc27989b9c258ce9f99e28bc620ac03ac696ae",
+        "path": "docs/REBUILD_R1_SECURITY_REQUIREMENTS.md",
+        "line": 79,
+        "line_sha256": "c2a05e0a30dea17b1ec6083045734a89a793a2c46a1dd281e9a06fc2fea6a6f4"
+      },
+      "primary_original_task": "APK-P4-T17",
+      "control_area": "authentic immutable signed source",
+      "planned_fixture_cases": [
+        "F01",
+        "F08"
+      ],
+      "evidence_to_establish": [
+        "HOST",
+        "COMPILE",
+        "ANDROID",
+        "PROVIDER"
+      ],
+      "status": "NOT_RUN_NOT_ACCEPTED",
+      "note": "Planning map does not replace complete source acceptance or authorize execution"
+    },
+    {
+      "id": "SEC-031",
+      "obligation_verbatim": "Enforce approved-root containment/symlink rejection at every open/copy/delete boundary.",
+      "acceptance_verbatim": "P private contained path; N traversal/symlink escape denied; R replacement during operation cannot escape, cleanup remains contained.",
+      "ledger_source": {
+        "commit": "dccc27989b9c258ce9f99e28bc620ac03ac696ae",
+        "path": "docs/REBUILD_R1_SECURITY_REQUIREMENTS.md",
+        "line": 80,
+        "line_sha256": "09e84768ef086a0c07e87fe8f446cc2b1d97c2be1e5500d438a60e352821f4d5"
+      },
+      "primary_original_task": "APK-P4-T17",
+      "control_area": "authentic immutable signed source",
+      "planned_fixture_cases": [
+        "F01",
+        "F08"
+      ],
+      "evidence_to_establish": [
+        "HOST",
+        "COMPILE",
+        "ANDROID",
+        "PROVIDER"
+      ],
+      "status": "NOT_RUN_NOT_ACCEPTED",
+      "note": "Planning map does not replace complete source acceptance or authorize execution"
+    },
+    {
+      "id": "SEC-032",
+      "obligation_verbatim": "Publish complete source generations atomically.",
+      "acceptance_verbatim": "P all members visible together; N partial set never active; R fault at each publication boundary yields old verified or review state.",
+      "ledger_source": {
+        "commit": "dccc27989b9c258ce9f99e28bc620ac03ac696ae",
+        "path": "docs/REBUILD_R1_SECURITY_REQUIREMENTS.md",
+        "line": 81,
+        "line_sha256": "f2e86b5219e80127f5522cc4b41c5a9264ac04cb81a75b8b22811cbe48e97a6c"
+      },
+      "primary_original_task": "APK-P4-T17",
+      "control_area": "authentic immutable signed source",
+      "planned_fixture_cases": [
+        "F01",
+        "F08"
+      ],
+      "evidence_to_establish": [
+        "HOST",
+        "COMPILE",
+        "ANDROID",
+        "PROVIDER"
+      ],
+      "status": "NOT_RUN_NOT_ACCEPTED",
+      "note": "Planning map does not replace complete source acceptance or authorize execution"
+    },
+    {
+      "id": "SEC-033",
+      "obligation_verbatim": "Keep referenced source generation immutable.",
+      "acceptance_verbatim": "P pinned task reads unchanged generation; N changed member denied; R concurrent update cannot replace referenced bytes.",
+      "ledger_source": {
+        "commit": "dccc27989b9c258ce9f99e28bc620ac03ac696ae",
+        "path": "docs/REBUILD_R1_SECURITY_REQUIREMENTS.md",
+        "line": 82,
+        "line_sha256": "4fbe6ea1b7635bef5a325a2521132d421f391a2cd097a4ca1bba18f0e3a10c0b"
+      },
+      "primary_original_task": "APK-P4-T17",
+      "control_area": "authentic immutable signed source",
+      "planned_fixture_cases": [
+        "F01",
+        "F08"
+      ],
+      "evidence_to_establish": [
+        "HOST",
+        "COMPILE",
+        "ANDROID",
+        "PROVIDER"
+      ],
+      "status": "NOT_RUN_NOT_ACCEPTED",
+      "note": "Planning map does not replace complete source acceptance or authorize execution"
+    },
+    {
+      "id": "SEC-034",
+      "obligation_verbatim": "Garbage collection/removal cannot delete shared code still referenced by any instance.",
+      "acceptance_verbatim": "P unreferenced generation removed; N live/foreign reference blocks delete; R concurrent reference creation/cleanup is atomic.",
+      "ledger_source": {
+        "commit": "dccc27989b9c258ce9f99e28bc620ac03ac696ae",
+        "path": "docs/REBUILD_R1_SECURITY_REQUIREMENTS.md",
+        "line": 83,
+        "line_sha256": "707ab2d7b78c7ef2451493ba1876a0b0c3971685767ee8b4cf6e494565f2781c"
+      },
+      "primary_original_task": "APK-P3-T14",
+      "control_area": "exact scoped operation/result",
+      "planned_fixture_cases": [
+        "F05",
+        "F07"
+      ],
+      "evidence_to_establish": [
+        "HOST",
+        "ANDROID",
+        "PROVIDER",
+        "PHONE"
+      ],
+      "status": "NOT_RUN_NOT_ACCEPTED",
+      "note": "Planning map does not replace complete source acceptance or authorize execution"
+    },
+    {
+      "id": "SEC-035",
+      "obligation_verbatim": "Issue unique operation IDs and commit durable dispatch before external mutation.",
+      "acceptance_verbatim": "P one callback after durable DISPATCHED; N duplicate ID/uncertain write no callback; R crash after dispatch cannot replay.",
+      "ledger_source": {
+        "commit": "dccc27989b9c258ce9f99e28bc620ac03ac696ae",
+        "path": "docs/REBUILD_R1_SECURITY_REQUIREMENTS.md",
+        "line": 84,
+        "line_sha256": "1c7850daa028691f9770a03be1e486d4d667faf051df499e4e530f01826dad25"
+      },
+      "primary_original_task": "APK-P4-T18",
+      "control_area": "durable authority/journal",
+      "planned_fixture_cases": [
+        "F05",
+        "F06"
+      ],
+      "evidence_to_establish": [
+        "HOST",
+        "ANDROID",
+        "PROVIDER"
+      ],
+      "status": "NOT_RUN_NOT_ACCEPTED",
+      "note": "Planning map does not replace complete source acceptance or authorize execution"
+    },
+    {
+      "id": "SEC-036",
+      "obligation_verbatim": "Enforce reachable CAS state/revision transitions.",
+      "acceptance_verbatim": "P four legal durable transitions; N other21 state pairs leave bytes unchanged; R competing CAS has one winner.",
+      "ledger_source": {
+        "commit": "dccc27989b9c258ce9f99e28bc620ac03ac696ae",
+        "path": "docs/REBUILD_R1_SECURITY_REQUIREMENTS.md",
+        "line": 85,
+        "line_sha256": "6129a311b00b0adb7078c0dbe99c5851ba0c89c4258ab6edf95053451a72a35c"
+      },
+      "primary_original_task": "APK-P4-T18",
+      "control_area": "durable authority/journal",
+      "planned_fixture_cases": [
+        "F05",
+        "F06"
+      ],
+      "evidence_to_establish": [
+        "HOST",
+        "ANDROID",
+        "PROVIDER"
+      ],
+      "status": "NOT_RUN_NOT_ACCEPTED",
+      "note": "Planning map does not replace complete source acceptance or authorize execution"
+    },
+    {
+      "id": "SEC-037",
+      "obligation_verbatim": "Ambiguous exception/timeout/process death becomes review-required, never verified success.",
+      "acceptance_verbatim": "P readback verifies exact operation; N missing/stale/partial readback not success; R interrupted DISPATCHED retained/no blind retry.",
+      "ledger_source": {
+        "commit": "dccc27989b9c258ce9f99e28bc620ac03ac696ae",
+        "path": "docs/REBUILD_R1_SECURITY_REQUIREMENTS.md",
+        "line": 86,
+        "line_sha256": "acc6ca915abcb355eec03fe441524e4ebeb267f21265f95257b58654f80e6f27"
+      },
+      "primary_original_task": "APK-P4-T20",
+      "control_area": "update/readback/recovery",
+      "planned_fixture_cases": [
+        "F06",
+        "F08"
+      ],
+      "evidence_to_establish": [
+        "HOST",
+        "ANDROID",
+        "PROVIDER",
+        "PHONE"
+      ],
+      "status": "NOT_RUN_NOT_ACCEPTED",
+      "note": "Planning map does not replace complete source acceptance or authorize execution"
+    },
+    {
+      "id": "SEC-038",
+      "obligation_verbatim": "SUCCEEDED_VERIFIED requires independent postcondition readback.",
+      "acceptance_verbatim": "P exact operation/revision/peers/private generation; N mismatch never VERIFIED; R stale receipt after retry rejected.",
+      "ledger_source": {
+        "commit": "dccc27989b9c258ce9f99e28bc620ac03ac696ae",
+        "path": "docs/REBUILD_R1_SECURITY_REQUIREMENTS.md",
+        "line": 87,
+        "line_sha256": "0e93b2a6486de39f2a25ed87431f3599e87ae00cdfcac0fb7be1a27d64f0bc5e"
+      },
+      "primary_original_task": "APK-P4-T20",
+      "control_area": "update/readback/recovery",
+      "planned_fixture_cases": [
+        "F06",
+        "F08"
+      ],
+      "evidence_to_establish": [
+        "HOST",
+        "ANDROID",
+        "PROVIDER",
+        "PHONE"
+      ],
+      "status": "NOT_RUN_NOT_ACCEPTED",
+      "note": "Planning map does not replace complete source acceptance or authorize execution"
+    },
+    {
+      "id": "SEC-039",
+      "obligation_verbatim": "FAILED_NO_CHANGE requires proof no mutation occurred.",
+      "acceptance_verbatim": "P provider proves unchanged state; N timeout alone insufficient; R uncertain boundary goes review-required.",
+      "ledger_source": {
+        "commit": "dccc27989b9c258ce9f99e28bc620ac03ac696ae",
+        "path": "docs/REBUILD_R1_SECURITY_REQUIREMENTS.md",
+        "line": 88,
+        "line_sha256": "3551ffbd4ada9d319c22a02a29d56f5a63ee697292264a8850b54d6994db138e"
+      },
+      "primary_original_task": "APK-P4-T20",
+      "control_area": "update/readback/recovery",
+      "planned_fixture_cases": [
+        "F06",
+        "F08"
+      ],
+      "evidence_to_establish": [
+        "HOST",
+        "ANDROID",
+        "PROVIDER",
+        "PHONE"
+      ],
+      "status": "NOT_RUN_NOT_ACCEPTED",
+      "note": "Planning map does not replace complete source acceptance or authorize execution"
+    },
+    {
+      "id": "SEC-040",
+      "obligation_verbatim": "FAILED_ROLLED_BACK requires verified prior generation restoration.",
+      "acceptance_verbatim": "P actual rollback readback; N downgrade/exception not proof; R crash during rollback remains review-required.",
+      "ledger_source": {
+        "commit": "dccc27989b9c258ce9f99e28bc620ac03ac696ae",
+        "path": "docs/REBUILD_R1_SECURITY_REQUIREMENTS.md",
+        "line": 89,
+        "line_sha256": "febb35cf96cab23d25331fb8fde823b7e7200128e0590b380720064b1947ed48"
+      },
+      "primary_original_task": "APK-P4-T20",
+      "control_area": "update/readback/recovery",
+      "planned_fixture_cases": [
+        "F06",
+        "F08"
+      ],
+      "evidence_to_establish": [
+        "HOST",
+        "ANDROID",
+        "PROVIDER",
+        "PHONE"
+      ],
+      "status": "NOT_RUN_NOT_ACCEPTED",
+      "note": "Planning map does not replace complete source acceptance or authorize execution"
+    },
+    {
+      "id": "SEC-041",
+      "obligation_verbatim": "Keep deferred, unsupported, security-rejected and ambiguous outcomes distinct from success.",
+      "acceptance_verbatim": "P explicit outcome and retained state; N unsupported/unknown cannot enable action; R restart preserves uncertainty rather than relabeling success.",
+      "ledger_source": {
+        "commit": "dccc27989b9c258ce9f99e28bc620ac03ac696ae",
+        "path": "docs/REBUILD_R1_SECURITY_REQUIREMENTS.md",
+        "line": 90,
+        "line_sha256": "d3b79e3518238ac54122797ba6c9970641aa6d96177669b49dd5eec815b7e880"
+      },
+      "primary_original_task": "APK-P4-T20",
+      "control_area": "update/readback/recovery",
+      "planned_fixture_cases": [
+        "F06",
+        "F08"
+      ],
+      "evidence_to_establish": [
+        "HOST",
+        "ANDROID",
+        "PROVIDER",
+        "PHONE"
+      ],
+      "status": "NOT_RUN_NOT_ACCEPTED",
+      "note": "Planning map does not replace complete source acceptance or authorize execution"
+    },
+    {
+      "id": "SEC-042",
+      "obligation_verbatim": "Stop/query targets exact provider instance and clone.",
+      "acceptance_verbatim": "P only intended instance affected; N wrong provider/clone rejected; R stale instance ID after replacement rejected.",
+      "ledger_source": {
+        "commit": "dccc27989b9c258ce9f99e28bc620ac03ac696ae",
+        "path": "docs/REBUILD_R1_SECURITY_REQUIREMENTS.md",
+        "line": 91,
+        "line_sha256": "ad7f86da30d44457a500424fcb47e9fe30194fa967022f032e8088d9e08fae80"
+      },
+      "primary_original_task": "APK-P3-T14",
+      "control_area": "exact scoped operation/result",
+      "planned_fixture_cases": [
+        "F05",
+        "F07"
+      ],
+      "evidence_to_establish": [
+        "HOST",
+        "ANDROID",
+        "PROVIDER",
+        "PHONE"
+      ],
+      "status": "NOT_RUN_NOT_ACCEPTED",
+      "note": "Planning map does not replace complete source acceptance or authorize execution"
+    },
+    {
+      "id": "SEC-043",
+      "obligation_verbatim": "Destructive removal requires explicit user authorization and durable audit.",
+      "acceptance_verbatim": "P consent-bound target removal; N absent/wrong consent no delete; R interrupted delete reconciles exact namespace, never neighboring data.",
+      "ledger_source": {
+        "commit": "dccc27989b9c258ce9f99e28bc620ac03ac696ae",
+        "path": "docs/REBUILD_R1_SECURITY_REQUIREMENTS.md",
+        "line": 92,
+        "line_sha256": "1ed017c8904dfdd98936bd562f64b53616395178c72bba2f09933e6b5172add7"
+      },
+      "primary_original_task": "APK-P3-T14",
+      "control_area": "exact scoped operation/result",
+      "planned_fixture_cases": [
+        "F05",
+        "F07"
+      ],
+      "evidence_to_establish": [
+        "HOST",
+        "ANDROID",
+        "PROVIDER",
+        "PHONE"
+      ],
+      "status": "NOT_RUN_NOT_ACCEPTED",
+      "note": "Planning map does not replace complete source acceptance or authorize execution"
+    },
+    {
+      "id": "SEC-044",
+      "obligation_verbatim": "Source inspection exposes verified signer set and signing lineage when available, with unavailable lineage explicit.",
+      "acceptance_verbatim": "P verified set/available lineage bound to source; N fabricated, inconsistent or silently assumed lineage rejected; R source signing change invalidates inspection.",
+      "ledger_source": {
+        "commit": "dccc27989b9c258ce9f99e28bc620ac03ac696ae",
+        "path": "docs/REBUILD_R1_SECURITY_REQUIREMENTS.md",
+        "line": 100,
+        "line_sha256": "4f84af95b69a1a0113693b3deb0b9e86fe185009711f2ccc808cace0517e90e9"
+      },
+      "primary_original_task": "APK-P4-T17",
+      "control_area": "authentic immutable signed source",
+      "planned_fixture_cases": [
+        "F01",
+        "F08"
+      ],
+      "evidence_to_establish": [
+        "HOST",
+        "COMPILE",
+        "ANDROID",
+        "PROVIDER"
+      ],
+      "status": "NOT_RUN_NOT_ACCEPTED",
+      "note": "Planning map does not replace complete source acceptance or authorize execution"
+    },
+    {
+      "id": "SEC-045",
+      "obligation_verbatim": "Source inspection returns exact per-member hashes.",
+      "acceptance_verbatim": "P all audited members and measured hashes returned; N missing/extra/changed member rejected; R byte mutation invalidates inspection before write.",
+      "ledger_source": {
+        "commit": "dccc27989b9c258ce9f99e28bc620ac03ac696ae",
+        "path": "docs/REBUILD_R1_SECURITY_REQUIREMENTS.md",
+        "line": 101,
+        "line_sha256": "fb7b66cd4b3ee531a2a2d24a7e6c24779d221171914837db03d86d2ae1f55b31"
+      },
+      "primary_original_task": "APK-P4-T17",
+      "control_area": "authentic immutable signed source",
+      "planned_fixture_cases": [
+        "F01",
+        "F08"
+      ],
+      "evidence_to_establish": [
+        "HOST",
+        "COMPILE",
+        "ANDROID",
+        "PROVIDER"
+      ],
+      "status": "NOT_RUN_NOT_ACCEPTED",
+      "note": "Planning map does not replace complete source acceptance or authorize execution"
+    },
+    {
+      "id": "SEC-046",
+      "obligation_verbatim": "Source inspection returns the validated split dependency graph.",
+      "acceptance_verbatim": "P exact complete graph returned; N omitted/invalid dependency cannot disappear from result; R graph/source change invalidates result.",
+      "ledger_source": {
+        "commit": "dccc27989b9c258ce9f99e28bc620ac03ac696ae",
+        "path": "docs/REBUILD_R1_SECURITY_REQUIREMENTS.md",
+        "line": 102,
+        "line_sha256": "70268aa846b74e34dcb623a1b35b4a72977f92ecfd6b6a0cb7780f9171540d9a"
+      },
+      "primary_original_task": "APK-P4-T17",
+      "control_area": "authentic immutable signed source",
+      "planned_fixture_cases": [
+        "F01",
+        "F08"
+      ],
+      "evidence_to_establish": [
+        "HOST",
+        "COMPILE",
+        "ANDROID",
+        "PROVIDER"
+      ],
+      "status": "NOT_RUN_NOT_ACCEPTED",
+      "note": "Planning map does not replace complete source acceptance or authorize execution"
+    },
+    {
+      "id": "SEC-047",
+      "obligation_verbatim": "Source inspection returns the private manifest component catalog.",
+      "acceptance_verbatim": "P declared components bound to inspected generation; N original-package lookup or omitted component cannot substitute; R changed generation invalidates catalog.",
+      "ledger_source": {
+        "commit": "dccc27989b9c258ce9f99e28bc620ac03ac696ae",
+        "path": "docs/REBUILD_R1_SECURITY_REQUIREMENTS.md",
+        "line": 103,
+        "line_sha256": "a4d6d56db2edf7017e2f70ed6c1d4605e29bb919e90183244b4cc9e55d04be06"
+      },
+      "primary_original_task": "APK-P4-T17",
+      "control_area": "authentic immutable signed source",
+      "planned_fixture_cases": [
+        "F01",
+        "F08"
+      ],
+      "evidence_to_establish": [
+        "HOST",
+        "COMPILE",
+        "ANDROID",
+        "PROVIDER"
+      ],
+      "status": "NOT_RUN_NOT_ACCEPTED",
+      "note": "Planning map does not replace complete source acceptance or authorize execution"
+    },
+    {
+      "id": "SEC-048",
+      "obligation_verbatim": "Source inspection returns ABI requirements.",
+      "acceptance_verbatim": "P measured declared/native requirements bound to source; N unknown/unsupported ABI not labeled compatible; R native member replacement invalidates result.",
+      "ledger_source": {
+        "commit": "dccc27989b9c258ce9f99e28bc620ac03ac696ae",
+        "path": "docs/REBUILD_R1_SECURITY_REQUIREMENTS.md",
+        "line": 104,
+        "line_sha256": "54a9d52bd6a504071ae47d1796720cbbc4a371b2f2d71caabb3550f99139675b"
+      },
+      "primary_original_task": "APK-P4-T17",
+      "control_area": "authentic immutable signed source",
+      "planned_fixture_cases": [
+        "F01",
+        "F08"
+      ],
+      "evidence_to_establish": [
+        "HOST",
+        "COMPILE",
+        "ANDROID",
+        "PROVIDER"
+      ],
+      "status": "NOT_RUN_NOT_ACCEPTED",
+      "note": "Planning map does not replace complete source acceptance or authorize execution"
+    },
+    {
+      "id": "SEC-049",
+      "obligation_verbatim": "Source inspection returns permissions from the inspected private source.",
+      "acceptance_verbatim": "P complete source permission inventory; N original app grants or host grants not substituted; R manifest change invalidates inventory.",
+      "ledger_source": {
+        "commit": "dccc27989b9c258ce9f99e28bc620ac03ac696ae",
+        "path": "docs/REBUILD_R1_SECURITY_REQUIREMENTS.md",
+        "line": 105,
+        "line_sha256": "6c2c18fe461eee006ddf7c39d228ee36e59d02ebc720df5425f7c83a224e5998"
+      },
+      "primary_original_task": "APK-P4-T17",
+      "control_area": "authentic immutable signed source",
+      "planned_fixture_cases": [
+        "F01",
+        "F08"
+      ],
+      "evidence_to_establish": [
+        "HOST",
+        "COMPILE",
+        "ANDROID",
+        "PROVIDER"
+      ],
+      "status": "NOT_RUN_NOT_ACCEPTED",
+      "note": "Planning map does not replace complete source acceptance or authorize execution"
+    },
+    {
+      "id": "SEC-050",
+      "obligation_verbatim": "Source inspection returns an explicit compatibility decision separate from metadata parsing success.",
+      "acceptance_verbatim": "P supported/unsupported/unknown decision has stated evidence; N parsing alone cannot yield supported; R platform/provider change re-evaluates decision.",
+      "ledger_source": {
+        "commit": "dccc27989b9c258ce9f99e28bc620ac03ac696ae",
+        "path": "docs/REBUILD_R1_SECURITY_REQUIREMENTS.md",
+        "line": 106,
+        "line_sha256": "b92727c240de04e86de39811bb7f4cc29a04db7868b746d3f5dbc22c2946892a"
+      },
+      "primary_original_task": "APK-P4-T17",
+      "control_area": "authentic immutable signed source",
+      "planned_fixture_cases": [
+        "F01",
+        "F08"
+      ],
+      "evidence_to_establish": [
+        "HOST",
+        "COMPILE",
+        "ANDROID",
+        "PROVIDER"
+      ],
+      "status": "NOT_RUN_NOT_ACCEPTED",
+      "note": "Planning map does not replace complete source acceptance or authorize execution"
+    },
+    {
+      "id": "SEC-051",
+      "obligation_verbatim": "Install result returns the exact caller operation ID.",
+      "acceptance_verbatim": "P result binds initiating operation; N missing/wrong operation rejected; R stale result from earlier install cannot verify new operation.",
+      "ledger_source": {
+        "commit": "dccc27989b9c258ce9f99e28bc620ac03ac696ae",
+        "path": "docs/REBUILD_R1_SECURITY_REQUIREMENTS.md",
+        "line": 107,
+        "line_sha256": "e4723d021ea206b4bf79d2705761d84fc01a08fe55a5fa1d0438b92c54180201"
+      },
+      "primary_original_task": "APK-P3-T14",
+      "control_area": "exact scoped operation/result",
+      "planned_fixture_cases": [
+        "F05",
+        "F07"
+      ],
+      "evidence_to_establish": [
+        "HOST",
+        "ANDROID",
+        "PROVIDER",
+        "PHONE"
+      ],
+      "status": "NOT_RUN_NOT_ACCEPTED",
+      "note": "Planning map does not replace complete source acceptance or authorize execution"
+    },
+    {
+      "id": "SEC-052",
+      "obligation_verbatim": "Install result returns a provider package instance ID.",
+      "acceptance_verbatim": "P provider-owned installed instance identified independently; N missing/foreign/original-app instance rejected; R interrupted install/restart reconciles same instance without allocating a substitute silently.",
+      "ledger_source": {
+        "commit": "dccc27989b9c258ce9f99e28bc620ac03ac696ae",
+        "path": "docs/REBUILD_R1_SECURITY_REQUIREMENTS.md",
+        "line": 108,
+        "line_sha256": "dfe2b97f9195a34461db4f5f21a051614ac6d4e850c70e7f0ffddcf14745416d"
+      },
+      "primary_original_task": "APK-P3-T14",
+      "control_area": "exact scoped operation/result",
+      "planned_fixture_cases": [
+        "F05",
+        "F07"
+      ],
+      "evidence_to_establish": [
+        "HOST",
+        "ANDROID",
+        "PROVIDER",
+        "PHONE"
+      ],
+      "status": "NOT_RUN_NOT_ACCEPTED",
+      "note": "Planning map does not replace complete source acceptance or authorize execution"
+    },
+    {
+      "id": "SEC-053",
+      "obligation_verbatim": "Install result returns a storage namespace ID bound to the intended clone/provider.",
+      "acceptance_verbatim": "P installed instance and private namespace agree; N foreign/shared-wrong namespace rejected; R namespace change after restart invalidates success.",
+      "ledger_source": {
+        "commit": "dccc27989b9c258ce9f99e28bc620ac03ac696ae",
+        "path": "docs/REBUILD_R1_SECURITY_REQUIREMENTS.md",
+        "line": 109,
+        "line_sha256": "4c4c05bfef70b9748082008e28d8b1352660b1653256c332fccdf6fbe4ef134c"
+      },
+      "primary_original_task": "APK-P3-T14",
+      "control_area": "exact scoped operation/result",
+      "planned_fixture_cases": [
+        "F05",
+        "F07"
+      ],
+      "evidence_to_establish": [
+        "HOST",
+        "ANDROID",
+        "PROVIDER",
+        "PHONE"
+      ],
+      "status": "NOT_RUN_NOT_ACCEPTED",
+      "note": "Planning map does not replace complete source acceptance or authorize execution"
+    },
+    {
+      "id": "SEC-054",
+      "obligation_verbatim": "Launch returns a provider-owned guest instance ID resolved from a declared private guest component.",
+      "acceptance_verbatim": "P actual instance/component binding returned; N host Activity identity or original-app fallback rejected; R late result after stop/replacement cannot bind a different clone.",
+      "ledger_source": {
+        "commit": "dccc27989b9c258ce9f99e28bc620ac03ac696ae",
+        "path": "docs/REBUILD_R1_SECURITY_REQUIREMENTS.md",
+        "line": 110,
+        "line_sha256": "baf3d377477adf4a2bd90b34d7c81e5efaad6c79401edd2f007e98b78f2083c3"
+      },
+      "primary_original_task": "APK-P3-T14",
+      "control_area": "exact scoped operation/result",
+      "planned_fixture_cases": [
+        "F05",
+        "F07"
+      ],
+      "evidence_to_establish": [
+        "HOST",
+        "ANDROID",
+        "PROVIDER",
+        "PHONE"
+      ],
+      "status": "NOT_RUN_NOT_ACCEPTED",
+      "note": "Planning map does not replace complete source acceptance or authorize execution"
+    },
+    {
+      "id": "SEC-055",
+      "obligation_verbatim": "Update result records verified before and after package identities.",
+      "acceptance_verbatim": "P both identities match intended transition; N missing/mismatched before or after rejected; R concurrent prior-generation change invalidates result.",
+      "ledger_source": {
+        "commit": "dccc27989b9c258ce9f99e28bc620ac03ac696ae",
+        "path": "docs/REBUILD_R1_SECURITY_REQUIREMENTS.md",
+        "line": 111,
+        "line_sha256": "709724b6cd3f4900995dfc4e5b290958b8f78bbb42110c3d1ac2dfa4834a95b7"
+      },
+      "primary_original_task": "APK-P4-T20",
+      "control_area": "update/readback/recovery",
+      "planned_fixture_cases": [
+        "F06",
+        "F08"
+      ],
+      "evidence_to_establish": [
+        "HOST",
+        "ANDROID",
+        "PROVIDER",
+        "PHONE"
+      ],
+      "status": "NOT_RUN_NOT_ACCEPTED",
+      "note": "Planning map does not replace complete source acceptance or authorize execution"
+    },
+    {
+      "id": "SEC-056",
+      "obligation_verbatim": "Update result records the resulting pinned cluster generation.",
+      "acceptance_verbatim": "P actual installed generation matches dispatched source; N stale/ambiguous generation rejected; R restart readback identifies same committed generation or review-required.",
+      "ledger_source": {
+        "commit": "dccc27989b9c258ce9f99e28bc620ac03ac696ae",
+        "path": "docs/REBUILD_R1_SECURITY_REQUIREMENTS.md",
+        "line": 112,
+        "line_sha256": "790500eebfc5b318e25748f4bd0a8400056e5aa693f72d7a6f3c19838961c19f"
+      },
+      "primary_original_task": "APK-P4-T20",
+      "control_area": "update/readback/recovery",
+      "planned_fixture_cases": [
+        "F06",
+        "F08"
+      ],
+      "evidence_to_establish": [
+        "HOST",
+        "ANDROID",
+        "PROVIDER",
+        "PHONE"
+      ],
+      "status": "NOT_RUN_NOT_ACCEPTED",
+      "note": "Planning map does not replace complete source acceptance or authorize execution"
+    },
+    {
+      "id": "SEC-057",
+      "obligation_verbatim": "Update result explicitly reports data-preservation status without inferring session preservation.",
+      "acceptance_verbatim": "P independently observed preservation status/limits; N successful code update cannot imply preserved data/session; R crash/restart verifies retained data or reports uncertainty.",
+      "ledger_source": {
+        "commit": "dccc27989b9c258ce9f99e28bc620ac03ac696ae",
+        "path": "docs/REBUILD_R1_SECURITY_REQUIREMENTS.md",
+        "line": 113,
+        "line_sha256": "6e6c08884803d70ea5ce193201dcf8ea045ae6b8a0371e44828a030558bc4047"
+      },
+      "primary_original_task": "APK-P4-T20",
+      "control_area": "update/readback/recovery",
+      "planned_fixture_cases": [
+        "F06",
+        "F08"
+      ],
+      "evidence_to_establish": [
+        "HOST",
+        "ANDROID",
+        "PROVIDER",
+        "PHONE"
+      ],
+      "status": "NOT_RUN_NOT_ACCEPTED",
+      "note": "Planning map does not replace complete source acceptance or authorize execution"
+    },
+    {
+      "id": "SEC-058",
+      "obligation_verbatim": "Update result includes independently bound readback receipt.",
+      "acceptance_verbatim": "P receipt names exact operation/provider/affected instances/generation; N absent/stale/partial receipt cannot verify success; R restart/duplicate callbacks cannot reuse receipt for another update.",
+      "ledger_source": {
+        "commit": "dccc27989b9c258ce9f99e28bc620ac03ac696ae",
+        "path": "docs/REBUILD_R1_SECURITY_REQUIREMENTS.md",
+        "line": 114,
+        "line_sha256": "5f56a8e0a14a099cc49ccfe557688b737c9225fe40c5588dfb7691bb901afe23"
+      },
+      "primary_original_task": "APK-P4-T20",
+      "control_area": "update/readback/recovery",
+      "planned_fixture_cases": [
+        "F06",
+        "F08"
+      ],
+      "evidence_to_establish": [
+        "HOST",
+        "ANDROID",
+        "PROVIDER",
+        "PHONE"
+      ],
+      "status": "NOT_RUN_NOT_ACCEPTED",
+      "note": "Planning map does not replace complete source acceptance or authorize execution"
+    },
+    {
+      "id": "SEC-059",
+      "obligation_verbatim": "Clone removal must preserve the Fonesi host application and its unrelated state.",
+      "acceptance_verbatim": "P only authorized clone namespace removed; N host package/store/control state is never a removal target; R interrupted cleanup cannot delete host or another task's journal.",
+      "ledger_source": {
+        "commit": "dccc27989b9c258ce9f99e28bc620ac03ac696ae",
+        "path": "docs/REBUILD_R1_SECURITY_REQUIREMENTS.md",
+        "line": 115,
+        "line_sha256": "59b45cf1cf134650d7a832af9cc458bb2b34a65473a26a93f7458c1dcc0e0f11"
+      },
+      "primary_original_task": "APK-P3-T14",
+      "control_area": "exact scoped operation/result",
+      "planned_fixture_cases": [
+        "F05",
+        "F07"
+      ],
+      "evidence_to_establish": [
+        "HOST",
+        "ANDROID",
+        "PROVIDER",
+        "PHONE"
+      ],
+      "status": "NOT_RUN_NOT_ACCEPTED",
+      "note": "Planning map does not replace complete source acceptance or authorize execution"
+    },
+    {
+      "id": "SEC-060",
+      "obligation_verbatim": "Verify cross-clone process-state isolation at the actual provider boundary.",
+      "acceptance_verbatim": "P each guest process identity/state scoped correctly; N clone A cannot inspect/control clone B process-private state; R process death/reuse/restart cannot transfer identity or access.",
+      "ledger_source": {
+        "commit": "dccc27989b9c258ce9f99e28bc620ac03ac696ae",
+        "path": "docs/REBUILD_R1_SECURITY_REQUIREMENTS.md",
+        "line": 116,
+        "line_sha256": "896a8686563eaa010846907d3348489e2a3c7953f17c12e35c7d077e54929dde"
+      },
+      "primary_original_task": "APK-P2-T10",
+      "control_area": "hostile guest and original boundary",
+      "planned_fixture_cases": [
+        "F02",
+        "F03",
+        "F09"
+      ],
+      "evidence_to_establish": [
+        "ANDROID",
+        "PROVIDER",
+        "PHONE"
+      ],
+      "status": "NOT_RUN_NOT_ACCEPTED",
+      "note": "Planning map does not replace complete source acceptance or authorize execution"
+    },
+    {
+      "id": "SPL-001",
+      "obligation_verbatim": "Preserve package, nonnegative long version and signer set in expected cluster identity.",
+      "acceptance_verbatim": "P exact auditor identity; N changed package/version/signer denied; R source replacement invalidates expected identity.",
+      "ledger_source": {
+        "commit": "dccc27989b9c258ce9f99e28bc620ac03ac696ae",
+        "path": "docs/REBUILD_R1_SECURITY_REQUIREMENTS.md",
+        "line": 124,
+        "line_sha256": "f831268f4c60c1205fd88bbe87132afaa325e1801fe8267db965ed9403268090"
+      },
+      "primary_original_task": "APK-P4-T17",
+      "control_area": "signed split graph and complete readback",
+      "planned_fixture_cases": [
+        "F01",
+        "F06",
+        "F08"
+      ],
+      "evidence_to_establish": [
+        "HOST",
+        "COMPILE",
+        "ANDROID",
+        "PROVIDER"
+      ],
+      "status": "NOT_RUN_NOT_ACCEPTED",
+      "note": "Planning map does not replace complete source acceptance or authorize execution"
+    },
+    {
+      "id": "SPL-002",
+      "obligation_verbatim": "Match auditor package/split naming rules and package length limit; do not invent a split-name length cap.",
+      "acceptance_verbatim": "P allowed underscore-leading/special android/package cases per pinned auditor; N numeric-leading split segment or overlength package rejected; R decoding/re-encoding retains identity.",
+      "ledger_source": {
+        "commit": "dccc27989b9c258ce9f99e28bc620ac03ac696ae",
+        "path": "docs/REBUILD_R1_SECURITY_REQUIREMENTS.md",
+        "line": 125,
+        "line_sha256": "4196118fcef986350a71c26c081a3db0f94df98363e77ad92fa1394ac1cbe604"
+      },
+      "primary_original_task": "APK-P4-T17",
+      "control_area": "signed split graph and complete readback",
+      "planned_fixture_cases": [
+        "F01",
+        "F06",
+        "F08"
+      ],
+      "evidence_to_establish": [
+        "HOST",
+        "COMPILE",
+        "ANDROID",
+        "PROVIDER"
+      ],
+      "status": "NOT_RUN_NOT_ACCEPTED",
+      "note": "Planning map does not replace complete source acceptance or authorize execution"
+    },
+    {
+      "id": "SPL-003",
+      "obligation_verbatim": "Require exactly one base first and unique splits in deterministic name order.",
+      "acceptance_verbatim": "P canonical base+sorted members; N extra/missing base, duplicate/unsorted splits denied; R input ordering cannot alter canonical member identity silently.",
+      "ledger_source": {
+        "commit": "dccc27989b9c258ce9f99e28bc620ac03ac696ae",
+        "path": "docs/REBUILD_R1_SECURITY_REQUIREMENTS.md",
+        "line": 126,
+        "line_sha256": "5d2ede9b1b38169d0e527cea24d3ef21bf5a89226da96b9aedcaab325057b5ea"
+      },
+      "primary_original_task": "APK-P4-T17",
+      "control_area": "signed split graph and complete readback",
+      "planned_fixture_cases": [
+        "F01",
+        "F06",
+        "F08"
+      ],
+      "evidence_to_establish": [
+        "HOST",
+        "COMPILE",
+        "ANDROID",
+        "PROVIDER"
+      ],
+      "status": "NOT_RUN_NOT_ACCEPTED",
+      "note": "Planning map does not replace complete source acceptance or authorize execution"
+    },
+    {
+      "id": "SPL-004",
+      "obligation_verbatim": "Preserve verified per-member SHA and positive measured byte length.",
+      "acceptance_verbatim": "P exact bytes/length; N changed SHA/zero/missing length denied; R concurrent file mutation detected.",
+      "ledger_source": {
+        "commit": "dccc27989b9c258ce9f99e28bc620ac03ac696ae",
+        "path": "docs/REBUILD_R1_SECURITY_REQUIREMENTS.md",
+        "line": 127,
+        "line_sha256": "959481fec30f9d0d0e8f2b9dcdee3ed75ec1d9159e76157ef5886c9bf5c66582"
+      },
+      "primary_original_task": "APK-P4-T17",
+      "control_area": "signed split graph and complete readback",
+      "planned_fixture_cases": [
+        "F01",
+        "F06",
+        "F08"
+      ],
+      "evidence_to_establish": [
+        "HOST",
+        "COMPILE",
+        "ANDROID",
+        "PROVIDER"
+      ],
+      "status": "NOT_RUN_NOT_ACCEPTED",
+      "note": "Planning map does not replace complete source acceptance or authorize execution"
+    },
+    {
+      "id": "SPL-005",
+      "obligation_verbatim": "Require every member signer set to match cluster signer set.",
+      "acceptance_verbatim": "P all authentic members same identity; N mixed signer denied; R signer/source replacement before import rejected.",
+      "ledger_source": {
+        "commit": "dccc27989b9c258ce9f99e28bc620ac03ac696ae",
+        "path": "docs/REBUILD_R1_SECURITY_REQUIREMENTS.md",
+        "line": 128,
+        "line_sha256": "3b733feff0be1790c43066b92e01f00dfad4dc4e94224e1650eabae217bf258d"
+      },
+      "primary_original_task": "APK-P4-T17",
+      "control_area": "signed split graph and complete readback",
+      "planned_fixture_cases": [
+        "F01",
+        "F06",
+        "F08"
+      ],
+      "evidence_to_establish": [
+        "HOST",
+        "COMPILE",
+        "ANDROID",
+        "PROVIDER"
+      ],
+      "status": "NOT_RUN_NOT_ACCEPTED",
+      "note": "Planning map does not replace complete source acceptance or authorize execution"
+    },
+    {
+      "id": "SPL-006",
+      "obligation_verbatim": "Enforce base feature/config/dependency constraints and base splitRequired presence.",
+      "acceptance_verbatim": "P plain base with required splits present; N feature/config/dependent base or required-but-missing split rejected; R incomplete publication not activated.",
+      "ledger_source": {
+        "commit": "dccc27989b9c258ce9f99e28bc620ac03ac696ae",
+        "path": "docs/REBUILD_R1_SECURITY_REQUIREMENTS.md",
+        "line": 129,
+        "line_sha256": "9d556418bb44a351ba4a929f4097aa8affbc840fde6b59b9d3c09727cd93e548"
+      },
+      "primary_original_task": "APK-P4-T17",
+      "control_area": "signed split graph and complete readback",
+      "planned_fixture_cases": [
+        "F01",
+        "F06",
+        "F08"
+      ],
+      "evidence_to_establish": [
+        "HOST",
+        "COMPILE",
+        "ANDROID",
+        "PROVIDER"
+      ],
+      "status": "NOT_RUN_NOT_ACCEPTED",
+      "note": "Planning map does not replace complete source acceptance or authorize execution"
+    },
+    {
+      "id": "SPL-007",
+      "obligation_verbatim": "Preserve required/provided split types and require complete coverage.",
+      "acceptance_verbatim": "P every required type provided; N missing/invalid type denied; R provider readback cannot drop type metadata.",
+      "ledger_source": {
+        "commit": "dccc27989b9c258ce9f99e28bc620ac03ac696ae",
+        "path": "docs/REBUILD_R1_SECURITY_REQUIREMENTS.md",
+        "line": 130,
+        "line_sha256": "a0ebe74b73dadd88b5e3935c2d6eb64269437d8d13119e99f5facd4a9b1f050f"
+      },
+      "primary_original_task": "APK-P4-T17",
+      "control_area": "signed split graph and complete readback",
+      "planned_fixture_cases": [
+        "F01",
+        "F06",
+        "F08"
+      ],
+      "evidence_to_establish": [
+        "HOST",
+        "COMPILE",
+        "ANDROID",
+        "PROVIDER"
+      ],
+      "status": "NOT_RUN_NOT_ACCEPTED",
+      "note": "Planning map does not replace complete source acceptance or authorize execution"
+    },
+    {
+      "id": "SPL-008",
+      "obligation_verbatim": "Preserve valid empty configForSplit for non-feature config splits; reject feature config and invalid feature targets.",
+      "acceptance_verbatim": "P base-config empty marker and valid feature target; N feature-with-config/nonfeature target rejected; R readback preserves null/empty semantics.",
+      "ledger_source": {
+        "commit": "dccc27989b9c258ce9f99e28bc620ac03ac696ae",
+        "path": "docs/REBUILD_R1_SECURITY_REQUIREMENTS.md",
+        "line": 131,
+        "line_sha256": "27e8b7134ce991b9ea636aedd4df42fd29e49cdad3fd5a5fea9c6beee5203e22"
+      },
+      "primary_original_task": "APK-P4-T17",
+      "control_area": "signed split graph and complete readback",
+      "planned_fixture_cases": [
+        "F01",
+        "F06",
+        "F08"
+      ],
+      "evidence_to_establish": [
+        "HOST",
+        "COMPILE",
+        "ANDROID",
+        "PROVIDER"
+      ],
+      "status": "NOT_RUN_NOT_ACCEPTED",
+      "note": "Planning map does not replace complete source acceptance or authorize execution"
+    },
+    {
+      "id": "SPL-009",
+      "obligation_verbatim": "Count uses-split edges on feature and non-feature members; require existing feature targets and acyclic graph.",
+      "acceptance_verbatim": "P valid deep DAG; N missing target/cycle denied; R graph mutation invalidates identity before dispatch.",
+      "ledger_source": {
+        "commit": "dccc27989b9c258ce9f99e28bc620ac03ac696ae",
+        "path": "docs/REBUILD_R1_SECURITY_REQUIREMENTS.md",
+        "line": 132,
+        "line_sha256": "9a55b466203480dcde4a043c15a81ba7e8d0049821beb567746e9182b96fa8e6"
+      },
+      "primary_original_task": "APK-P4-T17",
+      "control_area": "signed split graph and complete readback",
+      "planned_fixture_cases": [
+        "F01",
+        "F06",
+        "F08"
+      ],
+      "evidence_to_establish": [
+        "HOST",
+        "COMPILE",
+        "ANDROID",
+        "PROVIDER"
+      ],
+      "status": "NOT_RUN_NOT_ACCEPTED",
+      "note": "Planning map does not replace complete source acceptance or authorize execution"
+    },
+    {
+      "id": "SPL-010",
+      "obligation_verbatim": "Preserve splitRequired and isolatedSplits flags in identity/digest.",
+      "acceptance_verbatim": "P exact flags retained; N altered/omitted flag fails readback; R source flag changes invalidate generation.",
+      "ledger_source": {
+        "commit": "dccc27989b9c258ce9f99e28bc620ac03ac696ae",
+        "path": "docs/REBUILD_R1_SECURITY_REQUIREMENTS.md",
+        "line": 133,
+        "line_sha256": "3797ca4f913706c23ebf998772b435ca352fc01a3ef5ac16a4bb842c22118e8e"
+      },
+      "primary_original_task": "APK-P4-T17",
+      "control_area": "signed split graph and complete readback",
+      "planned_fixture_cases": [
+        "F01",
+        "F06",
+        "F08"
+      ],
+      "evidence_to_establish": [
+        "HOST",
+        "COMPILE",
+        "ANDROID",
+        "PROVIDER"
+      ],
+      "status": "NOT_RUN_NOT_ACCEPTED",
+      "note": "Planning map does not replace complete source acceptance or authorize execution"
+    },
+    {
+      "id": "SPL-011",
+      "obligation_verbatim": "Recompute length-prefixed fonesi-package-cluster-v1 digest over all auditor metadata, not opaque claimed SHA.",
+      "acceptance_verbatim": "P canonical known bytes/private-store parity; N field/digest tampering denied; R ordering/reopen produces identical digest.",
+      "ledger_source": {
+        "commit": "dccc27989b9c258ce9f99e28bc620ac03ac696ae",
+        "path": "docs/REBUILD_R1_SECURITY_REQUIREMENTS.md",
+        "line": 134,
+        "line_sha256": "a4391758f48ef4a5051b109c81d2685363bc74fb2341a7d4e79c03a61b8953e4"
+      },
+      "primary_original_task": "APK-P4-T17",
+      "control_area": "signed split graph and complete readback",
+      "planned_fixture_cases": [
+        "F01",
+        "F06",
+        "F08"
+      ],
+      "evidence_to_establish": [
+        "HOST",
+        "COMPILE",
+        "ANDROID",
+        "PROVIDER"
+      ],
+      "status": "NOT_RUN_NOT_ACCEPTED",
+      "note": "Planning map does not replace complete source acceptance or authorize execution"
+    },
+    {
+      "id": "SPL-012",
+      "obligation_verbatim": "Validate expected and observed identities and require exact equality.",
+      "acceptance_verbatim": "P all members/metadata equal; N any changed/missing/extra member rejected; R stale provider readback cannot verify new generation.",
+      "ledger_source": {
+        "commit": "dccc27989b9c258ce9f99e28bc620ac03ac696ae",
+        "path": "docs/REBUILD_R1_SECURITY_REQUIREMENTS.md",
+        "line": 135,
+        "line_sha256": "70c6a09d1405e8346c4b6bca772eb2a1d9d15f6cde0119e78282cc608ca1c83f"
+      },
+      "primary_original_task": "APK-P4-T20",
+      "control_area": "signed split graph and complete readback",
+      "planned_fixture_cases": [
+        "F01",
+        "F06",
+        "F08"
+      ],
+      "evidence_to_establish": [
+        "HOST",
+        "COMPILE",
+        "ANDROID",
+        "PROVIDER"
+      ],
+      "status": "NOT_RUN_NOT_ACCEPTED",
+      "note": "Planning map does not replace complete source acceptance or authorize execution"
+    },
+    {
+      "id": "SPL-013",
+      "obligation_verbatim": "Readback must originate from SDK-owned private storage, never original app.",
+      "acceptance_verbatim": "P independently read installed private bytes; N original/caller-supplied list fails; R original changes/removal cannot affect installed proof.",
+      "ledger_source": {
+        "commit": "dccc27989b9c258ce9f99e28bc620ac03ac696ae",
+        "path": "docs/REBUILD_R1_SECURITY_REQUIREMENTS.md",
+        "line": 136,
+        "line_sha256": "c738bfe10af14a91caef1c006dcf675a91369fb66b71cfa26e4f1f3b2a9afad1"
+      },
+      "primary_original_task": "APK-P4-T20",
+      "control_area": "signed split graph and complete readback",
+      "planned_fixture_cases": [
+        "F01",
+        "F06",
+        "F08"
+      ],
+      "evidence_to_establish": [
+        "HOST",
+        "COMPILE",
+        "ANDROID",
+        "PROVIDER"
+      ],
+      "status": "NOT_RUN_NOT_ACCEPTED",
+      "note": "Planning map does not replace complete source acceptance or authorize execution"
+    },
+    {
+      "id": "SPL-014",
+      "obligation_verbatim": "Require readback of the complete installed member set.",
+      "acceptance_verbatim": "P all base/feature/config members accounted; N missing/extra/incomplete set denied; R partial install after crash remains review-required.",
+      "ledger_source": {
+        "commit": "dccc27989b9c258ce9f99e28bc620ac03ac696ae",
+        "path": "docs/REBUILD_R1_SECURITY_REQUIREMENTS.md",
+        "line": 137,
+        "line_sha256": "db3ca1fedc0c606362e15fa3581e8559bdc82faf33e5064bb23c970a0e07a20e"
+      },
+      "primary_original_task": "APK-P4-T20",
+      "control_area": "signed split graph and complete readback",
+      "planned_fixture_cases": [
+        "F01",
+        "F06",
+        "F08"
+      ],
+      "evidence_to_establish": [
+        "HOST",
+        "COMPILE",
+        "ANDROID",
+        "PROVIDER"
+      ],
+      "status": "NOT_RUN_NOT_ACCEPTED",
+      "note": "Planning map does not replace complete source acceptance or authorize execution"
+    },
+    {
+      "id": "SPL-015",
+      "obligation_verbatim": "Split import requires preflight+dispatch+complete readback; execution requires import; atomic update requires execution+import. Engine-level split acceptance remains false until real typed orchestration and required evidence, not capability-object construction alone.",
+      "acceptance_verbatim": "P valid dependency chain plus actual engine orchestration evidence; N each incomplete combination or capability-only claim denied; R capability revision change withdraws dependent claims.",
+      "ledger_source": {
+        "commit": "dccc27989b9c258ce9f99e28bc620ac03ac696ae",
+        "path": "docs/REBUILD_R1_SECURITY_REQUIREMENTS.md",
+        "line": 138,
+        "line_sha256": "037969e3b8cd66ebd3af24f627606189f5b9782008354cae359a0f247bba5d3c"
+      },
+      "primary_original_task": "APK-P1-T08",
+      "control_area": "real typed split orchestration",
+      "planned_fixture_cases": [
+        "F04",
+        "F08"
+      ],
+      "evidence_to_establish": [
+        "HOST",
+        "ANDROID",
+        "PROVIDER"
+      ],
+      "status": "NOT_RUN_NOT_ACCEPTED",
+      "note": "Planning map does not replace complete source acceptance or authorize execution"
+    },
+    {
+      "id": "SPL-016",
+      "obligation_verbatim": "A split-capable backend must implement typed preflight/install/inspect API.",
+      "acceptance_verbatim": "P typed complete contract; N Boolean-only claim denied; R provider replacement rechecks API/capabilities.",
+      "ledger_source": {
+        "commit": "dccc27989b9c258ce9f99e28bc620ac03ac696ae",
+        "path": "docs/REBUILD_R1_SECURITY_REQUIREMENTS.md",
+        "line": 139,
+        "line_sha256": "77b5e56679fbc6ef9cc1e1b0823256872d9bdfc01c6e5baaf6fc0034e7510e0a"
+      },
+      "primary_original_task": "APK-P1-T08",
+      "control_area": "real typed split orchestration",
+      "planned_fixture_cases": [
+        "F04",
+        "F08"
+      ],
+      "evidence_to_establish": [
+        "HOST",
+        "ANDROID",
+        "PROVIDER"
+      ],
+      "status": "NOT_RUN_NOT_ACCEPTED",
+      "note": "Planning map does not replace complete source acceptance or authorize execution"
+    },
+    {
+      "id": "SPL-017",
+      "obligation_verbatim": "Reject unsupported multi-member sources before native user creation, install/update dispatch or registry mutation.",
+      "acceptance_verbatim": "P supported owned contract case only; N single-APK provider receives zero irreversible calls; R source changes at enqueue/preflight revalidated.",
+      "ledger_source": {
+        "commit": "dccc27989b9c258ce9f99e28bc620ac03ac696ae",
+        "path": "docs/REBUILD_R1_SECURITY_REQUIREMENTS.md",
+        "line": 140,
+        "line_sha256": "e24a970f85e70b0484a5c8abdf7edcf60dd8d9852b88061e8d3579bf6f6acdbd"
+      },
+      "primary_original_task": "APK-P1-T08",
+      "control_area": "real typed split orchestration",
+      "planned_fixture_cases": [
+        "F04",
+        "F08"
+      ],
+      "evidence_to_establish": [
+        "HOST",
+        "ANDROID",
+        "PROVIDER"
+      ],
+      "status": "NOT_RUN_NOT_ACCEPTED",
+      "note": "Planning map does not replace complete source acceptance or authorize execution"
+    },
+    {
+      "id": "SPL-018",
+      "obligation_verbatim": "Never drop/flatten/re-sign split members or silently invoke original app fallback.",
+      "acceptance_verbatim": "P exact signed set preserved; N unsupported set refused unchanged; R retry cannot downgrade to base-only.",
+      "ledger_source": {
+        "commit": "dccc27989b9c258ce9f99e28bc620ac03ac696ae",
+        "path": "docs/REBUILD_R1_SECURITY_REQUIREMENTS.md",
+        "line": 141,
+        "line_sha256": "95fffe2411097b4e0667e933cc72bcb9801f9e66dc0d8740ece23de3b8f24a26"
+      },
+      "primary_original_task": "APK-P4-T17",
+      "control_area": "signed split graph and complete readback",
+      "planned_fixture_cases": [
+        "F01",
+        "F06",
+        "F08"
+      ],
+      "evidence_to_establish": [
+        "HOST",
+        "COMPILE",
+        "ANDROID",
+        "PROVIDER"
+      ],
+      "status": "NOT_RUN_NOT_ACCEPTED",
+      "note": "Planning map does not replace complete source acceptance or authorize execution"
+    },
+    {
+      "id": "SPL-019",
+      "obligation_verbatim": "No production split acceptance until actual provider imports, reads back and executes signed base/feature/config cluster after restart.",
+      "acceptance_verbatim": "P provider-owned full fixture receipt; N private copy/classloader/host proxy alone fails; R restart verifies resources/code/native dependencies.",
+      "ledger_source": {
+        "commit": "dccc27989b9c258ce9f99e28bc620ac03ac696ae",
+        "path": "docs/REBUILD_R1_SECURITY_REQUIREMENTS.md",
+        "line": 142,
+        "line_sha256": "79ee3c76379e12bd103f1e929443086053b69717507969bf60cb37f628a6818c"
+      },
+      "primary_original_task": "APK-P1-T08",
+      "control_area": "real typed split orchestration",
+      "planned_fixture_cases": [
+        "F04",
+        "F08"
+      ],
+      "evidence_to_establish": [
+        "HOST",
+        "ANDROID",
+        "PROVIDER"
+      ],
+      "status": "NOT_RUN_NOT_ACCEPTED",
+      "note": "Planning map does not replace complete source acceptance or authorize execution"
+    },
+    {
+      "id": "SPL-020",
+      "obligation_verbatim": "Historical parent receipts must be verified by exact source/artifact/result/APK binding before inclusion.",
+      "acceptance_verbatim": "P correctly bound E78/E82 receipt pair; N missing/mismatched artifact fails evidence packaging; R rerun does not substitute mutable latest artifacts.",
+      "ledger_source": {
+        "commit": "dccc27989b9c258ce9f99e28bc620ac03ac696ae",
+        "path": "docs/REBUILD_R1_SECURITY_REQUIREMENTS.md",
+        "line": 143,
+        "line_sha256": "738e93fe059874e64eea33dd0e250c03440b7b7bee23df88687a3c754872b19d"
+      },
+      "primary_original_task": "APK-P1-T07",
+      "control_area": "historical receipt provenance",
+      "planned_fixture_cases": [
+        "F04"
+      ],
+      "evidence_to_establish": [
+        "HOST"
+      ],
+      "status": "NOT_RUN_NOT_ACCEPTED",
+      "note": "Planning map does not replace complete source acceptance or authorize execution"
+    },
+    {
+      "id": "EVD-001",
+      "obligation_verbatim": "Pin provider/dependency sources and complete license/SBOM/native provenance.",
+      "acceptance_verbatim": "P every shipped artifact mapped to reviewed source/license; N opaque/unlicensed dependency blocks; R dependency update re-audited.",
+      "ledger_source": {
+        "commit": "dccc27989b9c258ce9f99e28bc620ac03ac696ae",
+        "path": "docs/REBUILD_R1_SECURITY_REQUIREMENTS.md",
+        "line": 149,
+        "line_sha256": "b299908da3c5e1778484ff424248862627aceef404b788a7f0f38822af49311f"
+      },
+      "primary_original_task": "APK-P1-T05",
+      "control_area": "source/native reproducibility",
+      "planned_fixture_cases": [
+        "F04"
+      ],
+      "evidence_to_establish": [
+        "HOST",
+        "COMPILE"
+      ],
+      "status": "NOT_RUN_NOT_ACCEPTED",
+      "note": "Planning map does not replace complete source acceptance or authorize execution"
+    },
+    {
+      "id": "EVD-002",
+      "obligation_verbatim": "Reproduce native builds and verify shipped ABI/ELF page-size compatibility.",
+      "acceptance_verbatim": "P each supported ABI and relevant4KB/16KB environment; N unsupported ABI/alignment denied; R rebuild matches reviewed sources.",
+      "ledger_source": {
+        "commit": "dccc27989b9c258ce9f99e28bc620ac03ac696ae",
+        "path": "docs/REBUILD_R1_SECURITY_REQUIREMENTS.md",
+        "line": 150,
+        "line_sha256": "971ee2648f80b10ec898991afa6453ae96fb2693f4cfd374f399479b6ba4a749"
+      },
+      "primary_original_task": "APK-P1-T07",
+      "control_area": "source/native reproducibility",
+      "planned_fixture_cases": [
+        "F04"
+      ],
+      "evidence_to_establish": [
+        "HOST",
+        "COMPILE"
+      ],
+      "status": "NOT_RUN_NOT_ACCEPTED",
+      "note": "Planning map does not replace complete source acceptance or authorize execution"
+    },
+    {
+      "id": "EVD-003",
+      "obligation_verbatim": "Verify split resources/configuration/classloading/native execution with owned runtime fixtures.",
+      "acceptance_verbatim": "P each feature on actual runtime; N missing/config-wrong/native-wrong component fails; R rotation/config/restart preserves binding.",
+      "ledger_source": {
+        "commit": "dccc27989b9c258ce9f99e28bc620ac03ac696ae",
+        "path": "docs/REBUILD_R1_SECURITY_REQUIREMENTS.md",
+        "line": 151,
+        "line_sha256": "9c9e4fd22562493cbb2bbbd32a340cb80c81d65be6c974d01fc80a724e02388d"
+      },
+      "primary_original_task": "APK-P1-T08",
+      "control_area": "actual owned-fixture framework evidence",
+      "planned_fixture_cases": [
+        "F03",
+        "F08"
+      ],
+      "evidence_to_establish": [
+        "ANDROID",
+        "PROVIDER"
+      ],
+      "status": "NOT_RUN_NOT_ACCEPTED",
+      "note": "Planning map does not replace complete source acceptance or authorize execution"
+    },
+    {
+      "id": "EVD-004",
+      "obligation_verbatim": "Validate scheduling/foreground restrictions on actual Android/OEM devices.",
+      "acceptance_verbatim": "P allowed lifecycle schedule; N background/locked mutation denied; R Doze/reboot/process death does not bypass policy.",
+      "ledger_source": {
+        "commit": "dccc27989b9c258ce9f99e28bc620ac03ac696ae",
+        "path": "docs/REBUILD_R1_SECURITY_REQUIREMENTS.md",
+        "line": 152,
+        "line_sha256": "3a0654c1b96f1c205abb85ecb274aba06bb158cdd4acb9d983b9a48e062c4023"
+      },
+      "primary_original_task": "APK-P7-T30",
+      "control_area": "OEM background evidence",
+      "planned_fixture_cases": [
+        "F09",
+        "F11"
+      ],
+      "evidence_to_establish": [
+        "PHONE"
+      ],
+      "status": "NOT_RUN_NOT_ACCEPTED",
+      "note": "Planning map does not replace complete source acceptance or authorize execution"
+    },
+    {
+      "id": "EVD-005",
+      "obligation_verbatim": "UI evidence tiers must distinguish source, installed guest, running component and isolation.",
+      "acceptance_verbatim": "P correct tier labels; N no ready clone from parse/build/host events; R stale capability/results cannot upgrade displayed tier.",
+      "ledger_source": {
+        "commit": "dccc27989b9c258ce9f99e28bc620ac03ac696ae",
+        "path": "docs/REBUILD_R1_SECURITY_REQUIREMENTS.md",
+        "line": 153,
+        "line_sha256": "86a794e27800dd3fe02279343f9b6eab5fff8fa00eceb68651a9bc3b804c2210"
+      },
+      "primary_original_task": "APK-P0-T04",
+      "control_area": "bounded reporting/release binding",
+      "planned_fixture_cases": [
+        "F04",
+        "F11"
+      ],
+      "evidence_to_establish": [
+        "HOST",
+        "COMPILE",
+        "PHONE"
+      ],
+      "status": "NOT_RUN_NOT_ACCEPTED",
+      "note": "Planning map does not replace complete source acceptance or authorize execution"
+    },
+    {
+      "id": "EVD-006",
+      "obligation_verbatim": "Bind every acceptance receipt to exact source/provider/environment; synthetic proves only synthetic row.",
+      "acceptance_verbatim": "P reproducible exact receipt; N wrong SHA/provider/synthetic substitution denied; R artifact refresh retains immutable identity.",
+      "ledger_source": {
+        "commit": "dccc27989b9c258ce9f99e28bc620ac03ac696ae",
+        "path": "docs/REBUILD_R1_SECURITY_REQUIREMENTS.md",
+        "line": 154,
+        "line_sha256": "dfc64e1f0a2badb3b5156bada1e9b2ad45efe352a1c5cd9af5eb43a419280c6c"
+      },
+      "primary_original_task": "APK-P0-T04",
+      "control_area": "bounded reporting/release binding",
+      "planned_fixture_cases": [
+        "F04",
+        "F11"
+      ],
+      "evidence_to_establish": [
+        "HOST",
+        "COMPILE",
+        "PHONE"
+      ],
+      "status": "NOT_RUN_NOT_ACCEPTED",
+      "note": "Planning map does not replace complete source acceptance or authorize execution"
+    },
+    {
+      "id": "EVD-007",
+      "obligation_verbatim": "Release artifact/signature/dependency manifest must match reviewed sources/licenses and supported-device matrix.",
+      "acceptance_verbatim": "P signed release upgrade/retention evidence; N debug/test artifact not release; R interrupted upgrade has recovery proof.",
+      "ledger_source": {
+        "commit": "dccc27989b9c258ce9f99e28bc620ac03ac696ae",
+        "path": "docs/REBUILD_R1_SECURITY_REQUIREMENTS.md",
+        "line": 155,
+        "line_sha256": "5e84aadc57cffa5703deaca074331030952461297169a38ffd734c1088d44b28"
+      },
+      "primary_original_task": "APK-P7-T32",
+      "control_area": "bounded reporting/release binding",
+      "planned_fixture_cases": [
+        "F04",
+        "F11"
+      ],
+      "evidence_to_establish": [
+        "HOST",
+        "COMPILE",
+        "PHONE"
+      ],
+      "status": "NOT_RUN_NOT_ACCEPTED",
+      "note": "Planning map does not replace complete source acceptance or authorize execution"
+    },
+    {
+      "id": "EVD-008",
+      "obligation_verbatim": "Unattached synthetic Activity must have null baseContext, Application and Window.",
+      "acceptance_verbatim": "P all three absent before attach; N any preattached field rejects receipt; R restart repeats precondition.",
+      "ledger_source": {
+        "commit": "dccc27989b9c258ce9f99e28bc620ac03ac696ae",
+        "path": "docs/REBUILD_R1_SECURITY_REQUIREMENTS.md",
+        "line": 156,
+        "line_sha256": "b98017418cbc4bf4007ff3fef8dfd80c422b403e12b3aada5bad47c2493e323c"
+      },
+      "primary_original_task": "APK-P1-T08",
+      "control_area": "actual owned-fixture framework evidence",
+      "planned_fixture_cases": [
+        "F03",
+        "F08"
+      ],
+      "evidence_to_establish": [
+        "ANDROID",
+        "PROVIDER"
+      ],
+      "status": "NOT_RUN_NOT_ACCEPTED",
+      "note": "Planning map does not replace complete source acceptance or authorize execution"
+    },
+    {
+      "id": "EVD-009",
+      "obligation_verbatim": "Receipt API is integer and Boolean fields strict booleans.",
+      "acceptance_verbatim": "P typed receipt; N34.0/string flags rejected; R decode/re-encode preserves types.",
+      "ledger_source": {
+        "commit": "dccc27989b9c258ce9f99e28bc620ac03ac696ae",
+        "path": "docs/REBUILD_R1_SECURITY_REQUIREMENTS.md",
+        "line": 157,
+        "line_sha256": "fbaeabb605c5b943cf97db89827459b93ae132fa1274351eff5b3ff325d4b0d1"
+      },
+      "primary_original_task": "APK-P1-T08",
+      "control_area": "actual owned-fixture framework evidence",
+      "planned_fixture_cases": [
+        "F03",
+        "F08"
+      ],
+      "evidence_to_establish": [
+        "ANDROID",
+        "PROVIDER"
+      ],
+      "status": "NOT_RUN_NOT_ACCEPTED",
+      "note": "Planning map does not replace complete source acceptance or authorize execution"
+    },
+    {
+      "id": "EVD-010",
+      "obligation_verbatim": "Ordinary app receipt UID must be positive, not root.",
+      "acceptance_verbatim": "P positive observed platform UID; N0/negative/unverified rejected; R new process identity remeasured.",
+      "ledger_source": {
+        "commit": "dccc27989b9c258ce9f99e28bc620ac03ac696ae",
+        "path": "docs/REBUILD_R1_SECURITY_REQUIREMENTS.md",
+        "line": 158,
+        "line_sha256": "be3978fe26a09b28d4c148532065be7288d9802980de6bc3aa355ee9f706575d"
+      },
+      "primary_original_task": "APK-P1-T08",
+      "control_area": "actual owned-fixture framework evidence",
+      "planned_fixture_cases": [
+        "F03",
+        "F08"
+      ],
+      "evidence_to_establish": [
+        "ANDROID",
+        "PROVIDER"
+      ],
+      "status": "NOT_RUN_NOT_ACCEPTED",
+      "note": "Planning map does not replace complete source acceptance or authorize execution"
+    },
+    {
+      "id": "EVD-011",
+      "obligation_verbatim": "Receipt run UUID is canonical and bound to exact source/APK/process/lifecycle transcript.",
+      "acceptance_verbatim": "P complete bound transcript; N stale/partial/failure receipt rejected; R restart/run mismatch cannot inherit success.",
+      "ledger_source": {
+        "commit": "dccc27989b9c258ce9f99e28bc620ac03ac696ae",
+        "path": "docs/REBUILD_R1_SECURITY_REQUIREMENTS.md",
+        "line": 159,
+        "line_sha256": "ebc26375f1cb2685d61707c36fe3b00b522267de742a25ec7592572feb576b7e"
+      },
+      "primary_original_task": "APK-P1-T08",
+      "control_area": "actual owned-fixture framework evidence",
+      "planned_fixture_cases": [
+        "F03",
+        "F08"
+      ],
+      "evidence_to_establish": [
+        "ANDROID",
+        "PROVIDER"
+      ],
+      "status": "NOT_RUN_NOT_ACCEPTED",
+      "note": "Planning map does not replace complete source acceptance or authorize execution"
+    },
+    {
+      "id": "EVD-012",
+      "obligation_verbatim": "Synthetic receipts must retain false production/guest/kernel-UID claims and never imply account isolation.",
+      "acceptance_verbatim": "P explicitly narrow host proof; N elevated synthetic claim rejected; R parent receipt aggregation cannot erase exclusions.",
+      "ledger_source": {
+        "commit": "dccc27989b9c258ce9f99e28bc620ac03ac696ae",
+        "path": "docs/REBUILD_R1_SECURITY_REQUIREMENTS.md",
+        "line": 160,
+        "line_sha256": "20da800e4f905a9931d0822ed29e2cc1c560ec8483eb39e4242966cfac6d0f3e"
+      },
+      "primary_original_task": "APK-P1-T08",
+      "control_area": "actual owned-fixture framework evidence",
+      "planned_fixture_cases": [
+        "F03",
+        "F08"
+      ],
+      "evidence_to_establish": [
+        "ANDROID",
+        "PROVIDER"
+      ],
+      "status": "NOT_RUN_NOT_ACCEPTED",
+      "note": "Planning map does not replace complete source acceptance or authorize execution"
+    },
+    {
+      "id": "EVD-013",
+      "obligation_verbatim": "Use stronger E80/E81 main-thread Instrumentation/count/restart constraints, not superseded preparation-thread construction.",
+      "acceptance_verbatim": "P exact thread/count/restart receipts; N old construction or missing events rejected; R recreation repeats same invariants.",
+      "ledger_source": {
+        "commit": "dccc27989b9c258ce9f99e28bc620ac03ac696ae",
+        "path": "docs/REBUILD_R1_SECURITY_REQUIREMENTS.md",
+        "line": 161,
+        "line_sha256": "4ea41fc1f6f905aecd87a4f89e5038d4e48efd49977373aafeadf2da9ad7910b"
+      },
+      "primary_original_task": "APK-P1-T08",
+      "control_area": "actual owned-fixture framework evidence",
+      "planned_fixture_cases": [
+        "F03",
+        "F08"
+      ],
+      "evidence_to_establish": [
+        "ANDROID",
+        "PROVIDER"
+      ],
+      "status": "NOT_RUN_NOT_ACCEPTED",
+      "note": "Planning map does not replace complete source acceptance or authorize execution"
+    },
+    {
+      "id": "REC-001",
+      "obligation_verbatim": "Preserve API28 process-name guard and compatible fallback.",
+      "acceptance_verbatim": "P correct process identity per supported API; N unavailable API not invoked; R process restart re-resolves safely.",
+      "ledger_source": {
+        "commit": "dccc27989b9c258ce9f99e28bc620ac03ac696ae",
+        "path": "docs/REBUILD_R1_SECURITY_REQUIREMENTS.md",
+        "line": 169,
+        "line_sha256": "a7e865a741be04a71700e266831dcd6dc570e781c47ef4fc6c1a6a9112c1e4da"
+      },
+      "primary_original_task": "APK-P1-T08",
+      "control_area": "process API authority",
+      "planned_fixture_cases": [
+        "F03",
+        "F04"
+      ],
+      "evidence_to_establish": [
+        "HOST",
+        "ANDROID",
+        "PROVIDER"
+      ],
+      "status": "NOT_RUN_NOT_ACCEPTED",
+      "note": "Planning map does not replace complete source acceptance or authorize execution"
+    },
+    {
+      "id": "REC-002",
+      "obligation_verbatim": "Marker and owner changes commit/rollback atomically.",
+      "acceptance_verbatim": "P both durable together; N either failed write leaves both unchanged; R crash at either boundary yields retained coherent ownership.",
+      "ledger_source": {
+        "commit": "dccc27989b9c258ce9f99e28bc620ac03ac696ae",
+        "path": "docs/REBUILD_R1_SECURITY_REQUIREMENTS.md",
+        "line": 170,
+        "line_sha256": "f95e49b72974dd4b608e82a076e0151f2ba376790c0313bee73df4fc5475ff12"
+      },
+      "primary_original_task": "APK-P4-T18",
+      "control_area": "durable atomic scoped scheduling",
+      "planned_fixture_cases": [
+        "F05",
+        "F06"
+      ],
+      "evidence_to_establish": [
+        "HOST",
+        "ANDROID",
+        "PROVIDER"
+      ],
+      "status": "NOT_RUN_NOT_ACCEPTED",
+      "note": "Planning map does not replace complete source acceptance or authorize execution"
+    },
+    {
+      "id": "REC-003",
+      "obligation_verbatim": "Reject invalid/pre-marker ownership references before enqueue mutation.",
+      "acceptance_verbatim": "P known valid ownership; N orphan/foreign/premarker reference denied; R owner changes during transaction abort atomically.",
+      "ledger_source": {
+        "commit": "dccc27989b9c258ce9f99e28bc620ac03ac696ae",
+        "path": "docs/REBUILD_R1_SECURITY_REQUIREMENTS.md",
+        "line": 171,
+        "line_sha256": "25e642c7db78f5cbe574800e6f2d7f3790a2175e7000c9dae7912cd40119e538"
+      },
+      "primary_original_task": "APK-P4-T18",
+      "control_area": "durable atomic scoped scheduling",
+      "planned_fixture_cases": [
+        "F05",
+        "F06"
+      ],
+      "evidence_to_establish": [
+        "HOST",
+        "ANDROID",
+        "PROVIDER"
+      ],
+      "status": "NOT_RUN_NOT_ACCEPTED",
+      "note": "Planning map does not replace complete source acceptance or authorize execution"
+    },
+    {
+      "id": "REC-004",
+      "obligation_verbatim": "Deduplication must preserve authority, not merge tasks solely by package/source resemblance.",
+      "acceptance_verbatim": "P same authorized identity dedups; N different authority remains distinct/rejected; R concurrent enqueue cannot upgrade consent.",
+      "ledger_source": {
+        "commit": "dccc27989b9c258ce9f99e28bc620ac03ac696ae",
+        "path": "docs/REBUILD_R1_SECURITY_REQUIREMENTS.md",
+        "line": 172,
+        "line_sha256": "d2be9d947ab299e7495238c2d9c5f241bad647e631298c8a797fe2c292bd8a64"
+      },
+      "primary_original_task": "APK-P4-T18",
+      "control_area": "durable atomic scoped scheduling",
+      "planned_fixture_cases": [
+        "F05",
+        "F06"
+      ],
+      "evidence_to_establish": [
+        "HOST",
+        "ANDROID",
+        "PROVIDER"
+      ],
+      "status": "NOT_RUN_NOT_ACCEPTED",
+      "note": "Planning map does not replace complete source acceptance or authorize execution"
+    },
+    {
+      "id": "REC-005",
+      "obligation_verbatim": "Foreground automatic update must not cancel or execute private-source tasks.",
+      "acceptance_verbatim": "P eligible normal source progresses; N private task unchanged/unexecuted; R automation refresh/restart cannot seize ownership.",
+      "ledger_source": {
+        "commit": "dccc27989b9c258ce9f99e28bc620ac03ac696ae",
+        "path": "docs/REBUILD_R1_SECURITY_REQUIREMENTS.md",
+        "line": 173,
+        "line_sha256": "db4befc5b8f395adc973a028558c3e10c941e8e5f71a42a8a11f1aa830aecbc8"
+      },
+      "primary_original_task": "APK-P4-T19",
+      "control_area": "foreground preview/consent",
+      "planned_fixture_cases": [
+        "F05",
+        "F06"
+      ],
+      "evidence_to_establish": [
+        "HOST",
+        "ANDROID",
+        "PROVIDER"
+      ],
+      "status": "NOT_RUN_NOT_ACCEPTED",
+      "note": "Planning map does not replace complete source acceptance or authorize execution"
+    },
+    {
+      "id": "REC-006",
+      "obligation_verbatim": "An unrelated package may progress instead of global starvation.",
+      "acceptance_verbatim": "P unrelated eligible task executes; N same blocked scope stays blocked; R concurrent unrelated work preserves both scopes.",
+      "ledger_source": {
+        "commit": "dccc27989b9c258ce9f99e28bc620ac03ac696ae",
+        "path": "docs/REBUILD_R1_SECURITY_REQUIREMENTS.md",
+        "line": 174,
+        "line_sha256": "e5e40e31fb1cbfb2b282e0282bf5803154d35b0136830b0374e67aa65b9a8722"
+      },
+      "primary_original_task": "APK-P4-T18",
+      "control_area": "durable atomic scoped scheduling",
+      "planned_fixture_cases": [
+        "F05",
+        "F06"
+      ],
+      "evidence_to_establish": [
+        "HOST",
+        "ANDROID",
+        "PROVIDER"
+      ],
+      "status": "NOT_RUN_NOT_ACCEPTED",
+      "note": "Planning map does not replace complete source acceptance or authorize execution"
+    },
+    {
+      "id": "REC-007",
+      "obligation_verbatim": "Detect private-source conflicts inside enqueue transaction and preview.",
+      "acceptance_verbatim": "P conflict-free preview/enqueue agree; N conflict denies both; R conflict inserted between preview/commit aborts.",
+      "ledger_source": {
+        "commit": "dccc27989b9c258ce9f99e28bc620ac03ac696ae",
+        "path": "docs/REBUILD_R1_SECURITY_REQUIREMENTS.md",
+        "line": 175,
+        "line_sha256": "5d4cf4f4604f8d1417bd8379854285ff1ee37efab04e1bc8a04b8ddaac137a54"
+      },
+      "primary_original_task": "APK-P4-T19",
+      "control_area": "foreground preview/consent",
+      "planned_fixture_cases": [
+        "F05",
+        "F06"
+      ],
+      "evidence_to_establish": [
+        "HOST",
+        "ANDROID",
+        "PROVIDER"
+      ],
+      "status": "NOT_RUN_NOT_ACCEPTED",
+      "note": "Planning map does not replace complete source acceptance or authorize execution"
+    },
+    {
+      "id": "REC-008",
+      "obligation_verbatim": "Mixed-group consent is all-or-nothing, never partial implicit authorization.",
+      "acceptance_verbatim": "P exact whole affected set; N added/removed/foreign peer denies before callback; R group changes invalidate consent atomically.",
+      "ledger_source": {
+        "commit": "dccc27989b9c258ce9f99e28bc620ac03ac696ae",
+        "path": "docs/REBUILD_R1_SECURITY_REQUIREMENTS.md",
+        "line": 176,
+        "line_sha256": "0b4bd1822896e00f9dcc4e0b6f974aaf8899e842638c21e1c2825a2d03c18148"
+      },
+      "primary_original_task": "APK-P4-T19",
+      "control_area": "foreground preview/consent",
+      "planned_fixture_cases": [
+        "F05",
+        "F06"
+      ],
+      "evidence_to_establish": [
+        "HOST",
+        "ANDROID",
+        "PROVIDER"
+      ],
+      "status": "NOT_RUN_NOT_ACCEPTED",
+      "note": "Planning map does not replace complete source acceptance or authorize execution"
+    },
+    {
+      "id": "REC-009",
+      "obligation_verbatim": "Preserve foreign namespace snapshots and journals without mutation or original-catalog fallback.",
+      "acceptance_verbatim": "P own namespace read; N foreign state not adopted/deleted; R upgrade/recovery retains foreign bytes.",
+      "ledger_source": {
+        "commit": "dccc27989b9c258ce9f99e28bc620ac03ac696ae",
+        "path": "docs/REBUILD_R1_SECURITY_REQUIREMENTS.md",
+        "line": 177,
+        "line_sha256": "4074b71ef5d6b1352fb5175694a8b0d515f923fdd6abdde7b24a2f86f08891a0"
+      },
+      "primary_original_task": "APK-P3-T13",
+      "control_area": "metadata preservation not authority",
+      "planned_fixture_cases": [
+        "F02",
+        "F10"
+      ],
+      "evidence_to_establish": [
+        "HOST",
+        "ANDROID"
+      ],
+      "status": "NOT_RUN_NOT_ACCEPTED",
+      "note": "Planning map does not replace complete source acceptance or authorize execution"
+    },
+    {
+      "id": "REC-010",
+      "obligation_verbatim": "Maintain same-provider/package FIFO eligibility.",
+      "acceptance_verbatim": "P earlier eligible task precedes later; N later task cannot bypass blocked predecessor; R restart/order race preserves sequence.",
+      "ledger_source": {
+        "commit": "dccc27989b9c258ce9f99e28bc620ac03ac696ae",
+        "path": "docs/REBUILD_R1_SECURITY_REQUIREMENTS.md",
+        "line": 178,
+        "line_sha256": "97ad07ffee126eaed709b151c6c780b9fb04fa6e4261e1f9d7c480c7ff8b23ed"
+      },
+      "primary_original_task": "APK-P4-T18",
+      "control_area": "durable atomic scoped scheduling",
+      "planned_fixture_cases": [
+        "F05",
+        "F06"
+      ],
+      "evidence_to_establish": [
+        "HOST",
+        "ANDROID",
+        "PROVIDER"
+      ],
+      "status": "NOT_RUN_NOT_ACCEPTED",
+      "note": "Planning map does not replace complete source acceptance or authorize execution"
+    },
+    {
+      "id": "REC-011",
+      "obligation_verbatim": "Unresolved review state blocks later mutations in the same provider/package scope.",
+      "acceptance_verbatim": "P unrelated scope unaffected; N same scope no callback; R provider revision change does not escape barrier.",
+      "ledger_source": {
+        "commit": "dccc27989b9c258ce9f99e28bc620ac03ac696ae",
+        "path": "docs/REBUILD_R1_SECURITY_REQUIREMENTS.md",
+        "line": 179,
+        "line_sha256": "17f8f1a366590fc2b224924e13b5bf3c1e29cdd268fe5900e9ea003f7ccdaf18"
+      },
+      "primary_original_task": "APK-P4-T18",
+      "control_area": "durable atomic scoped scheduling",
+      "planned_fixture_cases": [
+        "F05",
+        "F06"
+      ],
+      "evidence_to_establish": [
+        "HOST",
+        "ANDROID",
+        "PROVIDER"
+      ],
+      "status": "NOT_RUN_NOT_ACCEPTED",
+      "note": "Planning map does not replace complete source acceptance or authorize execution"
+    },
+    {
+      "id": "REC-012",
+      "obligation_verbatim": "Controls and scheduling eligibility must be namespace-aware.",
+      "acceptance_verbatim": "P control affects intended provider tasks; N foreign cancel/resume rejected; R provider switch cannot operate stale namespace.",
+      "ledger_source": {
+        "commit": "dccc27989b9c258ce9f99e28bc620ac03ac696ae",
+        "path": "docs/REBUILD_R1_SECURITY_REQUIREMENTS.md",
+        "line": 180,
+        "line_sha256": "558d6236a0bf091531e81f4169ccf94cbbf74a6e3f7d94a2d40ff66975a31300"
+      },
+      "primary_original_task": "APK-P4-T18",
+      "control_area": "durable atomic scoped scheduling",
+      "planned_fixture_cases": [
+        "F05",
+        "F06"
+      ],
+      "evidence_to_establish": [
+        "HOST",
+        "ANDROID",
+        "PROVIDER"
+      ],
+      "status": "NOT_RUN_NOT_ACCEPTED",
+      "note": "Planning map does not replace complete source acceptance or authorize execution"
+    },
+    {
+      "id": "REC-013",
+      "obligation_verbatim": "Decode legacy marker/task authority strictly, retaining ambiguous bytes rather than inventing authority.",
+      "acceptance_verbatim": "P known schema/codec projection; N unknown schema/state/owner quarantined; R failed migration rolls back target and preserves source bytes.",
+      "ledger_source": {
+        "commit": "dccc27989b9c258ce9f99e28bc620ac03ac696ae",
+        "path": "docs/REBUILD_R1_SECURITY_REQUIREMENTS.md",
+        "line": 181,
+        "line_sha256": "c8970fd72554f6b453c0a75b354a9a7eb54f76ca742d587f82312566ec3df563"
+      },
+      "primary_original_task": "APK-P3-T13",
+      "control_area": "metadata preservation not authority",
+      "planned_fixture_cases": [
+        "F02",
+        "F10"
+      ],
+      "evidence_to_establish": [
+        "HOST",
+        "ANDROID"
+      ],
+      "status": "NOT_RUN_NOT_ACCEPTED",
+      "note": "Planning map does not replace complete source acceptance or authorize execution"
+    },
+    {
+      "id": "BRG-001",
+      "obligation_verbatim": "H-identity: provider ID/revision/environment require exact well-formed Unicode scalars, no Cc, fixed leading/trailing whitespace rejection including NBSP,256UTF16/768UTF8 bounds. P valid Unicode retains exact hash identity; N invalid alias inputs rejected; R persisted invalid identities retained/quarantined, never remapped/dispatched. Portable parity exists; Android authority/storage bridge OPEN. Opaque catalog `engine_key`/`clone_id` remain exact TEXT, including empty values; do not impose this grammar on them.",
+      "acceptance_verbatim": "H-identity: provider ID/revision/environment require exact well-formed Unicode scalars, no Cc, fixed leading/trailing whitespace rejection including NBSP,256UTF16/768UTF8 bounds. P valid Unicode retains exact hash identity; N invalid alias inputs rejected; R persisted invalid identities retained/quarantined, never remapped/dispatched. Portable parity exists; Android authority/storage bridge OPEN. Opaque catalog `engine_key`/`clone_id` remain exact TEXT, including empty values; do not impose this grammar on them.",
+      "ledger_source": {
+        "commit": "dccc27989b9c258ce9f99e28bc620ac03ac696ae",
+        "path": "docs/REBUILD_R1_SECURITY_REQUIREMENTS.md",
+        "line": 187,
+        "line_sha256": "b078ea50d80e16ed247eeaa83876053c4498b4d736070a2915340f90d95f6198"
+      },
+      "primary_original_task": "APK-P1-T08",
+      "control_area": "exact provider identity not opaque catalog remap",
+      "planned_fixture_cases": [
+        "F04",
+        "F07"
+      ],
+      "evidence_to_establish": [
+        "HOST",
+        "PROVIDER"
+      ],
+      "status": "NOT_RUN_NOT_ACCEPTED",
+      "note": "Planning map does not replace complete source acceptance or authorize execution"
+    },
+    {
+      "id": "BRG-002",
+      "obligation_verbatim": "H-codec/H-journal: bounded owned input, checksum, semantic validation, expected operation UUID and exact canonical re-encode equality. P canonicalv2 byte parity; N noncanonical/unknown-version/wrong-operation rejected; R caller mutation/recovery never silently rewrites old bytes or replays dispatch. Host and in-memory portable proof exists; Android journal adapter OPEN. This document requests no denied-envelope reproduction.",
+      "acceptance_verbatim": "H-codec/H-journal: bounded owned input, checksum, semantic validation, expected operation UUID and exact canonical re-encode equality. P canonicalv2 byte parity; N noncanonical/unknown-version/wrong-operation rejected; R caller mutation/recovery never silently rewrites old bytes or replays dispatch. Host and in-memory portable proof exists; Android journal adapter OPEN. This document requests no denied-envelope reproduction.",
+      "ledger_source": {
+        "commit": "dccc27989b9c258ce9f99e28bc620ac03ac696ae",
+        "path": "docs/REBUILD_R1_SECURITY_REQUIREMENTS.md",
+        "line": 188,
+        "line_sha256": "e658c202d77f440ffe4f750a76cc03fba33581bb7ca1cc304c2cbee0ce0861e2"
+      },
+      "primary_original_task": "APK-P4-T18",
+      "control_area": "canonical owned operation bytes",
+      "planned_fixture_cases": [
+        "F05",
+        "F06"
+      ],
+      "evidence_to_establish": [
+        "HOST",
+        "ANDROID",
+        "PROVIDER"
+      ],
+      "status": "NOT_RUN_NOT_ACCEPTED",
+      "note": "Planning map does not replace complete source acceptance or authorize execution"
+    },
+    {
+      "id": "BRG-003",
+      "obligation_verbatim": "H-policy: the approved D3 stronger-isolation allowlist is necessary for adversarial claim/request and protected third-party operations. P independent truth table agrees with intended contract; N HOST_UID_NAMESPACE/UNKNOWN cannot gain permission from caller-supplied claims; R evidence identity changes deny. Host truth table is not a provider attestation implementation.",
+      "acceptance_verbatim": "H-policy: the approved D3 stronger-isolation allowlist is necessary for adversarial claim/request and protected third-party operations. P independent truth table agrees with intended contract; N HOST_UID_NAMESPACE/UNKNOWN cannot gain permission from caller-supplied claims; R evidence identity changes deny. Host truth table is not a provider attestation implementation.",
+      "ledger_source": {
+        "commit": "dccc27989b9c258ce9f99e28bc620ac03ac696ae",
+        "path": "docs/REBUILD_R1_SECURITY_REQUIREMENTS.md",
+        "line": 189,
+        "line_sha256": "41b15104f95539b4752dfbd87e891edeb32b725ae514c97a59bb05fd011b5a84"
+      },
+      "primary_original_task": "APK-P2-T10",
+      "control_area": "stronger boundary not self-attestation",
+      "planned_fixture_cases": [
+        "F02",
+        "F04"
+      ],
+      "evidence_to_establish": [
+        "HOST",
+        "ANDROID",
+        "PROVIDER",
+        "PHONE"
+      ],
+      "status": "NOT_RUN_NOT_ACCEPTED",
+      "note": "Planning map does not replace complete source acceptance or authorize execution"
+    }
+  ]
+}

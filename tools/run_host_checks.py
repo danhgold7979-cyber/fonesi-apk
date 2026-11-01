@@ -14,12 +14,24 @@ COMMANDS = [
     ['python3', 'tools/check_toolchain.py'],
     *[['python3', 'tools/' + name] for name in (
         'test_plan_integrity.py', 'test_toolchain_contract.py', 'test_shell_contract.py',
-        'test_apk_contract.py', 'test_lint_policy.py', 'test_baseline_receipt.py', 'test_compile_aggregate.py')],
+        'test_apk_contract.py', 'test_lint_policy.py', 'test_baseline_receipt.py', 'test_compile_aggregate.py', 'test_host_integration.py')],
     ['bash', 'tools/test_core.sh'],
+    ['bash', 'tools/test_style_core.sh'],
 ]
 
 
+def check_kind(command):
+    if command[-1] in ('tools/test_core.sh', 'tools/test_style_core.sh'):
+        return 'synthetic_assertions'
+    return 'unittest_cases' if Path(command[-1]).name.startswith('test_') else 'integrity_command'
+
+
 def parse_count(command, output):
+    if command[-1] == 'tools/test_style_core.sh':
+        assert 'LIMITED HOST' not in output, 'limited compiler cannot produce JDK17 receipt'
+        matches = re.findall(r'(?m)^PASS StyleValue owned HOST assertions=(\d+); no Android/rendering/persistence/provider acceptance$', output)
+        assert len(matches) == 1 and int(matches[0]) > 0, 'missing/duplicate/nonpositive style assertion count'
+        return {'kind': 'synthetic_assertions', 'count': int(matches[0])}
     if command[-1].endswith('test_core.sh'):
         match = re.search(r'UpdatePreflightTest PASS: (\d+) checks; HOST synthetic display-only;', output)
         assert match and int(match[1]) > 0, 'missing/nonpositive Java check count'

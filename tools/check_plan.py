@@ -45,11 +45,11 @@ for row in rows:
                 lines=lookup[(source['commit'],source['path'])]
                 assert '\n'.join(lines[span['start']-1:span['end']])==span['text_verbatim']
 task_doc=load('docs/tasks.json')
-assert task_doc['phases']==8 and task_doc['tasks_total']==32 and task_doc['completed_count']==4
+assert task_doc['phases']==8 and task_doc['tasks_total']==32 and task_doc['completed_count']==5
 assert task_doc['phone_gates']=={'1':[9,10,11,12],'2':[17,18,19,20],'3':[21,22,23,24],'4':[29,30,31,32]}
 status=load('docs/status.json')
 assert status['phase_total']==8 and status['task_total']==32 and status['requirement_total']==362
-assert status['completed_tasks']==4 and status['accepted_product_requirements']==0
+assert status['completed_tasks']==5 and status['accepted_product_requirements']==0
 assert status['provider']=='UNAVAILABLE_NOT_ACCEPTED'
 assert status['evidence']=={'HOST':'PASS_FOUNDATION_ONLY','COMPILE':'PASS_FOUNDATION_ONLY','ANDROID':'NOT_RUN','PROVIDER':'NOT_RUN','PHONE':'NOT_RUN'}
 assert status['phone_gates']==dict.fromkeys(('1','2','3','4'),'NOT_RUN')
@@ -67,7 +67,18 @@ assert hashlib.sha256((R/foundation['independent_review']['path']).read_bytes())
 assert foundation['accepted_tasks']==['APK-P0-T03','APK-P0-T04']
 assert status['foundation_acceptance_registry']==foundation_path
 assert status['evidence']==foundation['evidence']
-assert status['task_progress']=={'phase0_accepted':4,'phase0_total':4,'phase0_task_percent':100.0,'all_accepted':4,'all_total':32,'all_task_percent':12.5,'scope':'TASK_COUNTS_ONLY_NOT_PRODUCT_FUNCTIONALITY'}
+assert status['task_progress']=={'phase0_accepted':4,'phase0_total':4,'phase0_task_percent':100.0,'all_accepted':5,'all_total':32,'all_task_percent':15.625,'scope':'TASK_COUNTS_ONLY_NOT_PRODUCT_FUNCTIONALITY','phase1_accepted':1,'phase1_total':4,'phase1_task_percent':25.0}
+inventory_path='docs/evidence/provider-inventory-acceptance.json'
+assert hashlib.sha256((R/inventory_path).read_bytes()).hexdigest()=='5c390f309926e6a55f92ff3adf606e0a0ab03e5390212f64fa55a1d548eb1a94'
+inventory=load(inventory_path)
+assert status['provider_inventory_acceptance_registry']==inventory_path
+for key in ('independent_review','candidate_inventory'):
+    item=inventory[key]
+    assert hashlib.sha256((R/item['path']).read_bytes()).hexdigest()==item['sha256']
+candidates=load(inventory['candidate_inventory']['path'])
+assert len(candidates['candidates'])==6 and all(not c['eligible'] and c['activation']=='BLOCKED' and c['test_result']=='NOT_RUN' for c in candidates['candidates'])
+assert set(candidates['app_compatibility'])=={'Facebook','Messenger','Zalo','TikTok','Threads','X','Shopee','YouTube'}
+assert set(candidates['app_compatibility'].values())=={'UNKNOWN'}
 tasks=task_doc['tasks']
 assert len(tasks)==32 and {t['task_code'] for t in tasks}==ids
 for task in tasks:
@@ -83,6 +94,11 @@ for task in tasks:
     elif task['task_code'] in foundation['accepted_tasks']:
         assert task['status']=='ACCEPTED_HOST_COMPILE'
         assert task['accepted_evidence']==[foundation_path+'#'+task['task_code']]
+    elif task['task_code'] in inventory['accepted_tasks']:
+        assert task['status']=='ACCEPTED_DOCUMENTARY'
+        assert task['accepted_evidence']==[inventory_path+'#'+task['task_code']]
+    elif task['task_code'] in inventory['blocked_tasks']:
+        assert task['status']=='BLOCKED' and not task['accepted_evidence']
     else:
         assert not task['accepted_evidence']
         assert task['status'] in ('IN_PROGRESS','NOT_STARTED')

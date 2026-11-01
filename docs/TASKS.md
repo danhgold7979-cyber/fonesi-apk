@@ -1,6 +1,6 @@
 # Fresh APK task contracts — version 1
 
-8 original phases, 32 original steps, 4 phone gates. **4/32 tasks accepted (12.5% of tasks; NOT functionality). P0: 4/4 tasks.** T01/T02 documentary and T03/T04 exact-source HOST/COMPILE accepted; all runtime, product and release acceptance remains open. Read `requirements.json` for the full atomic obligations mapped to these contracts. Each task requires its mapped requirement-specific positive/negative/race/stop conditions in addition to the contract below. This file does not replace or shorten the 362 assertions.
+8 original phases, 32 original steps, 4 phone gates. **5/32 tasks accepted (15.625% of tasks; NOT functionality). P0: 4/4 tasks; P1: 1/4 documentary task (25%).** T01/T02 documentary and T03/T04 exact-source HOST/COMPILE accepted; all runtime, product and release acceptance remains open. Read `requirements.json` for the full atomic obligations mapped to these contracts. Each task requires its mapped requirement-specific positive/negative/race/stop conditions in addition to the contract below. This file does not replace or shorten the 362 assertions.
 
 ## Global execution rules
 
@@ -82,7 +82,7 @@ Original: `2fac016e3b28e4d9f21390c221cad1df7a382c86:docs/ROADMAP.md:L22`
 
 ## APK-P1-T05 — Provider candidate matrix
 
-Status: **NOT_STARTED**; accepted evidence: none.
+Status: **ACCEPTED_DOCUMENTARY**; accepted evidence: `docs/evidence/provider-inventory-acceptance.json` (negative inventory only).
 
 Original: `2fac016e3b28e4d9f21390c221cad1df7a382c86:docs/ROADMAP.md:L30`
 
@@ -99,7 +99,7 @@ Original: `2fac016e3b28e4d9f21390c221cad1df7a382c86:docs/ROADMAP.md:L30`
 
 ## APK-P1-T06 — Provider initialization and security review
 
-Status: **NOT_STARTED**; accepted evidence: none.
+Status: **BLOCKED**; no accepted evidence; qualified provider prerequisites missing.
 
 Original: `2fac016e3b28e4d9f21390c221cad1df7a382c86:docs/ROADMAP.md:L31`
 
@@ -116,7 +116,7 @@ Original: `2fac016e3b28e4d9f21390c221cad1df7a382c86:docs/ROADMAP.md:L31`
 
 ## APK-P1-T07 — Build authorized provider candidate
 
-Status: **NOT_STARTED**; accepted evidence: none.
+Status: **BLOCKED**; no accepted evidence; qualified provider prerequisites missing.
 
 Original: `2fac016e3b28e4d9f21390c221cad1df7a382c86:docs/ROADMAP.md:L32`
 
@@ -133,7 +133,7 @@ Original: `2fac016e3b28e4d9f21390c221cad1df7a382c86:docs/ROADMAP.md:L32`
 
 ## APK-P1-T08 — Minimal owned-fixture provider adapter
 
-Status: **NOT_STARTED**; accepted evidence: none.
+Status: **BLOCKED**; no accepted evidence; qualified provider prerequisites missing.
 
 Original: `2fac016e3b28e4d9f21390c221cad1df7a382c86:docs/ROADMAP.md:L33`
 

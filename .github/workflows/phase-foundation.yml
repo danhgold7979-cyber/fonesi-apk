@@ -16,12 +16,14 @@ jobs:
   documentary-host:
     outputs:
       receipt: ${{ steps.host.outputs.receipt }}
+      compile_required: ${{ steps.scope.outputs.compile_required }}
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
         with:
           persist-credentials: false
+          fetch-depth: 0
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
       - name: Verify exact reviewed source
         run: test "$(git rev-parse HEAD)" = "$EXPECTED_SOURCE_SHA"
@@ -30,6 +32,9 @@ jobs:
           test -d "$JAVA_HOME_17_X64"
           echo "JAVA_HOME=$JAVA_HOME_17_X64" >> "$GITHUB_ENV"
           echo "$JAVA_HOME_17_X64/bin" >> "$GITHUB_PATH"
+      - name: Compare APK inputs with retained accepted baseline
+        id: scope
+        run: python3 tools/compile_scope.py
       - name: Independent foundation checks and exact-source HOST receipt
         id: host
         run: python3 tools/run_host_checks.py
@@ -39,10 +44,12 @@ jobs:
           path: |
             host-receipt.json
             foundation-host.log
+            compile-scope.json
           if-no-files-found: error
           retention-days: 14
   android-compile:
     needs: documentary-host
+    if: needs.documentary-host.outputs.compile_required == 'true'
     runs-on: ubuntu-24.04
     timeout-minutes: 25
     steps:
