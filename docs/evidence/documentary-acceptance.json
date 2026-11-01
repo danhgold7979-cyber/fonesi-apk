@@ -1,0 +1,31 @@
+{
+  "schema_version": 1,
+  "scope": "DOCUMENTARY_TASKS_ONLY_NOT_PRODUCT_FUNCTIONALITY",
+  "accepted_tasks": [
+    "APK-P0-T01",
+    "APK-P0-T02"
+  ],
+  "root_acceptance": "2026-11-01T08:20:02Z",
+  "independent_review": {
+    "path": "docs/evidence/T01_T02_ACCEPTANCE_CLOSEOUT.md",
+    "sha256": "d506c11908336028661fc9cd6ac54b37f815e7036aba39ee86a8f7a7b2e636de"
+  },
+  "plan_commit": "d87dfa73fae1bce6ab8188d71f910a6e9d49e85d",
+  "correction_commit": "417b823ec7893575337a3a278624d4b6f5631d1a",
+  "clean_phase00_commit": "3d1cd94ce9eaaffa4da8ac2a5e70dbb881068168",
+  "clean_phase00_tree": "27c970dce711e12eca7fd4c6a56bbb2a9f852544",
+  "archival_main_commit": "0938ade7b35c007590236f36afe38ac95ce6dbf3",
+  "main_is_clean": false,
+  "archive_parent_count": 61,
+  "legacy_refs_removed": 60,
+  "reference_files": 668,
+  "keep_obligations": 380,
+  "durable_backup": {
+    "library_file_id": "libfile_7df66b3b77d4819197e586990741e43d",
+    "file_id": "file_00000000aa8c8230933b7e663de09453",
+    "bytes": 3490147,
+    "sha256": "686dfaf20fc211d99d29c13219db4781a4bc1f681313d0ed3d18c6e29237a17f",
+    "latest_check": "Root metadata recheck 2026-11-01T08:19:30Z unchanged backing file; prior verified byte/hash/restore/fsck evidence, not new materialization"
+  },
+  "accepted_product_requirements": 0
+}

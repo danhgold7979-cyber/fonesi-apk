@@ -13,6 +13,8 @@ def validate_manifest(root):
     assert [child.tag for child in root] == ['application']
     app = root.find('application')
     assert app.get(A + 'allowBackup') == 'false'
+    assert app.get(A + 'fullBackupContent') == 'false'
+    assert app.get(A + 'dataExtractionRules') == '@xml/data_extraction_rules'
     assert [child.tag for child in app] == ['activity']
     activity = app.find('activity')
     assert activity.get(A + 'name') == '.MainActivity'
@@ -46,6 +48,16 @@ def validate_layout(root, strings):
     assert 'Không có dữ liệu mẫu' in strings['empty_description']
     assert strings['empty_title']=='Chưa đọc danh sách bản clone'
     assert 'chưa đọc dữ liệu' in strings['empty_description']
+
+def validate_extraction_rules(root):
+    domains = {'root', 'file', 'database', 'sharedpref', 'external',
+               'device_root', 'device_file', 'device_database', 'device_sharedpref'}
+    assert root.tag == 'data-extraction-rules'
+    assert [child.tag for child in root] == ['cloud-backup', 'device-transfer']
+    for mode in root:
+        assert len(mode) == len(domains)
+        assert all(child.tag == 'exclude' and child.get('path') == '.' for child in mode)
+        assert {child.get('domain') for child in mode} == domains
 
 class ShellSourceContractTest(unittest.TestCase):
     def setUp(self):
@@ -105,6 +117,31 @@ class ShellSourceContractTest(unittest.TestCase):
         theme = versioned.find("style[@name='Theme.Fonesi']")
         self.assertEqual(theme.get('parent'), 'BaseTheme.Fonesi')
         self.assertEqual(theme.find("item[@name='android:windowLightNavigationBar']").text, 'true')
+
+    def test_all_backup_and_transfer_domains_excluded(self):
+        root = ET.parse(ROOT / 'res/xml/data_extraction_rules.xml').getroot()
+        validate_extraction_rules(root)
+        for mode_index in range(2):
+            for domain_index in range(9):
+                mutated = copy.deepcopy(root)
+                mutated[mode_index].remove(mutated[mode_index][domain_index])
+                with self.assertRaises(AssertionError): validate_extraction_rules(mutated)
+        for tag, path in [('include', '.'), ('exclude', 'partial')]:
+            mutated = copy.deepcopy(root)
+            mutated[0][0].tag = tag
+            mutated[0][0].set('path', path)
+            with self.assertRaises(AssertionError): validate_extraction_rules(mutated)
+        for field in ['fullBackupContent', 'dataExtractionRules']:
+            mutated = copy.deepcopy(self.manifest)
+            mutated.find('application').attrib.pop(A + field)
+            with self.assertRaises(AssertionError): validate_manifest(mutated)
+
+    def test_window_background_has_one_painter(self):
+        self.assertNotIn(A + 'background', self.layout.attrib)
+        styles = ET.parse(ROOT / 'res/values/styles.xml').getroot()
+        base = styles.find("style[@name='BaseTheme.Fonesi']")
+        self.assertEqual(base.find("item[@name='android:windowBackground']").text,
+                         '@color/page_background')
 
     def test_brand_and_vector(self):
         styles = ET.parse(ROOT / 'res/values/styles.xml').getroot()

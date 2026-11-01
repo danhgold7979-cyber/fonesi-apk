@@ -14,6 +14,8 @@ concurrency:
   cancel-in-progress: true
 jobs:
   documentary-host:
+    outputs:
+      receipt: ${{ steps.host.outputs.receipt }}
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     steps:
@@ -28,17 +30,19 @@ jobs:
           test -d "$JAVA_HOME_17_X64"
           echo "JAVA_HOME=$JAVA_HOME_17_X64" >> "$GITHUB_ENV"
           echo "$JAVA_HOME_17_X64/bin" >> "$GITHUB_PATH"
-      - name: Independent foundation checks
-        run: |
-          java -version
-          python3 tools/check_plan.py
-          python3 tools/test_plan_integrity.py
-          python3 tools/check_toolchain.py
-          python3 tools/test_toolchain_contract.py
-          python3 tools/test_shell_contract.py
-          python3 tools/test_apk_contract.py
-          bash tools/test_core.sh
+      - name: Independent foundation checks and exact-source HOST receipt
+        id: host
+        run: python3 tools/run_host_checks.py
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: foundation-host-${{ github.event.pull_request.head.sha || github.sha }}
+          path: |
+            host-receipt.json
+            foundation-host.log
+          if-no-files-found: error
+          retention-days: 14
   android-compile:
+    needs: documentary-host
     runs-on: ubuntu-24.04
     timeout-minutes: 25
     steps:
@@ -58,24 +62,41 @@ jobs:
       - name: Build and lint (not Android execution)
         run: |
           java -version
+          started=$(date +%s)
+          rm -f app/build/reports/lint-results-debug.xml app/build/reports/lint-results-debug.html app/build/reports/lint-results-debug.txt
           result=0
           ./gradlew --no-daemon --console=plain :app:assembleDebug :app:lintDebug || result=$?
           if [ "$result" -ne 0 ]; then
             find app/build -name 'lint-results-debug.txt' -type f -exec cat {} \; || true
             exit "$result"
           fi
+          python3 tools/verify_lint.py app/build/reports/lint-results-debug.xml --not-before "$started" --source-sha "$EXPECTED_SOURCE_SHA" > lint-receipt.json
+          cat app/build/reports/lint-results-debug.txt
+          cat lint-receipt.json
+      - name: Bind successful HOST receipt from exact-source prerequisite job
+        env:
+          HOST_RECEIPT: ${{ needs.documentary-host.outputs.receipt }}
+        run: python3 -c 'import os,json,pathlib; r=json.loads(os.environ["HOST_RECEIPT"]); assert r["source_sha"]==os.environ["EXPECTED_SOURCE_SHA"]; pathlib.Path("host-receipt.json").write_text(json.dumps(r,indent=2)+"\n")'
       - name: Verify actual packaged artifact
         run: |
           python3 tools/verify_apk.py app/build/outputs/apk/debug/app-debug.apk | tee compile-receipt.json
           test "$(git rev-parse HEAD)" = "$EXPECTED_SOURCE_SHA"
           git rev-parse HEAD > source-sha.txt
+          python3 tools/record_baseline.py
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
           name: foundation-compile-only-${{ github.event.pull_request.head.sha || github.sha }}
           path: |
             app/build/outputs/apk/debug/app-debug.apk
             app/build/reports/lint-results-debug.html
+            app/build/reports/lint-results-debug.xml
+            app/build/reports/lint-results-debug.txt
+            lint-receipt.json
             compile-receipt.json
+            host-receipt.json
+            baseline-receipt.json
+            baseline-checklist.md
+            docs/P0_BASELINE_REPRODUCTION.md
             source-sha.txt
           if-no-files-found: error
           retention-days: 14

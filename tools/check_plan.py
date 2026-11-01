@@ -45,14 +45,21 @@ for row in rows:
                 lines=lookup[(source['commit'],source['path'])]
                 assert '\n'.join(lines[span['start']-1:span['end']])==span['text_verbatim']
 task_doc=load('docs/tasks.json')
-assert task_doc['phases']==8 and task_doc['tasks_total']==32 and task_doc['completed_count']==0
+assert task_doc['phases']==8 and task_doc['tasks_total']==32 and task_doc['completed_count']==2
 assert task_doc['phone_gates']=={'1':[9,10,11,12],'2':[17,18,19,20],'3':[21,22,23,24],'4':[29,30,31,32]}
 status=load('docs/status.json')
 assert status['phase_total']==8 and status['task_total']==32 and status['requirement_total']==362
-assert status['completed_tasks']==0 and status['accepted_product_requirements']==0
+assert status['completed_tasks']==2 and status['accepted_product_requirements']==0
 assert status['provider']=='UNAVAILABLE_NOT_ACCEPTED'
 assert status['evidence']==dict.fromkeys(('HOST','COMPILE','ANDROID','PROVIDER','PHONE'),'NOT_RUN')
 assert status['phone_gates']==dict.fromkeys(('1','2','3','4'),'NOT_RUN')
+registry_path=R/'docs/evidence/documentary-acceptance.json'
+assert hashlib.sha256(registry_path.read_bytes()).hexdigest()=='ca1d60579b30566dd23ddd14ad835df86b3623735eb95fa71b87ff519c120ff0'
+registry=load('docs/evidence/documentary-acceptance.json')
+assert hashlib.sha256((R/registry['independent_review']['path']).read_bytes()).hexdigest()==registry['independent_review']['sha256']
+assert registry['accepted_tasks']==['APK-P0-T01','APK-P0-T02']
+assert status['documentary_acceptance_registry']=='docs/evidence/documentary-acceptance.json'
+assert status['documentary_progress']=={'phase0_accepted':2,'phase0_total':4,'phase0_task_percent':50.0,'all_accepted':2,'all_total':32,'all_task_percent':6.25,'scope':'DOCUMENTARY_TASKS_ONLY_NOT_PRODUCT_FUNCTIONALITY'}
 tasks=task_doc['tasks']
 assert len(tasks)==32 and {t['task_code'] for t in tasks}==ids
 for task in tasks:
@@ -62,8 +69,12 @@ for task in tasks:
     assert set(task['requirement_ids_primary'])=={r['id'] for r in rows if r['primary_task']==task['task_code']}
     assert set(task['requirement_ids_integration'])=={r['id'] for r in rows if task['task_code'] in r['integration_tasks']}
     assert all(task[k] for k in ('inputs','outputs','interfaces','dependencies','error_cancel_recovery','tests','acceptance','evidence_tiers'))
-    assert not task['accepted_evidence']
-    assert task['status'] in ('IN_PROGRESS','NOT_STARTED')
+    if task['task_code'] in registry['accepted_tasks']:
+        assert task['status']=='ACCEPTED_DOCUMENTARY'
+        assert task['accepted_evidence']==['docs/evidence/documentary-acceptance.json#'+task['task_code']]
+    else:
+        assert not task['accepted_evidence']
+        assert task['status'] in ('IN_PROGRESS','NOT_STARTED')
 clean=load('docs/clean-tree-manifest.json')
 assert clean['removed_count']==len(clean['paths'])==169
 assert len({p['path'] for p in clean['paths']})==169

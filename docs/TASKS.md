@@ -1,6 +1,6 @@
 # Fresh APK task contracts — version 1
 
-8 original phases, 32 original steps, 4 phone gates. **0/32 tasks accepted.** P0 T01–03 preparation is in progress; all runtime, product and release acceptance remains open. Read `requirements.json` for the full atomic obligations mapped to these contracts. Each task requires its mapped requirement-specific positive/negative/race/stop conditions in addition to the contract below. This file does not replace or shorten the 362 assertions.
+8 original phases, 32 original steps, 4 phone gates. **2/32 documentary tasks accepted (6.25% of tasks; NOT functionality). P0: 2/4 tasks (50%).** T03 remains in progress; T04 is not accepted; all runtime, product and release acceptance remains open. Read `requirements.json` for the full atomic obligations mapped to these contracts. Each task requires its mapped requirement-specific positive/negative/race/stop conditions in addition to the contract below. This file does not replace or shorten the 362 assertions.
 
 ## Global execution rules
 
@@ -14,7 +14,7 @@
 
 ## APK-P0-T01 — Freeze scope and recovery-first amendment
 
-Status: **IN_PROGRESS**; accepted evidence: none.
+Status: **ACCEPTED_DOCUMENTARY**; accepted evidence: `docs/evidence/documentary-acceptance.json` (T01/T02 only; clean phase-00, not historical main).
 
 Original: `2fac016e3b28e4d9f21390c221cad1df7a382c86:docs/ROADMAP.md:L19`
 
@@ -31,14 +31,14 @@ Original: `2fac016e3b28e4d9f21390c221cad1df7a382c86:docs/ROADMAP.md:L19`
 
 ## APK-P0-T02 — Honest clean baseline and evidence registry
 
-Status: **IN_PROGRESS**; accepted evidence: none.
+Status: **ACCEPTED_DOCUMENTARY**; accepted evidence: `docs/evidence/documentary-acceptance.json` (T01/T02 only; clean phase-00, not historical main).
 
 Original: `2fac016e3b28e4d9f21390c221cad1df7a382c86:docs/ROADMAP.md:L20`
 
 > 2. Kiểm tra mã hiện có: phân biệt chức năng đã code, chức năng mới có hợp đồng API, chức năng chưa có và kết quả chưa được kiểm thử. Không coi `UnavailableCloneEngine` là engine.
 
 - **Inputs:** Verified recovery manifest; remote/main and old rebuild snapshots; frozen requirements
-- **Outputs:** Fresh active-tree classification; current STATUS with 0/32 completed; historical references separately labeled; per-requirement NOT_IMPLEMENTED baseline
+- **Outputs:** Fresh active-tree classification; initial STATUS with 0/32 completed, now 2 documentary tasks accepted and 0 product requirements accepted; historical references separately labeled; per-requirement NOT_IMPLEMENTED baseline
 - **Interfaces:** status.json: phase/task/status/exact SHA/evidence receipt; reference manifest maps original SHA+path to preserved hash
 - **Dependencies:** T01 recovery gate; parent approves exact cleanup checkpoint
 - **Errors, cancel and recovery:** If any active old source/test remains, baseline fails. Missing gate never becomes PASS. Cancel no cleanup; accidental omission restored from verified snapshot, not broad reset.
@@ -65,7 +65,7 @@ Original: `2fac016e3b28e4d9f21390c221cad1df7a382c86:docs/ROADMAP.md:L21`
 
 ## APK-P0-T04 — Record reproducible baseline artifact and limits
 
-Status: **NOT_STARTED**; accepted evidence: none.
+Status: **IN_PROGRESS**; accepted evidence: none.
 
 Original: `2fac016e3b28e4d9f21390c221cad1df7a382c86:docs/ROADMAP.md:L22`
 

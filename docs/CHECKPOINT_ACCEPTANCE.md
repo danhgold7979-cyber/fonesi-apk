@@ -1,3 +1,9 @@
+# Current documentary acceptance — 2026-11-01
+
+Root accepted APK-P0-T01/T02 after independent closeout (`evidence/documentary-acceptance.json`). 2/4 phase0 tasks (50%) and2/32 total tasks (6.25%) are DOCUMENTARY task counts, not product functionality. T03/T04 and all product/runtime requirements remain unaccepted. Main0938ade7 retains historical tree; clean-active scope is phase-00. No new public push is authorized by this local record.
+
+## Historical initial source-entry checkpoint (superseded pending-cleanup statement)
+
 # Documentary checkpoint acceptance — 2026-11-01
 
 Root accepted independent review of `d87dfa73fae1bce6ab8188d71f910a6e9d49e85d`, tree `eeec01285efdaa3adfda0364c5e1247d41bab42b`, for initial clean publication and bounded T03 foundation entry. This is NOT product/task/runtime acceptance. T01 remote archival cleanup remains pending root's exact-SHA report. All 32 task acceptance counters and runtime requirement receipts remain open.

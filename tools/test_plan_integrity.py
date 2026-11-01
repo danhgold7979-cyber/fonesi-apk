@@ -59,6 +59,16 @@ class PlanIntegrityTest(unittest.TestCase):
         self.check_mutation('docs/tasks.json',lambda x:x.update(tasks_total=33))
     def test_task_false_accepted(self):
         self.check_mutation('docs/tasks.json',lambda x:x['tasks'][0].update(status='ACCEPTED'))
+    def test_documentary_counter_drift(self):
+        self.check_mutation('docs/status.json',lambda x:x['documentary_progress'].update(phase0_task_percent=100))
+    def test_documentary_scope_uplift(self):
+        self.check_mutation('docs/status.json',lambda x:x['documentary_progress'].update(scope='PRODUCT_COMPLETE'))
+    def test_t03_false_acceptance(self):
+        self.check_mutation('docs/tasks.json',lambda x:x['tasks'][2].update(status='ACCEPTED_DOCUMENTARY'))
+    def test_missing_documentary_receipt(self):
+        self.check_mutation('docs/tasks.json',lambda x:x['tasks'][0].update(accepted_evidence=[]))
+    def test_archival_main_false_clean(self):
+        self.check_mutation('docs/evidence/documentary-acceptance.json',lambda x:x.update(main_is_clean=True))
     def test_old_executable_reference(self):
         p=self.root/'reference/history/forbidden.java';p.write_text('// forbidden historical executable')
         try:

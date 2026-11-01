@@ -1,3 +1,15 @@
+# Current local maintenance candidate — 2026-11-01
+
+Gradle **8.14.6** replaces the historical8.13 pin below; AGP8.13.2/JDK17/min26/compile36/target36/BT35.0.0 remain unchanged. Independent review and exact-source Android compilation of this batch are pending. No SDK installation, license acceptance or public push.
+
+The official release checksum page matches distribution `7988ed071b2a07900e2ec715fca15c6ab72bce6db433af301fa7fa7e9407bd24` and wrapper JAR `ad16bca46cb71bb5887c546860d93992aeee35c1fdaf4a242b0a612375d937e0`. Scripts were generated offline from that verified distribution in a separate empty project, not copied from old implementation. The GitHub v8.14.6 repo tag itself still uses an8.14.3 bootstrap wrapper, so that mismatching JAR was deliberately not installed. Current script/property hashes are enforced by tools/check_toolchain.py and recorded in infrastructure-review.json. Distribution LICENSE exactly matches retained Apache2 notice.
+
+Official AGP8.13 compatibility specifies minimum Gradle8.13/JDK17 and maximumAPI36.1; this maintenance version stays within Gradle8, but this is not a claim of completed AGP integration testing.
+
+Security motivation: [worker/daemon channel advisory](https://github.com/gradle/gradle/security/advisories/GHSA-mvvg-497x-hmj8) and [repository SSL fallback advisory](https://github.com/gradle/gradle/security/advisories/GHSA-j5m7-59rp-24f5) identify versions below8.14.6. Local/shared host and malicious later-repository preconditions matter; no evidence of prior exploitation is asserted. Fixes do not prove all dependencies secure.
+
+## Historical initial foundation proposal and receipts (superseded pins)
+
 # Pinned foundation toolchain
 
 Compile proposal: Gradle8.13, AGP8.13.2, JDK17, compile/targetAPI36, minAPI26, Build Tools35.0.0. No NDK, provider or AndroidX dependency in foundation. These are build pins, not supported-device claims.

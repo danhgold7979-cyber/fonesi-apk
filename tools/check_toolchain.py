@@ -3,10 +3,10 @@
 import hashlib,pathlib,os,sys
 ROOT=pathlib.Path(__file__).resolve().parents[1]
 EXPECTED={
- 'gradle/wrapper/gradle-wrapper.properties':'3fb35582e5424775b45f566273d3909032a49f26c0d7d063f92a92e7b5e467d5',
- 'gradlew':'c76f16038b4e70b84ed0b3b9e08e82a8ecaf66ec0efdfdecdece92520fa3cecb',
- 'gradlew.bat':'0f3ed8f03b50934cb8c48b15a470d5c20a30a5385825e48b55bcc8ea3d8f8e18',
- 'gradle/wrapper/gradle-wrapper.jar':'81a82aaea5abcc8ff68b3dfcb58b3c3c429378efd98e7433460610fecd7ae45f'}
+ 'gradle/wrapper/gradle-wrapper.properties':'934c2b1124fd8837d8937c30867db510a151841676265c13d5a9510eda7effb5',
+ 'gradlew':'b187b4c52e749f5760afdd6fadc31b2a98ad35fb249bf0dff03b72650f320409',
+ 'gradlew.bat':'1d297e00bd21de3ace22b4d7f2de1f9dfa858883d66bbf7c1ccbecccec8f4f3b',
+ 'gradle/wrapper/gradle-wrapper.jar':'ad16bca46cb71bb5887c546860d93992aeee35c1fdaf4a242b0a612375d937e0'}
 for path,digest in EXPECTED.items():
     if hashlib.sha256((ROOT/path).read_bytes()).hexdigest()!=digest:raise SystemExit('Unverified toolchain file: '+path)
 def properties(path):

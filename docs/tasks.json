@@ -2,7 +2,7 @@
   "version": 1,
   "phases": 8,
   "tasks_total": 32,
-  "completed_count": 0,
+  "completed_count": 2,
   "phone_gates": {
     "1": [
       9,
@@ -35,7 +35,7 @@
       "phase_id": 0,
       "step": 1,
       "title": "Freeze scope and recovery-first amendment",
-      "status": "IN_PROGRESS",
+      "status": "ACCEPTED_DOCUMENTARY",
       "source": {
         "commit": "2fac016e3b28e4d9f21390c221cad1df7a382c86",
         "path": "docs/ROADMAP.md",
@@ -52,7 +52,9 @@
       "evidence_tiers": [
         "HOST"
       ],
-      "accepted_evidence": [],
+      "accepted_evidence": [
+        "docs/evidence/documentary-acceptance.json#APK-P0-T01"
+      ],
       "requirement_ids_integration": [],
       "requirement_ids_primary": [
         "P017",
@@ -66,7 +68,7 @@
       "phase_id": 0,
       "step": 2,
       "title": "Honest clean baseline and evidence registry",
-      "status": "IN_PROGRESS",
+      "status": "ACCEPTED_DOCUMENTARY",
       "source": {
         "commit": "2fac016e3b28e4d9f21390c221cad1df7a382c86",
         "path": "docs/ROADMAP.md",
@@ -74,7 +76,7 @@
         "assertion": "2. Ki\u1ec3m tra m\u00e3 hi\u1ec7n c\u00f3: ph\u00e2n bi\u1ec7t ch\u1ee9c n\u0103ng \u0111\u00e3 code, ch\u1ee9c n\u0103ng m\u1edbi c\u00f3 h\u1ee3p \u0111\u1ed3ng API, ch\u1ee9c n\u0103ng ch\u01b0a c\u00f3 v\u00e0 k\u1ebft qu\u1ea3 ch\u01b0a \u0111\u01b0\u1ee3c ki\u1ec3m th\u1eed. Kh\u00f4ng coi `UnavailableCloneEngine` l\u00e0 engine."
       },
       "inputs": "Verified recovery manifest; remote/main and old rebuild snapshots; frozen requirements",
-      "outputs": "Fresh active-tree classification; current STATUS with 0/32 completed; historical references separately labeled; per-requirement NOT_IMPLEMENTED baseline",
+      "outputs": "Fresh active-tree classification; initial STATUS with 0/32 completed, now 2 documentary tasks accepted and 0 product requirements accepted; historical references separately labeled; per-requirement NOT_IMPLEMENTED baseline",
       "interfaces": "status.json: phase/task/status/exact SHA/evidence receipt; reference manifest maps original SHA+path to preserved hash",
       "dependencies": "T01 recovery gate; parent approves exact cleanup checkpoint",
       "error_cancel_recovery": "If any active old source/test remains, baseline fails. Missing gate never becomes PASS. Cancel no cleanup; accidental omission restored from verified snapshot, not broad reset.",
@@ -83,7 +85,9 @@
       "evidence_tiers": [
         "HOST"
       ],
-      "accepted_evidence": [],
+      "accepted_evidence": [
+        "docs/evidence/documentary-acceptance.json#APK-P0-T02"
+      ],
       "requirement_ids_integration": [],
       "requirement_ids_primary": [
         "P065",
@@ -129,7 +133,7 @@
       "phase_id": 0,
       "step": 4,
       "title": "Record reproducible baseline artifact and limits",
-      "status": "NOT_STARTED",
+      "status": "IN_PROGRESS",
       "source": {
         "commit": "2fac016e3b28e4d9f21390c221cad1df7a382c86",
         "path": "docs/ROADMAP.md",

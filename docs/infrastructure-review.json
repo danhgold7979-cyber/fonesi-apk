@@ -36,10 +36,25 @@
   },
   {
     "path": "gradlew, gradlew.bat, gradle/wrapper/gradle-wrapper.jar",
-    "decision": "NEW_UPSTREAM_INFRASTRUCTURE_VERIFIED",
+    "decision": "SUPERSEDED_UPSTREAM_BASELINE_RETAINED_IN_GIT",
     "source": "https://github.com/gradle/gradle/tree/v8.13.0",
     "hash_checks": "tools/check_toolchain.py",
     "license": "third_party/gradle/LICENSE",
     "scope": "Standard infrastructure only; old application implementation/tests remain archive-only"
+  },
+  {
+    "path": "gradlew, gradlew.bat, gradle/wrapper/gradle-wrapper.jar",
+    "decision": "LOCAL_MAINTENANCE_CANDIDATE_PENDING_INDEPENDENT_REVIEW",
+    "source": "https://services.gradle.org/distributions/gradle-8.14.6-bin.zip",
+    "distribution_sha256": "7988ed071b2a07900e2ec715fca15c6ab72bce6db433af301fa7fa7e9407bd24",
+    "generation": "Official SHA256-verified distribution, offline wrapper task in empty standalone project, JDK21; no APK build or SDK download",
+    "hashes": {
+      "gradle/wrapper/gradle-wrapper.properties": "934c2b1124fd8837d8937c30867db510a151841676265c13d5a9510eda7effb5",
+      "gradlew": "b187b4c52e749f5760afdd6fadc31b2a98ad35fb249bf0dff03b72650f320409",
+      "gradlew.bat": "1d297e00bd21de3ace22b4d7f2de1f9dfa858883d66bbf7c1ccbecccec8f4f3b",
+      "gradle/wrapper/gradle-wrapper.jar": "ad16bca46cb71bb5887c546860d93992aeee35c1fdaf4a242b0a612375d937e0"
+    },
+    "license": "third_party/gradle/LICENSE (unchanged Apache2, byte-identical distribution LICENSE)",
+    "reason": "GHSA-mvvg-497x-hmj8 and GHSA-j5m7-59rp-24f5 security maintenance; no perpetual security guarantee"
   }
 ]
