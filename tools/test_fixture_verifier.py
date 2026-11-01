@@ -1,5 +1,5 @@
 """Owned synthetic manifest/diagnostic negatives, not actual packaged proof."""
-import copy,json,os,struct,subprocess,tempfile,unittest,xml.etree.ElementTree as ET
+import copy,json,os,struct,subprocess,tempfile,unittest,xml.etree.ElementTree as ET,zipfile
 from pathlib import Path
 from unittest.mock import patch
 from verify_fixture import validate_manifest,validate_lint,TARGET,TEST,RUNNER,A,ROOT
@@ -32,37 +32,32 @@ class FixtureVerifierTest(unittest.TestCase):
         for key in ['debuggable','testOnly','allowBackup','fullBackupContent','dataExtractionRules']:
             r=manifest(True);r.find('application').attrib.pop(A+key)
             with self.assertRaises(AssertionError):validate_manifest(ET.tostring(r),True)
-    def test_lint_exact_notice_and_all_other_issues_fatal(self):
-        path=ROOT/'storage-fixture/build.gradle'
-        line=next(i+1 for i,s in enumerate(path.read_text().splitlines()) if s.strip()=='targetSdk 36')
-        r=ET.Element('issues');issue=ET.SubElement(r,'issue',{'id':'OldTargetApi','severity':'Hint','message':'Not targeting the latest versions of Android; expected baseline'})
-        ET.SubElement(issue,'location',{'file':str(path),'line':str(line)})
-        validate_lint(ET.tostring(r))
-        for field,value in [('id','NewApi'),('severity','Warning'),('severity','Information')]:
-            bad=copy.deepcopy(r);bad[0].set(field,value)
-            with self.assertRaises(AssertionError):validate_lint(ET.tostring(bad))
-        for count in [0,2]:
-            bad=ET.Element('issues')
-            for _ in range(count):bad.append(copy.deepcopy(issue))
-            with self.assertRaises(AssertionError):validate_lint(ET.tostring(bad))
-        bad=copy.deepcopy(r);bad[0][0].set('file',str(ROOT/'app/build.gradle'))
-        with self.assertRaises(AssertionError):validate_lint(ET.tostring(bad))
+    def test_lint_zero_issues_and_every_diagnostic_fatal(self):
+        validate_lint('<issues format="6"/>')
+        for name,severity in [('OldTargetApi','Hint'),('OldTargetApi','Warning'),('NewApi','Error'),('MissingApplicationIcon','Error')]:
+            r=ET.Element('issues');ET.SubElement(r,'issue',{'id':name,'severity':severity})
+            with self.assertRaises(AssertionError):validate_lint(ET.tostring(r))
+        with self.assertRaises(AssertionError):validate_lint('<unknown/>')
     def test_compile_tasks_no_runtime_actions_and_mandatory_host(self):
         from run_fixture_compile import TASKS
-        self.assertEqual(TASKS,[':storage-fixture:assembleDebug',':storage-fixture:assembleDebugAndroidTest',
-            ':storage-fixture:lintDebug',':storage-fixture:verifyFixtureDependencies'])
+        self.assertEqual(TASKS,[':storage-fixture:assembleDebug',':storage-fixture-test:assembleDebug',
+            ':storage-fixture:lintDebug',':storage-fixture-test:lintDebug',':storage-fixture-test:verifyFixtureDependencies'])
+        from verify_fixture import TARGET_JAR
+        workflow=(ROOT/'.github/workflows/phase-foundation.yml').read_text()
+        self.assertEqual(workflow.count(TARGET_JAR),2)
         from run_host_checks import COMMANDS
         for script in ['test_platform_fixture.py','test_fixture_verifier.py']:
             self.assertEqual(COMMANDS.count(['python3','tools/'+script]),1)
     def test_merger_missing_stale_and_unknown_origin_fail(self):
         import verify_fixture as verifier
         with tempfile.TemporaryDirectory() as directory, patch.object(verifier,'ROOT',Path(directory)):
-            root=Path(directory);reports=root/'storage-fixture/build/outputs/logs';reports.mkdir(parents=True)
-            for name,kind in [('debug','main'),('debug-androidTest','androidTest')]:
-                origin=root/'storage-fixture/src'/kind/'AndroidManifest.xml';origin.parent.mkdir(parents=True);origin.write_text('<manifest/>')
-                (reports/('manifest-merger-'+name+'-report.txt')).write_text('-- Merging decision tree log ---\nmanifest\nADDED from '+str(origin)+':1:1-2:4\n')
+            root=Path(directory)
+            for module in ['storage-fixture','storage-fixture-test']:
+                reports=root/module/'build/outputs/logs';reports.mkdir(parents=True)
+                origin=root/module/'src/main/AndroidManifest.xml';origin.parent.mkdir(parents=True);origin.write_text('<manifest/>')
+                (reports/'manifest-merger-debug-report.txt').write_text('-- Merging decision tree log ---\nmanifest\nADDED from '+str(origin)+':1:1-2:4\nINJECTED from '+str(origin)+' reason: use-sdk injection requested\n')
             self.assertEqual(len(verifier.merger_provenance(1)),2)
-            target=reports/'manifest-merger-debug-report.txt';good=target.read_text()
+            target=root/'storage-fixture/build/outputs/logs/manifest-merger-debug-report.txt';good=target.read_text()
             target.write_text(good.replace('/src/main/','/unreviewed-generated/'))
             with self.assertRaises(AssertionError):verifier.merger_provenance(1)
             target.write_text(good);os.utime(target,(0,0))
@@ -70,14 +65,15 @@ class FixtureVerifierTest(unittest.TestCase):
             target.unlink()
             with self.assertRaises(AssertionError):verifier.merger_provenance(1)
     def test_dependencies_exact_source_and_empty_closure(self):
-        from verify_fixture import validate_dependencies
-        good={'source_sha':'a'*40,'configurations':{'debugRuntimeClasspath':[],'debugAndroidTestRuntimeClasspath':[]}}
-        validate_dependencies(good,'a'*40)
+        from verify_fixture import validate_dependencies,TARGET_JAR
+        good={'source_sha':'a'*40,'configurations':{'targetRuntime':[],'testRuntime':[],'testCompile':[TARGET_JAR]},'target_jar_sha256':'c'*64}
+        validate_dependencies(good,'a'*40,'c'*64)
         for key in good['configurations']:
             bad=copy.deepcopy(good);bad['configurations'][key]=['unreviewed.aar']
-            with self.assertRaises(AssertionError):validate_dependencies(bad,'a'*40)
-        with self.assertRaises(AssertionError):validate_dependencies(good,'b'*40)
-        with self.assertRaises(AssertionError):validate_dependencies({},'a'*40)
+            with self.assertRaises(AssertionError):validate_dependencies(bad,'a'*40,'c'*64)
+        with self.assertRaises(AssertionError):validate_dependencies(good,'b'*40,'c'*64)
+        with self.assertRaises(AssertionError):validate_dependencies({},'a'*40,'c'*64)
+        with self.assertRaises(AssertionError):validate_dependencies(good,'a'*40,'d'*64)
     def test_signer_debug_verified_single_and_digest(self):
         from verify_fixture import signature_digest
         good='Verified using v2 scheme (APK Signature Scheme v2): true\nSigner #1 certificate DN: CN=Android Debug\nSigner #1 certificate SHA-256 digest: '+'a'*64+'\n'
@@ -116,4 +112,24 @@ class FixtureVerifierTest(unittest.TestCase):
                 collect.assert_called_once()
                 self.assertFalse((Path(directory)/'fixture-compile-receipt.json').exists())
                 self.assertEqual((Path(directory)/'fixture-compile.log').read_text(),'owned log')
+    def test_test_apk_cannot_package_target_core_or_nested_classes(self):
+        from verify_fixture import validate_class_set
+        good={'L'+RUNNER.replace('.','/')+';'}
+        validate_class_set(good,True)
+        for forbidden in ['Lvn/fonesi/app/storage/StorageFixture;', 'Lvn/fonesi/app/storage/OwnedCatalogWriter$Snapshot;',
+                          'Lvn/fonesi/apk/foundation/StyleValue;', 'Lvn/fonesi/fixture/storage/BuildConfig;']:
+            with self.assertRaises(AssertionError):validate_class_set(good|{forbidden},True)
+        with self.assertRaises(AssertionError):validate_class_set(set(),True)
+    def test_target_jar_fresh_member_bound_no_missing_or_production_ui(self):
+        import verify_fixture as verifier
+        with tempfile.TemporaryDirectory() as directory, patch.object(verifier,'ROOT',Path(directory)):
+            jar=Path(directory)/verifier.TARGET_JAR;jar.parent.mkdir(parents=True)
+            with self.assertRaises(FileNotFoundError):verifier.target_jar_provenance(1)
+            with zipfile.ZipFile(jar,'w') as z:z.writestr('vn/fonesi/app/storage/StorageFixture.class',b'owned synthetic bytes, not compiled Java')
+            result=verifier.target_jar_provenance(1)
+            self.assertEqual(set(result['members']),{'vn/fonesi/app/storage/StorageFixture.class'})
+            os.utime(jar,(0,0))
+            with self.assertRaises(AssertionError):verifier.target_jar_provenance(1)
+            with zipfile.ZipFile(jar,'w') as z:z.writestr('vn/fonesi/app/MainActivity.class',b'forbidden')
+            with self.assertRaises(AssertionError):verifier.target_jar_provenance(1)
 if __name__=='__main__':unittest.main(verbosity=2)

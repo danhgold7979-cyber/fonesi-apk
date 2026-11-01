@@ -1,0 +1,54 @@
+plugins { id 'com.android.application' }
+android {
+    namespace 'vn.fonesi.fixture.storage.test'
+    compileSdk 36
+    buildToolsVersion '35.0.0'
+    defaultConfig {
+        applicationId 'vn.fonesi.fixture.storage.test'
+        minSdk 26
+        targetSdk 36
+        versionCode 1
+        versionName '0.1-owned-fixture'
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+    buildTypes {
+        debug { debuggable true }
+        release { minifyEnabled false }
+    }
+    lint {
+        abortOnError true
+        warningsAsErrors true
+        absolutePaths true
+        textReport true
+        textOutput file("$buildDir/reports/lint-results-debug.txt")
+        xmlReport true
+        htmlReport true
+    }
+}
+// Exact pinned AGP API/compile output of our owned target; never a runtime dependency.
+def targetJarFile = rootProject.file('storage-fixture/build/intermediates/compile_app_classes_jar/debug/bundleDebugClassesToCompileJar/classes.jar')
+def targetJar = files(targetJarFile).builtBy(':storage-fixture:bundleDebugClassesToCompileJar')
+dependencies { debugCompileOnly targetJar }
+tasks.register('verifyFixtureDependencies') {
+    dependsOn ':storage-fixture:bundleDebugClassesToCompileJar'
+    doLast {
+        def source = System.getenv('EXPECTED_SOURCE_SHA')
+        if (source == null || !(source ==~ /[0-9a-f]{40}/)) throw new GradleException('Missing exact fixture source')
+        def targetRuntime = project(':storage-fixture').configurations.getByName('debugRuntimeClasspath').resolve()
+        def testRuntime = configurations.getByName('debugRuntimeClasspath').resolve()
+        def testCompile = configurations.getByName('debugCompileClasspath').resolve()
+        if (!targetRuntime.empty || !testRuntime.empty) throw new GradleException('Unexpected fixture runtime dependency')
+        if (testCompile.collect { it.canonicalFile }.toSet() != [targetJarFile.canonicalFile].toSet()) {
+            throw new GradleException('Unexpected fixture compile dependency')
+        }
+        def digest = java.security.MessageDigest.getInstance('SHA-256').digest(targetJarFile.bytes).encodeHex().toString()
+        def result = [source_sha:source, configurations:[targetRuntime:[], testRuntime:[],
+            testCompile:[rootProject.relativePath(targetJarFile)]], target_jar_sha256:digest]
+        def output = layout.buildDirectory.file('reports/fixture-dependencies.json').get().asFile
+        output.parentFile.mkdirs()
+        output.text = groovy.json.JsonOutput.prettyPrint(groovy.json.JsonOutput.toJson(result))
+    }
+}

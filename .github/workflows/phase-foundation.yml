@@ -124,6 +124,9 @@ jobs:
             fixture-diagnostics/
             storage-fixture/build/reports/
             storage-fixture/build/outputs/logs/
+            storage-fixture-test/build/reports/
+            storage-fixture-test/build/outputs/logs/
+            storage-fixture/build/intermediates/compile_app_classes_jar/debug/bundleDebugClassesToCompileJar/classes.jar
           if-no-files-found: warn
           retention-days: 14
       - name: Retain verified compile-only fixture pair
@@ -132,7 +135,8 @@ jobs:
           name: owned-fixture-compile-${{ github.event.pull_request.head.sha || github.sha }}
           path: |
             fixture-compile-receipt.json
+            storage-fixture/build/intermediates/compile_app_classes_jar/debug/bundleDebugClassesToCompileJar/classes.jar
             storage-fixture/build/outputs/apk/debug/storage-fixture-debug.apk
-            storage-fixture/build/outputs/apk/androidTest/debug/storage-fixture-debug-androidTest.apk
+            storage-fixture-test/build/outputs/apk/debug/storage-fixture-test-debug.apk
           if-no-files-found: error
           retention-days: 14

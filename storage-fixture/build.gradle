@@ -9,8 +9,6 @@ android {
         targetSdk 36
         versionCode 1
         versionName '0.1-owned-fixture'
-        testApplicationId 'vn.fonesi.fixture.storage.test'
-        testInstrumentationRunner 'vn.fonesi.fixture.storage.StorageInstrumentation'
         buildConfigField 'String', 'SOURCE_SHA', '"' + (System.getenv('EXPECTED_SOURCE_SHA') ?: 'UNBOUND') + '"'
     }
     buildFeatures { buildConfig true }
@@ -38,29 +36,5 @@ android {
 }
 // No external runtime or test dependencies. This is platform-only instrumentation.
 
-// Narrow target36 debug notice, retained and independently gated; all other lint stays fatal.
-def fixtureTasks = [':storage-fixture:assembleDebug', ':storage-fixture:assembleDebugAndroidTest',
-                    ':storage-fixture:lintDebug', ':storage-fixture:verifyFixtureDependencies']
-def fixturePins = android.defaultConfig.minSdkVersion.apiLevel == 26 &&
-        android.defaultConfig.targetSdkVersion.apiLevel == 36 && android.compileSdk == 36 &&
-        com.android.Version.ANDROID_GRADLE_PLUGIN_VERSION == '8.13.2' && gradle.gradleVersion == '8.14.6'
+// Test-only fixture: no severity exceptions; every reported lint issue is fatal.
 android.lint.checkTestSources = true
-if (gradle.startParameter.taskNames == fixtureTasks && fixturePins) {
-    android.lint.informational.add('OldTargetApi')
-}
-tasks.register('verifyFixtureDependencies') {
-    doLast {
-        def source = System.getenv('EXPECTED_SOURCE_SHA')
-        if (source == null || !(source ==~ /[0-9a-f]{40}/)) throw new GradleException('Missing exact fixture source')
-        def result = [:]
-        ['debugRuntimeClasspath', 'debugAndroidTestRuntimeClasspath'].each { name ->
-            def config = configurations.getByName(name)
-            def files = config.resolve()
-            if (!files.empty) throw new GradleException('Unexpected fixture runtime dependency: ' + name)
-            result[name] = []
-        }
-        def output = layout.buildDirectory.file('reports/fixture-dependencies.json').get().asFile
-        output.parentFile.mkdirs()
-        output.text = groovy.json.JsonOutput.prettyPrint(groovy.json.JsonOutput.toJson([source_sha:source, configurations:result]))
-    }
-}

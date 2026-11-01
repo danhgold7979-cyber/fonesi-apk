@@ -7,9 +7,9 @@ F = ROOT / 'storage-fixture'
 A = '{http://schemas.android.com/apk/res/android}'
 class PlatformFixtureContract(unittest.TestCase):
     def test_no_authored_permissions_components_or_production_target(self):
-        for location in ('main', 'androidTest'):
-            manifest = ET.parse(F / 'src' / location / 'AndroidManifest.xml').getroot()
-            self.assertEqual([x.tag for x in manifest], ['application'])
+        for module in ('storage-fixture','storage-fixture-test'):
+            manifest = ET.parse(ROOT/module/'src/main/AndroidManifest.xml').getroot()
+            self.assertEqual([x.tag for x in manifest], ['application'] if module=='storage-fixture' else ['application','instrumentation'])
             app = manifest.find('application')
             self.assertEqual(list(app), [])
             self.assertEqual(app.get(A+'testOnly'), 'true')
@@ -18,18 +18,21 @@ class PlatformFixtureContract(unittest.TestCase):
             self.assertEqual(app.get(A+'dataExtractionRules'), '@xml/data_extraction_rules')
     def test_exact_build_inputs_and_identities(self):
         build = (F/'build.gradle').read_text()
-        for line in ["applicationId 'vn.fonesi.fixture.storage'", "testApplicationId 'vn.fonesi.fixture.storage.test'",
-                     "testInstrumentationRunner 'vn.fonesi.fixture.storage.StorageInstrumentation'",
+        for line in ["applicationId 'vn.fonesi.fixture.storage'",
                      "'../core/src/main/java'", "'../app/src/main/java/vn/fonesi/app/storage'", "main.assets.srcDir '../storage/sql'"]:
             self.assertIn(line, build)
+        testbuild=(ROOT/'storage-fixture-test/build.gradle').read_text()
+        self.assertIn("applicationId 'vn.fonesi.fixture.storage.test'",testbuild)
+        self.assertIn("files(targetJarFile).builtBy(':storage-fixture:bundleDebugClassesToCompileJar')",testbuild)
+        self.assertIn('debugCompileOnly targetJar',testbuild)
         for forbidden in ('androidx.', 'junit:', 'implementation ', 'androidTestImplementation ', '../app/src/main/java\''):
             self.assertNotIn(forbidden, build)
     def test_no_backup_resource_drift(self):
         original = (ROOT/'app/src/main/res/xml/data_extraction_rules.xml').read_bytes()
-        for kind in ('main','androidTest'):
-            self.assertEqual((F/'src'/kind/'res/xml/data_extraction_rules.xml').read_bytes(), original)
+        for module in ('storage-fixture','storage-fixture-test'):
+            self.assertEqual((ROOT/module/'src/main/res/xml/data_extraction_rules.xml').read_bytes(), original)
     def test_runner_worker_exact_context_and_no_ui_shell(self):
-        text = (F/'src/androidTest/java/vn/fonesi/fixture/storage/StorageInstrumentation.java').read_text()
+        text = (ROOT/'storage-fixture-test/src/main/java/vn/fonesi/fixture/storage/StorageInstrumentation.java').read_text()
         for required in ('extends Instrumentation', 'start();', 'void onStart()', 'getTargetContext()', 'StorageFixture.run(', 'finish('):
             self.assertIn(required, text)
         for forbidden in ('startActivity', 'UiAutomation', 'exec(', 'androidx.', 'JUnit', 'arguments.get'):

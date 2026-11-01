@@ -3,8 +3,8 @@
 import hashlib,json,os,pathlib,subprocess,time
 from verify_fixture import collect
 ROOT=pathlib.Path(__file__).resolve().parents[1]
-TASKS=[':storage-fixture:assembleDebug', ':storage-fixture:assembleDebugAndroidTest',
-       ':storage-fixture:lintDebug', ':storage-fixture:verifyFixtureDependencies']
+TASKS=[':storage-fixture:assembleDebug', ':storage-fixture-test:assembleDebug',
+       ':storage-fixture:lintDebug', ':storage-fixture-test:lintDebug', ':storage-fixture-test:verifyFixtureDependencies']
 def main():
     os.chdir(ROOT)
     source=subprocess.check_output(['git','rev-parse','HEAD'],text=True).strip()

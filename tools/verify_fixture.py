@@ -28,15 +28,9 @@ def validate_manifest(xml, test):
         assert set(entry.attrib)<= {A+x for x in ('name','targetPackage','targetProcesses','functionalTest','handleProfiling','label')}
 
 def validate_lint(xml):
-    root=ET.fromstring(xml);assert root.tag=='issues'
-    issues=list(root);assert len(issues)==1
-    issue=issues[0];assert issue.tag=='issue' and issue.get('id')=='OldTargetApi' and issue.get('severity')=='Hint'
-    assert issue.get('message','').startswith('Not targeting the latest versions of Android;')
-    locations=list(issue);assert len(locations)==1 and locations[0].tag=='location'
-    path=pathlib.Path(locations[0].get('file',''));path=path if path.is_absolute() else ROOT/path
-    assert path.resolve()==(ROOT/'storage-fixture/build.gradle').resolve()
-    line=int(locations[0].get('line','0'));lines=path.read_text().splitlines()
-    assert 0<line<=len(lines) and lines[line-1].strip()=='targetSdk 36'
+    root=ET.fromstring(xml)
+    assert root.tag=='issues' and not list(root), 'Every fixture lint diagnostic is fatal'
+
 
 def dex_classes(data):
     # Read actual DEX class_def/type/string tables, never string-search evidence.
@@ -65,48 +59,73 @@ def dex_classes(data):
     return result
 
 
+def validate_class_set(classes,test):
+    expected={RUNNER.replace('.','/')} if test else {
+        'vn/fonesi/app/storage/'+name for name in ['StorageFixture','ExistingStyleWrite','OwnedCatalogWriter',
+            'CatalogPageRead','ExistingCatalogRead','CatalogPath','CatalogProcessGate']}
+    assert {'L'+name+';' for name in expected} <= classes
+    assert 'Lvn/fonesi/app/MainActivity;' not in classes
+    if test:
+        assert not any(c.startswith(('Lvn/fonesi/app/storage/','Lvn/fonesi/apk/foundation/')) for c in classes)
+        assert 'Lvn/fonesi/fixture/storage/BuildConfig;' not in classes
+
+
 def source_hashes():
     paths=set()
-    for folder in ['core/src/main/java','app/src/main/java/vn/fonesi/app/storage','storage/sql','storage-fixture/src']:
+    for folder in ['core/src/main/java','app/src/main/java/vn/fonesi/app/storage','storage/sql','storage-fixture/src','storage-fixture-test/src']:
         paths.update(p for p in (ROOT/folder).rglob('*') if p.is_file())
-    paths.update(ROOT/p for p in ['storage-fixture/build.gradle','settings.gradle','build.gradle','gradle.properties'])
+    paths.update(ROOT/p for p in ['storage-fixture/build.gradle','storage-fixture-test/build.gradle','settings.gradle','build.gradle','gradle.properties'])
     return {str(p.relative_to(ROOT)):hashlib.sha256(p.read_bytes()).hexdigest() for p in sorted(paths)}
 
 def merger_provenance(not_before):
-    directory=ROOT/'storage-fixture/build/outputs/logs'
-    reports=sorted(directory.glob('manifest-merger-*-report.txt'))
-    assert len(reports)==2, 'Missing/extra fixture merger report'
-    result={};seen=set()
-    for report in reports:
-        test='androidtest' in report.name.lower()
-        kind='instrumentation' if test else 'owned_target'
-        assert kind not in seen;seen.add(kind)
+    result={}
+    for module,kind in [('storage-fixture','owned_target'),('storage-fixture-test','instrumentation')]:
+        directory=ROOT/module/'build/outputs/logs'
+        reports=sorted(directory.glob('manifest-merger-*-report.txt'))
+        assert len(reports)==1 and reports[0].name=='manifest-merger-debug-report.txt', 'Missing/extra fixture merger report'
+        report=reports[0]
         assert report.stat().st_mtime>=not_before and 0<report.stat().st_size<=200000
         text=report.read_text();assert text.startswith('-- Merging decision tree log ---')
-        expected=(ROOT/'storage-fixture/src'/('androidTest' if test else 'main')/'AndroidManifest.xml').resolve()
+        expected=(ROOT/module/'src/main/AndroidManifest.xml').resolve()
         origins={}
         for line in text.splitlines():
-            match=re.fullmatch(r'\s*[A-Z_]+ from (.+)',line)
+            match=re.fullmatch(r'\s*([A-Z_]+) from (.+)',line)
             if not match:
                 assert ' from ' not in line, 'Unknown merger-origin syntax'
                 continue
-            raw=re.sub(r':\d+(?::\d+)?(?:-\d+(?::\d+)?)?$', '',match.group(1))
+            raw=match.group(2)
+            reason=' reason: use-sdk injection requested'
+            if raw.endswith(reason):
+                assert match.group(1)=='INJECTED'
+                raw=raw[:-len(reason)]
+            raw=re.sub(r':\d+(?::\d+)?(?:-\d+(?::\d+)?)?$', '',raw)
             origin=pathlib.Path(raw)
             if not origin.is_absolute():origin=ROOT/origin
             origin=origin.resolve()
-            # Initial narrow contract: no unverified generated or external origin is admitted.
-            # If pinned AGP emits another origin, retain diagnostics and review it before acceptance.
             assert origin==expected, 'Unreviewed manifest origin: '+str(origin)
             assert origin.is_file()
             origins[str(origin.relative_to(ROOT))]=hashlib.sha256(origin.read_bytes()).hexdigest()
         assert origins, 'No source origin in merger report'
         result[kind]={'report':str(report.relative_to(ROOT)),
                       'sha256':hashlib.sha256(report.read_bytes()).hexdigest(),'origins':origins}
-    assert seen=={'owned_target','instrumentation'}
     return result
 
-def validate_dependencies(deps,source_sha):
-    assert deps=={'source_sha':source_sha,'configurations':{'debugRuntimeClasspath':[],'debugAndroidTestRuntimeClasspath':[]}}
+TARGET_JAR='storage-fixture/build/intermediates/compile_app_classes_jar/debug/bundleDebugClassesToCompileJar/classes.jar'
+def validate_dependencies(deps,source_sha,jar_sha):
+    assert deps=={'source_sha':source_sha,'configurations':{'targetRuntime':[],'testRuntime':[],
+        'testCompile':[TARGET_JAR]},'target_jar_sha256':jar_sha}
+
+def target_jar_provenance(not_before):
+    jar=ROOT/TARGET_JAR
+    assert jar.stat().st_mtime>=not_before and 0<jar.stat().st_size<=2097152
+    with zipfile.ZipFile(jar) as z:
+        names=z.namelist();assert len(names)==len(set(names)) and z.testzip() is None
+        assert all(not n.startswith('/') and '..' not in pathlib.Path(n).parts for n in names)
+        assert 'vn/fonesi/app/storage/StorageFixture.class' in names
+        assert 'vn/fonesi/app/MainActivity.class' not in names
+        members={n:hashlib.sha256(z.read(n)).hexdigest() for n in names if not n.endswith('/')}
+    return {'path':TARGET_JAR,'sha256':hashlib.sha256(jar.read_bytes()).hexdigest(),'members':members}
+
 
 def signature_digest(signature):
     assert 'Verified using v2 scheme (APK Signature Scheme v2): true' in signature
@@ -122,15 +141,18 @@ def validate_source_binding(generated,source_sha,not_before):
 
 def verify_pair(source_sha, not_before, observations):
     reports=ROOT/'storage-fixture/build/reports'
-    deps=json.loads((reports/'fixture-dependencies.json').read_text())
-    validate_dependencies(deps,source_sha)
+    depfile=ROOT/'storage-fixture-test/build/reports/fixture-dependencies.json'
+    deps=json.loads(depfile.read_text())
+    jar=target_jar_provenance(not_before)
+    validate_dependencies(deps,source_sha,jar['sha256'])
     provenance=merger_provenance(not_before)
-    assert (reports/'fixture-dependencies.json').stat().st_mtime>=not_before
-    lint_files=[reports/('lint-results-debug.'+suffix) for suffix in ['xml','txt','html']]
+    assert depfile.stat().st_mtime>=not_before
+    lint_files=[ROOT/module/'build/reports'/('lint-results-debug.'+suffix)
+                for module in ['storage-fixture','storage-fixture-test'] for suffix in ['xml','txt','html']]
     for path in lint_files:
         assert path.is_file() and path.stat().st_size and path.stat().st_mtime>=not_before
-        assert 'OldTargetApi' in path.read_text()
-    validate_lint(lint_files[0].read_text())
+    for report in lint_files:
+        if report.suffix=='.xml':validate_lint(report.read_text())
     receipts=[];certificates=[]
     for test,apk,observed in observations:
         assert apk.stat().st_mtime>=not_before
@@ -146,11 +168,7 @@ def verify_pair(source_sha, not_before, observations):
             classes=set()
             for member in z.namelist():
                 if re.fullmatch(r'classes(?:[2-9]|[1-9][0-9]+)?\.dex',member):classes.update(dex_classes(z.read(member)))
-            expected={RUNNER.replace('.','/')} if test else {
-                'vn/fonesi/app/storage/'+name for name in ['StorageFixture','ExistingStyleWrite','OwnedCatalogWriter',
-                    'CatalogPageRead','ExistingCatalogRead','CatalogPath','CatalogProcessGate']}
-            assert {'L'+name+';' for name in expected} <= classes
-            assert 'Lvn/fonesi/app/MainActivity;' not in classes
+            validate_class_set(classes,test)
             assets={} if test else validate_catalog_assets(z)
             if test:assert not [n for n in z.namelist() if n.startswith('assets/')]
         receipts.append({'kind':'instrumentation' if test else 'owned_target','package':namespace,
@@ -160,15 +178,15 @@ def verify_pair(source_sha, not_before, observations):
     validate_source_binding(generated,source_sha,not_before)
     return {'source_sha':source_sha,'tier':'COMPILE','scope':'OWNED_STORAGE_FIXTURE_ONLY','result':'PASS',
             'apks':receipts,'source_inputs':source_hashes(),'same_debug_certificate':certificates[0],
-            'dependencies':deps,'merger_provenance':provenance,'lint_notice':'OldTargetApi Hint, target36 debug only',
-            'lint_sha256':{p.name:hashlib.sha256(p.read_bytes()).hexdigest() for p in lint_files},
+            'dependencies':deps,'target_compile_jar':jar,'merger_provenance':provenance,'lint':'ZERO_ISSUES_TEST_ONLY_FIXTURE',
+            'lint_sha256':{str(p.relative_to(ROOT)):hashlib.sha256(p.read_bytes()).hexdigest() for p in lint_files},
             'ANDROID':'NOT_RUN','PROVIDER':'NOT_RUN','PHONE':'NOT_RUN','accepted_tasks_added':[]}
 
 def collect(source_sha,not_before):
     sdk=pathlib.Path(os.environ['ANDROID_HOME']);diagnostics=ROOT/'fixture-diagnostics';diagnostics.mkdir(exist_ok=True)
     observations=[];failures=[]
     for test,name in [(False,'storage-fixture/build/outputs/apk/debug/storage-fixture-debug.apk'),
-                       (True,'storage-fixture/build/outputs/apk/androidTest/debug/storage-fixture-debug-androidTest.apk')]:
+                       (True,'storage-fixture-test/build/outputs/apk/debug/storage-fixture-test-debug.apk')]:
         apk=ROOT/name;observed={};kind='test' if test else 'target'
         commands={'manifest':[str(sdk/'cmdline-tools/latest/bin/apkanalyzer'),'manifest','print',str(apk)],
                   'resources':[str(sdk/'build-tools/35.0.0/aapt2'),'dump','resources',str(apk)],

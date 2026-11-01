@@ -9,3 +9,4 @@ rootProject.name = 'FonesiApkClean'
 include ':app'
 
 include ':storage-fixture'
+include ':storage-fixture-test'
