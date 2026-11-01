@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """Inspect packaged semantics; this is COMPILE evidence, never runtime proof."""
-import argparse,pathlib,subprocess,xml.etree.ElementTree as ET,hashlib,json,os,re,zipfile,datetime
+import argparse,pathlib,subprocess,xml.etree.ElementTree as ET,hashlib,json,os,re,zipfile,datetime,sys
 def validate_manifest(xml):
     root=ET.fromstring(xml);A='{http://schemas.android.com/apk/res/android}'
     assert root.attrib['package']=='vn.fonesi.app'
@@ -68,14 +68,38 @@ def main():
     p=argparse.ArgumentParser();p.add_argument('apk');args=p.parse_args()
     apk=pathlib.Path(args.apk);sdk=pathlib.Path(os.environ['ANDROID_HOME'])
     analyzer=sdk/'cmdline-tools/latest/bin/apkanalyzer';signer=sdk/'build-tools/35.0.0/apksigner'
-    xml=subprocess.check_output([str(analyzer),'manifest','print',str(apk)],text=True)
-    validate_manifest(xml)
-    resource_dump=subprocess.check_output([str(sdk/'build-tools/35.0.0/aapt2'),'dump','resources',str(apk)],text=True)
-    rules_xml=subprocess.check_output([str(analyzer),'resources','xml','--file',RULE_PATH,str(apk)],text=True)
-    with zipfile.ZipFile(apk) as archive:
-        validate_packaged_rules(xml,resource_dump,rules_xml,archive.namelist())
-    signature=subprocess.check_output([str(signer),'verify','--verbose','--print-certs',str(apk)],text=True)
-    assert 'Verified using v2 scheme (APK Signature Scheme v2): true' in signature or 'Verified using v3 scheme (APK Signature Scheme v3): true' in signature
+    # Collect every read-only observation before applying independent predicates.
+    # This never installs or loads APK code. Diagnostics cannot emit a PASS receipt.
+    commands={
+        'manifest':[str(analyzer),'manifest','print',str(apk)],
+        'resources':[str(sdk/'build-tools/35.0.0/aapt2'),'dump','resources',str(apk)],
+        'extraction_rules':[str(analyzer),'resources','xml','--file',RULE_PATH,str(apk)],
+        'signature':[str(signer),'verify','--verbose','--print-certs',str(apk)],
+    }
+    observations={}; failures=[]
+    for name,command in commands.items():
+        try:
+            process=subprocess.run(command,stdout=subprocess.PIPE,stderr=subprocess.PIPE,text=True)
+            observations[name]=process.stdout
+            print('=== APK '+name+' diagnostic; exit='+str(process.returncode)+' ===',file=sys.stderr)
+            print(process.stdout[:200000],file=sys.stderr)
+            print(process.stderr[:200000],file=sys.stderr)
+            if process.returncode or len(process.stdout)>200000 or len(process.stderr)>200000:
+                failures.append(name+': command failed or diagnostic bound exceeded')
+        except OSError as error:
+            observations[name]='';failures.append(name+': '+str(error))
+    xml=observations['manifest'];resource_dump=observations['resources']
+    rules_xml=observations['extraction_rules'];signature=observations['signature']
+    try:validate_manifest(xml)
+    except (AssertionError,ET.ParseError,KeyError,AttributeError) as error:failures.append('manifest predicate: '+str(error))
+    try:
+        with zipfile.ZipFile(apk) as archive:
+            validate_packaged_rules(xml,resource_dump,rules_xml,archive.namelist())
+    except (AssertionError,ET.ParseError,KeyError,ValueError,AttributeError,OSError,zipfile.BadZipFile) as error:
+        failures.append('packaged rules predicate: '+str(error))
+    if not ('Verified using v2 scheme (APK Signature Scheme v2): true' in signature or 'Verified using v3 scheme (APK Signature Scheme v3): true' in signature):
+        failures.append('signature predicate: v2/v3 not verified')
+    if failures:raise SystemExit('APK verification failed: '+'; '.join(failures))
     source_sha=subprocess.check_output(['git','rev-parse','HEAD'],text=True).strip()
     expected=os.environ.get('EXPECTED_SOURCE_SHA',source_sha)
     assert source_sha==expected,'artifact receipt source differs from expected SHA'

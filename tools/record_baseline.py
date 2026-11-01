@@ -34,7 +34,7 @@ def bind(host, compile_, lint, apk_bytes, source_sha):
     assert compile_['sha256'] == hashlib.sha256(apk_bytes).hexdigest(), 'APK changed after verification'
     assert lint['scope'] == 'FOUNDATION_DEBUG_BASELINE_ONLY' and lint['release_acceptance'] is False
     assert lint['result'] == 'PASS_WITH_RECORDED_TARGET36_NOTICE_NOT_ZERO_WARNINGS'
-    assert lint['notice']['id'] == 'OldTargetApi' and lint['notice']['severity'] == 'Information'
+    assert lint['notice']['id'] == 'OldTargetApi' and lint['notice']['severity'] == 'Hint'
     assert set(lint['reports']) == {'lint-results-debug.xml', 'lint-results-debug.txt', 'lint-results-debug.html'}
     return {'schema_version': 1, 'source_sha': source_sha,
             'scope': 'FOUNDATION_HOST_COMPILE_EVIDENCE_CANDIDATE_NOT_PRODUCT_ACCEPTANCE',

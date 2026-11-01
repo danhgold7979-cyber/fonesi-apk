@@ -14,7 +14,7 @@ COMMANDS = [
     ['python3', 'tools/check_toolchain.py'],
     *[['python3', 'tools/' + name] for name in (
         'test_plan_integrity.py', 'test_toolchain_contract.py', 'test_shell_contract.py',
-        'test_apk_contract.py', 'test_lint_policy.py', 'test_baseline_receipt.py')],
+        'test_apk_contract.py', 'test_lint_policy.py', 'test_baseline_receipt.py', 'test_compile_aggregate.py')],
     ['bash', 'tools/test_core.sh'],
 ]
 

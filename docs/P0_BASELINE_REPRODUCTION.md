@@ -14,11 +14,7 @@ No implicit newest SDK/target migration. min26/compile36/target36, AGP8.13.2 and
 export EXPECTED_SOURCE_SHA="$(git rev-parse HEAD)"
 python3 tools/run_host_checks.py
 python3 tools/check_toolchain.py --android
-started=$(date +%s)
-rm -f app/build/reports/lint-results-debug.xml app/build/reports/lint-results-debug.html app/build/reports/lint-results-debug.txt
-./gradlew --no-daemon --console=plain :app:assembleDebug :app:lintDebug
-python3 tools/verify_lint.py app/build/reports/lint-results-debug.xml --not-before "$started" --source-sha "$EXPECTED_SOURCE_SHA" > lint-receipt.json
-python3 tools/verify_apk.py app/build/outputs/apk/debug/app-debug.apk > compile-receipt.json
+python3 tools/run_compile_checks.py
 python3 tools/record_baseline.py
 ```
 
@@ -31,3 +27,5 @@ Hosted workflow runs HOST first, then the installed-SDK build only after HOST su
 APK identity: `vn.fonesi.app`, versionCode1, versionName`0.1.0-foundation`, debug-only. Compare source SHA, APK SHA256/bytes and version before comparing later builds. Debug signing keys and ZIP timestamps can differ between runners; the contract requires reproducible checked semantics and per-build identity, not an unsupported claim of bit-identical independently signed APKs. Do not overwrite an older accepted receipt with a later artifact; each CI bundle is source-bound.
 
 HOST proves synthetic logic/documentary predicates. COMPILE proves only the recorded build/lint/package/signature checks. ANDROID, PROVIDER, PHONE and eight-app compatibility remain NOT_RUN; provider is unavailable and guest controls disabled. Download is not authorization to install, log in, run a guest or activate a provider. No screenshot/UI isolation claim is derived from these receipts. Missing or expired artifact identity blocks T04 acceptance rather than inventing a download path.
+
+Diagnostic aggregation: after a fresh build attempt, lint raw reports and all available read-only APK observations are collected independently. Any Gradle, lint-receipt or package gate failure keeps the aggregate nonzero; subsequent baseline recording and normal APK artifact delivery do not run. Old generated APK/receipts are removed first, so a failed build cannot reuse stale evidence. Diagnostic observations never imply installing or loading APK code.

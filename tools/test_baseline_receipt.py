@@ -23,7 +23,7 @@ class BaselineReceiptTest(unittest.TestCase):
                         'bytes': len(self.bytes), 'sha256': hashlib.sha256(self.bytes).hexdigest()}
         self.lint = {**base, 'scope': 'FOUNDATION_DEBUG_BASELINE_ONLY', 'release_acceptance': False,
                      'result': 'PASS_WITH_RECORDED_TARGET36_NOTICE_NOT_ZERO_WARNINGS',
-                     'notice': {'id': 'OldTargetApi', 'severity': 'Information'},
+                     'notice': {'id': 'OldTargetApi', 'severity': 'Hint'},
                      'reports': {name: '0'*64 for name in ['lint-results-debug.xml', 'lint-results-debug.txt', 'lint-results-debug.html']}}
 
     def check(self):

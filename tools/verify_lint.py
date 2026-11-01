@@ -18,8 +18,9 @@ def validate_report(xml, root):
     assert len(issues) == 1 and issues[0].tag == 'issue', 'missing, duplicate or additional diagnostic'
     issue = issues[0]
     assert issue.get('id') == NOTICE
-    # Exact upstream XML severity spelling; unknown aliases fail closed.
-    assert issue.get('severity') == 'Information'
+    # Pinned lint31.13.2 Severity.INFORMATIONAL.description is "Hint";
+    # XmlWriter uses description for reports. Unknown aliases fail closed.
+    assert issue.get('severity') == 'Hint'
     assert issue.get('message', '').startswith('Not targeting the latest versions of Android;')
     locations = list(issue)
     assert len(locations) == 1 and locations[0].tag == 'location'
@@ -31,7 +32,7 @@ def validate_report(xml, root):
     line = int(location.get('line', '0'))
     lines = path.read_text().splitlines()
     assert 0 < line <= len(lines) and lines[line - 1].strip() == 'targetSdk 36'
-    return {'id': NOTICE, 'severity': 'Information', 'file': 'app/build.gradle',
+    return {'id': NOTICE, 'severity': 'Hint', 'file': 'app/build.gradle',
             'line': line, 'message': issue.get('message')}
 
 

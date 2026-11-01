@@ -17,7 +17,7 @@ class LintPolicyTest(unittest.TestCase):
         self.root = Path(self.tmp.name)
         (self.root / 'app').mkdir()
         (self.root / 'app/build.gradle').write_text('android {\n targetSdk 36\n}\n')
-        self.report = ET.fromstring('<issues format="6"><issue id="OldTargetApi" severity="Information" message="Not targeting the latest versions of Android; compatibility modes apply."><location file="app/build.gradle" line="2"/></issue></issues>')
+        self.report = ET.fromstring('<issues format="6"><issue id="OldTargetApi" severity="Hint" message="Not targeting the latest versions of Android; compatibility modes apply."><location file="app/build.gradle" line="2"/></issue></issues>')
 
     def tearDown(self):
         self.tmp.cleanup()
@@ -30,15 +30,15 @@ class LintPolicyTest(unittest.TestCase):
 
     def test_zero_duplicate_or_additional_diagnostics(self):
         with self.assertRaises(AssertionError): self.check(ET.fromstring('<issues/>'))
-        for id_, severity in [('OldTargetApi', 'Information'), ('NewApi', 'Error'),
+        for id_, severity in [('OldTargetApi', 'Hint'), ('NewApi', 'Error'),
                               ('ExportedService', 'Warning'), ('Overdraw', 'Warning'),
-                              ('AndroidGradlePluginVersion', 'Information')]:
+                              ('AndroidGradlePluginVersion', 'Hint')]:
             mutated = copy.deepcopy(self.report)
             ET.SubElement(mutated, 'issue', {'id': id_, 'severity': severity})
             with self.assertRaises(AssertionError): self.check(mutated)
 
     def test_unknown_or_promoted_severity(self):
-        for severity in ['Informational', 'Warning', 'Error', 'Fatal', 'Ignore', '']:
+        for severity in ['Information', 'Informational', 'Warning', 'Error', 'Fatal', 'Ignore', '']:
             self.report[0].set('severity', severity)
             with self.assertRaises(AssertionError): self.check()
 
@@ -81,16 +81,20 @@ class LintPolicyTest(unittest.TestCase):
                       'android.compileSdk == 36', "ANDROID_GRADLE_PLUGIN_VERSION == '8.13.2'",
                       "gradle.gradleVersion == '8.14.6'", 'if (foundationLintTasks && foundationLintPins)',
                       "android.lint.informational.add('OldTargetApi')", 'abortOnError true',
-                      'warningsAsErrors true', 'textReport true', 'xmlReport true', 'htmlReport true']:
+                      'warningsAsErrors true', 'absolutePaths true', 'textReport true', 'xmlReport true', 'htmlReport true']:
             self.assertIn(guard, source)
         self.assertEqual(source.count('.informational.add('), 1)
         code = '\n'.join(line for line in source.splitlines() if not line.lstrip().startswith('//'))
         for forbidden in ['disable ', 'ignoreWarnings', 'baseline ', "informational.add('AndroidGradlePluginVersion')"]:
             self.assertNotIn(forbidden, code)
         workflow = (ROOT / '.github/workflows/phase-foundation.yml').read_text()
-        self.assertIn('exit "$result"', workflow)
-        self.assertIn('python3 tools/verify_lint.py', workflow)
-        self.assertIn('rm -f app/build/reports/lint-results-debug.xml', workflow)
+        self.assertIn('python3 tools/run_compile_checks.py', workflow)
+        self.assertNotIn('continue-on-error', workflow)
+        aggregate = (ROOT / 'tools/run_compile_checks.py').read_text()
+        self.assertIn('return 0 if all(code == 0 for code in results.values()) else 1', aggregate)
+        self.assertIn("'tools/verify_lint.py'", aggregate)
+        self.assertIn("'tools/verify_apk.py'", aggregate)
+        self.assertIn('.unlink(missing_ok=True)', aggregate)
 
 
 if __name__ == '__main__':

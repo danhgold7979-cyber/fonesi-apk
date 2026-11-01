@@ -59,27 +59,14 @@ jobs:
           echo "$JAVA_HOME_17_X64/bin" >> "$GITHUB_PATH"
           python3 tools/check_toolchain.py --android
           test -x "$ANDROID_HOME/cmdline-tools/latest/bin/apkanalyzer"
-      - name: Build and lint (not Android execution)
-        run: |
-          java -version
-          started=$(date +%s)
-          rm -f app/build/reports/lint-results-debug.xml app/build/reports/lint-results-debug.html app/build/reports/lint-results-debug.txt
-          result=0
-          ./gradlew --no-daemon --console=plain :app:assembleDebug :app:lintDebug || result=$?
-          if [ "$result" -ne 0 ]; then
-            find app/build -name 'lint-results-debug.txt' -type f -exec cat {} \; || true
-            exit "$result"
-          fi
-          python3 tools/verify_lint.py app/build/reports/lint-results-debug.xml --not-before "$started" --source-sha "$EXPECTED_SOURCE_SHA" > lint-receipt.json
-          cat app/build/reports/lint-results-debug.txt
-          cat lint-receipt.json
+      - name: Build, lint and packaged diagnostics with strict aggregate gate
+        run: python3 tools/run_compile_checks.py
       - name: Bind successful HOST receipt from exact-source prerequisite job
         env:
           HOST_RECEIPT: ${{ needs.documentary-host.outputs.receipt }}
         run: python3 -c 'import os,json,pathlib; r=json.loads(os.environ["HOST_RECEIPT"]); assert r["source_sha"]==os.environ["EXPECTED_SOURCE_SHA"]; pathlib.Path("host-receipt.json").write_text(json.dumps(r,indent=2)+"\n")'
-      - name: Verify actual packaged artifact
+      - name: Record baseline only after all compile gates pass
         run: |
-          python3 tools/verify_apk.py app/build/outputs/apk/debug/app-debug.apk | tee compile-receipt.json
           test "$(git rev-parse HEAD)" = "$EXPECTED_SOURCE_SHA"
           git rev-parse HEAD > source-sha.txt
           python3 tools/record_baseline.py

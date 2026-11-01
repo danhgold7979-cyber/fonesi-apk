@@ -22,6 +22,7 @@ android {
     lint {
         abortOnError true
         warningsAsErrors true
+        absolutePaths true
         textReport true
         textOutput file("$buildDir/reports/lint-results-debug.txt")
         xmlReport true
