@@ -22,7 +22,7 @@ class ExistingReadSourceTest(unittest.TestCase):
 
     def test_exclusivity_and_access_before_observation(self):
         opening = SOURCE[SOURCE.index('    static Result openExisting('):]
-        self.assertLess(opening.index('RESERVED.compareAndSet(false, true)'), opening.index('check(cancellation, access, request)'))
+        self.assertLess(opening.index('CatalogProcessGate.tryAcquire()'), opening.index('check(cancellation, access, request)'))
         self.assertLess(opening.index('check(cancellation, access, request)'), opening.index('context.getApplicationContext()'))
         self.assertLess(opening.index('available(application)'), opening.index('application.getNoBackupFilesDir()'))
         self.assertIn('interface AccessBoundary { void check(Request request); }', SOURCE)
@@ -51,21 +51,25 @@ class ExistingReadSourceTest(unittest.TestCase):
         self.assertIn('invalidated = true', quarantine)
         self.assertIn('externalResourcesUncertain = true', quarantine)
         self.assertNotIn('RESERVED', quarantine)
+        self.assertIn('reservation.quarantine()', quarantine)
         close = SOURCE[SOURCE.index('        @Override public void close()'):SOURCE.index('    private static final class Identity')]
         check = 'if (externalResourcesUncertain) throw new Failure(Status.RESOURCE_UNCERTAIN)'
         self.assertLess(close.index('database.close()'), close.index(check))
         self.assertLess(close.index(check), close.index('closeUncertain = false'))
-        self.assertLess(close.index(check), close.index('RESERVED.set(false)'))
+        self.assertLess(close.index(check), close.index('reservation.close()'))
+        self.assertLess(close.index('reservation.close()'), close.index('closeUncertain = false'))
 
     def test_resource_transfer_close_failure_quarantine(self):
         close = SOURCE[SOURCE.index('        @Override public void close()'):SOURCE.index('    private static final class Identity')]
         self.assertLess(close.index('require(Thread.currentThread() == owner)'), close.index('if (closed) {'))
-        self.assertLess(close.index('database.close()'), close.index('RESERVED.set(false)'))
-        self.assertIn('catch (RuntimeException error) { throw new Failure(Status.RESOURCE_UNCERTAIN); }', close)
+        self.assertLess(close.index('database.close()'), close.index('reservation.close()'))
+        self.assertIn('quarantine(reservation);', close)
+        self.assertIn('throw new Failure(Status.RESOURCE_UNCERTAIN);', close)
         self.assertNotIn('finally', close)
         self.assertIn('if (closeUncertain) throw new Failure(Status.RESOURCE_UNCERTAIN)', close)
         self.assertLess(close.index('closeUncertain = true'), close.index('database.close()'))
-        self.assertIn('if (uncertain) status = Status.RESOURCE_UNCERTAIN;\n                else RESERVED.set(false);', SOURCE)
+        self.assertIn('if (uncertain) {\n                    quarantine(reservation);', SOURCE)
+        self.assertNotIn('RESERVED', SOURCE)
         self.assertIn('} else if (openAttempted) {', SOURCE)
         self.assertIn('if (!transferred)', SOURCE)
         self.assertIn('require(!closed && !invalidated)', SOURCE)

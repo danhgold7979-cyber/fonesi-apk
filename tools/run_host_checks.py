@@ -16,22 +16,28 @@ COMMANDS = [
         'test_plan_integrity.py', 'test_toolchain_contract.py', 'test_shell_contract.py',
         'test_apk_contract.py', 'test_lint_policy.py', 'test_baseline_receipt.py', 'test_compile_aggregate.py', 'test_host_integration.py', 'test_style_migration.py',
         'test_catalog_writer_sql.py', 'test_android_catalog_contract.py', 'test_existing_read_entry.py',
-        'test_catalog_page_sql.py', 'test_catalog_page_read.py')],
+        'test_catalog_page_sql.py', 'test_catalog_page_read.py', 'test_catalog_reservation_integration.py')],
     ['bash', 'tools/test_core.sh'],
     ['bash', 'tools/test_style_core.sh'],
     ['bash', 'tools/test_catalog_key.sh'],
     ['bash', 'tools/test_catalog_ownership.sh'],
     ['bash', 'tools/test_catalog_page.sh'],
+    ['bash', 'tools/test_catalog_reservation.sh'],
 ]
 
 
 def check_kind(command):
-    if command[-1] in ('tools/test_core.sh', 'tools/test_style_core.sh', 'tools/test_catalog_key.sh', 'tools/test_catalog_ownership.sh', 'tools/test_catalog_page.sh'):
+    if command[-1] in ('tools/test_core.sh', 'tools/test_style_core.sh', 'tools/test_catalog_key.sh', 'tools/test_catalog_ownership.sh', 'tools/test_catalog_page.sh', 'tools/test_catalog_reservation.sh'):
         return 'synthetic_assertions'
     return 'unittest_cases' if Path(command[-1]).name.startswith('test_') else 'integrity_command'
 
 
 def parse_count(command, output):
+    if command[-1] == 'tools/test_catalog_reservation.sh':
+        assert 'LIMITED HOST' not in output, 'limited compiler cannot produce JDK17 receipt'
+        matches = re.findall(r'(?m)^CatalogReservation HOST assertions: (\d+) PASS; no auth/file/Android acceptance$', output)
+        assert len(matches) == 1 and int(matches[0]) > 0, 'missing/duplicate/nonpositive reservation count'
+        return {'kind': 'synthetic_assertions', 'count': int(matches[0])}
     if command[-1] == 'tools/test_catalog_page.sh':
         assert 'LIMITED HOST' not in output, 'limited compiler cannot produce JDK17 receipt'
         matches = re.findall(r'(?m)^PASS CatalogPage owned HOST assertions=(\d+); no Android/schema/auth/provider acceptance$', output)

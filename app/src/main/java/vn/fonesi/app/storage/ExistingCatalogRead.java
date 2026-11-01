@@ -13,13 +13,12 @@ import android.system.OsConstants;
 import android.system.StructStat;
 import java.io.File;
 import java.io.IOException;
-import java.util.concurrent.atomic.AtomicBoolean;
 import vn.fonesi.apk.foundation.CatalogOwnership;
+import vn.fonesi.apk.foundation.CatalogReservation;
 
 /** Dormant existing-file entry. No caller, bootstrap, schema acceptance or auth broker. */
 final class ExistingCatalogRead {
     private static final String LEAF = "manager-catalog-v1.sqlite";
-    private static final AtomicBoolean RESERVED = new AtomicBoolean();
     private ExistingCatalogRead() { }
 
     enum Status { OPEN_UNVALIDATED, MISSING, BUSY, CANCELLED, REJECTED, RESOURCE_UNCERTAIN }
@@ -41,6 +40,7 @@ final class ExistingCatalogRead {
     }
     static final class Lease implements AutoCloseable {
         private final Thread owner;
+        private final CatalogReservation.Token reservation;
         private final SQLiteDatabase database;
         private final CancellationSignal cancellation;
         private final Request request;
@@ -55,9 +55,10 @@ final class ExistingCatalogRead {
         private boolean invalidated;
         private boolean closeUncertain;
         private boolean externalResourcesUncertain;
-        private Lease(SQLiteDatabase database, CancellationSignal cancellation,
+        private Lease(CatalogReservation.Token reservation, SQLiteDatabase database, CancellationSignal cancellation,
                       Request request, AccessBoundary access, Context application,
                       File originalParent, File parent, File file, Identity directory, Identity leaf) {
+            this.reservation = reservation;
             this.application = application; this.originalParent = originalParent;
             this.parent = parent; this.file = file; this.directory = directory; this.leaf = leaf;
             this.owner = Thread.currentThread(); this.database = database;
@@ -68,6 +69,7 @@ final class ExistingCatalogRead {
             require(Thread.currentThread() == owner);
             try {
                 require(!closed && !invalidated);
+                reservation.requireActive();
                 check(cancellation, access, request);
                 available(application);
                 verifyPaths(originalParent, parent, file, directory, leaf);
@@ -91,6 +93,7 @@ final class ExistingCatalogRead {
             require(Thread.currentThread() == owner && !closed);
             invalidated = true;
             externalResourcesUncertain = true;
+            reservation.quarantine();
         }
         @Override public void close() {
             require(Thread.currentThread() == owner);
@@ -101,12 +104,22 @@ final class ExistingCatalogRead {
             closed = true;
             closeUncertain = true;
             try { database.close(); }
-            catch (RuntimeException error) { throw new Failure(Status.RESOURCE_UNCERTAIN); }
+            catch (RuntimeException error) {
+                quarantine(reservation);
+                throw new Failure(Status.RESOURCE_UNCERTAIN);
+            }
             if (externalResourcesUncertain) throw new Failure(Status.RESOURCE_UNCERTAIN);
+            try { reservation.close(); }
+            catch (RuntimeException error) {
+                quarantine(reservation);
+                throw new Failure(Status.RESOURCE_UNCERTAIN);
+            }
             closeUncertain = false;
-            // Close failure never releases this process reservation.
-            RESERVED.set(false);
         }
+    }
+    private static void quarantine(CatalogReservation.Token reservation) {
+        try { reservation.quarantine(); }
+        catch (RuntimeException error) { /* Uncertain remains uncertain; never force-release. */ }
     }
     private static final class Identity {
         final long device;
@@ -160,7 +173,8 @@ final class ExistingCatalogRead {
                 || request == null || cancellation == null || access == null) {
             return new Result(Status.REJECTED, null);
         }
-        if (!RESERVED.compareAndSet(false, true)) return new Result(Status.BUSY, null);
+        CatalogReservation.Token reservation = CatalogProcessGate.tryAcquire();
+        if (reservation == null) return new Result(Status.BUSY, null);
         SQLiteDatabase database = null;
         Lease lease = null;
         Status status = Status.REJECTED;
@@ -199,7 +213,7 @@ final class ExistingCatalogRead {
             verifyPaths(originalParent, parent, file, directory, leaf);
             available(application);
             check(cancellation, access, request);
-            lease = new Lease(database, cancellation, request, access, application,
+            lease = new Lease(reservation, database, cancellation, request, access, application,
                     originalParent, parent, file, directory, leaf);
             status = Status.OPEN_UNVALIDATED;
             transferred = true;
@@ -218,8 +232,16 @@ final class ExistingCatalogRead {
                     // No returned handle after attempted native open: do not assert cleanup.
                     uncertain = true;
                 }
-                if (uncertain) status = Status.RESOURCE_UNCERTAIN;
-                else RESERVED.set(false);
+                if (uncertain) {
+                    quarantine(reservation);
+                    status = Status.RESOURCE_UNCERTAIN;
+                } else {
+                    try { reservation.close(); }
+                    catch (RuntimeException error) {
+                        quarantine(reservation);
+                        status = Status.RESOURCE_UNCERTAIN;
+                    }
+                }
             }
         }
         return new Result(status, lease);

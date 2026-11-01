@@ -101,9 +101,10 @@ class ShellSourceContractTest(unittest.TestCase):
         sources = list((ROOT / 'java').rglob('*.java'))
         self.assertEqual(sorted(str(p.relative_to(ROOT / 'java')) for p in sources), [
             'vn/fonesi/app/MainActivity.java', 'vn/fonesi/app/storage/CatalogPageRead.java',
+            'vn/fonesi/app/storage/CatalogProcessGate.java',
             'vn/fonesi/app/storage/ExistingCatalogRead.java', 'vn/fonesi/app/storage/OwnedCatalogWriter.java'])
         source = (ROOT / 'java/vn/fonesi/app/MainActivity.java').read_text()
-        for dormant in ['OwnedCatalogWriter', 'ExistingCatalogRead', 'CatalogPageRead', 'CatalogPage', 'CatalogOwnership', 'CatalogKey', 'StyleValue']:
+        for dormant in ['OwnedCatalogWriter', 'ExistingCatalogRead', 'CatalogPageRead', 'CatalogProcessGate', 'CatalogReservation', 'CatalogPage', 'CatalogOwnership', 'CatalogKey', 'StyleValue']:
             self.assertNotIn(dormant, source)
         self.assertIn('package vn.fonesi.app;', source)
         self.assertIn('setContentView(R.layout.activity_main)', source)
