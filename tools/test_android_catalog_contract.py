@@ -47,12 +47,16 @@ class AndroidCatalogContractTest(unittest.TestCase):
         self.assertIn('final class OwnedCatalogWriter', source)
         self.assertNotIn('public final class OwnedCatalogWriter', source)
         for other in (ROOT / 'app/src/main/java').rglob('*.java'):
-            if other != p and other.name != 'CatalogPageRead.java':
+            if other != p and other.name not in {'CatalogPageRead.java','ExistingStyleWrite.java'}:
                 self.assertNotIn('OwnedCatalogWriter', other.read_text())
         reader = (p.parent / 'CatalogPageRead.java').read_text()
         self.assertIn('OwnedCatalogWriter.inspectReadOnly(', reader)
         self.assertNotIn('OwnedCatalogWriter.apply(', reader)
         self.assertNotIn('CommitBoundary', reader)
+        entry = (p.parent / 'ExistingStyleWrite.java').read_text()
+        self.assertIn('OwnedCatalogWriter.inspectReadOnly(', entry)
+        self.assertIn('OwnedCatalogWriter.apply(database, sql, request.snapshot, request.key,', entry)
+        self.assertNotIn('new OwnedCatalogWriter.CommitBoundary', entry)
         for forbidden in ['openDatabase(', 'getWritableDatabase(', 'SQLiteOpenHelper',
                           'CREATE_IF_NECESSARY', 'execSQL(', 'startActivity(', 'Log.',
                           'new CommitBoundary', 'implements CommitBoundary', 'System.out']:

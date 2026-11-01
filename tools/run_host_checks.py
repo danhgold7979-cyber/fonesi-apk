@@ -16,7 +16,7 @@ COMMANDS = [
         'test_plan_integrity.py', 'test_toolchain_contract.py', 'test_shell_contract.py',
         'test_apk_contract.py', 'test_lint_policy.py', 'test_baseline_receipt.py', 'test_compile_aggregate.py', 'test_host_integration.py', 'test_style_migration.py',
         'test_catalog_writer_sql.py', 'test_android_catalog_contract.py', 'test_existing_read_entry.py',
-        'test_catalog_page_sql.py', 'test_catalog_page_read.py', 'test_catalog_reservation_integration.py')],
+        'test_catalog_page_sql.py', 'test_catalog_page_read.py', 'test_catalog_reservation_integration.py', 'test_existing_style_write.py')],
     ['bash', 'tools/test_core.sh'],
     ['bash', 'tools/test_style_core.sh'],
     ['bash', 'tools/test_catalog_key.sh'],

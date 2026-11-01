@@ -4,13 +4,14 @@ import unittest
 
 ROOT = Path(__file__).resolve().parents[1]
 SOURCE = (ROOT / 'app/src/main/java/vn/fonesi/app/storage/ExistingCatalogRead.java').read_text()
+PATH_SOURCE = (ROOT / 'app/src/main/java/vn/fonesi/app/storage/CatalogPath.java').read_text()
 
 
 class ExistingReadSourceTest(unittest.TestCase):
     def test_fixed_readonly_unwired_non_deleting_entry(self):
         self.assertIn('final class ExistingCatalogRead', SOURCE)
         self.assertNotIn('public final class ExistingCatalogRead', SOURCE)
-        self.assertIn('private static final String LEAF = "manager-catalog-v1.sqlite"', SOURCE)
+        self.assertIn('private static final String LEAF = "manager-catalog-v1.sqlite"', PATH_SOURCE)
         self.assertIn('SQLiteDatabase.OPEN_READONLY | SQLiteDatabase.NO_LOCALIZED_COLLATORS', SOURCE)
         self.assertIn('throw new SQLiteDatabaseCorruptException("Catalog source unavailable")', SOURCE)
         for forbidden in ['CREATE_IF_NECESSARY', 'OPEN_READWRITE', 'openOrCreateDatabase(',
@@ -24,7 +25,7 @@ class ExistingReadSourceTest(unittest.TestCase):
         opening = SOURCE[SOURCE.index('    static Result openExisting('):]
         self.assertLess(opening.index('CatalogProcessGate.tryAcquire()'), opening.index('check(cancellation, access, request)'))
         self.assertLess(opening.index('check(cancellation, access, request)'), opening.index('context.getApplicationContext()'))
-        self.assertLess(opening.index('available(application)'), opening.index('application.getNoBackupFilesDir()'))
+        self.assertLess(opening.index('available(application)'), opening.index('CatalogPath.existing(application)'))
         self.assertIn('interface AccessBoundary { void check(Request request); }', SOURCE)
         self.assertIn('static final class Request { }', SOURCE)
         self.assertIn('new Result(Status.BUSY, null)', opening)
@@ -38,12 +39,14 @@ class ExistingReadSourceTest(unittest.TestCase):
                          'directory.verify(observed(originalParent', 'directory.verify(observed(parent',
                          'leaf.verify(current)', 'file.getCanonicalFile().equals(file)',
                          'file.getParentFile().equals(parent)', 'new String[]{"-journal", "-wal", "-shm"}']:
-            self.assertIn(expected, SOURCE)
-        sidecars = SOURCE[SOURCE.index('    private static void noSidecars'):SOURCE.index('    private static void available')]
+            self.assertIn(expected, PATH_SOURCE)
+        sidecars = PATH_SOURCE[PATH_SOURCE.index('    private static void noSidecars'):PATH_SOURCE.index('    private static void verifyPaths')]
         self.assertIn('if (error.errno == OsConstants.ENOENT) continue;', sidecars)
         self.assertIn('throw error;', sidecars)
-        self.assertIn('throw new Failure(Status.REJECTED)', sidecars)
-        self.assertNotIn('.exists()', SOURCE)
+        self.assertIn('throw new IllegalStateException("Catalog source unavailable")', sidecars)
+        self.assertNotIn('.exists()', PATH_SOURCE)
+        self.assertIn('if (error.errno == OsConstants.ENOENT) throw new Missing()', PATH_SOURCE)
+        self.assertIn('catch (CatalogPath.Missing error)', SOURCE)
 
     def test_external_cursor_uncertainty_is_owner_only_sticky_before_close(self):
         quarantine = SOURCE[SOURCE.index('        void quarantineResources()'):SOURCE.index('        @Override public void close()')]
@@ -52,7 +55,7 @@ class ExistingReadSourceTest(unittest.TestCase):
         self.assertIn('externalResourcesUncertain = true', quarantine)
         self.assertNotIn('RESERVED', quarantine)
         self.assertIn('reservation.quarantine()', quarantine)
-        close = SOURCE[SOURCE.index('        @Override public void close()'):SOURCE.index('    private static final class Identity')]
+        close = SOURCE[SOURCE.index('        @Override public void close()'):SOURCE.index('    private static void quarantine(CatalogReservation.Token')]
         check = 'if (externalResourcesUncertain) throw new Failure(Status.RESOURCE_UNCERTAIN)'
         self.assertLess(close.index('database.close()'), close.index(check))
         self.assertLess(close.index(check), close.index('closeUncertain = false'))
@@ -60,7 +63,7 @@ class ExistingReadSourceTest(unittest.TestCase):
         self.assertLess(close.index('reservation.close()'), close.index('closeUncertain = false'))
 
     def test_resource_transfer_close_failure_quarantine(self):
-        close = SOURCE[SOURCE.index('        @Override public void close()'):SOURCE.index('    private static final class Identity')]
+        close = SOURCE[SOURCE.index('        @Override public void close()'):SOURCE.index('    private static void quarantine(CatalogReservation.Token')]
         self.assertLess(close.index('require(Thread.currentThread() == owner)'), close.index('if (closed) {'))
         self.assertLess(close.index('database.close()'), close.index('reservation.close()'))
         self.assertIn('quarantine(reservation);', close)
@@ -74,7 +77,7 @@ class ExistingReadSourceTest(unittest.TestCase):
         self.assertIn('if (!transferred)', SOURCE)
         self.assertIn('require(!closed && !invalidated)', SOURCE)
         lease_use = SOURCE[SOURCE.index('        SQLiteDatabase database()'):SOURCE.index('        /** Owner only, before close:')]
-        self.assertIn('verifyPaths(originalParent, parent, file, directory, leaf)', lease_use)
+        self.assertIn('path.verify()', lease_use)
         self.assertEqual(lease_use.count('check(cancellation, access, request)'), 2)
         self.assertIn('static final class Failure extends RuntimeException', SOURCE)
         self.assertNotIn('private static final class Failure', SOURCE)
