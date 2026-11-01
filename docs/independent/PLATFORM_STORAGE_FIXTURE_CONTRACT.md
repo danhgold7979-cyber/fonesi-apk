@@ -1,0 +1,50 @@
+# Platform-only owned storage fixture — compile entry contract
+
+Status: proposed first-party test source entry; runtime NOT_RUN. Parent engineering disposition allows bounded source/compile work, not installation, emulator boot, device access, SDK installation/license acceptance or production activation. Original 362 assertions/V1 acceptance and inactive V2 proposal remain unchanged.
+
+## Why a separate fixture
+
+Official AndroidX runner/core 1.7.0 and ext.junit 1.3.0 were inspected after explicit download approval. Core declares REORDER_TASKS and three exported invoker activities; runner declares package queries. That exact set is not adopted under this zero-permission/component test policy. Do not remove its manifest entries or pretend an unchecked transitive dependency is eligible.
+
+Use the public platform android.app.Instrumentation API directly; no AndroidX, JUnit, Kotlin, UI testing libraries or downloaded source. This is small first-party test orchestration, not a substitute framework/provider. The platform API documents onCreate/start/onStart and finish with result Bundle. API availability is not actual execution proof.
+Sources: https://developer.android.com/reference/android/app/Instrumentation ; https://developer.android.com/guide/topics/manifest/instrumentation-element ; https://developer.android.com/build/manage-manifests .
+
+## Identities, code and build boundaries
+
+A separate Android application module `storage-fixture` uses applicationId/namespace `vn.fonesi.fixture.storage`, testApplicationId `vn.fonesi.fixture.storage.test`, and runner `vn.fonesi.fixture.storage.StorageInstrumentation`. The test manifest targets ONLY `vn.fonesi.fixture.storage`, never `vn.fonesi.app`, wildcard or a user-supplied target. Neither app is a production distribution artifact. No sharedUserId, permissions, queries, activities, services, receivers, providers, launcher filters, auto-start app class or exported component; only the test APK declares the exact required instrumentation. Its targetProcesses is absent or the exact main process, never `*`. Both APKs are testOnly/debuggable, backup disabled with fullBackupContent=false and explicit nine-domain cloud/device-transfer exclusions. The two debug signer certificate digests must match; no separate signer assumption.
+
+Compile with existing pinned Gradle8.14.6/AGP8.13.2/JDK17/min26/target36/compile36/build-tools35.0.0. No dependency declarations or automatic SDK download. Both debug APKs use the existing CI debug signer, not release keys. No app module code/manifest/UI changes. Exact storage and core Java sources plus eight SQL assets are referenced directly as build inputs, not copied/edited forks; exclude MainActivity and unrelated UI resources. A public fixture-only harness in Java package vn.fonesi.app.storage can invoke package-private storage entries within the target's classloader. The instrumentation calls that public harness; no reflection, visibility changes to production source or actual runtime/classloader proof inferred from compilation.
+
+Actual build outputs must establish exact target/test package IDs, SDK pins, test target/runner, debuggable flags, signatures, no forbidden manifest nodes, exact source hashes/assets and no resolved external runtime/test dependencies. Check both final packaged manifests and merger provenance, not just authored XML. Unexpected generated permission/component/dependency is a blocker, not grounds for automatic manifest override. Source/class definitions must be bound to the exact source SHA. Fixture compilation is separate evidence and does not replace an accepted production APK proof.
+
+## Minimal initial cases and resource ownership
+
+The future runner starts a worker via Instrumentation.start/onStart and accepts no arbitrary path, SQL, target ID or test selection from arguments. It verifies target Context applicationId, credential-protected unlocked storage and fixture package before any database observation/mutation. It never reads or opens vn.fonesi.app storage. Initial execution refuses if the fixed catalog path OR any journal/WAL/SHM already exists: no deleting, repairing or adopting a prior database. Absence is established by lstat ENOENT only (all other errors fail). The canonical/direct parent identity, type and UID/GID/mode are checked before creation, and exact dev/inode/owner of the exclusively created regular file is retained. Parent/leaf symlinks and pre-existing sidecars fail unchanged. Initial reservation descriptor close failure is resource uncertainty: stop, retain the file, never adopt/reopen/delete it. No ContextWrapper/package-name spoofing.
+
+Only after these guards may the test harness create a fresh fixture-owned catalog using exact reviewed DDL, application_id/user_version/UTF8 settings and fixed synthetic keys/data. Creation is CREATE_NEW-equivalent: atomically reserve a new empty regular file in the fixture noBackup directory before SQLite opens that exact owned path; verify identity/path/owner before each destructive fixture action. Never call bootstrap on production or legacy user data. Initial milestone leaves owned data for evidence; no automatic recursive cleanup, data clearing or permission repair. A repeated execution with retained data fails closed and needs an explicit later fixture-reset design/authority.
+
+Small initial test sequence (no deliberate native close-fault injection yet):
+1. `missing`: catalog read returns MISSING and lstat confirms no catalog/sidecars created.
+2. `fresh_read`: exact owned catalog can be inspected/read; page returns exact opaque key and inert flags.
+3. `commit_readback`: existing-style write with test-only deterministic boundary commits one revision, preserves raw padded badge and exact unrelated data; subsequent page/readback proves the result. Compare typeof plus hex(CAST AS BLOB) for modified style and untouched sibling row fields, including embedded NUL/opaque key bytes; decoded strings alone are insufficient.
+4. `stale`: old snapshot returns STALE_OR_MISSING and cannot mutate style/revision or sibling storage types/bytes.
+5. `cancelled`: already-cancelled operation returns CANCELLED, cannot mutate data, and a fresh owner token can be acquired then released successfully. Confirmed readback and token checks are assertions, not merely absence of exceptions.
+
+The boundary is explicitly a synthetic fixture stimulus bound to exact snapshot/key/raw style, not real authentication, guest authorization or lifecycle integration. Tests use no original app sessions/provider/work-profile/device identities. They do not prove malicious same-UID protection, real auth, all-writer integration, restore/Room migration or eight-app compatibility.
+
+Each of these exact five named cases must run exactly once in fixed order with a positive per-case assertion count, count assertions and publish generic bounded failure codes only (no paths/keys/private data/exception causes). Unexpected exception, zero/missing/duplicate case, wrong source/target, timeout or resource uncertainty means FAIL; never finish success from finally. Results include fixed schema/source/case set and counts; external harness must inspect explicit outcome and terminal completion, not shell exit alone. Instrumentation.finish terminates the fixture process; no production app termination occurs. Test cleanup closes resources; uncertainty stops further writes and leaves artifacts retained. Actual timeouts/device/process isolation remain runtime gates.
+
+## Compile routing and lint
+
+A separate fixture compile/verification job and receipt are mandatory for changes to shared storage/core/SQL assets, fixture harness/runner/build/manifests/resources, fixture verifier/contract, root Gradle/settings/toolchain or workflow. Unknown inputs fail closed to compile; manual verification compiles. The :app-only build cannot satisfy this gate. Docs-only skips never manufacture fixture proof. Existing production input comparisons retain their original meaning.
+
+Fixture lint keeps abortOnError and warningsAsErrors. If the unchanged target36 freshness notice appears, only the exact OldTargetApi/Hint at storage-fixture/build.gradle targetSdk36 may receive the same finite debug-only classification, under exact fixture task/toolchain/SDK pins and a mandatory retained-report validator. No other diagnostic is waived, no release task policy and no broad baseline/suppression; actual format/count must be inspected, not guessed. This policy delta requires separate source review.
+
+## Evidence and activation gates
+
+1. Independent contract/source review and host static negative fixtures.
+2. Existing-toolchain compile-only build of both fixture APKs; strict packaged identity/manifest/assets/signature/dependency/source checks and retained receipts.
+3. Independent actual artifact review.
+4. Separate explicit runtime authorization plus a real available owned Android environment; reviewed bounded install/run/result/retention plan before any device action.
+
+Until gate4 there is NO Android test PASS, no production adapter activation, no new task/requirement acceptance. A pure host assertion about the manifest or fixture is not runtime evidence. Source entry may be refined after review; unsupported fixture behaviors stay UNKNOWN instead of relaxing data-retention or zero-permission boundaries.

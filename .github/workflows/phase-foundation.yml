@@ -94,3 +94,45 @@ jobs:
             source-sha.txt
           if-no-files-found: error
           retention-days: 14
+
+  owned-fixture-compile:
+    # No accepted fixture input baseline exists yet: compile on every workflow event.
+    # This deliberately cannot be skipped by the production APK comparison output.
+    needs: documentary-host
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - name: Verify exact source and existing JDK17
+        run: |
+          test "$(git rev-parse HEAD)" = "$EXPECTED_SOURCE_SHA"
+          test -d "$JAVA_HOME_17_X64"
+          echo "JAVA_HOME=$JAVA_HOME_17_X64" >> "$GITHUB_ENV"
+          echo "$JAVA_HOME_17_X64/bin" >> "$GITHUB_PATH"
+      - name: Compile and inspect owned fixture APKs, never execute
+        run: python3 tools/run_fixture_compile.py
+      - name: Retain bounded build diagnostics even on failure
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: owned-fixture-diagnostics-${{ github.event.pull_request.head.sha || github.sha }}
+          path: |
+            fixture-compile.log
+            fixture-diagnostics/
+            storage-fixture/build/reports/
+            storage-fixture/build/outputs/logs/
+          if-no-files-found: warn
+          retention-days: 14
+      - name: Retain verified compile-only fixture pair
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: owned-fixture-compile-${{ github.event.pull_request.head.sha || github.sha }}
+          path: |
+            fixture-compile-receipt.json
+            storage-fixture/build/outputs/apk/debug/storage-fixture-debug.apk
+            storage-fixture/build/outputs/apk/androidTest/debug/storage-fixture-debug-androidTest.apk
+          if-no-files-found: error
+          retention-days: 14
