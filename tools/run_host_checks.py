@@ -21,16 +21,22 @@ COMMANDS = [
     ['bash', 'tools/test_style_core.sh'],
     ['bash', 'tools/test_catalog_key.sh'],
     ['bash', 'tools/test_catalog_ownership.sh'],
+    ['bash', 'tools/test_catalog_page.sh'],
 ]
 
 
 def check_kind(command):
-    if command[-1] in ('tools/test_core.sh', 'tools/test_style_core.sh', 'tools/test_catalog_key.sh', 'tools/test_catalog_ownership.sh'):
+    if command[-1] in ('tools/test_core.sh', 'tools/test_style_core.sh', 'tools/test_catalog_key.sh', 'tools/test_catalog_ownership.sh', 'tools/test_catalog_page.sh'):
         return 'synthetic_assertions'
     return 'unittest_cases' if Path(command[-1]).name.startswith('test_') else 'integrity_command'
 
 
 def parse_count(command, output):
+    if command[-1] == 'tools/test_catalog_page.sh':
+        assert 'LIMITED HOST' not in output, 'limited compiler cannot produce JDK17 receipt'
+        matches = re.findall(r'(?m)^PASS CatalogPage owned HOST assertions=(\d+); no Android/schema/auth/provider acceptance$', output)
+        assert len(matches) == 1 and int(matches[0]) > 0, 'missing/duplicate/nonpositive page count'
+        return {'kind': 'synthetic_assertions', 'count': int(matches[0])}
     if command[-1] == 'tools/test_catalog_ownership.sh':
         assert 'LIMITED HOST' not in output, 'limited compiler cannot produce JDK17 receipt'
         matches = re.findall(r'(?m)^CatalogOwnership HOST assertions: (\d+) PASS$', output)
