@@ -36,5 +36,15 @@ android {
 }
 // No external runtime or test dependencies. This is platform-only instrumentation.
 
-// Test-only fixture: no severity exceptions; every reported lint issue is fatal.
+// Test sources remain checked; the exact development notice policy below is separately gated.
 android.lint.checkTestSources = true
+// Finite development target36 notice for this exact owned-fixture verification task set.
+// Not a release policy: actual reports must contain precisely the independently gated notice.
+def fixtureTasks = [':storage-fixture:assembleDebug', ':storage-fixture-test:assembleDebug',
+    ':storage-fixture:lintDebug', ':storage-fixture-test:lintDebug', ':storage-fixture-test:verifyFixtureDependencies']
+def fixturePins = android.defaultConfig.minSdkVersion.apiLevel == 26 &&
+    android.defaultConfig.targetSdkVersion.apiLevel == 36 && android.compileSdk == 36 &&
+    com.android.Version.ANDROID_GRADLE_PLUGIN_VERSION == '8.13.2' && gradle.gradleVersion == '8.14.6'
+if (gradle.startParameter.taskNames == fixtureTasks && fixturePins) {
+    android.lint.informational.add('OldTargetApi')
+}

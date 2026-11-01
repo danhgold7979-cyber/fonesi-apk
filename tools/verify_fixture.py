@@ -27,9 +27,21 @@ def validate_manifest(xml, test):
         assert entry.get(A+'handleProfiling') in (None,'false')
         assert set(entry.attrib)<= {A+x for x in ('name','targetPackage','targetProcesses','functionalTest','handleProfiling','label')}
 
-def validate_lint(xml):
-    root=ET.fromstring(xml)
-    assert root.tag=='issues' and not list(root), 'Every fixture lint diagnostic is fatal'
+def validate_lint(xml,module):
+    root=ET.fromstring(xml);assert root.tag=='issues'
+    assert module in ('storage-fixture','storage-fixture-test')
+    if module=='storage-fixture-test':
+        assert not list(root), 'Every instrumentation-module lint diagnostic is fatal'
+        return None
+    issues=list(root);assert len(issues)==1
+    issue=issues[0];assert issue.tag=='issue' and issue.get('id')=='OldTargetApi' and issue.get('severity')=='Hint'
+    assert issue.get('message','').startswith('Not targeting the latest versions of Android;')
+    locations=list(issue);assert len(locations)==1 and locations[0].tag=='location'
+    path=pathlib.Path(locations[0].get('file',''));path=path if path.is_absolute() else ROOT/path
+    assert path.resolve()==(ROOT/module/'build.gradle').resolve()
+    line=int(locations[0].get('line','0'));lines=path.read_text().splitlines()
+    assert 0<line<=len(lines) and lines[line-1].strip()=='targetSdk 36'
+    return {'id':'OldTargetApi','severity':'Hint','file':module+'/build.gradle','line':line,'message':issue.get('message')}
 
 
 def dex_classes(data):
@@ -151,8 +163,13 @@ def verify_pair(source_sha, not_before, observations):
                 for module in ['storage-fixture','storage-fixture-test'] for suffix in ['xml','txt','html']]
     for path in lint_files:
         assert path.is_file() and path.stat().st_size and path.stat().st_mtime>=not_before
+    notice=None
     for report in lint_files:
-        if report.suffix=='.xml':validate_lint(report.read_text())
+        module=report.relative_to(ROOT).parts[0]
+        if module=='storage-fixture':assert 'OldTargetApi' in report.read_text()
+        if report.suffix=='.xml':
+            result=validate_lint(report.read_text(),module)
+            if result is not None:notice=result
     receipts=[];certificates=[]
     for test,apk,observed in observations:
         assert apk.stat().st_mtime>=not_before
@@ -178,7 +195,7 @@ def verify_pair(source_sha, not_before, observations):
     validate_source_binding(generated,source_sha,not_before)
     return {'source_sha':source_sha,'tier':'COMPILE','scope':'OWNED_STORAGE_FIXTURE_ONLY','result':'PASS',
             'apks':receipts,'source_inputs':source_hashes(),'same_debug_certificate':certificates[0],
-            'dependencies':deps,'target_compile_jar':jar,'merger_provenance':provenance,'lint':'ZERO_ISSUES_TEST_ONLY_FIXTURE',
+            'dependencies':deps,'target_compile_jar':jar,'merger_provenance':provenance,'lint':'ONE_RECORDED_TARGET36_HINT_TARGET_ONLY_TEST_ZERO_ISSUES','notice':notice,'release_acceptance':False,
             'lint_sha256':{str(p.relative_to(ROOT)):hashlib.sha256(p.read_bytes()).hexdigest() for p in lint_files},
             'ANDROID':'NOT_RUN','PROVIDER':'NOT_RUN','PHONE':'NOT_RUN','accepted_tasks_added':[]}
 

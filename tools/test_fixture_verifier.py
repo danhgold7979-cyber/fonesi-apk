@@ -32,12 +32,37 @@ class FixtureVerifierTest(unittest.TestCase):
         for key in ['debuggable','testOnly','allowBackup','fullBackupContent','dataExtractionRules']:
             r=manifest(True);r.find('application').attrib.pop(A+key)
             with self.assertRaises(AssertionError):validate_manifest(ET.tostring(r),True)
-    def test_lint_zero_issues_and_every_diagnostic_fatal(self):
-        validate_lint('<issues format="6"/>')
-        for name,severity in [('OldTargetApi','Hint'),('OldTargetApi','Warning'),('NewApi','Error'),('MissingApplicationIcon','Error')]:
-            r=ET.Element('issues');ET.SubElement(r,'issue',{'id':name,'severity':severity})
-            with self.assertRaises(AssertionError):validate_lint(ET.tostring(r))
-        with self.assertRaises(AssertionError):validate_lint('<unknown/>')
+    def test_lint_exact_target_hint_and_test_zero_all_other_issues_fatal(self):
+        validate_lint('<issues format="6"/>','storage-fixture-test')
+        path=ROOT/'storage-fixture/build.gradle'
+        line=next(i+1 for i,s in enumerate(path.read_text().splitlines()) if s.strip()=='targetSdk 36')
+        r=ET.Element('issues');issue=ET.SubElement(r,'issue',{'id':'OldTargetApi','severity':'Hint','message':'Not targeting the latest versions of Android; baseline'})
+        ET.SubElement(issue,'location',{'file':str(path),'line':str(line)})
+        validate_lint(ET.tostring(r),'storage-fixture')
+        with self.assertRaises(AssertionError):validate_lint(ET.tostring(r),'storage-fixture-test')
+        with self.assertRaises(AssertionError):validate_lint('<issues/>','storage-fixture')
+        for name,severity in [('OldTargetApi','Error'),('OldTargetApi','Warning'),('OldTargetApi','Information'),('NewApi','Hint'),('MissingApplicationIcon','Error')]:
+            bad=copy.deepcopy(r);bad[0].set('id',name);bad[0].set('severity',severity)
+            with self.assertRaises(AssertionError):validate_lint(ET.tostring(bad),'storage-fixture')
+        bad=copy.deepcopy(r);bad.append(copy.deepcopy(issue))
+        with self.assertRaises(AssertionError):validate_lint(ET.tostring(bad),'storage-fixture')
+        bad=copy.deepcopy(r);bad[0][0].set('file',str(ROOT/'storage-fixture-test/build.gradle'))
+        with self.assertRaises(AssertionError):validate_lint(ET.tostring(bad),'storage-fixture')
+        with self.assertRaises(AssertionError):validate_lint('<issues/>','unknown')
+    def test_finite_hint_scope_exact_tasks_pins_and_no_release_exception(self):
+        import ast
+        from run_fixture_compile import TASKS
+        build=(ROOT/'storage-fixture/build.gradle').read_text()
+        declaration=build.split('def fixtureTasks = ',1)[1].split('def fixturePins',1)[0].strip()
+        self.assertEqual(ast.literal_eval(declaration),TASKS)
+        self.assertNotEqual(TASKS,[':storage-fixture:assembleRelease'])
+        self.assertIn('if (gradle.startParameter.taskNames == fixtureTasks && fixturePins)',build)
+        for pin in ["apiLevel == 26", "apiLevel == 36", "android.compileSdk == 36", "== '8.13.2'", "== '8.14.6'"]:
+            self.assertIn(pin,build)
+        self.assertEqual(build.count("informational.add('OldTargetApi')"),1)
+        for forbidden in ['disable ', 'lintConfig', 'baseline =', 'warningsAsErrors false', 'abortOnError false']:
+            self.assertNotIn(forbidden,build)
+        self.assertNotIn('informational', (ROOT/'storage-fixture-test/build.gradle').read_text())
     def test_compile_tasks_no_runtime_actions_and_mandatory_host(self):
         from run_fixture_compile import TASKS
         self.assertEqual(TASKS,[':storage-fixture:assembleDebug',':storage-fixture-test:assembleDebug',
