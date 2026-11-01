@@ -48,7 +48,7 @@ class PlatformFixtureContract(unittest.TestCase):
     def test_case_and_result_boundaries(self):
         text = (F/'src/main/java/vn/fonesi/app/storage/StorageFixture.java').read_text()
         self.assertIn('{"missing", "fresh_read", "commit_readback", "stale", "cancelled"}', text)
-        for value in ('count <= 0', 'BuildConfig.SOURCE_SHA', 'putIntArray("assertions"', 'typeof(badge_text)',
+        for value in ('count <= 0', 'BuildConfig.SOURCE_SHA', 'putInt("assertions_"', 'typeof(badge_text)',
                       'hex(CAST(badge_text AS BLOB))', 'token.requireActive(); token.close();',
                       's == exact.snapshot && k == exact.key && v == exact.style', 'getSystemService(UserManager.class)'):
             self.assertIn(value, text)

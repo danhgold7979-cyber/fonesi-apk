@@ -47,10 +47,10 @@ public final class StorageFixture {
     public static Bundle run(Context context) {
         StorageFixture fixture = new StorageFixture();
         Bundle output = new Bundle();
-        output.putString("schema", "owned-storage-fixture-v1");
+        output.putString("schema", "owned-storage-fixture-text-v2");
         output.putString("target", TARGET);
         output.putString("source_sha", BuildConfig.SOURCE_SHA);
-        output.putStringArray("cases", CASES.clone());
+        output.putString("cases", "missing,fresh_read,commit_readback,stale,cancelled");
         try {
             fixture.execute(context);
             for (int count : fixture.counts) if (count <= 0) throw new IllegalStateException("Missing case");
@@ -59,7 +59,9 @@ public final class StorageFixture {
             output.putString("result", "FAIL");
             output.putString("failure", "CASE_" + fixture.current + "_FAILED");
         }
-        output.putIntArray("assertions", fixture.counts.clone());
+        for (int i = 0; i < CASES.length; i++) {
+            output.putInt("assertions_" + CASES[i], fixture.counts[i]);
+        }
         return output;
     }
     private void execute(Context context) throws Exception {

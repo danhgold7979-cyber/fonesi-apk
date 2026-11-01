@@ -17,7 +17,7 @@ public final class StorageInstrumentation extends Instrumentation {
             result = StorageFixture.run(getTargetContext());
         } catch (Throwable failure) {
             result = new Bundle();
-            result.putString("schema", "owned-storage-fixture-v1");
+            result.putString("schema", "owned-storage-fixture-text-v2");
             result.putString("result", "FAIL");
             result.putString("failure", "RUNNER_FAILURE");
         }
