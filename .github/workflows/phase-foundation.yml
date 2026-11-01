@@ -58,7 +58,12 @@ jobs:
       - name: Build and lint (not Android execution)
         run: |
           java -version
-          ./gradlew --no-daemon --console=plain :app:assembleDebug :app:lintDebug
+          result=0
+          ./gradlew --no-daemon --console=plain :app:assembleDebug :app:lintDebug || result=$?
+          if [ "$result" -ne 0 ]; then
+            find app/build -name 'lint-results-debug.txt' -type f -exec cat {} \; || true
+            exit "$result"
+          fi
       - name: Verify actual packaged artifact
         run: |
           python3 tools/verify_apk.py app/build/outputs/apk/debug/app-debug.apk | tee compile-receipt.json

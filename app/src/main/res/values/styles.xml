@@ -5,13 +5,13 @@
     <color name="text_primary">#172B24</color>
     <color name="text_secondary">#3D5149</color>
     <dimen name="screen_spacing">24dp</dimen>
-    <style name="Theme.Fonesi" parent="android:style/Theme.Material.Light.NoActionBar">
+    <style name="BaseTheme.Fonesi" parent="android:style/Theme.Material.Light.NoActionBar">
         <item name="android:fontFamily">sans</item>
         <item name="android:colorAccent">@color/brand_green</item>
         <item name="android:windowBackground">@color/page_background</item>
         <item name="android:windowLightStatusBar">true</item>
-        <item name="android:windowLightNavigationBar">true</item>
     </style>
+    <style name="Theme.Fonesi" parent="BaseTheme.Fonesi" />
     <style name="BodyText">
         <item name="android:layout_width">match_parent</item>
         <item name="android:layout_height">wrap_content</item>

@@ -98,6 +98,14 @@ class ShellSourceContractTest(unittest.TestCase):
         self.assertIn('spacing + safe.top', source)
         self.assertNotIn('getPaddingTop()', source)
 
+    def test_api27_navigation_attribute_is_qualified(self):
+        common = ET.parse(ROOT / 'res/values/styles.xml').getroot()
+        self.assertFalse(any(e.get('name') == 'android:windowLightNavigationBar' for e in common.iter('item')))
+        versioned = ET.parse(ROOT / 'res/values-v27/styles.xml').getroot()
+        theme = versioned.find("style[@name='Theme.Fonesi']")
+        self.assertEqual(theme.get('parent'), 'BaseTheme.Fonesi')
+        self.assertEqual(theme.find("item[@name='android:windowLightNavigationBar']").text, 'true')
+
     def test_brand_and_vector(self):
         styles = ET.parse(ROOT / 'res/values/styles.xml').getroot()
         colors = {e.get('name'): e.text for e in styles.findall('color')}
