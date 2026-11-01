@@ -6,6 +6,8 @@ from run_host_checks import COMMANDS, check_kind, parse_count
 
 STYLE = ['bash', 'tools/test_style_core.sh']
 CATALOG = ['bash', 'tools/test_catalog_key.sh']
+OWNERSHIP = ['bash', 'tools/test_catalog_ownership.sh']
+OWNERSHIP_LINE = 'CatalogOwnership HOST assertions: 60 PASS\n'
 CATALOG_LINE = 'PASS CatalogKey owned HOST assertions=151; no SQLite adapter/Android/auth/provider acceptance\n'
 LINE = 'PASS StyleValue owned HOST assertions=128; no Android/rendering/persistence/provider acceptance\n'
 
@@ -14,6 +16,10 @@ class HostIntegrationTest(unittest.TestCase):
     def test_style_is_required_once_without_limited_mode(self):
         self.assertEqual(COMMANDS.count(STYLE), 1)
         self.assertEqual(COMMANDS.count(CATALOG), 1)
+        self.assertEqual(COMMANDS.count(OWNERSHIP), 1)
+        self.assertEqual(COMMANDS.count(['python3', 'tools/test_existing_read_entry.py']), 1)
+        self.assertEqual(check_kind(OWNERSHIP), 'synthetic_assertions')
+        self.assertEqual(parse_count(OWNERSHIP, OWNERSHIP_LINE), {'kind': 'synthetic_assertions', 'count': 60})
         self.assertEqual(COMMANDS.count(['python3', 'tools/test_style_migration.py']), 1)
         self.assertEqual(check_kind(CATALOG), 'synthetic_assertions')
         self.assertEqual(parse_count(CATALOG, CATALOG_LINE), {'kind': 'synthetic_assertions', 'count': 151})
@@ -32,6 +38,12 @@ class HostIntegrationTest(unittest.TestCase):
             with self.subTest(text=text), self.assertRaises(AssertionError):
                 parse_count(CATALOG, text)
 
+    def test_ownership_rejects_missing_zero_duplicate_limited_wrong_tier(self):
+        for text in ['', OWNERSHIP_LINE.replace('60', '0'), OWNERSHIP_LINE * 2,
+                     'LIMITED HOST\n' + OWNERSHIP_LINE, OWNERSHIP_LINE.replace('HOST', 'ANDROID')]:
+            with self.subTest(text=text), self.assertRaises(AssertionError):
+                parse_count(OWNERSHIP, text)
+
     def test_style_and_documentary_paths_do_not_recompile_apk(self):
         self.assertFalse(requires_compile(sorted(HOST_ONLY) + ['docs/status.json'], 'push'))
         self.assertFalse(requires_compile([], 'pull_request'))
@@ -45,6 +57,7 @@ class HostIntegrationTest(unittest.TestCase):
                      'core/src/main/java/vn/fonesi/apk/foundation/UpdatePreflight.java',
                      'core/src/main/java/vn/fonesi/apk/foundation/CatalogKey.java',
                      'core/src/main/java/vn/fonesi/apk/foundation/StyleValue.java',
+                     'core/src/main/java/vn/fonesi/apk/foundation/CatalogOwnership.java',
                      'storage/sql/style_columns_3_to_4.sql', 'storage/sql/catalog_v1_schema.sql']:
             with self.subTest(path=path):
                 self.assertTrue(requires_compile([path], 'push'))
