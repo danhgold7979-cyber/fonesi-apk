@@ -7,6 +7,10 @@ import subprocess
 ACCEPTED_SOURCE = 'a3372fa6be3b6872bd5f4c402ebd72c233701127'
 HOST_ONLY = {
     'README.md',
+    'core/src/main/java/vn/fonesi/apk/foundation/CatalogKey.java',
+    'core/src/test/java/vn/fonesi/apk/foundation/CatalogKeyTest.java',
+    'tools/test_catalog_key.sh', 'tools/test_style_migration.py',
+    'storage/sql/style_columns_3_to_4.sql',
     'core/src/main/java/vn/fonesi/apk/foundation/StyleValue.java',
     'core/src/test/java/vn/fonesi/apk/foundation/StyleValueTest.java',
     'tools/test_style_core.sh', 'tools/run_host_checks.py',

@@ -5,12 +5,18 @@ from compile_scope import requires_compile, HOST_ONLY
 from run_host_checks import COMMANDS, check_kind, parse_count
 
 STYLE = ['bash', 'tools/test_style_core.sh']
+CATALOG = ['bash', 'tools/test_catalog_key.sh']
+CATALOG_LINE = 'PASS CatalogKey owned HOST assertions=151; no SQLite adapter/Android/auth/provider acceptance\n'
 LINE = 'PASS StyleValue owned HOST assertions=128; no Android/rendering/persistence/provider acceptance\n'
 
 
 class HostIntegrationTest(unittest.TestCase):
     def test_style_is_required_once_without_limited_mode(self):
         self.assertEqual(COMMANDS.count(STYLE), 1)
+        self.assertEqual(COMMANDS.count(CATALOG), 1)
+        self.assertEqual(COMMANDS.count(['python3', 'tools/test_style_migration.py']), 1)
+        self.assertEqual(check_kind(CATALOG), 'synthetic_assertions')
+        self.assertEqual(parse_count(CATALOG, CATALOG_LINE), {'kind': 'synthetic_assertions', 'count': 151})
         self.assertEqual(check_kind(STYLE), 'synthetic_assertions')
         self.assertEqual(parse_count(STYLE, LINE), {'kind': 'synthetic_assertions', 'count': 128})
 
@@ -20,6 +26,11 @@ class HostIntegrationTest(unittest.TestCase):
                      LINE.replace('no Android/rendering/persistence/provider acceptance', 'Android PASS')]:
             with self.subTest(text=text), self.assertRaises(AssertionError):
                 parse_count(STYLE, text)
+
+        for text in ['', CATALOG_LINE.replace('151', '0'), CATALOG_LINE + CATALOG_LINE,
+                     'LIMITED HOST\n' + CATALOG_LINE, CATALOG_LINE.replace('no SQLite adapter', 'SQLite adapter PASS')]:
+            with self.subTest(text=text), self.assertRaises(AssertionError):
+                parse_count(CATALOG, text)
 
     def test_style_and_documentary_paths_do_not_recompile_apk(self):
         self.assertFalse(requires_compile(sorted(HOST_ONLY) + ['docs/status.json'], 'push'))
