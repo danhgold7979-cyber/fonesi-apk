@@ -47,7 +47,12 @@ class AndroidCatalogContractTest(unittest.TestCase):
         self.assertIn('final class OwnedCatalogWriter', source)
         self.assertNotIn('public final class OwnedCatalogWriter', source)
         for other in (ROOT / 'app/src/main/java').rglob('*.java'):
-            if other != p: self.assertNotIn('OwnedCatalogWriter', other.read_text())
+            if other != p and other.name != 'CatalogPageRead.java':
+                self.assertNotIn('OwnedCatalogWriter', other.read_text())
+        reader = (p.parent / 'CatalogPageRead.java').read_text()
+        self.assertIn('OwnedCatalogWriter.inspectReadOnly(', reader)
+        self.assertNotIn('OwnedCatalogWriter.apply(', reader)
+        self.assertNotIn('CommitBoundary', reader)
         for forbidden in ['openDatabase(', 'getWritableDatabase(', 'SQLiteOpenHelper',
                           'CREATE_IF_NECESSARY', 'execSQL(', 'startActivity(', 'Log.',
                           'new CommitBoundary', 'implements CommitBoundary', 'System.out']:
@@ -83,11 +88,24 @@ class AndroidCatalogContractTest(unittest.TestCase):
     def test_runtime_asset_pins_match_reviewed_source(self):
         source = (ROOT / 'app/src/main/java/vn/fonesi/app/storage/OwnedCatalogWriter.java').read_text()
         pins = re.findall(r'asset\(assets, "([^"]+)", "([0-9a-f]{64})"\)',source)
-        self.assertEqual(len(pins),4)
+        self.assertEqual(len(pins),5)
         self.assertEqual({name for name,_ in pins},{'catalog_v1_schema.sql',
                          'catalog_claim_revision.sql','catalog_update_existing_style.sql','catalog_read_style.sql'})
         for name,digest in pins:
             self.assertEqual(hashlib.sha256((ROOT/'storage/sql'/name).read_bytes()).hexdigest(),digest)
+
+    def test_read_inspection_reuses_exact_guard_without_write_or_open(self):
+        source = (ROOT / 'app/src/main/java/vn/fonesi/app/storage/OwnedCatalogWriter.java').read_text()
+        read = source[source.index('    static void inspectReadOnly('):source.index('    private static Snapshot guard(')]
+        self.assertIn('db.isOpen() && db.isReadOnly() && !db.inTransaction()', read)
+        self.assertIn('guard(db, definitions[0].trim(), definitions[1].trim(), cancellation, frame)', read)
+        self.assertIn('frame.beforeReadQuery = beforeQuery', read)
+        self.assertIn('ReadInspectionFailure(frame.uncertain', read)
+        for denied in ['beginTransaction', 'setTransactionSuccessful', 'executeUpdateDelete', '.close()', 'openDatabase']:
+            self.assertNotIn(denied, read)
+        guard = source[source.index('    private static Snapshot guard('):source.index('    private static String text(')]
+        self.assertNotIn('db.rawQuery(', guard)
+        self.assertIn('readQuery(db, frame,', guard)
 
     def test_owned_sql_projection_budget_primitives(self):
         # Native SQLite fixture only; no Android CursorWindow/OEM evidence.

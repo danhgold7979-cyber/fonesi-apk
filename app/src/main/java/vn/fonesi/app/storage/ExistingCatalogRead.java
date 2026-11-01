@@ -54,6 +54,7 @@ final class ExistingCatalogRead {
         private boolean closed;
         private boolean invalidated;
         private boolean closeUncertain;
+        private boolean externalResourcesUncertain;
         private Lease(SQLiteDatabase database, CancellationSignal cancellation,
                       Request request, AccessBoundary access, Context application,
                       File originalParent, File parent, File file, Identity directory, Identity leaf) {
@@ -85,6 +86,12 @@ final class ExistingCatalogRead {
                 throw new Failure(Status.REJECTED);
             }
         }
+        /** Owner only, before close: an uncertain external Cursor must quarantine this lease. */
+        void quarantineResources() {
+            require(Thread.currentThread() == owner && !closed);
+            invalidated = true;
+            externalResourcesUncertain = true;
+        }
         @Override public void close() {
             require(Thread.currentThread() == owner);
             if (closed) {
@@ -95,6 +102,7 @@ final class ExistingCatalogRead {
             closeUncertain = true;
             try { database.close(); }
             catch (RuntimeException error) { throw new Failure(Status.RESOURCE_UNCERTAIN); }
+            if (externalResourcesUncertain) throw new Failure(Status.RESOURCE_UNCERTAIN);
             closeUncertain = false;
             // Close failure never releases this process reservation.
             RESERVED.set(false);

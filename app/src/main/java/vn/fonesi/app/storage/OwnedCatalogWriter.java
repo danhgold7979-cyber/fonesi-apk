@@ -64,6 +64,7 @@ final class OwnedCatalogWriter {
         boolean entered;
         boolean committed;
         boolean uncertain;
+        Runnable beforeReadQuery;
     }
 
     private static final class Tracked<T extends AutoCloseable> implements AutoCloseable {
@@ -156,7 +157,7 @@ final class OwnedCatalogWriter {
             cancel.throwIfCanceled(); boundary.checkBeforeStaging(snapshot, key, style);
             frame.beginAttempted = true;
             db.beginTransactionNonExclusive(); frame.began = true; frame.transaction = true;
-            Snapshot current = guard(db, sql, cancel, frame);
+            Snapshot current = guard(db, sql.metaDdl, sql.catalogDdl, cancel, frame);
             if (!current.generation.equals(snapshot.generation) || current.revision != snapshot.revision) throw new Reject(Status.STALE_OR_MISSING);
             if (snapshot.revision == Long.MAX_VALUE) throw new Reject(Status.REVISION_EXHAUSTED);
             cancel.throwIfCanceled(); boundary.checkBeforeStaging(snapshot, key, style);
@@ -188,7 +189,7 @@ final class OwnedCatalogWriter {
                 else require("text".equals(text(row, 6)) && Arrays.equals(blob(row, 7), badgeBytes));
                 require(!row.moveToNext());
             }
-            current = guard(db, sql, cancel, frame);
+            current = guard(db, sql.metaDdl, sql.catalogDdl, cancel, frame);
             require(current.generation.equals(snapshot.generation) && current.revision == snapshot.revision + 1);
             cancel.throwIfCanceled();
             boundary.atCommit(snapshot, key, style, () -> {
@@ -224,14 +225,50 @@ final class OwnedCatalogWriter {
         return result(!frame.began && failure == Status.ROLLED_BACK ? Status.REJECTED : failure);
     }
 
-    private static Snapshot guard(SQLiteDatabase db, Sql sql, CancellationSignal cancel, Frame frame) {
+    /** Only a read-only format inspection; no write, file opener or authorization grant. */
+    static final class ReadInspectionFailure extends RuntimeException {
+        private static final long serialVersionUID = 1L;
+        final boolean uncertain;
+        final boolean cancelled;
+        ReadInspectionFailure(boolean uncertain, boolean cancelled) {
+            super("Catalog format unavailable"); this.uncertain = uncertain; this.cancelled = cancelled;
+        }
+    }
+    static void inspectReadOnly(SQLiteDatabase db, AssetManager assets,
+                                CancellationSignal cancellation, Runnable beforeQuery) {
+        Frame frame = new Frame();
+        frame.beforeReadQuery = beforeQuery;
+        try {
+            workerOnly();
+            require(db != null && assets != null && cancellation != null && beforeQuery != null);
+            beforeQuery.run(); cancellation.throwIfCanceled();
+            require(db.isOpen() && db.isReadOnly() && !db.inTransaction());
+            String schema = Sql.asset(assets, "catalog_v1_schema.sql", "a1578b11968a82fe88458401c93d44b9ff8bd0d3410651fc225a972f64f00c9d");
+            String[] definitions = schema.trim().split(";", -1);
+            require(definitions.length == 3 && definitions[2].trim().isEmpty());
+            guard(db, definitions[0].trim(), definitions[1].trim(), cancellation, frame);
+            beforeQuery.run(); cancellation.throwIfCanceled();
+        } catch (OperationCanceledException error) {
+            throw new ReadInspectionFailure(frame.uncertain, true);
+        } catch (Exception error) {
+            throw new ReadInspectionFailure(frame.uncertain, false);
+        }
+    }
+    private static Cursor readQuery(SQLiteDatabase db, Frame frame, String sql,
+                                    String[] args, CancellationSignal cancel) {
+        if (frame.beforeReadQuery != null) frame.beforeReadQuery.run();
+        cancel.throwIfCanceled();
+        return db.rawQuery(sql, args, cancel);
+    }
+
+    private static Snapshot guard(SQLiteDatabase db, String metaDdl, String catalogDdl, CancellationSignal cancel, Frame frame) {
         require("UTF-8".equals(pragmaText(db, "PRAGMA main.encoding", cancel, frame)));
         require(pragmaLong(db, "PRAGMA main.application_id", cancel, frame) == APPLICATION_ID);
         require(pragmaLong(db, "PRAGMA main.user_version", cancel, frame) == 1);
         require(pragmaLong(db, "PRAGMA ignore_check_constraints", cancel, frame) == 0);
         require(pragmaLong(db, "PRAGMA read_uncommitted", cancel, frame) == 0);
         int mainCount = 0, tempCount = 0;
-        try (Tracked<Cursor> rowsResource = tracked(db.rawQuery("SELECT CASE WHEN typeof(name)='text' AND length(CAST(name AS BLOB))<=16 "
+        try (Tracked<Cursor> rowsResource = tracked(readQuery(db, frame, "SELECT CASE WHEN typeof(name)='text' AND length(CAST(name AS BLOB))<=16 "
                 + "THEN CAST(name AS BLOB) END FROM pragma_database_list() LIMIT 3", null, cancel), frame)) {
             Cursor rows = rowsResource.value;
             require(rows.getColumnCount() == 1);
@@ -246,7 +283,7 @@ final class OwnedCatalogWriter {
             }
         }
         require(mainCount == 1);
-        try (Tracked<Cursor> rowsResource = tracked(db.rawQuery("SELECT 1 FROM sqlite_temp_master LIMIT 1", null, cancel), frame)) {
+        try (Tracked<Cursor> rowsResource = tracked(readQuery(db, frame, "SELECT 1 FROM sqlite_temp_master LIMIT 1", null, cancel), frame)) {
             Cursor rows = rowsResource.value;
             require(!rows.moveToFirst());
         }
@@ -255,28 +292,28 @@ final class OwnedCatalogWriter {
                 + "CASE WHEN length(CAST(tbl_name AS BLOB))<=128 THEN tbl_name END,"
                 + "CASE WHEN length(CAST(sql AS BLOB))<=2048 THEN CAST(sql AS BLOB) END,sql IS NULL "
                 + "FROM main.sqlite_master ORDER BY type,name LIMIT 4";
-        try (Tracked<Cursor> rowsResource = tracked(db.rawQuery(schemaQuery, null, cancel), frame)) {
+        try (Tracked<Cursor> rowsResource = tracked(readQuery(db, frame, schemaQuery, null, cancel), frame)) {
             Cursor rows = rowsResource.value;
             require(rows.getColumnCount() == 5 && rows.moveToFirst());
             require("index".equals(text(rows, 0)) && INDEX.equals(text(rows, 1))
                     && "manager_catalog".equals(text(rows, 2)) && rows.isNull(3) && integer(rows, 4) == 1);
             require(rows.moveToNext() && "table".equals(text(rows, 0)) && "catalog_meta".equals(text(rows, 1))
-                    && "catalog_meta".equals(text(rows, 2)) && Arrays.equals(blob(rows, 3), sql.metaDdl.getBytes(StandardCharsets.UTF_8)) && integer(rows, 4) == 0);
+                    && "catalog_meta".equals(text(rows, 2)) && Arrays.equals(blob(rows, 3), metaDdl.getBytes(StandardCharsets.UTF_8)) && integer(rows, 4) == 0);
             require(rows.moveToNext() && "table".equals(text(rows, 0)) && "manager_catalog".equals(text(rows, 1))
-                    && "manager_catalog".equals(text(rows, 2)) && Arrays.equals(blob(rows, 3), sql.catalogDdl.getBytes(StandardCharsets.UTF_8)) && integer(rows, 4) == 0);
+                    && "manager_catalog".equals(text(rows, 2)) && Arrays.equals(blob(rows, 3), catalogDdl.getBytes(StandardCharsets.UTF_8)) && integer(rows, 4) == 0);
             require(!rows.moveToNext());
         }
-        try (Tracked<Cursor> rowsResource = tracked(db.rawQuery("PRAGMA main.index_list('manager_catalog')", null, cancel), frame)) {
+        try (Tracked<Cursor> rowsResource = tracked(readQuery(db, frame, "PRAGMA main.index_list('manager_catalog')", null, cancel), frame)) {
             Cursor rows = rowsResource.value;
             require(rows.getColumnCount() == 5 && rows.moveToFirst());
             require(INDEX.equals(text(rows, 1)) && integer(rows, 2) == 1
                     && "pk".equals(text(rows, 3)) && integer(rows, 4) == 0 && !rows.moveToNext());
         }
-        try (Tracked<Cursor> rowsResource = tracked(db.rawQuery("PRAGMA main.index_list('catalog_meta')", null, cancel), frame)) {
+        try (Tracked<Cursor> rowsResource = tracked(readQuery(db, frame, "PRAGMA main.index_list('catalog_meta')", null, cancel), frame)) {
             Cursor rows = rowsResource.value;
             require(rows.getColumnCount() == 5 && !rows.moveToFirst());
         }
-        try (Tracked<Cursor> rowsResource = tracked(db.rawQuery("PRAGMA main.index_xinfo('sqlite_autoindex_manager_catalog_1')", null, cancel), frame)) {
+        try (Tracked<Cursor> rowsResource = tracked(readQuery(db, frame, "PRAGMA main.index_xinfo('sqlite_autoindex_manager_catalog_1')", null, cancel), frame)) {
             Cursor rows = rowsResource.value;
             require(rows.getColumnCount() == 6);
             for (int i = 0; i < 3; i++) {
@@ -286,7 +323,7 @@ final class OwnedCatalogWriter {
             }
             require(!rows.moveToNext());
         }
-        try (Tracked<Cursor> rowResource = tracked(db.rawQuery("SELECT id,typeof(catalog_id),CASE WHEN length(CAST(catalog_id AS BLOB))=36 "
+        try (Tracked<Cursor> rowResource = tracked(readQuery(db, frame, "SELECT id,typeof(catalog_id),CASE WHEN length(CAST(catalog_id AS BLOB))=36 "
                 + "THEN CAST(catalog_id AS BLOB) END,typeof(revision),CASE WHEN typeof(revision)='integer' THEN revision END FROM main.catalog_meta LIMIT 2", null, cancel), frame)) {
             Cursor row = rowResource.value;
             require(row.getColumnCount() == 5 && row.moveToFirst() && integer(row, 0) == 1
@@ -301,14 +338,14 @@ final class OwnedCatalogWriter {
         }
     }
     private static String pragmaText(SQLiteDatabase db, String sql, CancellationSignal cancel, Frame frame) {
-        try (Tracked<Cursor> cursorResource = tracked(db.rawQuery(sql, null, cancel), frame)) {
+        try (Tracked<Cursor> cursorResource = tracked(readQuery(db, frame, sql, null, cancel), frame)) {
             Cursor cursor = cursorResource.value;
             require(cursor.getColumnCount() == 1 && cursor.moveToFirst());
             String value = text(cursor, 0); require(!cursor.moveToNext()); return value;
         }
     }
     private static long pragmaLong(SQLiteDatabase db, String sql, CancellationSignal cancel, Frame frame) {
-        try (Tracked<Cursor> cursorResource = tracked(db.rawQuery(sql, null, cancel), frame)) {
+        try (Tracked<Cursor> cursorResource = tracked(readQuery(db, frame, sql, null, cancel), frame)) {
             Cursor cursor = cursorResource.value;
             require(cursor.getColumnCount() == 1 && cursor.moveToFirst());
             long value = integer(cursor, 0); require(!cursor.moveToNext()); return value;

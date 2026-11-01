@@ -100,10 +100,10 @@ class ShellSourceContractTest(unittest.TestCase):
     def test_source_has_no_dispatch_or_persistent_state_path(self):
         sources = list((ROOT / 'java').rglob('*.java'))
         self.assertEqual(sorted(str(p.relative_to(ROOT / 'java')) for p in sources), [
-            'vn/fonesi/app/MainActivity.java', 'vn/fonesi/app/storage/ExistingCatalogRead.java',
-            'vn/fonesi/app/storage/OwnedCatalogWriter.java'])
+            'vn/fonesi/app/MainActivity.java', 'vn/fonesi/app/storage/CatalogPageRead.java',
+            'vn/fonesi/app/storage/ExistingCatalogRead.java', 'vn/fonesi/app/storage/OwnedCatalogWriter.java'])
         source = (ROOT / 'java/vn/fonesi/app/MainActivity.java').read_text()
-        for dormant in ['OwnedCatalogWriter', 'ExistingCatalogRead', 'CatalogOwnership', 'CatalogKey', 'StyleValue']:
+        for dormant in ['OwnedCatalogWriter', 'ExistingCatalogRead', 'CatalogPageRead', 'CatalogPage', 'CatalogOwnership', 'CatalogKey', 'StyleValue']:
             self.assertNotIn(dormant, source)
         self.assertIn('package vn.fonesi.app;', source)
         self.assertIn('setContentView(R.layout.activity_main)', source)

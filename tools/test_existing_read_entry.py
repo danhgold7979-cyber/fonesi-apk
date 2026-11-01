@@ -45,6 +45,18 @@ class ExistingReadSourceTest(unittest.TestCase):
         self.assertIn('throw new Failure(Status.REJECTED)', sidecars)
         self.assertNotIn('.exists()', SOURCE)
 
+    def test_external_cursor_uncertainty_is_owner_only_sticky_before_close(self):
+        quarantine = SOURCE[SOURCE.index('        void quarantineResources()'):SOURCE.index('        @Override public void close()')]
+        self.assertIn('Thread.currentThread() == owner && !closed', quarantine)
+        self.assertIn('invalidated = true', quarantine)
+        self.assertIn('externalResourcesUncertain = true', quarantine)
+        self.assertNotIn('RESERVED', quarantine)
+        close = SOURCE[SOURCE.index('        @Override public void close()'):SOURCE.index('    private static final class Identity')]
+        check = 'if (externalResourcesUncertain) throw new Failure(Status.RESOURCE_UNCERTAIN)'
+        self.assertLess(close.index('database.close()'), close.index(check))
+        self.assertLess(close.index(check), close.index('closeUncertain = false'))
+        self.assertLess(close.index(check), close.index('RESERVED.set(false)'))
+
     def test_resource_transfer_close_failure_quarantine(self):
         close = SOURCE[SOURCE.index('        @Override public void close()'):SOURCE.index('    private static final class Identity')]
         self.assertLess(close.index('require(Thread.currentThread() == owner)'), close.index('if (closed) {'))
@@ -57,7 +69,7 @@ class ExistingReadSourceTest(unittest.TestCase):
         self.assertIn('} else if (openAttempted) {', SOURCE)
         self.assertIn('if (!transferred)', SOURCE)
         self.assertIn('require(!closed && !invalidated)', SOURCE)
-        lease_use = SOURCE[SOURCE.index('        SQLiteDatabase database()'):SOURCE.index('        @Override public void close()')]
+        lease_use = SOURCE[SOURCE.index('        SQLiteDatabase database()'):SOURCE.index('        /** Owner only, before close:')]
         self.assertIn('verifyPaths(originalParent, parent, file, directory, leaf)', lease_use)
         self.assertEqual(lease_use.count('check(cancellation, access, request)'), 2)
         self.assertIn('static final class Failure extends RuntimeException', SOURCE)
