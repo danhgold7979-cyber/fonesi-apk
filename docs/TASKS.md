@@ -1,6 +1,6 @@
 # Fresh APK task contracts — version 1
 
-8 original phases, 32 original steps, 4 phone gates. **2/32 documentary tasks accepted (6.25% of tasks; NOT functionality). P0: 2/4 tasks (50%).** T03 remains in progress; T04 is not accepted; all runtime, product and release acceptance remains open. Read `requirements.json` for the full atomic obligations mapped to these contracts. Each task requires its mapped requirement-specific positive/negative/race/stop conditions in addition to the contract below. This file does not replace or shorten the 362 assertions.
+8 original phases, 32 original steps, 4 phone gates. **4/32 tasks accepted (12.5% of tasks; NOT functionality). P0: 4/4 tasks.** T01/T02 documentary and T03/T04 exact-source HOST/COMPILE accepted; all runtime, product and release acceptance remains open. Read `requirements.json` for the full atomic obligations mapped to these contracts. Each task requires its mapped requirement-specific positive/negative/race/stop conditions in addition to the contract below. This file does not replace or shorten the 362 assertions.
 
 ## Global execution rules
 
@@ -48,7 +48,7 @@ Original: `2fac016e3b28e4d9f21390c221cad1df7a382c86:docs/ROADMAP.md:L20`
 
 ## APK-P0-T03 — Pin fresh toolchain and independently build foundation
 
-Status: **IN_PROGRESS**; accepted evidence: none.
+Status: **ACCEPTED_HOST_COMPILE**; accepted evidence: `docs/evidence/foundation-acceptance.json` (exact a3372fa6 only; no runtime acceptance).
 
 Original: `2fac016e3b28e4d9f21390c221cad1df7a382c86:docs/ROADMAP.md:L21`
 
@@ -65,7 +65,7 @@ Original: `2fac016e3b28e4d9f21390c221cad1df7a382c86:docs/ROADMAP.md:L21`
 
 ## APK-P0-T04 — Record reproducible baseline artifact and limits
 
-Status: **IN_PROGRESS**; accepted evidence: none.
+Status: **ACCEPTED_HOST_COMPILE**; accepted evidence: `docs/evidence/foundation-acceptance.json` (exact a3372fa6 only; no runtime acceptance).
 
 Original: `2fac016e3b28e4d9f21390c221cad1df7a382c86:docs/ROADMAP.md:L22`
 

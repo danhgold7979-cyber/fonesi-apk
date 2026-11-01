@@ -3,15 +3,15 @@
   "phase_total": 8,
   "task_total": 32,
   "requirement_total": 362,
-  "completed_tasks": 2,
+  "completed_tasks": 4,
   "accepted_product_requirements": 0,
-  "current_task": "APK-P0-T03",
-  "current_activity": "T01/T02 documentary accepted; coherent T03/T04 local source preparation, maintenance/receipt batch under review; actual batch integrated proof pending",
+  "current_task": null,
+  "current_activity": "Phase 0 accepted; phase 1 not started",
   "branch": "phase-00",
   "provider": "UNAVAILABLE_NOT_ACCEPTED",
   "evidence": {
-    "HOST": "NOT_RUN",
-    "COMPILE": "NOT_RUN",
+    "HOST": "PASS_FOUNDATION_ONLY",
+    "COMPILE": "PASS_FOUNDATION_ONLY",
     "ANDROID": "NOT_RUN",
     "PROVIDER": "NOT_RUN",
     "PHONE": "NOT_RUN"
@@ -24,12 +24,10 @@
     "4": "NOT_RUN"
   },
   "blockers": [
-    "Local maintenance batch uncommitted under phase-batched publication hold",
-    "Exact batch Android compile/lint/package verification not run; OldTargetApi finite debug policy review required",
-    "No eligible proven provider",
+    "No eligible proven provider; all eight-app compatibility UNKNOWN",
     "Phone installation/accounts require owner action and synthetic-first gate"
   ],
-  "evidence_scope": "Product requirement acceptance only; bounded foundation check receipts below are not whole requirement acceptance",
+  "evidence_scope": "Accepted exact-source foundation HOST/COMPILE only; no product requirement or runtime acceptance",
   "documentary_checkpoint": {
     "commit": "d87dfa73fae1bce6ab8188d71f910a6e9d49e85d",
     "independent_review": "PASS",
@@ -40,16 +38,17 @@
     "documentary_negative_tests": 26,
     "shell_static_tests": 13,
     "synthetic_preflight_checks": 83,
-    "host_limit": "CI41287303218 exact3d1 JDK17 HOST PASS; subsequent local batch only affected synthetic checks",
-    "COMPILE": "CI41287303218_ASSEMBLE_PASS_LINT_FAIL_PACKAGE_VERIFY_SKIPPED",
+    "host_limit": "Exact a3372fa6 CI41290554652 JDK17 HOST PASS: 80 Python cases and 83 Java synthetic assertions",
+    "COMPILE": "PASS_EXACT_A3372FA6_ACTUAL_APK_STATIC_PACKAGE_AND_SIGNATURE",
     "ANDROID": "NOT_RUN",
     "PROVIDER": "NOT_RUN",
     "PHONE": "NOT_RUN",
     "manifest_predicate_tests": 20,
     "sdk_preflight_predicate_tests": 5,
-    "receipt_scope": "Counts are bounded foundation fixtures, not product/Android/PHONE evidence; local batch actual package verification NOT_RUN",
+    "receipt_scope": "Actual accepted source is a3372fa6, not this metadata-only successor; ANDROID/PROVIDER/PHONE not run",
     "baseline_receipt_tests": 6,
-    "lint_policy_tests": 6
+    "lint_policy_tests": 6,
+    "compile_aggregate_tests": 4
   },
   "documentary_progress": {
     "phase0_accepted": 2,
@@ -60,5 +59,15 @@
     "all_task_percent": 6.25,
     "scope": "DOCUMENTARY_TASKS_ONLY_NOT_PRODUCT_FUNCTIONALITY"
   },
-  "documentary_acceptance_registry": "docs/evidence/documentary-acceptance.json"
+  "documentary_acceptance_registry": "docs/evidence/documentary-acceptance.json",
+  "foundation_acceptance_registry": "docs/evidence/foundation-acceptance.json",
+  "task_progress": {
+    "phase0_accepted": 4,
+    "phase0_total": 4,
+    "phase0_task_percent": 100.0,
+    "all_accepted": 4,
+    "all_total": 32,
+    "all_task_percent": 12.5,
+    "scope": "TASK_COUNTS_ONLY_NOT_PRODUCT_FUNCTIONALITY"
+  }
 }

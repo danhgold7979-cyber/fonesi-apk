@@ -1,0 +1,48 @@
+{
+  "schema_version": 1,
+  "scope": "FOUNDATION_TASKS_HOST_COMPILE_ONLY_NOT_PRODUCT_FUNCTIONALITY",
+  "accepted_tasks": [
+    "APK-P0-T03",
+    "APK-P0-T04"
+  ],
+  "root_acceptance": "Parent explicit acceptance 2026-11-01 after actual independent artifact review",
+  "source_sha": "a3372fa6be3b6872bd5f4c402ebd72c233701127",
+  "source_tree": "df1757a4d2775b6146c0291092e7b2dfe31301fe",
+  "ci_run": 41290554652,
+  "ci_result": "SUCCESS",
+  "independent_review": {
+    "path": "docs/evidence/P0_T03_T04_ACTUAL_ACCEPTANCE.md",
+    "sha256": "3489acfc71331a7e0af7872e816f80c1257994abf20e6be0729a6fe154694a55",
+    "original_unredacted_sha256": "ec2146aeae55e608a40c9d72e2918a3fbcb637afe16be35365937cb569b01dfa",
+    "copy_scope": "PUBLIC_REDACTED_IDENTIFIERS_ONLY"
+  },
+  "apk": {
+    "application_id": "vn.fonesi.app",
+    "version_code": 1,
+    "version_name": "0.1.0-foundation",
+    "bytes": 15034,
+    "sha256": "a51e1998ced7f42d7c892a957e8b54750ea45c808c83c137007999a4ad8af658",
+    "scope": "DEBUG_FOUNDATION_NOT_RELEASE_OR_PROVIDER"
+  },
+  "durable_evidence": {
+    "version": 0,
+    "bytes": 46220,
+    "sha256": "8c5c2146425e63b27e48af22b00cf80d6c2ac20b1df39a122b58b6ed162d6114",
+    "retention": "Owner-private retained copy; identifiers in private handoff only",
+    "filename": "Fonesi-APK-P0-a3372fa6-evidence-2026-11-01.zip"
+  },
+  "evidence": {
+    "HOST": "PASS_FOUNDATION_ONLY",
+    "COMPILE": "PASS_FOUNDATION_ONLY",
+    "ANDROID": "NOT_RUN",
+    "PROVIDER": "NOT_RUN",
+    "PHONE": "NOT_RUN"
+  },
+  "lint": "One OldTargetApi Hint recorded; not zero-warning or release acceptance",
+  "accepted_product_requirements": 0,
+  "main_at_acceptance": {
+    "commit": "0938ade7b35c007590236f36afe38ac95ce6dbf3",
+    "tree": "8a99d6a9cd758058b3e648e918446d6ca7453148",
+    "scope": "Historical archive at acceptance time; not a current main-state assertion"
+  }
+}

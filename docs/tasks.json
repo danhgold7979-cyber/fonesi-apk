@@ -2,7 +2,7 @@
   "version": 1,
   "phases": 8,
   "tasks_total": 32,
-  "completed_count": 2,
+  "completed_count": 4,
   "phone_gates": {
     "1": [
       9,
@@ -102,7 +102,7 @@
       "phase_id": 0,
       "step": 3,
       "title": "Pin fresh toolchain and independently build foundation",
-      "status": "IN_PROGRESS",
+      "status": "ACCEPTED_HOST_COMPILE",
       "source": {
         "commit": "2fac016e3b28e4d9f21390c221cad1df7a382c86",
         "path": "docs/ROADMAP.md",
@@ -120,7 +120,9 @@
         "HOST",
         "COMPILE"
       ],
-      "accepted_evidence": [],
+      "accepted_evidence": [
+        "docs/evidence/foundation-acceptance.json#APK-P0-T03"
+      ],
       "requirement_ids_integration": [],
       "requirement_ids_primary": [
         "P054",
@@ -133,7 +135,7 @@
       "phase_id": 0,
       "step": 4,
       "title": "Record reproducible baseline artifact and limits",
-      "status": "IN_PROGRESS",
+      "status": "ACCEPTED_HOST_COMPILE",
       "source": {
         "commit": "2fac016e3b28e4d9f21390c221cad1df7a382c86",
         "path": "docs/ROADMAP.md",
@@ -151,7 +153,9 @@
         "HOST",
         "COMPILE"
       ],
-      "accepted_evidence": [],
+      "accepted_evidence": [
+        "docs/evidence/foundation-acceptance.json#APK-P0-T04"
+      ],
       "requirement_ids_integration": [],
       "requirement_ids_primary": [
         "RM-04a",

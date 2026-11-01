@@ -1697,7 +1697,6 @@
   "old_implementation_reuse": false,
   "gate": "PASSED_DURABLE_BACKUP_AND_PARENT_AUTHORIZATION",
   "recovery": {
-    "library_file_id": "libfile_7df66b3b77d4819197e586990741e43d",
     "version": 0,
     "zip_sha256": "686dfaf20fc211d99d29c13219db4781a4bc1f681313d0ed3d18c6e29237a17f",
     "bundle_sha256": "ee9ed3f85e5f2a805d56d90493cf9406f4ce48aa194f4835aa5f323261f85f5f",

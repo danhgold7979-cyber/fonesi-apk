@@ -1,6 +1,8 @@
-# Current documentary acceptance — 2026-11-01
+# Phase 0 accepted baseline — 2026-11-01
 
-Root accepted APK-P0-T01/T02 after independent closeout (`evidence/documentary-acceptance.json`). 2/4 phase0 tasks (50%) and2/32 total tasks (6.25%) are DOCUMENTARY task counts, not product functionality. T03/T04 and all product/runtime requirements remain unaccepted. Main0938ade7 retains historical tree; clean-active scope is phase-00. No new public push is authorized by this local record.
+Root accepted T01/T02 documentary and T03/T04 exact-source HOST/COMPILE after independent actual-artifact review. **4/4 phase0 tasks; 4/32 overall tasks (12.5%), not tool functionality.** Accepted source `a3372fa6be3b6872bd5f4c402ebd72c233701127`, CI `41290554652` SUCCESS. Registry: `evidence/foundation-acceptance.json`; durable artifact and review pins included. One OldTargetApi Hint is recorded, not hidden. ANDROID/PROVIDER/PHONE remain NOT_RUN; provider unavailable.
+
+This closeout changes metadata/checkers only, not the accepted APK source/build/workflow. Prior receipts remain bound to their exact source, not this successor. At acceptance time main0938ade7 held the archival tree and phase-00 was clean-active; this is a historical fact, not a current main-state assertion. No main merge, remote update or new phase is authorized by this record.
 
 ## Historical initial source-entry checkpoint (superseded pending-cleanup statement)
 

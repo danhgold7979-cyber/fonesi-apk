@@ -48,7 +48,8 @@ class PlanIntegrityTest(unittest.TestCase):
     def test_shortened_nonempty_acceptance(self):
         self.check_mutation('docs/requirements.json',lambda x:x['requirements'][0].update(acceptance_verbatim='P opens.'))
     def test_status_provider_pass(self):
-        self.check_mutation('docs/status.json',lambda x:x['evidence'].update(PROVIDER='PASS'))
+        for tier in ('ANDROID','PROVIDER','PHONE'):
+            self.check_mutation('docs/status.json',lambda x:x['evidence'].update({tier:'PASS'}))
     def test_status_false_completed(self):
         self.check_mutation('docs/status.json',lambda x:x.update(completed_tasks=32))
     def test_status_false_requirement_acceptance(self):
@@ -65,6 +66,9 @@ class PlanIntegrityTest(unittest.TestCase):
         self.check_mutation('docs/status.json',lambda x:x['documentary_progress'].update(scope='PRODUCT_COMPLETE'))
     def test_t03_false_acceptance(self):
         self.check_mutation('docs/tasks.json',lambda x:x['tasks'][2].update(status='ACCEPTED_DOCUMENTARY'))
+        self.check_mutation('docs/evidence/foundation-acceptance.json',lambda x:x.update(source_sha='0'*40))
+        self.check_mutation('docs/status.json',lambda x:x['task_progress'].update(all_task_percent=100))
+        self.check_mutation('docs/tasks.json',lambda x:x['tasks'][4].update(status='ACCEPTED_HOST_COMPILE'))
     def test_missing_documentary_receipt(self):
         self.check_mutation('docs/tasks.json',lambda x:x['tasks'][0].update(accepted_evidence=[]))
     def test_archival_main_false_clean(self):
