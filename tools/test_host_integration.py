@@ -1,7 +1,9 @@
 """Owned receipt/routing fixtures, not real JDK17 or APK evidence."""
 from pathlib import Path
 import unittest
-from compile_scope import requires_compile, HOST_ONLY
+from unittest.mock import patch
+import subprocess
+from compile_scope import requires_compile, HOST_ONLY, comparison_paths, ACCEPTED_TREE
 from run_host_checks import COMMANDS, check_kind, parse_count
 
 STYLE = ['bash', 'tools/test_style_core.sh']
@@ -65,7 +67,8 @@ class HostIntegrationTest(unittest.TestCase):
         for path in ['app/src/main/AndroidManifest.xml', 'app/build.gradle', 'settings.gradle',
                      'gradle.properties', 'gradlew', 'gradle/wrapper/gradle-wrapper.jar',
                      'tools/verify_apk.py', 'tools/verify_lint.py', 'tools/run_compile_checks.py',
-                     'tools/check_toolchain.py', 'new-unknown-input',
+                     'tools/check_toolchain.py', '.github/workflows/phase-foundation.yml',
+                     'app/src/main/assets/new.sql', 'build.gradle', 'new-unknown-input',
                      'core/src/main/java/vn/fonesi/apk/foundation/UpdatePreflight.java',
                      'core/src/main/java/vn/fonesi/apk/foundation/CatalogKey.java',
                      'core/src/main/java/vn/fonesi/apk/foundation/StyleValue.java',
@@ -75,6 +78,38 @@ class HostIntegrationTest(unittest.TestCase):
             with self.subTest(path=path):
                 self.assertTrue(requires_compile([path], 'push'))
                 self.assertTrue(requires_compile(['docs/test.md', path], 'pull_request'))
+
+    def test_comparison_requires_exact_tree_ancestor_and_diff(self):
+        with patch('compile_scope.subprocess.check_output',
+                   side_effect=[ACCEPTED_TREE + '\n', b'docs/status.json\0']) as output, \
+             patch('compile_scope.subprocess.run') as run:
+            self.assertEqual(comparison_paths(Path('/owned'), 'current'), ['docs/status.json'])
+            self.assertEqual(output.call_count, 2)
+            run.assert_called_once()
+            self.assertTrue(run.call_args.kwargs['check'])
+        with patch('compile_scope.subprocess.check_output', return_value='wrong-tree'), \
+             patch('compile_scope.subprocess.run') as run, self.assertRaises(AssertionError):
+            comparison_paths(Path('/owned'), 'current')
+        run.assert_not_called()
+
+    def test_missing_source_or_failed_ancestry_or_diff_never_skips(self):
+        error = subprocess.CalledProcessError(1, ['git'])
+        with patch('compile_scope.subprocess.check_output', side_effect=error), \
+             self.assertRaises(subprocess.CalledProcessError):
+            comparison_paths(Path('/owned'), 'current')
+        with patch('compile_scope.subprocess.check_output', return_value=ACCEPTED_TREE), \
+             patch('compile_scope.subprocess.run', side_effect=error), \
+             self.assertRaises(subprocess.CalledProcessError):
+            comparison_paths(Path('/owned'), 'current')
+        with patch('compile_scope.subprocess.check_output', side_effect=[ACCEPTED_TREE, error]), \
+             patch('compile_scope.subprocess.run'), self.assertRaises(subprocess.CalledProcessError):
+            comparison_paths(Path('/owned'), 'current')
+
+    def test_invalid_filename_encoding_never_skips(self):
+        with patch('compile_scope.subprocess.check_output',
+                   side_effect=[ACCEPTED_TREE, b'docs/\xff\0']), \
+             patch('compile_scope.subprocess.run'), self.assertRaises(UnicodeDecodeError):
+            comparison_paths(Path('/owned'), 'current')
 
     def test_workflow_routes_compile_after_host_without_new_apk_for_host_only(self):
         workflow = (Path(__file__).resolve().parents[1] / '.github/workflows/phase-foundation.yml').read_text()

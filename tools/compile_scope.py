@@ -4,7 +4,10 @@ import os
 from pathlib import Path
 import subprocess
 
-ACCEPTED_SOURCE = 'a3372fa6be3b6872bd5f4c402ebd72c233701127'
+# Independently verified HOST/COMPILE snapshot; not product/runtime acceptance.
+ACCEPTED_SOURCE = '7367a445d83e602aba1fcf9b526b3f7ae35bfc92'
+ACCEPTED_TREE = '3212d99077cf7f3148a924cafb4e8c4f3657e133'
+PRIOR_RUN = '41323172540'
 HOST_ONLY = {
     'README.md',
     'core/src/test/java/vn/fonesi/apk/foundation/CatalogKeyTest.java',
@@ -14,7 +17,6 @@ HOST_ONLY = {
     'tools/check_plan.py', 'tools/test_plan_integrity.py',
     'tools/record_baseline.py', 'tools/test_baseline_receipt.py',
     'tools/compile_scope.py', 'tools/test_host_integration.py',
-    '.github/workflows/phase-foundation.yml',
 }
 
 
@@ -24,20 +26,30 @@ def requires_compile(paths, event):
         path not in HOST_ONLY and not path.startswith('docs/') for path in paths)
 
 
+def comparison_paths(root, sha):
+    # Exact source/tree identity and ancestry are mandatory. Missing Git objects or
+    # any Git error propagate; there is no empty-diff fallback or ref mutation.
+    tree = subprocess.check_output(
+        ['git', 'rev-parse', ACCEPTED_SOURCE + '^{tree}'], cwd=root, text=True).strip()
+    assert tree == ACCEPTED_TREE, 'Retained comparison tree mismatch'
+    subprocess.run(['git', 'merge-base', '--is-ancestor', ACCEPTED_SOURCE, sha],
+                   cwd=root, check=True)
+    raw = subprocess.check_output(['git', 'diff', '--no-renames', '--name-only', '-z',
+                                   ACCEPTED_SOURCE, sha], cwd=root)
+    return [path for path in raw.decode('utf-8', errors='strict').split('\0') if path]
+
+
 def main():
     root = Path(__file__).resolve().parents[1]
     sha = subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=root, text=True).strip()
     assert sha == os.environ['EXPECTED_SOURCE_SHA']
-    # No empty/missing-base fallback: Git failure prevents the downstream job decision.
-    subprocess.run(['git', 'merge-base', '--is-ancestor', ACCEPTED_SOURCE, sha], cwd=root, check=True)
-    paths = subprocess.check_output(['git', 'diff', '--no-renames', '--name-only', '-z',
-                                     ACCEPTED_SOURCE, sha], cwd=root).decode().split('\0')
-    paths = [path for path in paths if path]
+    paths = comparison_paths(root, sha)
     needed = requires_compile(paths, os.environ['GITHUB_EVENT_NAME'])
     receipt = {'source_sha': sha, 'comparison_source': ACCEPTED_SOURCE,
                'changed_paths': paths, 'compile_required': needed,
                'scope': 'INPUT_COMPARISON_NOT_COMPILE_ACCEPTANCE',
-               'prior_run': '41290554652', 'new_COMPILE': 'NOT_RUN',
+               'comparison_tree': ACCEPTED_TREE,
+               'prior_run': PRIOR_RUN, 'new_COMPILE': 'NOT_RUN',
                'ANDROID': 'NOT_RUN', 'PROVIDER': 'NOT_RUN', 'PHONE': 'NOT_RUN'}
     (root / 'compile-scope.json').write_text(json.dumps(receipt, indent=2) + '\n')
     with open(os.environ['GITHUB_OUTPUT'], 'a') as output:
