@@ -1,0 +1,34 @@
+name: Read-only Android environment inventory
+on:
+  push:
+    branches: ['phase-*']
+    paths:
+      - '.github/workflows/android-environment-inventory.yml'
+      - 'tools/android_environment_inventory.py'
+      - 'tools/test_android_environment_inventory.py'
+      - 'docs/independent/ANDROID_ENVIRONMENT_INVENTORY.md'
+permissions:
+  contents: read
+jobs:
+  inventory:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    env:
+      EXPECTED_SOURCE_SHA: ${{ github.sha }}
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+          ref: ${{ github.sha }}
+      - name: Bind exact source
+        run: test "$(git rev-parse HEAD)" = "$EXPECTED_SOURCE_SHA"
+      - name: Owned synthetic inventory tests
+        run: python3 tools/test_android_environment_inventory.py
+      - name: Inspect existing metadata without invoking Android tools
+        run: python3 tools/android_environment_inventory.py
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: android-environment-inventory-${{ github.sha }}
+          path: android-environment-inventory.json
+          if-no-files-found: error
+          retention-days: 14
