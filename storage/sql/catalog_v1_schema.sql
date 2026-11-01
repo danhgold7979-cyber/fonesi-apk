@@ -1,0 +1,2 @@
+CREATE TABLE catalog_meta (id INTEGER PRIMARY KEY CHECK(id=1), catalog_id TEXT NOT NULL, revision INTEGER NOT NULL CHECK(revision>=0));
+CREATE TABLE manager_catalog (engine_key TEXT NOT NULL, clone_id TEXT NOT NULL, package_name TEXT NOT NULL, label TEXT NOT NULL, group_name TEXT, legacy_launch_token TEXT, accent_key TEXT, badge_text TEXT, cluster_id TEXT, readiness TEXT NOT NULL CHECK(readiness='UNVERIFIED'), launch_allowed INTEGER NOT NULL CHECK(launch_allowed=0), PRIMARY KEY(engine_key,clone_id));

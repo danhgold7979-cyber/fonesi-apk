@@ -4,6 +4,7 @@ import hashlib
 from pathlib import Path
 import unittest
 from record_baseline import bind
+from verify_apk import catalog_source_hashes
 from run_host_checks import COMMANDS, parse_count, check_kind
 
 
@@ -18,7 +19,7 @@ class BaselineReceiptTest(unittest.TestCase):
             checks.append({'command': command, 'exit': 0, 'kind': kind, 'count': None if kind == 'integrity_command' else 1})
         self.host = {**base, 'tier': 'HOST', 'result': 'PASS', 'checks': checks}
         self.compile = {**base, 'tier': 'COMPILE', 'manifest': 'PASS', 'signature': 'PASS_DEBUG_ONLY',
-                        'backup_rules': 'PASS_PACKAGED_STATIC_ONLY', 'application_id': 'vn.fonesi.app',
+                        'backup_rules': 'PASS_PACKAGED_STATIC_ONLY', 'catalog_sql_assets': catalog_source_hashes(), 'application_id': 'vn.fonesi.app',
                         'version_code': '1', 'version_name': '0.1.0-foundation',
                         'bytes': len(self.bytes), 'sha256': hashlib.sha256(self.bytes).hexdigest()}
         self.lint = {**base, 'scope': 'FOUNDATION_DEBUG_BASELINE_ONLY', 'release_acceptance': False,
@@ -54,7 +55,8 @@ class BaselineReceiptTest(unittest.TestCase):
     def test_wrong_artifact_semantics_and_runtime_uplift(self):
         for field, value in [('version_code', '2'), ('version_name', 'wrong'),
                              ('signature', 'NOT_RUN'), ('backup_rules', 'NOT_RUN'),
-                             ('manifest', 'NOT_RUN'), ('application_id', 'other'), ('PHONE', 'PASS')]:
+                             ('manifest', 'NOT_RUN'), ('application_id', 'other'), ('PHONE', 'PASS'),
+                             ('catalog_sql_assets', {}), ('catalog_sql_assets', {'assets/catalog_v1_schema.sql':'0'*64})]:
             old = self.compile[field]
             self.compile[field] = value
             with self.assertRaises(AssertionError): self.check()

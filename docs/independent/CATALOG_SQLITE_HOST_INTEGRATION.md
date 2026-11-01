@@ -1,5 +1,7 @@
 # Catalog decoder + SQLite fragment HOST milestone
 
+> Historical HOST-only milestone at `8b372a22`. Later Android adapter source packaging supersedes the detached-source classification; the original evidence remains scoped to this historical commit.
+
 This integration requires the new catalog Java suite and owned nativeSQLite
 migration fixture exactly once in the HOST aggregate. The parser accepts a single
 positive catalog assertion receipt with explicit no-adapter/Android/auth/provider

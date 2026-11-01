@@ -64,6 +64,25 @@ def validate_packaged_rules(manifest_xml, resource_dump, rules_xml, members):
         assert all(child.tag == 'exclude' and child.attrib == {'domain':child.get('domain'), 'path':'.'} for child in mode)
         assert {child.get('domain') for child in mode} == RULE_DOMAINS
 
+CATALOG_ASSETS = ('catalog_v1_schema.sql', 'catalog_claim_revision.sql',
+                  'catalog_update_existing_style.sql', 'catalog_read_style.sql',
+                  'style_columns_3_to_4.sql')
+
+def catalog_source_hashes():
+    root = pathlib.Path(__file__).resolve().parents[1] / 'storage/sql'
+    assert {p.name for p in root.iterdir()} == set(CATALOG_ASSETS), 'unexpected SQL source asset'
+    return {'assets/' + name: hashlib.sha256((root / name).read_bytes()).hexdigest()
+            for name in CATALOG_ASSETS}
+
+def validate_catalog_assets(archive):
+    expected = catalog_source_hashes()
+    names = [name for name in archive.namelist() if name.startswith('assets/')]
+    assert len(names) == len(expected) and set(names) == set(expected), 'missing/extra/duplicate SQL assets'
+    for name, digest in expected.items():
+        assert archive.getinfo(name).file_size <= 4096, 'SQL asset budget exceeded'
+        assert hashlib.sha256(archive.read(name)).hexdigest() == digest, 'packaged SQL differs from reviewed source'
+    return expected
+
 def main():
     p=argparse.ArgumentParser();p.add_argument('apk');args=p.parse_args()
     apk=pathlib.Path(args.apk);sdk=pathlib.Path(os.environ['ANDROID_HOME'])
@@ -92,8 +111,10 @@ def main():
     rules_xml=observations['extraction_rules'];signature=observations['signature']
     try:validate_manifest(xml)
     except (AssertionError,ET.ParseError,KeyError,AttributeError) as error:failures.append('manifest predicate: '+str(error))
+    sql_assets = None
     try:
         with zipfile.ZipFile(apk) as archive:
+            sql_assets = validate_catalog_assets(archive)
             validate_packaged_rules(xml,resource_dump,rules_xml,archive.namelist())
     except (AssertionError,ET.ParseError,KeyError,ValueError,AttributeError,OSError,zipfile.BadZipFile) as error:
         failures.append('packaged rules predicate: '+str(error))
@@ -103,6 +124,6 @@ def main():
     source_sha=subprocess.check_output(['git','rev-parse','HEAD'],text=True).strip()
     expected=os.environ.get('EXPECTED_SOURCE_SHA',source_sha)
     assert source_sha==expected,'artifact receipt source differs from expected SHA'
-    print(json.dumps({'application_id':'vn.fonesi.app','version_code':'1','version_name':'0.1.0-foundation','timestamp_utc':datetime.datetime.now(datetime.timezone.utc).isoformat(),'command':'python3 tools/verify_apk.py app/build/outputs/apk/debug/app-debug.apk','exit':0,'build_pins':{'gradle':'8.14.6','AGP':'8.13.2','minSdk':26,'compileSdk':36,'targetSdk':36,'build_tools':'35.0.0','java':subprocess.check_output(['java','-version'],stderr=subprocess.STDOUT,text=True).strip()},'source_sha':source_sha,'tier':'COMPILE','artifact':apk.name,'sha256':hashlib.sha256(apk.read_bytes()).hexdigest(),'bytes':apk.stat().st_size,'manifest':'PASS','backup_rules':'PASS_PACKAGED_STATIC_ONLY','signature':'PASS_DEBUG_ONLY','ANDROID':'NOT_RUN','PROVIDER':'NOT_RUN','PHONE':'NOT_RUN'},indent=2))
+    print(json.dumps({'application_id':'vn.fonesi.app','version_code':'1','version_name':'0.1.0-foundation','timestamp_utc':datetime.datetime.now(datetime.timezone.utc).isoformat(),'command':'python3 tools/verify_apk.py app/build/outputs/apk/debug/app-debug.apk','exit':0,'build_pins':{'gradle':'8.14.6','AGP':'8.13.2','minSdk':26,'compileSdk':36,'targetSdk':36,'build_tools':'35.0.0','java':subprocess.check_output(['java','-version'],stderr=subprocess.STDOUT,text=True).strip()},'source_sha':source_sha,'tier':'COMPILE','artifact':apk.name,'sha256':hashlib.sha256(apk.read_bytes()).hexdigest(),'bytes':apk.stat().st_size,'manifest':'PASS','backup_rules':'PASS_PACKAGED_STATIC_ONLY','catalog_sql_assets':sql_assets,'signature':'PASS_DEBUG_ONLY','ANDROID':'NOT_RUN','PROVIDER':'NOT_RUN','PHONE':'NOT_RUN'},indent=2))
 
 if __name__=='__main__':main()

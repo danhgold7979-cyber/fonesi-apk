@@ -42,7 +42,10 @@ class HostIntegrationTest(unittest.TestCase):
                      'gradle.properties', 'gradlew', 'gradle/wrapper/gradle-wrapper.jar',
                      'tools/verify_apk.py', 'tools/verify_lint.py', 'tools/run_compile_checks.py',
                      'tools/check_toolchain.py', 'new-unknown-input',
-                     'core/src/main/java/vn/fonesi/apk/foundation/UpdatePreflight.java']:
+                     'core/src/main/java/vn/fonesi/apk/foundation/UpdatePreflight.java',
+                     'core/src/main/java/vn/fonesi/apk/foundation/CatalogKey.java',
+                     'core/src/main/java/vn/fonesi/apk/foundation/StyleValue.java',
+                     'storage/sql/style_columns_3_to_4.sql', 'storage/sql/catalog_v1_schema.sql']:
             with self.subTest(path=path):
                 self.assertTrue(requires_compile([path], 'push'))
                 self.assertTrue(requires_compile(['docs/test.md', path], 'pull_request'))

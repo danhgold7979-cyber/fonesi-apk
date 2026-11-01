@@ -7,6 +7,7 @@ import os
 from pathlib import Path
 import subprocess
 from run_host_checks import COMMANDS, check_kind
+from verify_apk import catalog_source_hashes
 
 ROOT = Path(__file__).resolve().parents[1]
 APK = Path('app/build/outputs/apk/debug/app-debug.apk')
@@ -25,6 +26,7 @@ def bind(host, compile_, lint, apk_bytes, source_sha):
         assert check['kind'] == expected_kind
         if check['kind'] != 'integrity_command':
             assert isinstance(check['count'], int) and check['count'] > 0
+    assert compile_['catalog_sql_assets'] == catalog_source_hashes(), 'missing/stale packaged SQL proof'
     assert compile_['tier'] == 'COMPILE'
     assert compile_['manifest'] == 'PASS' and compile_['signature'] == 'PASS_DEBUG_ONLY'
     assert compile_['backup_rules'] == 'PASS_PACKAGED_STATIC_ONLY'

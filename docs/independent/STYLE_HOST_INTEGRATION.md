@@ -1,5 +1,7 @@
 # Style core HOST integration — original scope, not V2 activation
 
+> Historical HOST-only milestone at `9b760a81`. Later Android adapter source packaging supersedes the detached-source classification; the original evidence remains scoped to this historical commit.
+
 The owned StyleValue suite is required exactly once in the JDK17 HOST aggregate,
 with `javac --release 17`, a positive parsed assertion count and a source-bound
 receipt/log. LIMITED HOST output cannot produce that receipt. Local evidence is
