@@ -1,0 +1,43 @@
+SELECT
+typeof(m.catalog_id) AS catalog_id_type,
+CASE WHEN m.catalog_id IS NULL THEN 1 ELSE 0 END AS catalog_id_is_null,
+CASE WHEN typeof(m.catalog_id)='text' THEN length(CAST(m.catalog_id AS BLOB)) ELSE -1 END AS catalog_id_byte_length,
+CASE WHEN typeof(m.catalog_id)='text' AND length(CAST(m.catalog_id AS BLOB))>36 THEN 1 ELSE 0 END AS catalog_id_over_budget,
+CASE WHEN typeof(m.catalog_id)='text' AND length(CAST(m.catalog_id AS BLOB))<=36 THEN CAST(m.catalog_id AS BLOB) ELSE NULL END AS catalog_id_bytes,
+typeof(m.revision) AS revision_type,
+CASE WHEN typeof(m.revision)='integer' AND m.revision>=0 THEN 1 ELSE 0 END AS revision_valid,
+CASE WHEN typeof(m.revision)='integer' THEN m.revision ELSE NULL END AS catalog_revision,
+CASE WHEN p.row_position IS NOT NULL THEN 1 ELSE 0 END AS row_present,
+p.*
+FROM main.catalog_meta AS m LEFT JOIN (
+SELECT
+rowid AS row_position,
+typeof(engine_key) AS engine_key_type,
+CASE WHEN engine_key IS NULL THEN 1 ELSE 0 END AS engine_key_is_null,
+CASE WHEN typeof(engine_key)='text' THEN length(CAST(engine_key AS BLOB)) ELSE -1 END AS engine_key_byte_length,
+CASE WHEN typeof(engine_key)='text' AND length(CAST(engine_key AS BLOB))>16384 THEN 1 ELSE 0 END AS engine_key_over_budget,
+CASE WHEN typeof(engine_key)='text' AND length(CAST(engine_key AS BLOB))<=16384 THEN CAST(engine_key AS BLOB) ELSE NULL END AS engine_key_bytes,
+typeof(clone_id) AS clone_id_type,
+CASE WHEN clone_id IS NULL THEN 1 ELSE 0 END AS clone_id_is_null,
+CASE WHEN typeof(clone_id)='text' THEN length(CAST(clone_id AS BLOB)) ELSE -1 END AS clone_id_byte_length,
+CASE WHEN typeof(clone_id)='text' AND length(CAST(clone_id AS BLOB))>16384 THEN 1 ELSE 0 END AS clone_id_over_budget,
+CASE WHEN typeof(clone_id)='text' AND length(CAST(clone_id AS BLOB))<=16384 THEN CAST(clone_id AS BLOB) ELSE NULL END AS clone_id_bytes,
+typeof(package_name) AS package_name_type,
+CASE WHEN package_name IS NULL THEN 1 ELSE 0 END AS package_name_is_null,
+CASE WHEN typeof(package_name)='text' THEN length(CAST(package_name AS BLOB)) ELSE -1 END AS package_name_byte_length,
+CASE WHEN typeof(package_name)='text' AND length(CAST(package_name AS BLOB))>16384 THEN 1 ELSE 0 END AS package_name_over_budget,
+CASE WHEN typeof(package_name)='text' AND length(CAST(package_name AS BLOB))<=16384 THEN CAST(package_name AS BLOB) ELSE NULL END AS package_name_bytes,
+typeof(label) AS label_type,
+CASE WHEN label IS NULL THEN 1 ELSE 0 END AS label_is_null,
+CASE WHEN typeof(label)='text' THEN length(CAST(label AS BLOB)) ELSE -1 END AS label_byte_length,
+CASE WHEN typeof(label)='text' AND length(CAST(label AS BLOB))>16384 THEN 1 ELSE 0 END AS label_over_budget,
+CASE WHEN typeof(label)='text' AND length(CAST(label AS BLOB))<=16384 THEN CAST(label AS BLOB) ELSE NULL END AS label_bytes,
+typeof(group_name) AS group_name_type,
+CASE WHEN group_name IS NULL THEN 1 ELSE 0 END AS group_name_is_null,
+CASE WHEN typeof(group_name)='text' THEN length(CAST(group_name AS BLOB)) ELSE -1 END AS group_name_byte_length,
+CASE WHEN typeof(group_name)='text' AND length(CAST(group_name AS BLOB))>16384 THEN 1 ELSE 0 END AS group_name_over_budget,
+CASE WHEN typeof(group_name)='text' AND length(CAST(group_name AS BLOB))<=16384 THEN CAST(group_name AS BLOB) ELSE NULL END AS group_name_bytes,
+CASE WHEN typeof(readiness)='text' AND CAST(readiness AS BLOB)=X'554E5645524946494544' THEN 1 ELSE 0 END AS readiness_inert,
+CASE WHEN typeof(launch_allowed)='integer' AND launch_allowed=0 THEN 1 ELSE 0 END AS launch_inert
+FROM main.manager_catalog WHERE rowid >= ? ORDER BY rowid ASC LIMIT 129
+) AS p ON 1=1 WHERE m.id=1 ORDER BY p.row_position ASC;

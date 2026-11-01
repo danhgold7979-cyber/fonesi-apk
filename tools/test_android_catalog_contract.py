@@ -31,7 +31,7 @@ class AndroidCatalogContractTest(unittest.TestCase):
 
     def test_exact_sql_assets(self):
         with self.archive() as archive:
-            self.assertEqual(len(validate_catalog_assets(archive)), 5)
+            self.assertEqual(len(validate_catalog_assets(archive)), 8)
 
     def test_missing_changed_duplicate_and_extra_assets_rejected(self):
         for name in CATALOG_ASSETS:
@@ -74,7 +74,9 @@ class AndroidCatalogContractTest(unittest.TestCase):
         from compile_scope import requires_compile
         for path in ['app/build.gradle', 'core/src/main/java/vn/fonesi/apk/foundation/CatalogKey.java',
                      'core/src/main/java/vn/fonesi/apk/foundation/StyleValue.java',
-                     'storage/sql/catalog_v1_schema.sql', 'storage/sql/style_columns_3_to_4.sql']:
+                     'storage/sql/catalog_v1_schema.sql', 'storage/sql/style_columns_3_to_4.sql',
+                     'storage/sql/catalog_page_first.sql', 'storage/sql/catalog_page_next.sql',
+                     'storage/sql/catalog_read_meta.sql']:
             self.assertTrue(requires_compile([path], 'push'))
 
 
@@ -82,7 +84,8 @@ class AndroidCatalogContractTest(unittest.TestCase):
         source = (ROOT / 'app/src/main/java/vn/fonesi/app/storage/OwnedCatalogWriter.java').read_text()
         pins = re.findall(r'asset\(assets, "([^"]+)", "([0-9a-f]{64})"\)',source)
         self.assertEqual(len(pins),4)
-        self.assertEqual({name for name,_ in pins},set(CATALOG_ASSETS)-{'style_columns_3_to_4.sql'})
+        self.assertEqual({name for name,_ in pins},{'catalog_v1_schema.sql',
+                         'catalog_claim_revision.sql','catalog_update_existing_style.sql','catalog_read_style.sql'})
         for name,digest in pins:
             self.assertEqual(hashlib.sha256((ROOT/'storage/sql'/name).read_bytes()).hexdigest(),digest)
 

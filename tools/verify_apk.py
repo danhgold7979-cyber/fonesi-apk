@@ -66,7 +66,8 @@ def validate_packaged_rules(manifest_xml, resource_dump, rules_xml, members):
 
 CATALOG_ASSETS = ('catalog_v1_schema.sql', 'catalog_claim_revision.sql',
                   'catalog_update_existing_style.sql', 'catalog_read_style.sql',
-                  'style_columns_3_to_4.sql')
+                  'style_columns_3_to_4.sql', 'catalog_page_first.sql',
+                  'catalog_page_next.sql', 'catalog_read_meta.sql')
 
 def catalog_source_hashes():
     root = pathlib.Path(__file__).resolve().parents[1] / 'storage/sql'

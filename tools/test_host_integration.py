@@ -18,6 +18,7 @@ class HostIntegrationTest(unittest.TestCase):
         self.assertEqual(COMMANDS.count(CATALOG), 1)
         self.assertEqual(COMMANDS.count(OWNERSHIP), 1)
         self.assertEqual(COMMANDS.count(['python3', 'tools/test_existing_read_entry.py']), 1)
+        self.assertEqual(COMMANDS.count(['python3', 'tools/test_catalog_page_sql.py']), 1)
         self.assertEqual(check_kind(OWNERSHIP), 'synthetic_assertions')
         self.assertEqual(parse_count(OWNERSHIP, OWNERSHIP_LINE), {'kind': 'synthetic_assertions', 'count': 60})
         self.assertEqual(COMMANDS.count(['python3', 'tools/test_style_migration.py']), 1)
