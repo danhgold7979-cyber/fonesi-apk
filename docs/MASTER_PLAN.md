@@ -32,6 +32,10 @@ P0: freeze original requirements and honest baseline; reviewed toolchain, fresh 
 
 Cloud-independent bounded features may progress while provider/phone gates remain open, but dependent operations stay disabled. Short `phase-00`, `phase-01` … branches, plan before code, separate from Auto/Edit. Independent review at archive/plan checkpoint precedes fresh source. One aggregate test owner per checkpoint; disjoint agents may implement independent slices. Run affected tests after each edit, reuse unchanged exact-source PASS, run aggregate checks at checkpoint, diagnose exact failures without weakening assertions/TLS/signature checks. Publish only via parent and verify exact SHA/CI; never count commit/test counts as product completion.
 
+### Active execution focus — 2026-11-03
+
+Phase 1 T06–T08 remain BLOCKED because no qualified provider has passed provenance, licensing and isolation review. In parallel, the independent Phase 3 task APK-P3-T13 is being advanced on branch `phase-03`, based on `phase-01@41f1709330fbb968946834f2fd4616825462461e`. The pre-code plan is `docs/phase-03/T13_METADATA_PLAN.md`. This work is limited to a fresh Java/SQLite metadata contract and HOST fixtures; it does not wire guest actions or accept Android/provider/phone behavior. Product requirements remain 0/362 accepted, and the 5/32 task count is unchanged until evidence-backed task acceptance.
+
 ## Stop conditions
 
 Any lost requirement, stale success claim, unsafe provider path, identity ambiguity, unverifiable archive, source drift, data-loss defect, secret exposure or unauthorized dependency stops the affected action. Continue independent safe work; report the exact blocker. Never mark not-run evidence passed. No final product completion until all mandatory requirements and four device gates have accepted evidence.
