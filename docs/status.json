@@ -5,9 +5,9 @@
   "requirement_total": 362,
   "completed_tasks": 5,
   "accepted_product_requirements": 0,
-  "current_task": "APK-P1-T06",
-  "current_activity": "T05 negative inventory accepted; T06/T07/T08 blocked: no qualified provider",
-  "branch": "phase-01",
+  "current_task": "APK-P3-T13",
+  "current_activity": "Phase 3 T13 in progress: plan committed; implementing independent SQLite metadata/migration HOST contract. Phase 1 T06-T08 remain BLOCKED. ANDROID/PROVIDER/PHONE NOT_RUN.",
+  "branch": "phase-03",
   "provider": "UNAVAILABLE_NOT_ACCEPTED",
   "evidence": {
     "HOST": "PASS_FOUNDATION_ONLY",
@@ -56,7 +56,7 @@
   "documentary_progress": {
     "phase0_accepted": 2,
     "phase0_total": 4,
-    "phase0_task_percent": 50.0,
+    "phase0_task_percent": 50,
     "all_accepted": 2,
     "all_total": 32,
     "all_task_percent": 6.25,
@@ -67,14 +67,15 @@
   "task_progress": {
     "phase0_accepted": 4,
     "phase0_total": 4,
-    "phase0_task_percent": 100.0,
+    "phase0_task_percent": 100,
     "all_accepted": 5,
     "all_total": 32,
     "all_task_percent": 15.625,
     "scope": "TASK_COUNTS_ONLY_NOT_PRODUCT_FUNCTIONALITY",
     "phase1_accepted": 1,
     "phase1_total": 4,
-    "phase1_task_percent": 25.0
+    "phase1_task_percent": 25
   },
-  "provider_inventory_acceptance_registry": "docs/evidence/provider-inventory-acceptance.json"
+  "provider_inventory_acceptance_registry": "docs/evidence/provider-inventory-acceptance.json",
+  "current_task_plan": "docs/phase-03/T13_METADATA_PLAN.md"
 }
