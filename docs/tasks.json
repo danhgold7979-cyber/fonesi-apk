@@ -40,7 +40,7 @@
         "commit": "2fac016e3b28e4d9f21390c221cad1df7a382c86",
         "path": "docs/ROADMAP.md",
         "line": 19,
-        "assertion": "1. T\u1ed5ng h\u1ee3p y\u00eau c\u1ea7u v\u00e0 gi\u1edbi h\u1ea1n: nhi\u1ec1u \u1ee9ng d\u1ee5ng, nhi\u1ec1u v\u00f9ng t\u00e0i kho\u1ea3n, m\u1edf tr\u1ef1c ti\u1ebfp b\u1eb1ng bi\u1ec3u t\u01b0\u1ee3ng, kh\u00f4ng root, c\u1eadp nh\u1eadt theo \u1ee9ng d\u1ee5ng g\u1ed1c. Ghi r\u00f5 s\u1ef1 ph\u1ee5 thu\u1ed9c b\u1ed9 qu\u1ea3n l\u00fd v\u00e0 gi\u1edbi h\u1ea1n t\u00e0i nguy\u00ean."
+        "assertion": "1. Tổng hợp yêu cầu và giới hạn: nhiều ứng dụng, nhiều vùng tài khoản, mở trực tiếp bằng biểu tượng, không root, cập nhật theo ứng dụng gốc. Ghi rõ sự phụ thuộc bộ quản lý và giới hạn tài nguyên."
       },
       "inputs": "E82 PLAN/ROADMAP, E83 provider contract, all four atomic ledgers; full remote/local refs and worktree inventory",
       "outputs": "362-row immutable source ledger, 32-task crosswalk, exact archive/remove/reference manifest; verified fresh backup and restore instructions",
@@ -73,7 +73,7 @@
         "commit": "2fac016e3b28e4d9f21390c221cad1df7a382c86",
         "path": "docs/ROADMAP.md",
         "line": 20,
-        "assertion": "2. Ki\u1ec3m tra m\u00e3 hi\u1ec7n c\u00f3: ph\u00e2n bi\u1ec7t ch\u1ee9c n\u0103ng \u0111\u00e3 code, ch\u1ee9c n\u0103ng m\u1edbi c\u00f3 h\u1ee3p \u0111\u1ed3ng API, ch\u1ee9c n\u0103ng ch\u01b0a c\u00f3 v\u00e0 k\u1ebft qu\u1ea3 ch\u01b0a \u0111\u01b0\u1ee3c ki\u1ec3m th\u1eed. Kh\u00f4ng coi `UnavailableCloneEngine` l\u00e0 engine."
+        "assertion": "2. Kiểm tra mã hiện có: phân biệt chức năng đã code, chức năng mới có hợp đồng API, chức năng chưa có và kết quả chưa được kiểm thử. Không coi `UnavailableCloneEngine` là engine."
       },
       "inputs": "Verified recovery manifest; remote/main and old rebuild snapshots; frozen requirements",
       "outputs": "Fresh active-tree classification; initial STATUS with 0/32 completed, now 2 documentary tasks accepted and 0 product requirements accepted; historical references separately labeled; per-requirement NOT_IMPLEMENTED baseline",
@@ -107,7 +107,7 @@
         "commit": "2fac016e3b28e4d9f21390c221cad1df7a382c86",
         "path": "docs/ROADMAP.md",
         "line": 21,
-        "assertion": "3. C\u00e0i/pin toolchain; build APK n\u1ec1n t\u1ea3ng v\u00e0 ch\u1ea1y ki\u1ec3m tra logic l\u1eadp k\u1ebf ho\u1ea1ch c\u1eadp nh\u1eadt. L\u01b0u h\u01b0\u1edbng d\u1eabn t\u00e1i t\u1ea1o, kh\u00f4ng \u0111\u01b0a kh\u00f3a k\u00fd ph\u00e1t h\u00e0nh v\u00e0o Git."
+        "assertion": "3. Cài/pin toolchain; build APK nền tảng và chạy kiểm tra logic lập kế hoạch cập nhật. Lưu hướng dẫn tái tạo, không đưa khóa ký phát hành vào Git."
       },
       "inputs": "Reviewed license/provenance/toolchain pins; T01 requirements and archive gate; Java/View+SQLite architecture decision",
       "outputs": "Fresh native skeleton, independently written update-planning contracts/tests, reproducible build instructions and CI for phase-* and PR targets",
@@ -140,7 +140,7 @@
         "commit": "2fac016e3b28e4d9f21390c221cad1df7a382c86",
         "path": "docs/ROADMAP.md",
         "line": 22,
-        "assertion": "4. Ghi b\u00e1o c\u00e1o baseline, \u0111\u01b0\u1eddng d\u1eabn APK, phi\u00ean b\u1ea3n v\u00e0 c\u00e1c ki\u1ec3m tra \u0111\u00e3/ch\u01b0a ch\u1ea1y \u0111\u1ec3 so s\u00e1nh c\u00e1c b\u1ea3n sau."
+        "assertion": "4. Ghi báo cáo baseline, đường dẫn APK, phiên bản và các kiểm tra đã/chưa chạy để so sánh các bản sau."
       },
       "inputs": "T03 exact commit, commands/tool versions, test logs and debug APK",
       "outputs": "Baseline receipt with APK path/version/SHA256, source SHA, test counts and per-tier not-run list; reproduction recipe",
@@ -148,7 +148,7 @@
       "dependencies": "T03 actual output; artifact delivery only after security/package check",
       "error_cancel_recovery": "Missing APK/hash or mismatched source blocks acceptance. Cancel preserves receipts; rerun changed checks without inheriting historical evidence.",
       "tests": "Positive: clean rebuild reproduces declared semantics; negative: stale SHA and missing artifact rejected; race: post-test edit invalidates receipt.",
-      "acceptance": "Artifact and provenance resolvable; HOST/COMPILE claims bounded; ANDROID/PROVIDER/PHONE explicitly NOT RUN; phase0 only closes if T01\u201304 accepted.",
+      "acceptance": "Artifact and provenance resolvable; HOST/COMPILE claims bounded; ANDROID/PROVIDER/PHONE explicitly NOT RUN; phase0 only closes if T01–04 accepted.",
       "evidence_tiers": [
         "HOST",
         "COMPILE"
@@ -175,7 +175,7 @@
         "commit": "2fac016e3b28e4d9f21390c221cad1df7a382c86",
         "path": "docs/ROADMAP.md",
         "line": 30,
-        "assertion": "5. L\u1eadp b\u1ea3ng \u1ee9ng vi\u00ean: gi\u1ea5y ph\u00e9p, phi\u00ean b\u1ea3n m\u00e3 ngu\u1ed3n, Android/ABI h\u1ed7 tr\u1ee3, y\u00eau c\u1ea7u SDK/NDK, base/split APK, Google Play Services v\u00e0 c\u00e1ch engine qu\u1ea3n l\u00fd phi\u00ean b\u1ea3n d\u00f9ng chung/t\u1eebng b\u1ea3n. Tuy\u00ean b\u1ed1 c\u1ee7a README ch\u1ec9 l\u00e0 th\u00f4ng tin c\u1ea7n ki\u1ec3m tra."
+        "assertion": "5. Lập bảng ứng viên: giấy phép, phiên bản mã nguồn, Android/ABI hỗ trợ, yêu cầu SDK/NDK, base/split APK, Google Play Services và cách engine quản lý phiên bản dùng chung/từng bản. Tuyên bố của README chỉ là thông tin cần kiểm tra."
       },
       "inputs": "Pinned candidate source/docs/license metadata; target eight apps and signed split/update requirements",
       "outputs": "Versioned candidate table with provenance, license, API/ABI, NDK/SDK, base/split, GMS and shared-version scope; unmet capabilities",
@@ -211,7 +211,7 @@
         "commit": "2fac016e3b28e4d9f21390c221cad1df7a382c86",
         "path": "docs/ROADMAP.md",
         "line": 31,
-        "assertion": "6. R\u00e0 \u0111\u01b0\u1eddng ch\u1ea1y kh\u1edfi t\u1ea1o, quy\u1ec1n, dependency/native binary, vi\u1ec7c ghi/g\u1eedi log v\u00e0 c\u00e1c thay \u0111\u1ed5i th\u00f4ng tin thi\u1ebft b\u1ecb. Lo\u1ea1i kh\u1ecfi t\u00edch h\u1ee3p c\u00e1c h\u00e0nh vi kh\u00f4ng thu\u1ed9c y\u00eau c\u1ea7u; kh\u00f4ng thu th\u1eadp t\u00e0i kho\u1ea3n ho\u1eb7c b\u00ed m\u1eadt \u0111\u0103ng nh\u1eadp."
+        "assertion": "6. Rà đường chạy khởi tạo, quyền, dependency/native binary, việc ghi/gửi log và các thay đổi thông tin thiết bị. Loại khỏi tích hợp các hành vi không thuộc yêu cầu; không thu thập tài khoản hoặc bí mật đăng nhập."
       },
       "inputs": "T05 candidate source/provenance and complete dependencies/native binaries",
       "outputs": "Initialization/permission/network/log/device-information threat review, component license inventory, excluded behavior report",
@@ -243,7 +243,7 @@
         "commit": "2fac016e3b28e4d9f21390c221cad1df7a382c86",
         "path": "docs/ROADMAP.md",
         "line": 32,
-        "assertion": "7. Build engine t\u1eeb ngu\u1ed3n c\u00f3 quy\u1ec1n s\u1eed d\u1ee5ng ho\u1eb7c SDK \u0111\u00e3 \u0111\u01b0\u1ee3c c\u1ea5p ph\u00e9p. Gi\u1eef TLS/ch\u1eef k\u00fd/checksum; ch\u1ea1y c\u00e1c ki\u1ec3m tra kh\u1ea3 thi trong m\u00f4i tr\u01b0\u1eddng cloud. Ghi ri\u00eang ph\u1ea7n kh\u00f4ng ch\u1ea1y \u0111\u01b0\u1ee3c do thi\u1ebfu thi\u1ebft b\u1ecb/ABI."
+        "assertion": "7. Build engine từ nguồn có quyền sử dụng hoặc SDK đã được cấp phép. Giữ TLS/chữ ký/checksum; chạy các kiểm tra khả thi trong môi trường cloud. Ghi riêng phần không chạy được do thiếu thiết bị/ABI."
       },
       "inputs": "T06 reviewed source or already licensed SDK; pinned toolchain/artifact hashes",
       "outputs": "Reproducible isolated candidate build and feasibility report separating unavailable runtime/ABI",
@@ -275,7 +275,7 @@
         "commit": "2fac016e3b28e4d9f21390c221cad1df7a382c86",
         "path": "docs/ROADMAP.md",
         "line": 33,
-        "assertion": "8. T\u00edch h\u1ee3p m\u1ed9t adapter t\u1ed1i thi\u1ec3u; th\u1eed t\u1ea1o, m\u1edf, \u0111\u1ecdc tr\u1ea1ng th\u00e1i v\u00e0 x\u00f3a v\u00f9ng d\u1eef li\u1ec7u v\u1edbi \u1ee9ng d\u1ee5ng ki\u1ec3m th\u1eed do d\u1ef1 \u00e1n ki\u1ec3m so\u00e1t. X\u00e1c \u0111\u1ecbnh ch\u00ednh x\u00e1c m\u00f4 h\u00ecnh d\u1eef li\u1ec7u v\u00e0 ph\u1ea1m vi c\u1eadp nh\u1eadt. Chu\u1ea9n b\u1ecb APK PoC ch\u1ec9 khi ph\u1ea7n n\u1ec1n an to\u00e0n \u0111\u1ec3 th\u1eed."
+        "assertion": "8. Tích hợp một adapter tối thiểu; thử tạo, mở, đọc trạng thái và xóa vùng dữ liệu với ứng dụng kiểm thử do dự án kiểm soát. Xác định chính xác mô hình dữ liệu và phạm vi cập nhật. Chuẩn bị APK PoC chỉ khi phần nền an toàn để thử."
       },
       "inputs": "T07 candidate; owned synthetic app/source; exact namespace/signed generation contract",
       "outputs": "Create/open/read state/delete PoC, actual lifecycle/isolation readbacks, shared/per-instance version model; otherwise unavailable adapter",
@@ -408,7 +408,7 @@
         "commit": "2fac016e3b28e4d9f21390c221cad1df7a382c86",
         "path": "docs/ROADMAP.md",
         "line": 43,
-        "assertion": "9. \u0110\u01b0a b\u1ea3n PoC l\u00ean Samsung kh\u00f4ng root. X\u00e1c minh th\u00f4ng tin m\u00e1y/Android/ABI v\u00e0 th\u1eed \u1ee9ng d\u1ee5ng ki\u1ec3m th\u1eed tr\u01b0\u1edbc; sau \u0111\u00f3 t\u1ea1o Facebook ph\u1ee5 A v\u00e0 B b\u00ean c\u1ea1nh Facebook g\u1ed1c. C\u00e0i \u0111\u1eb7t APK tr\u00ean m\u00e1y c\u1ea7n thao t\u00e1c x\u00e1c nh\u1eadn c\u1ee7a ng\u01b0\u1eddi d\u00f9ng."
+        "assertion": "9. Đưa bản PoC lên Samsung không root. Xác minh thông tin máy/Android/ABI và thử ứng dụng kiểm thử trước; sau đó tạo Facebook phụ A và B bên cạnh Facebook gốc. Cài đặt APK trên máy cần thao tác xác nhận của người dùng."
       },
       "inputs": "T08 safe PoC; authorized Samsung SM-A525F actual Android/ABI; owner installation consent",
       "outputs": "Device receipt; fixture runtime evidence; Facebook original + clean A/B instance inventory",
@@ -445,7 +445,7 @@
         "commit": "2fac016e3b28e4d9f21390c221cad1df7a382c86",
         "path": "docs/ROADMAP.md",
         "line": 44,
-        "assertion": "10. Ng\u01b0\u1eddi d\u00f9ng \u0111\u0103ng nh\u1eadp hai t\u00e0i kho\u1ea3n th\u1eed nghi\u1ec7m do m\u00ecnh ki\u1ec3m so\u00e1t. Ki\u1ec3m tra d\u1eef li\u1ec7u kh\u00f4ng tr\u1ed9n, \u0111\u0103ng xu\u1ea5t A kh\u00f4ng \u0111\u0103ng xu\u1ea5t B, l\u00e0m s\u1ea1ch/x\u00f3a A kh\u00f4ng \u1ea3nh h\u01b0\u1edfng B ho\u1eb7c Facebook g\u1ed1c. Kh\u00f4ng tuy\u00ean b\u1ed1 c\u00e1ch ly t\u01b0\u01a1ng \u0111\u01b0\u01a1ng sandbox h\u1ec7 \u0111i\u1ec1u h\u00e0nh ch\u1ec9 t\u1eeb m\u00f4 h\u00ecnh engine."
+        "assertion": "10. Người dùng đăng nhập hai tài khoản thử nghiệm do mình kiểm soát. Kiểm tra dữ liệu không trộn, đăng xuất A không đăng xuất B, làm sạch/xóa A không ảnh hưởng B hoặc Facebook gốc. Không tuyên bố cách ly tương đương sandbox hệ điều hành chỉ từ mô hình engine."
       },
       "inputs": "T09 original+A/B and owner-controlled test accounts",
       "outputs": "Redacted isolation matrix: A/B/original login/logout/clear/delete outcomes",
@@ -487,7 +487,7 @@
         "commit": "2fac016e3b28e4d9f21390c221cad1df7a382c86",
         "path": "docs/ROADMAP.md",
         "line": 45,
-        "assertion": "11. \u0110\u00f3ng/m\u1edf l\u1ea1i, h\u1ec7 th\u1ed1ng d\u1eebng ti\u1ebfn tr\u00ecnh, kh\u1edfi \u0111\u1ed9ng l\u1ea1i m\u00e1y v\u00e0 th\u1eed m\u1ea5t m\u1ea1ng/thu h\u1ed3i quy\u1ec1n. Ki\u1ec3m tra camera, ch\u1ecdn \u1ea3nh, li\u00ean k\u1ebft \u0111\u0103ng nh\u1eadp, video v\u00e0 th\u00f4ng b\u00e1o; l\u01b0u k\u1ebft qu\u1ea3 t\u1eebng t\u00ednh n\u0103ng, k\u1ec3 c\u1ea3 l\u1ed7i."
+        "assertion": "11. Đóng/mở lại, hệ thống dừng tiến trình, khởi động lại máy và thử mất mạng/thu hồi quyền. Kiểm tra camera, chọn ảnh, liên kết đăng nhập, video và thông báo; lưu kết quả từng tính năng, kể cả lỗi."
       },
       "inputs": "T09/T10 safe instances; authorized network/permission/restart cases",
       "outputs": "Per-feature camera/photo/login link/video/notification and lifecycle result matrix",
@@ -525,12 +525,12 @@
         "commit": "2fac016e3b28e4d9f21390c221cad1df7a382c86",
         "path": "docs/ROADMAP.md",
         "line": 46,
-        "assertion": "12. Ghim hai bi\u1ec3u t\u01b0\u1ee3ng th\u1eed nghi\u1ec7m v\u00e0 x\u00e1c minh t\u1eebng bi\u1ec3u t\u01b0\u1ee3ng m\u1edf th\u1eb3ng \u0111\u00fang b\u1ea3n/t\u00e0i kho\u1ea3n. G\u1eedi checklist k\u1ebft qu\u1ea3; s\u1eeda v\u00e0 th\u1eed l\u1ea1i \u0111\u00fang l\u1ed7i \u0111\u00e3 ph\u00e1t hi\u1ec7n."
+        "assertion": "12. Ghim hai biểu tượng thử nghiệm và xác minh từng biểu tượng mở thẳng đúng bản/tài khoản. Gửi checklist kết quả; sửa và thử lại đúng lỗi đã phát hiện."
       },
-      "inputs": "T09\u201311 evidence; launcher pin confirmation and distinct instance identities",
+      "inputs": "T09–11 evidence; launcher pin confirmation and distinct instance identities",
       "outputs": "Two pinned entries opening exact A/B; gate1 checklist and defect retest receipts",
       "interfaces": "Shortcut identity includes provider namespace + opaque ID; never execution authority from display/catalog key",
-      "dependencies": "T09\u201311; launcher confirmation by owner",
+      "dependencies": "T09–11; launcher confirmation by owner",
       "error_cancel_recovery": "Deleted/stale target yields unavailable, not original chooser fallback. Cancel pin leaves no assumed shortcut. Recreated ID must not revive stale intent.",
       "tests": "Positive: direct A/B opening; negative: deleted/mismatched identity refused; race: rename/delete/restart versus launcher tap.",
       "acceptance": "Gate1 essential original+A/B isolation/recovery/shortcut criteria met; unresolved notifications/features remain open not relabeled supported.",
@@ -553,14 +553,14 @@
       "phase_id": 3,
       "step": 13,
       "title": "Stable metadata and migrations",
-      "status": "NOT_STARTED",
+      "status": "IN_PROGRESS",
       "source": {
         "commit": "2fac016e3b28e4d9f21390c221cad1df7a382c86",
         "path": "docs/ROADMAP.md",
         "line": 56,
-        "assertion": "13. Thi\u1ebft k\u1ebf d\u1eef li\u1ec7u Room theo ID b\u1ea3n clone \u1ed5n \u0111\u1ecbnh: app ngu\u1ed3n, ID engine, t\u00ean, tr\u1ea1ng th\u00e1i v\u00e0 phi\u00ean b\u1ea3n th\u1ef1c. Kh\u00f4ng l\u01b0u m\u1eadt kh\u1ea9u. Thi\u1ebft k\u1ebf migration t\u1eeb phi\u00ean b\u1ea3n \u0111\u1ea7u."
+        "assertion": "13. Thiết kế dữ liệu Room theo ID bản clone ổn định: app nguồn, ID engine, tên, trạng thái và phiên bản thực. Không lưu mật khẩu. Thiết kế migration từ phiên bản đầu."
       },
-      "inputs": "Frozen identity and configuration schema requirements; historical schema1\u20136 reference data only",
+      "inputs": "Frozen identity and configuration schema requirements; historical schema1–6 reference data only",
       "outputs": "Fresh Java/SQLite metadata schema and independently written migrations; no passwords/session fields",
       "interfaces": "Composite namespace+opaque instance ID; display metadata non-authoritative; transactional schema versioning",
       "dependencies": "T01/T02; host work independent of runtime; actual provider mapping waits T08",
@@ -614,7 +614,9 @@
         "SEC-021",
         "REC-009",
         "REC-013"
-      ]
+      ],
+      "plan": "docs/phase-03/T13_METADATA_PLAN.md",
+      "current_scope": "HOST schema/migration contract only; Android SQLite lifecycle remains required for acceptance"
     },
     {
       "task_code": "APK-P3-T14",
@@ -626,7 +628,7 @@
         "commit": "2fac016e3b28e4d9f21390c221cad1df7a382c86",
         "path": "docs/ROADMAP.md",
         "line": 57,
-        "assertion": "14. Ho\u00e0n thi\u1ec7n t\u1ea1o b\u1ea3n s\u1ea1ch, \u0111\u1ecdc danh s\u00e1ch t\u1eeb engine, \u0111\u1ed5i t\u00ean v\u00e0 x\u00f3a c\u00f3 x\u00e1c nh\u1eadn. X\u1eed l\u00fd t\u1ea1o/x\u00f3a th\u1ea5t b\u1ea1i ho\u1eb7c b\u1ecb \u0111\u00f3ng ti\u1ebfn tr\u00ecnh gi\u1eefa ch\u1eebng b\u1eb1ng \u0111\u1ed1i chi\u1ebfu d\u1eef li\u1ec7u, kh\u00f4ng \u0111\u1ec3 b\u1ea3n \"ma\" ho\u1eb7c x\u00f3a nh\u1ea7m."
+        "assertion": "14. Hoàn thiện tạo bản sạch, đọc danh sách từ engine, đổi tên và xóa có xác nhận. Xử lý tạo/xóa thất bại hoặc bị đóng tiến trình giữa chừng bằng đối chiếu dữ liệu, không để bản \"ma\" hoặc xóa nhầm."
       },
       "inputs": "T13 metadata; T08 exact provider contract and verified capabilities; fresh UI contract",
       "outputs": "Fresh flows for clean create, provider list/state, rename, confirmed delete with reconciliation",
@@ -768,7 +770,7 @@
         "commit": "2fac016e3b28e4d9f21390c221cad1df7a382c86",
         "path": "docs/ROADMAP.md",
         "line": 58,
-        "assertion": "15. Ho\u00e0n thi\u1ec7n shortcut theo ID \u1ed5n \u0111\u1ecbnh: m\u1edf \u0111\u00fang b\u1ea3n, x\u1eed l\u00fd b\u1ea3n b\u1ecb x\u00f3a, t\u00ean m\u1edbi, launcher kh\u00f4ng h\u1ed7 tr\u1ee3 v\u00e0 x\u00e1c nh\u1eadn ghim c\u1ee7a Android. L\u1ed1i t\u1eaft kh\u00f4ng m\u1edf nh\u1ea7m app g\u1ed1c khi clone l\u1ed7i."
+        "assertion": "15. Hoàn thiện shortcut theo ID ổn định: mở đúng bản, xử lý bản bị xóa, tên mới, launcher không hỗ trợ và xác nhận ghim của Android. Lối tắt không mở nhầm app gốc khi clone lỗi."
       },
       "inputs": "T13 stable identity; T14 manager; Android shortcut/launcher contract",
       "outputs": "Pin/update/remove guidance and stale-target handling; rename retains identity",
@@ -836,12 +838,12 @@
         "commit": "2fac016e3b28e4d9f21390c221cad1df7a382c86",
         "path": "docs/ROADMAP.md",
         "line": 59,
-        "assertion": "16. \u0110\u1ed1i chi\u1ebfu tr\u1ea1ng th\u00e1i sau khi kh\u1edfi \u0111\u1ed9ng l\u1ea1i ho\u1eb7c c\u1eadp nh\u1eadt ch\u00ednh Fonesi. Khi g\u1ee1 app g\u1ed1c, gi\u1eef d\u1eef li\u1ec7u clone v\u00e0 b\u00e1o kh\u1ea3 n\u0103ng m\u1edf th\u1ef1c t\u1ebf c\u1ee7a engine; kh\u00f4ng t\u1ef1 x\u00f3a t\u00e0i kho\u1ea3n."
+        "assertion": "16. Đối chiếu trạng thái sau khi khởi động lại hoặc cập nhật chính Fonesi. Khi gỡ app gốc, giữ dữ liệu clone và báo khả năng mở thực tế của engine; không tự xóa tài khoản."
       },
-      "inputs": "T13\u201315 metadata/protocol; provider private enumeration/readback",
+      "inputs": "T13–15 metadata/protocol; provider private enumeration/readback",
       "outputs": "Startup/upgrade reconciliation and retained clone-data behavior after original removal",
       "interfaces": "Reconciliation uses namespace/revision/signed generation and row ownership; unknown status explicit",
-      "dependencies": "T13\u201315; independent host reconciliation before runtime",
+      "dependencies": "T13–15; independent host reconciliation before runtime",
       "error_cancel_recovery": "Original uninstalled is not delete instruction. Unknown provider retains metadata and review-required state; canceled refresh cannot overwrite newer generation.",
       "tests": "Positive: reopen/upgrade state matches provider; negative: source absent retains clone data; race: provider restart/source uninstall during readback.",
       "acceptance": "No automatic loss/remap; actual restart/upgrade/original-uninstall evidence verifies behavior.",
@@ -869,7 +871,7 @@
         "commit": "2fac016e3b28e4d9f21390c221cad1df7a382c86",
         "path": "docs/ROADMAP.md",
         "line": 67,
-        "assertion": "17. Chu\u1ea9n b\u1ecb ngu\u1ed3n base/split APK nh\u1ea5t qu\u00e1n; \u0111\u1ecdc phi\u00ean b\u1ea3n/ch\u1eef k\u00fd; x\u00e1c minh quy\u1ec1n \u0111\u1ecdc v\u00e0 t\u00ednh to\u00e0n v\u1eb9n. N\u1ebfu app g\u1ed1c thay \u0111\u1ed5i trong l\u00fac chu\u1ea9n b\u1ecb, b\u1ecf ngu\u1ed3n t\u1ea1m v\u00e0 l\u1eadp l\u1ea1i. Kh\u00f4ng tr\u1ed9n split c\u1ee7a hai phi\u00ean b\u1ea3n."
+        "assertion": "17. Chuẩn bị nguồn base/split APK nhất quán; đọc phiên bản/chữ ký; xác minh quyền đọc và tính toàn vẹn. Nếu app gốc thay đổi trong lúc chuẩn bị, bỏ nguồn tạm và lập lại. Không trộn split của hai phiên bản."
       },
       "inputs": "Authorized installed original package descriptor and complete signed generation; storage budget",
       "outputs": "Private immutable base+split source snapshot with signer lineage/version/dependency/required split checks",
@@ -1023,7 +1025,7 @@
         "commit": "2fac016e3b28e4d9f21390c221cad1df7a382c86",
         "path": "docs/ROADMAP.md",
         "line": 68,
-        "assertion": "18. L\u01b0u h\u00e0ng \u0111\u1ee3i v\u00e0 tr\u1ea1ng th\u00e1i b\u1ec1n v\u1eefng. Gom t\u00e1c v\u1ee5 tr\u00f9ng, ch\u1ec9 m\u1ed9t t\u00e1c v\u1ee5 c\u1eadp nh\u1eadt ch\u1ea1y c\u00f9ng l\u00fac. C\u00f3 ki\u1ec3m tra l\u1ea1i ngu\u1ed3n, tr\u1ea1ng th\u00e1i \u0111ang d\u00f9ng v\u00e0 ph\u1ea1m vi \u1ea3nh h\u01b0\u1edfng ngay tr\u01b0\u1edbc khi th\u1ef1c thi."
+        "assertion": "18. Lưu hàng đợi và trạng thái bền vững. Gom tác vụ trùng, chỉ một tác vụ cập nhật chạy cùng lúc. Có kiểm tra lại nguồn, trạng thái đang dùng và phạm vi ảnh hưởng ngay trước khi thực thi."
       },
       "inputs": "T17 snapshot; T13 transactional store; shared-scope provider contract",
       "outputs": "Persistent states/dedupe/single-flight journal, pause/defer/retry controls, retained-source ownership",
@@ -1201,7 +1203,7 @@
         "commit": "2fac016e3b28e4d9f21390c221cad1df7a382c86",
         "path": "docs/ROADMAP.md",
         "line": 69,
-        "assertion": "19. N\u1ed1i c\u00e1c n\u00fat C\u1eadp nh\u1eadt, c\u1eadp nh\u1eadt b\u1ea3n \u0111\u00e3 ch\u1ecdn v\u00e0 C\u1eadp nh\u1eadt t\u1ea5t c\u1ea3 v\u00e0o th\u1ef1c thi th\u1eadt. N\u1ebfu engine d\u00f9ng chung m\u00e3 APK, giao di\u1ec7n ph\u1ea3i b\u00e1o c\u1eadp nh\u1eadt \u1ea3nh h\u01b0\u1edfng c\u1ea3 nh\u00f3m; kh\u00f4ng gi\u1ea3 l\u1eadp c\u1eadp nh\u1eadt ri\u00eang. Ho\u00e3n b\u1ea3n \u0111ang d\u00f9ng, cho t\u1ea1m d\u1eebng \u1edf ranh gi\u1edbi an to\u00e0n v\u00e0 ch\u1ec9 b\u00e1o th\u00e0nh c\u00f4ng sau khi \u0111\u1ecdc l\u1ea1i phi\u00ean b\u1ea3n."
+        "assertion": "19. Nối các nút Cập nhật, cập nhật bản đã chọn và Cập nhật tất cả vào thực thi thật. Nếu engine dùng chung mã APK, giao diện phải báo cập nhật ảnh hưởng cả nhóm; không giả lập cập nhật riêng. Hoãn bản đang dùng, cho tạm dừng ở ranh giới an toàn và chỉ báo thành công sau khi đọc lại phiên bản."
       },
       "inputs": "T18 queue; T17 source; provider complete affected-peer and running-state readbacks; user scope consent",
       "outputs": "Single/selected/all update flows with accurate group impact and safe-boundary pause",
@@ -1300,9 +1302,9 @@
         "commit": "2fac016e3b28e4d9f21390c221cad1df7a382c86",
         "path": "docs/ROADMAP.md",
         "line": 70,
-        "assertion": "20. Th\u1eed c\u1eadp nh\u1eadt th\u1eadt t\u1eeb app g\u1ed1c, h\u1ebft dung l\u01b0\u1ee3ng, ngu\u1ed3n b\u1ecb g\u1ee1, kh\u00e1c ch\u1eef k\u00fd, t\u00e1c v\u1ee5 tr\u00f9ng v\u00e0 ti\u1ebfn tr\u00ecnh b\u1ecb \u0111\u00f3ng \u1edf c\u00e1c \u0111i\u1ec3m quan tr\u1ecdng. \u0110\u1ed1i chi\u1ebfu tr\u1ea1ng th\u00e1i engine tr\u01b0\u1edbc khi ti\u1ebfp t\u1ee5c, kh\u00f4ng ch\u1ea1y l\u1ea1i m\u00f9 qu\u00e1ng. Ki\u1ec3m tra d\u1eef li\u1ec7u v\u00e0 phi\u00ean \u0111\u0103ng nh\u1eadp sau c\u1eadp nh\u1eadt tr\u00ean \u0111i\u1ec7n tho\u1ea1i."
+        "assertion": "20. Thử cập nhật thật từ app gốc, hết dung lượng, nguồn bị gỡ, khác chữ ký, tác vụ trùng và tiến trình bị đóng ở các điểm quan trọng. Đối chiếu trạng thái engine trước khi tiếp tục, không chạy lại mù quáng. Kiểm tra dữ liệu và phiên đăng nhập sau cập nhật trên điện thoại."
       },
-      "inputs": "T17\u201319; owner-authorized phone/app update and data-preservation checklist",
+      "inputs": "T17–19; owner-authorized phone/app update and data-preservation checklist",
       "outputs": "Real update/low-space/source-removal/signer/duplicate/crash receipts; retained data and session outcomes",
       "interfaces": "Phone update report binds before/after signed generation and affected peer IDs; sessions never exported",
       "dependencies": "T19 verified provider; device and account operations owner-controlled",
@@ -1455,7 +1457,7 @@
         "commit": "2fac016e3b28e4d9f21390c221cad1df7a382c86",
         "path": "docs/ROADMAP.md",
         "line": 80,
-        "assertion": "21. T\u00edch h\u1ee3p/ki\u1ec3m th\u1eed Zalo v\u00e0 TikTok tr\u01b0\u1edbc; t\u1ea1o \u00edt nh\u1ea5t hai v\u00f9ng t\u00e0i kho\u1ea3n m\u1ed7i app. Ghi ri\u00eang m\u1ecdi l\u1ed7i \u0111\u0103ng nh\u1eadp, th\u00f4ng b\u00e1o v\u00e0 ch\u1ee9c n\u0103ng thi\u1ebft y\u1ebfu."
+        "assertion": "21. Tích hợp/kiểm thử Zalo và TikTok trước; tạo ít nhất hai vùng tài khoản mỗi app. Ghi riêng mọi lỗi đăng nhập, thông báo và chức năng thiết yếu."
       },
       "inputs": "Eligible provider; exact app versions and owner-controlled accounts",
       "outputs": "Separate Zalo and TikTok A/B login/notification/core-feature records",
@@ -1487,7 +1489,7 @@
         "commit": "2fac016e3b28e4d9f21390c221cad1df7a382c86",
         "path": "docs/ROADMAP.md",
         "line": 81,
-        "assertion": "22. Ki\u1ec3m th\u1eed Messenger, Threads, X, Shopee v\u00e0 YouTube. Kh\u00f4ng suy ra Messenger ho\u1ea1t \u0111\u1ed9ng t\u1eeb Facebook ho\u1eb7c suy ra Google sign-in ho\u1ea1t \u0111\u1ed9ng t\u1eeb vi\u1ec7c m\u1edf \u0111\u01b0\u1ee3c m\u00e0n h\u00ecnh YouTube."
+        "assertion": "22. Kiểm thử Messenger, Threads, X, Shopee và YouTube. Không suy ra Messenger hoạt động từ Facebook hoặc suy ra Google sign-in hoạt động từ việc mở được màn hình YouTube."
       },
       "inputs": "Eligible provider and each exact app/version; owner test accounts",
       "outputs": "Five independent compatibility receipts including required YouTube sign-in",
@@ -1525,9 +1527,9 @@
         "commit": "2fac016e3b28e4d9f21390c221cad1df7a382c86",
         "path": "docs/ROADMAP.md",
         "line": 82,
-        "assertion": "23. L\u1eadp ma tr\u1eadn \u1ee9ng d\u1ee5ng \u00d7 phi\u00ean b\u1ea3n \u1ee9ng d\u1ee5ng \u00d7 Android \u00d7 model/ABI. Tr\u1ea1ng th\u00e1i g\u1ed3m \u0111\u00e3 ki\u1ec3m th\u1eed, c\u00f3 gi\u1edbi h\u1ea1n, ch\u01b0a ki\u1ec3m th\u1eed, kh\u00f4ng h\u1ed7 tr\u1ee3; kh\u00f4ng c\u00f3 nh\u00e3n \"kh\u00f4ng b\u1ecb ban\"."
+        "assertion": "23. Lập ma trận ứng dụng × phiên bản ứng dụng × Android × model/ABI. Trạng thái gồm đã kiểm thử, có giới hạn, chưa kiểm thử, không hỗ trợ; không có nhãn \"không bị ban\"."
       },
-      "inputs": "T09\u201312/T20\u201322 results and unknown configurations",
+      "inputs": "T09–12/T20–22 results and unknown configurations",
       "outputs": "Matrix tested/limited/untested/unsupported, with exact limitations and retest triggers",
       "interfaces": "Matrix keys app+version+Android+model+ABI+provider+artifact; no package-name-only heuristic",
       "dependencies": "Can scaffold before runtime; statuses only from actual receipts",
@@ -1558,12 +1560,12 @@
         "commit": "2fac016e3b28e4d9f21390c221cad1df7a382c86",
         "path": "docs/ROADMAP.md",
         "line": 83,
-        "assertion": "24. Tr\u00ean \u0111i\u1ec7n tho\u1ea1i, th\u1eed nhi\u1ec1u lo\u1ea1i app xen k\u1ebd, m\u1edf \u0111\u00fang t\u00e0i kho\u1ea3n, nh\u1eadn th\u00f4ng b\u00e1o, c\u1eadp nh\u1eadt nh\u00f3m v\u00e0 x\u00f3a m\u1ed9t b\u1ea3n trong khi gi\u1eef c\u00e1c b\u1ea3n kh\u00e1c. S\u1eeda l\u1ed7i r\u1ed3i th\u1eed l\u1ea1i ph\u1ea7n b\u1ecb \u1ea3nh h\u01b0\u1edfng."
+        "assertion": "24. Trên điện thoại, thử nhiều loại app xen kẽ, mở đúng tài khoản, nhận thông báo, cập nhật nhóm và xóa một bản trong khi giữ các bản khác. Sửa lỗi rồi thử lại phần bị ảnh hưởng."
       },
       "inputs": "Eight-app matrix and allowed phone setup; update/delete capabilities",
       "outputs": "Mixed-app alternation, correct account, notifications, group update and one-region deletion receipts",
       "interfaces": "Cross-app scenario references precise identities and outcome boundaries",
-      "dependencies": "T20\u201323; runtime dependencies accepted",
+      "dependencies": "T20–23; runtime dependencies accepted",
       "error_cancel_recovery": "Any cross-account leakage/loss stops gate; cancel stops future actions; uncertain effects reconciled and retained.",
       "tests": "Positive: alternate apps and accounts correctly; negative: unrelated clone stays intact on delete; race: group update while other app active.",
       "acceptance": "Required release apps meet criteria; unresolved required apps remain incomplete and cannot silently leave scope.",
@@ -1591,7 +1593,7 @@
         "commit": "2fac016e3b28e4d9f21390c221cad1df7a382c86",
         "path": "docs/ROADMAP.md",
         "line": 91,
-        "assertion": "25. Ho\u00e0n thi\u1ec7n qu\u00e9t, t\u00ecm ki\u1ebfm, ph\u00e2n nh\u00f3m, t\u00ean/m\u00e0u/huy hi\u1ec7u v\u00e0 thao t\u00e1c nhi\u1ec1u b\u1ea3n. M\u1ecdi c\u1ea3nh b\u00e1o t\u01b0\u01a1ng th\u00edch l\u1ea5y t\u1eeb k\u1ebft qu\u1ea3 \u0111\u00e3 ghi, kh\u00f4ng ch\u1ec9 t\u1eeb t\u00ean g\u00f3i."
+        "assertion": "25. Hoàn thiện quét, tìm kiếm, phân nhóm, tên/màu/huy hiệu và thao tác nhiều bản. Mọi cảnh báo tương thích lấy từ kết quả đã ghi, không chỉ từ tên gói."
       },
       "inputs": "Package visibility contract; T13 metadata; STYLE-R1-01; reference XML and original green branding",
       "outputs": "Fresh Java/View discovery/search/group/name/style/batch UX; six accents teal/blue/purple/amber/red/slate; bounded plain badge",
@@ -1671,7 +1673,7 @@
         "commit": "2fac016e3b28e4d9f21390c221cad1df7a382c86",
         "path": "docs/ROADMAP.md",
         "line": 92,
-        "assertion": "26. Th\u00eam kh\u00f3a giao di\u1ec7n b\u1eb1ng sinh tr\u1eafc h\u1ecdc v\u1edbi \u0111\u01b0\u1eddng x\u1eed l\u00fd ph\u00f9 h\u1ee3p khi m\u00e1y kh\u00f4ng h\u1ed7 tr\u1ee3 ho\u1eb7c thay \u0111\u1ed5i \u0111\u0103ng k\u00fd. Gi\u1ea3i th\u00edch r\u00f5 g\u1ee1 Fonesi c\u00f3 th\u1ec3 l\u00e0m m\u1ea5t b\u1ea3n clone; kh\u00f4ng g\u1ecdi kh\u00f3a giao di\u1ec7n l\u00e0 m\u00e3 h\u00f3a to\u00e0n b\u1ed9 d\u1eef li\u1ec7u n\u1ebfu engine kh\u00f4ng cung c\u1ea5p."
+        "assertion": "26. Thêm khóa giao diện bằng sinh trắc học với đường xử lý phù hợp khi máy không hỗ trợ hoặc thay đổi đăng ký. Giải thích rõ gỡ Fonesi có thể làm mất bản clone; không gọi khóa giao diện là mã hóa toàn bộ dữ liệu nếu engine không cung cấp."
       },
       "inputs": "Android authentication capabilities and lifecycle; T15 shortcut routing",
       "outputs": "Biometric strong/device credential access gate with unsupported/enrollment-change handling and accurate warnings",
@@ -1772,7 +1774,7 @@
         "commit": "2fac016e3b28e4d9f21390c221cad1df7a382c86",
         "path": "docs/ROADMAP.md",
         "line": 93,
-        "assertion": "27. Ho\u00e0n thi\u1ec7n m\u00e0n h\u00ecnh quy\u1ec1n/th\u00f4ng b\u00e1o, dung l\u01b0\u1ee3ng, h\u1ea1n ch\u1ebf pin v\u00e0 l\u1ed7i. N\u1ebfu quy\u1ec1n h\u1ec7 \u0111i\u1ec1u h\u00e0nh \u0111\u01b0\u1ee3c c\u1ea5p cho host v\u00e0 engine kh\u00f4ng t\u00e1ch \u0111\u01b0\u1ee3c theo t\u1eebng b\u1ea3n, ph\u1ea3i b\u00e1o \u0111\u00fang gi\u1edbi h\u1ea1n \u0111\u00f3."
+        "assertion": "27. Hoàn thiện màn hình quyền/thông báo, dung lượng, hạn chế pin và lỗi. Nếu quyền hệ điều hành được cấp cho host và engine không tách được theo từng bản, phải báo đúng giới hạn đó."
       },
       "inputs": "Actual host/provider permission model and measured limits; T23 compatibility",
       "outputs": "Honest status/help/error screens and permission request flows where authorized",
@@ -1807,7 +1809,7 @@
         "commit": "2fac016e3b28e4d9f21390c221cad1df7a382c86",
         "path": "docs/ROADMAP.md",
         "line": 94,
-        "assertion": "28. Sao l\u01b0u/kh\u00f4i ph\u1ee5c c\u1ea5u h\u00ecnh, t\u00ean v\u00e0 nh\u00f3m; d\u1eef li\u1ec7u xu\u1ea5t kh\u00f4ng ch\u1ee9a m\u1eadt kh\u1ea9u/token. Th\u1eed d\u1eef li\u1ec7u nh\u1eadp sai/h\u1ecfng v\u00e0 l\u1ecdc th\u00f4ng tin nh\u1ea1y c\u1ea3m trong ch\u1ea9n \u0111o\u00e1n. Sao l\u01b0u phi\u00ean \u0111\u0103ng nh\u1eadp/chuy\u1ec3n m\u00e1y kh\u00f4ng n\u1eb1m trong cam k\u1ebft b\u1ea3n \u0111\u1ea7u."
+        "assertion": "28. Sao lưu/khôi phục cấu hình, tên và nhóm; dữ liệu xuất không chứa mật khẩu/token. Thử dữ liệu nhập sai/hỏng và lọc thông tin nhạy cảm trong chẩn đoán. Sao lưu phiên đăng nhập/chuyển máy không nằm trong cam kết bản đầu."
       },
       "inputs": "Approved config/name/group/style schema; Android SAF contract; T13 transactions",
       "outputs": "Versioned configuration export/import preview, explicit mapping transaction, redacted diagnostics",
@@ -1895,7 +1897,7 @@
         "commit": "2fac016e3b28e4d9f21390c221cad1df7a382c86",
         "path": "docs/ROADMAP.md",
         "line": 102,
-        "assertion": "29. \u0110o t\u00e0i nguy\u00ean tr\u00ean m\u00e1y th\u1eadt: m\u1ed9t b\u1ea3n, ba b\u1ea3n, n\u0103m b\u1ea3n v\u00e0 t\u0103ng ti\u1ebfp n\u1ebfu m\u00e1y cho ph\u00e9p; \u0111o ri\u00eang s\u1ed1 b\u1ea3n l\u01b0u \u0111\u01b0\u1ee3c v\u1edbi s\u1ed1 b\u1ea3n ch\u1ea1y \u0111\u1ed3ng th\u1eddi. \u0110\u00e2y l\u00e0 c\u00e1c m\u1ee9c th\u1eed, kh\u00f4ng ph\u1ea3i gi\u1edbi h\u1ea1n s\u1ea3n ph\u1ea9m. Ch\u1ecdn c\u1ea3nh b\u00e1o t\u1eeb s\u1ed1 \u0111o thay v\u00ec cam k\u1ebft ch\u1ea1y v\u00f4 h\u1ea1n."
+        "assertion": "29. Đo tài nguyên trên máy thật: một bản, ba bản, năm bản và tăng tiếp nếu máy cho phép; đo riêng số bản lưu được với số bản chạy đồng thời. Đây là các mức thử, không phải giới hạn sản phẩm. Chọn cảnh báo từ số đo thay vì cam kết chạy vô hạn."
       },
       "inputs": "Authorized device configurations and eligible provider; reproducible scenarios",
       "outputs": "Separate stored-instance and concurrent-running resource measurements at 1/3/5 then safe increases",
@@ -1926,7 +1928,7 @@
         "commit": "2fac016e3b28e4d9f21390c221cad1df7a382c86",
         "path": "docs/ROADMAP.md",
         "line": 103,
-        "assertion": "30. Th\u1eed s\u1eed d\u1ee5ng/h\u1ea1n ch\u1ebf n\u1ec1n t\u1ed1i thi\u1ec3u hai gi\u1edd v\u1edbi nh\u00f3m \u1ee9ng d\u1ee5ng \u01b0u ti\u00ean tr\u00ean thi\u1ebft b\u1ecb \u0111\u00edch; th\u1eed kh\u1edfi \u0111\u1ed9ng l\u1ea1i, t\u1eaft m\u00e0n h\u00ecnh v\u00e0 m\u1ea1ng thay \u0111\u1ed5i. Ki\u1ec3m tra qua \u0111\u00eam l\u00e0 ki\u1ec3m tra b\u1ed5 sung. Ch\u1ec9 k\u1ebft lu\u1eadn trong ph\u1ea1m vi th\u1eddi gian v\u00e0 c\u1ea5u h\u00ecnh \u0111\u00e3 th\u1eed."
+        "assertion": "30. Thử sử dụng/hạn chế nền tối thiểu hai giờ với nhóm ứng dụng ưu tiên trên thiết bị đích; thử khởi động lại, tắt màn hình và mạng thay đổi. Kiểm tra qua đêm là kiểm tra bổ sung. Chỉ kết luận trong phạm vi thời gian và cấu hình đã thử."
       },
       "inputs": "T29 configuration; prioritized app set; consented phone/network plan",
       "outputs": "At least two-hour continuous stability receipt plus restart/screen-off/network-change results; optional overnight separate",
@@ -1957,7 +1959,7 @@
         "commit": "2fac016e3b28e4d9f21390c221cad1df7a382c86",
         "path": "docs/ROADMAP.md",
         "line": 104,
-        "assertion": "31. Ki\u1ec3m th\u1eed \u00edt nh\u1ea5t m\u1ed9t thi\u1ebft b\u1ecb Samsung v\u00e0 m\u1ed9t h\u00e3ng kh\u00e1c tr\u01b0\u1edbc khi tuy\u00ean b\u1ed1 \u0111\u00e3 x\u00e1c minh nhi\u1ec1u h\u00e3ng. X\u00e1c minh t\u01b0\u01a1ng th\u00edch API/ABI v\u00e0 th\u01b0 vi\u1ec7n native/page size khi li\u00ean quan; kh\u00f4ng n\u00f3i h\u1ed7 tr\u1ee3 m\u1ecdi m\u00e1y t\u1eeb k\u1ebft qu\u1ea3 c\u1ee7a m\u1ed9t m\u00e1y."
+        "assertion": "31. Kiểm thử ít nhất một thiết bị Samsung và một hãng khác trước khi tuyên bố đã xác minh nhiều hãng. Xác minh tương thích API/ABI và thư viện native/page size khi liên quan; không nói hỗ trợ mọi máy từ kết quả của một máy."
       },
       "inputs": "At least two authorized physical devices, actual API/ABI/page-size and native artifacts",
       "outputs": "Cross-vendor compatibility receipts and exact support matrix",
@@ -1993,12 +1995,12 @@
         "commit": "2fac016e3b28e4d9f21390c221cad1df7a382c86",
         "path": "docs/ROADMAP.md",
         "line": 105,
-        "assertion": "32. Ch\u1ea1y ki\u1ec3m tra h\u1ed3i quy cu\u1ed1i, build APK b\u1eb1ng kh\u00f3a ph\u00e1t h\u00e0nh \u0111\u01b0\u1ee3c b\u1ea3o qu\u1ea3n \u0111\u00fang c\u00e1ch, x\u00e1c minh ch\u1eef k\u00fd/c\u00e0i n\u00e2ng c\u1ea5p gi\u1eef d\u1eef li\u1ec7u v\u00e0 t\u1ea1o ghi ch\u00fa ph\u00e1t h\u00e0nh. Cung c\u1ea5p APK, checksum, h\u01b0\u1edbng d\u1eabn v\u00e0 danh s\u00e1ch gi\u1edbi h\u1ea1n. Th\u1ef1c hi\u1ec7n **m\u1ed1c \u0111i\u1ec7n tho\u1ea1i 4** \u0111\u1ec3 nghi\u1ec7m thu."
+        "assertion": "32. Chạy kiểm tra hồi quy cuối, build APK bằng khóa phát hành được bảo quản đúng cách, xác minh chữ ký/cài nâng cấp giữ dữ liệu và tạo ghi chú phát hành. Cung cấp APK, checksum, hướng dẫn và danh sách giới hạn. Thực hiện **mốc điện thoại 4** để nghiệm thu."
       },
       "inputs": "All required accepted task receipts; no known data-loss/mixing defects; user-controlled signing and release authority",
       "outputs": "Regression report, signed trial APK/checksum, upgrade/data-preservation receipt, limitations, install guide and gate4 checklist",
       "interfaces": "Release manifest binds source SHA/artifact/signature/version/required evidence; private keys never Git/chat/archive",
-      "dependencies": "T01\u201331 required acceptance; explicit signing/distribution authority, not automatic store publish",
+      "dependencies": "T01–31 required acceptance; explicit signing/distribution authority, not automatic store publish",
       "error_cancel_recovery": "Missing required test or key authority blocks release. Cancel leaves unsigned/debug artifact separate; upgrade failure preserves data and does not downgrade blindly.",
       "tests": "Positive: exact final regression/signature/install-upgrade retains data; negative: mismatched signature/stale evidence/unapproved publish denied; race: last edit invalidates affected checks.",
       "acceptance": "All mandatory scoped requirements met; authorized signed upgrade/phone acceptance, accurate limits; no store/service publication without separate request.",
