@@ -1,6 +1,6 @@
 # Fresh APK task contracts — version 1
 
-8 original phases, 32 original steps, 4 phone gates. **5/32 tasks accepted (15.625% of tasks; NOT functionality). P0: 4/4 tasks; P1: 1/4 documentary task (25%).** T01/T02 documentary and T03/T04 exact-source HOST/COMPILE accepted; all runtime, product and release acceptance remains open. Read `requirements.json` for the full atomic obligations mapped to these contracts. Each task requires its mapped requirement-specific positive/negative/race/stop conditions in addition to the contract below. This file does not replace or shorten the 362 assertions.
+8 original phases, 32 original steps, 4 phone gates. **5/32 tasks accepted (15.625% of tasks; NOT functionality). P0: 4/4 tasks; P1: 1/4 documentary task (25%). Phase 3 T13 is IN_PROGRESS on a separate cloud/HOST workstream; P1 T06–T08 remain BLOCKED.** T01/T02 documentary and T03/T04 exact-source HOST/COMPILE accepted; all runtime, product and release acceptance remains open. Read `requirements.json` for the full atomic obligations mapped to these contracts. Each task requires its mapped requirement-specific positive/negative/race/stop conditions in addition to the contract below. This file does not replace or shorten the 362 assertions.
 
 ## Global execution rules
 
@@ -218,7 +218,7 @@ Original: `2fac016e3b28e4d9f21390c221cad1df7a382c86:docs/ROADMAP.md:L46`
 
 ## APK-P3-T13 — Stable metadata and migrations
 
-Status: **NOT_STARTED**; accepted evidence: none.
+Status: **IN_PROGRESS**; accepted evidence: none. Pre-code plan: docs/phase-03/T13_METADATA_PLAN.md. Current scope is HOST schema/migration contract only; Android SQLite/file-lifecycle evidence remains required.
 
 Original: `2fac016e3b28e4d9f21390c221cad1df7a382c86:docs/ROADMAP.md:L56`
 
